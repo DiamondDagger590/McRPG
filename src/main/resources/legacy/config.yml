@@ -46,7 +46,7 @@ Configuration:
   ConstantExpUpdates:
     #If players should be sent an update everytime they gain exp
     Enabled: false
-    #What type should the display be. BOSSBAR, SCOREBOARD, or ACTIONBAR
+    #What type should the display be. BOSSBAR or ACTIONBAR
     DisplayType: BOSSBAR
     #Duration of the reminder. Only used for scoreboard and bossbar
     DisplayDuration: 3

@@ -1,115 +1,217 @@
 package us.eunoians.mcrpg.display;
 
-import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;
-import org.bukkit.NamespacedKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.MainConfigFile;
-import us.eunoians.mcrpg.display.impl.ExperienceDisplay;
-import us.eunoians.mcrpg.display.impl.persistent.PersistentExperienceDisplay;
+import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
+import us.eunoians.mcrpg.display.hud.ActionBarHudDisplay;
+import us.eunoians.mcrpg.display.hud.ActionBarHudRenderer;
+import us.eunoians.mcrpg.display.hud.FontWidthTable;
+import us.eunoians.mcrpg.display.hud.MinecraftDefaultFontWidthTable;
+import us.eunoians.mcrpg.display.impl.PlayerDisplay;
+import us.eunoians.mcrpg.display.impl.TickablePlayerDisplay;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.Optional;
-import java.util.UUID;
+import java.util.function.Function;
 
 /**
- * The manager for managing {@link ExperienceDisplay}s for players.
+ * Coordinates per-player {@link PlayerDisplay}s on behalf of McRPG.
+ * <p>
+ * The manager owns <em>shared</em> collaborators (the {@link ActionBarHudRenderer}
+ * and its backing {@link FontWidthTable} + reloadable config flag) but does not
+ * own per-player state. Each player holds their own display instances in a
+ * type-keyed map on {@link McRPGPlayer}; this manager exposes a generic
+ * {@code get/has/set/remove/getOrCreateDisplay} API that delegates to that map,
+ * plus a generic per-tick driver for anything implementing
+ * {@link TickablePlayerDisplay}.
  */
 public class DisplayManager extends Manager<McRPG> {
 
-    private final Map<UUID, ExperienceDisplay> activeDisplays;
+    private final ActionBarHudRenderer hudRenderer;
+    private final ReloadableContent<Boolean> persistentPoolEnabled;
+    /**
+     * Scratch buffer reused across every player in a single {@link #tickDisplays}
+     * pass so the hot path doesn't allocate a fresh snapshot list each tick.
+     * Strictly main-thread use only (HUD tick runs on the Bukkit scheduler).
+     */
+    private final ArrayList<PlayerDisplay> tickSnapshotBuffer = new ArrayList<>(4);
 
     public DisplayManager(@NotNull McRPG plugin) {
         super(plugin);
-        this.activeDisplays = new HashMap<>();
+        var fileManager = plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
+        this.persistentPoolEnabled = new ReloadableContent<>(
+                fileManager.getFile(FileType.HUD_CONFIG),
+                HudConfigFile.ACTION_BAR_PERSISTENT_POOL_DISPLAY,
+                (doc, route) -> doc.getBoolean(route, true)
+        );
+        plugin.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(ManagerKey.RELOADABLE_CONTENT)
+                .trackReloadableContent(persistentPoolEnabled);
+        FontWidthTable widths = new MinecraftDefaultFontWidthTable();
+        this.hudRenderer = new ActionBarHudRenderer(widths, persistentPoolEnabled);
     }
 
     /**
-     * Creates and updates the active {@link ExperienceDisplay} for the provided
-     * {@link McRPGPlayer}.
-     *
-     * @param mcRPGPlayer The {@link McRPGPlayer} to create a new {@link ExperienceDisplay} for.
-     */
-    public void createDisplay(@NotNull McRPGPlayer mcRPGPlayer) {
-        // Clean up an existing display if it exists
-        UUID uuid = mcRPGPlayer.getUUID();
-        if (hasActiveDisplay(uuid)) {
-            removeDisplay(uuid);
-        }
-        var playerSettingOptional = mcRPGPlayer.getPlayerSetting(ExperienceDisplaySetting.SETTING_KEY);
-        if (playerSettingOptional.isPresent() && playerSettingOptional.get() instanceof ExperienceDisplaySetting experienceDisplaySetting) {
-            ExperienceDisplay experienceDisplay = experienceDisplaySetting.getExperienceDisplay(mcRPGPlayer);
-            activeDisplays.put(mcRPGPlayer.getUUID(), experienceDisplay);
-        }
-    }
-
-    /**
-     * Checks to see if the provided {@link UUID} has an active {@link ExperienceDisplay},
-     *
-     * @param uuid The {@link UUID} to check.
-     * @return {@code true} if the provided {@link UUID} has an active {@link ExperienceDisplay}.
-     */
-    public boolean hasActiveDisplay(@NotNull UUID uuid) {
-        return activeDisplays.containsKey(uuid);
-    }
-
-    /**
-     * Gets an {@link Optional} containing the {@link ExperienceDisplay} for the provided
-     * {@link UUID}.
-     *
-     * @param uuid The {@link UUID} to get the {@link ExperienceDisplay} for.
-     * @return An {@link Optional} containing the {@link ExperienceDisplay} for the provided {@link UUID},
-     * or an empty on if {@link #hasActiveDisplay(UUID)} returns {@code false}.
+     * @return The shared {@link ActionBarHudRenderer} used by every HUD display.
      */
     @NotNull
-    public Optional<ExperienceDisplay> getActiveDisplay(@NotNull UUID uuid) {
-        return Optional.ofNullable(activeDisplays.get(uuid));
+    public ActionBarHudRenderer getHudRenderer() {
+        return hudRenderer;
     }
 
     /**
-     * Sends a visual update of the current experience state of the {@link us.eunoians.mcrpg.skill.Skill} belonging to
-     * the provided {@link NamespacedKey} for the given {@link McRPGPlayer}.
-     *
-     * @param mcRPGPlayer The {@link McRPGPlayer} to update the display for.
-     * @param skillKey    The {@link NamespacedKey} to get the {@link us.eunoians.mcrpg.skill.Skill} information for the display.
+     * @return The reloadable flag controlling whether HP and mana are rendered
+     * continuously on the action bar.
      */
-    public void sendExperienceUpdate(@NotNull McRPGPlayer mcRPGPlayer, @NotNull NamespacedKey skillKey) {
-        UUID uuid = mcRPGPlayer.getUUID();
-
-        if (!RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
-                .getBoolean(MainConfigFile.DISPLAY_EXPERIENCE_UPDATES_ENABLED, false)) {
-            return;
-        }
-
-        // If they don't have an active display, set one
-        if (!hasActiveDisplay(uuid)) {
-            createDisplay(mcRPGPlayer);
-        }
-        ExperienceDisplay experienceDisplay = activeDisplays.get(uuid);
-        // Check if it is a persistent display and if the time has expired on it, create a new one
-        if (experienceDisplay instanceof PersistentExperienceDisplay persistentExperienceDisplay && persistentExperienceDisplay.hasExpired()) {
-            createDisplay(mcRPGPlayer);
-            experienceDisplay = activeDisplays.get(uuid);
-        }
-        experienceDisplay.sendExperienceUpdate(skillKey);
+    @NotNull
+    public ReloadableContent<Boolean> getPersistentPoolEnabled() {
+        return persistentPoolEnabled;
     }
 
     /**
-     * Removes and cleans the active display for the provided {@link UUID}.
+     * Fetches the {@link PlayerDisplay} of the requested type for {@code player}.
      *
-     * @param uuid The {@link UUID} to remove the display for.
+     * @param player The player whose displays to look up.
+     * @param type   The base display class to look up under.
+     * @param <T>    The display type.
+     * @return An {@link Optional} containing the registered display, or empty
+     * if none.
      */
-    public void removeDisplay(@NotNull UUID uuid) {
-        if (activeDisplays.containsKey(uuid)) {
-            activeDisplays.remove(uuid).cleanDisplay();
+    @NotNull
+    public <T extends PlayerDisplay> Optional<T> getDisplay(@NotNull McRPGPlayer player, @NotNull Class<T> type) {
+        return player.getDisplay(type);
+    }
+
+    /**
+     * @param player The player to inspect.
+     * @param type   The base display class.
+     * @return {@code true} if the player has a display registered under
+     * {@code type}.
+     */
+    public boolean hasDisplay(@NotNull McRPGPlayer player, @NotNull Class<? extends PlayerDisplay> type) {
+        return player.hasDisplay(type);
+    }
+
+    /**
+     * Registers a {@link PlayerDisplay}, cleaning up any existing display of the
+     * same type.
+     *
+     * @param player  The player to register the display on.
+     * @param type    The base display class to register under.
+     * @param display The display instance to register.
+     * @param <T>     The display type.
+     */
+    public <T extends PlayerDisplay> void setDisplay(@NotNull McRPGPlayer player,
+                                                     @NotNull Class<T> type,
+                                                     @NotNull T display) {
+        player.setDisplay(type, display);
+    }
+
+    /**
+     * Removes a registered {@link PlayerDisplay}, invoking
+     * {@link PlayerDisplay#cleanDisplay()} if one existed.
+     *
+     * @param player The player whose display should be removed.
+     * @param type   The base display class to remove.
+     */
+    public void removeDisplay(@NotNull McRPGPlayer player, @NotNull Class<? extends PlayerDisplay> type) {
+        player.removeDisplay(type);
+    }
+
+    /**
+     * Cleans up and removes every {@link PlayerDisplay} for {@code player}.
+     *
+     * @param player The player to clear displays on.
+     */
+    public void clearAllDisplays(@NotNull McRPGPlayer player) {
+        player.clearAllDisplays();
+    }
+
+    /**
+     * Returns the existing display of {@code type} for {@code player}, or
+     * creates and registers one using {@code factory} if none exists. Used by
+     * call sites that lazily materialise a display on first contact (combo,
+     * cooldown, XP, safe-zone, etc.) without duplicating an
+     * {@code orElseGet + setDisplay} pair at every site.
+     *
+     * @param player  The player to fetch or create a display for.
+     * @param type    The base display class.
+     * @param factory Factory invoked exactly once if no display is registered.
+     * @param <T>     The display type.
+     * @return The registered display.
+     */
+    @NotNull
+    public <T extends PlayerDisplay> T getOrCreateDisplay(@NotNull McRPGPlayer player,
+                                                          @NotNull Class<T> type,
+                                                          @NotNull Function<McRPGPlayer, T> factory) {
+        Optional<T> existing = player.getDisplay(type);
+        if (existing.isPresent()) {
+            return existing.get();
         }
+        T created = factory.apply(player);
+        player.setDisplay(type, created);
+        return created;
+    }
+
+    /**
+     * Returns the existing {@link ActionBarHudDisplay} for {@code player}, or
+     * materialises one wired to the shared {@link ActionBarHudRenderer} if
+     * none exists. This is the canonical entry point for any feature that
+     * needs to push content into the HUD — the factory, class key, and renderer
+     * wiring live in one place.
+     *
+     * @param player The player whose HUD display should be fetched or created.
+     * @return The registered {@link ActionBarHudDisplay}.
+     */
+    @NotNull
+    public ActionBarHudDisplay getOrCreateActionBarHud(@NotNull McRPGPlayer player) {
+        return getOrCreateDisplay(player, ActionBarHudDisplay.class,
+                p -> new ActionBarHudDisplay(p, hudRenderer));
+    }
+
+    /**
+     * Drives the per-tick lifecycle for every online player's
+     * {@link TickablePlayerDisplay}s.
+     *
+     * @param currentTick    The current server tick.
+     * @param secondsElapsed Real seconds elapsed since the previous tick.
+     */
+    public void tickDisplays(long currentTick, double secondsElapsed) {
+        McRPGPlayerManager playerManager = plugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
+        boolean poolEnabled = hudRenderer.isPersistentPoolDisplayEnabled();
+        for (Player player : Bukkit.getOnlinePlayers()) {
+            Optional<McRPGPlayer> mcRPGPlayerOpt = playerManager.getPlayer(player.getUniqueId());
+            if (mcRPGPlayerOpt.isEmpty()) {
+                continue;
+            }
+            McRPGPlayer mcRPGPlayer = mcRPGPlayerOpt.get();
+            // When the persistent HP/mana display is enabled every online
+            // player needs a HUD display so HP/mana renders continuously; in
+            // disabled mode we leave creation to the call sites that surface
+            // center content.
+            if (poolEnabled) {
+                getOrCreateActionBarHud(mcRPGPlayer);
+            }
+            tickSnapshotBuffer.clear();
+            mcRPGPlayer.snapshotDisplaysInto(tickSnapshotBuffer);
+            for (int i = 0, size = tickSnapshotBuffer.size(); i < size; i++) {
+                if (tickSnapshotBuffer.get(i) instanceof TickablePlayerDisplay tickable) {
+                    tickable.tick(currentTick, secondsElapsed);
+                }
+            }
+        }
+        // Release strong references so displays removed mid-tick are GC-eligible.
+        tickSnapshotBuffer.clear();
     }
 }

@@ -1,34 +1,26 @@
 package us.eunoians.mcrpg.display.hud;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.display.DisplayManager;
+import us.eunoians.mcrpg.display.impl.TickablePlayerDisplay;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.stat.CombatStatInstance;
-import us.eunoians.mcrpg.stat.McRPGCombatStat;
-import us.eunoians.mcrpg.stat.PlayerCombatData;
 
 /**
- * Repeating task that renders the action bar HUD for all online McRPG players
- * and ticks mana regeneration.
+ * Repeating task that drives every online player's
+ * {@link TickablePlayerDisplay}s — including the action bar HUD — by delegating
+ * to {@link DisplayManager#tickDisplays(long, double)}.
  * <p>
- * Runs every N ticks (configurable, default 2). For each player:
- * <ol>
- *   <li>Ticks mana regen based on elapsed time</li>
- *   <li>Computes HP display from vanilla health scaled to custom max</li>
- *   <li>Reads mana from {@link PlayerCombatData}</li>
- *   <li>Reads center content from {@link McRPGPlayer#getActionBarCenterContent(long)}</li>
- *   <li>Renders and sends the composed action bar via {@link ActionBarHudRenderer}</li>
- * </ol>
+ * The task itself is deliberately thin: all per-frame logic (regen, slot
+ * resolution, rendering, sending) lives on {@link ActionBarHudDisplay} and its
+ * collaborators so this class is only responsible for the scheduler cadence.
  * <p>
  * TODO(#215): Migrate to McCore's {@code CoreTask} / {@code DelayableCoreTask}
- * so scheduling, cancellation, and lifecycle follow the same pattern as the rest
- * of the plugin rather than a raw {@link BukkitRunnable}.
+ * so scheduling, cancellation, and lifecycle follow the same pattern as the
+ * rest of the plugin rather than a raw {@link BukkitRunnable}.
  */
 public class ActionBarHudTask extends BukkitRunnable {
 
@@ -55,59 +47,9 @@ public class ActionBarHudTask extends BukkitRunnable {
     public void run() {
         double secondsElapsed = intervalTicks / 20.0;
         long currentTick = Bukkit.getCurrentTick();
-        var playerManager = plugin.registryAccess()
+        DisplayManager displayManager = plugin.registryAccess()
                 .registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.PLAYER);
-
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            var mcRPGPlayerOpt = playerManager.getPlayer(player.getUniqueId());
-            if (mcRPGPlayerOpt.isEmpty()) {
-                continue;
-            }
-            McRPGPlayer mcRPGPlayer = mcRPGPlayerOpt.get();
-            PlayerCombatData combatData = mcRPGPlayer.getPlayerCombatData();
-
-            combatData.tickRegen(secondsElapsed);
-
-            int healthCurrent = computeScaledHealth(player, combatData);
-            int healthMax = getStatMax(combatData, McRPGCombatStat.HEALTH_KEY);
-            int manaCurrent = getStatCurrent(combatData, McRPGCombatStat.MANA_KEY);
-            int manaMax = getStatMax(combatData, McRPGCombatStat.MANA_KEY);
-
-            Component centerContent = mcRPGPlayer.getActionBarCenterContent(currentTick)
-                    .orElse(null);
-
-            Component hud = ActionBarHudRenderer.buildHud(
-                    healthCurrent, healthMax,
-                    McRPGCombatStat.HEALTH.getDisplaySymbol(),
-                    manaCurrent, manaMax,
-                    McRPGCombatStat.MANA.getDisplaySymbol(),
-                    centerContent
-            );
-
-            player.sendActionBar(hud);
-        }
-    }
-
-    private int computeScaledHealth(@NotNull Player player, @NotNull PlayerCombatData combatData) {
-        double vanillaHealth = player.getHealth();
-        double vanillaMax = player.getAttribute(org.bukkit.attribute.Attribute.MAX_HEALTH).getValue();
-        double healthPercent = (vanillaMax > 0) ? (vanillaHealth / vanillaMax) : 0;
-        int customMax = getStatMax(combatData, McRPGCombatStat.HEALTH_KEY);
-        return (int) Math.round(healthPercent * customMax);
-    }
-
-    private int getStatMax(@NotNull PlayerCombatData combatData, @NotNull org.bukkit.NamespacedKey key) {
-        return combatData.getInstance(key)
-                .map(CombatStatInstance::getEffectiveMax)
-                .map(d -> (int) Math.round(d))
-                .orElse(0);
-    }
-
-    private int getStatCurrent(@NotNull PlayerCombatData combatData, @NotNull org.bukkit.NamespacedKey key) {
-        return combatData.getInstance(key)
-                .map(CombatStatInstance::getCurrent)
-                .map(d -> (int) Math.round(d))
-                .orElse(0);
+                .manager(McRPGManagerKey.DISPLAY);
+        displayManager.tickDisplays(currentTick, secondsElapsed);
     }
 }

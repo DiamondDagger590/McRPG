@@ -6,14 +6,15 @@ import us.eunoians.mcrpg.configuration.file.ConfigFile;
 import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
 
 /**
- * Configuration file for the combo activation system and combat stat / HUD settings.
+ * Configuration file for the combo activation system and combat stat settings.
  * <p>
- * Combo keys are nested under {@code combo}. Stat base values under {@code stats}.
- * HUD settings under {@code hud}.
+ * Combo keys are nested under {@code combo}. Stat base values under
+ * {@code stats}. HUD / display keys live in
+ * {@link us.eunoians.mcrpg.configuration.file.hud.HudConfigFile}.
  */
 public final class ComboConfigFile extends ConfigFile {
 
-    private static final int CURRENT_VERSION = 2;
+    private static final int CURRENT_VERSION = 3;
 
     // --- Stats ---
     private static final String STATS_HEADER = "stats";
@@ -24,11 +25,6 @@ public final class ComboConfigFile extends ConfigFile {
     private static final String MANA_HEADER = toRoutePath(STATS_HEADER, "mana");
     public static final Route MANA_BASE_MAX = Route.fromString(toRoutePath(MANA_HEADER, "base-max"));
     public static final Route MANA_REGEN_PER_SECOND = Route.fromString(toRoutePath(MANA_HEADER, "regen-per-second"));
-
-    // --- HUD ---
-    private static final String HUD_HEADER = "hud";
-    private static final String ACTION_BAR_HEADER = toRoutePath(HUD_HEADER, "action-bar");
-    public static final Route HUD_UPDATE_INTERVAL_TICKS = Route.fromString(toRoutePath(ACTION_BAR_HEADER, "update-interval-ticks"));
 
     // --- Combo ---
     private static final String COMBO_HEADER = "combo";

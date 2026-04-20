@@ -59,14 +59,19 @@ public final class ActionBarCenterContent {
 public class ComboManager extends Manager<McRPG> {
     public void processInput(Player player, ComboInput input) { ... }
     private void updateDisplay(McRPGPlayer player, List<ComboInput> sequence) {
-        player.setActionBarCenterContentPersistent(buildComboDisplay(sequence, totalLength));
+        ActionBarHudDisplay hud = displayManager.getOrCreateDisplay(
+                player,
+                ActionBarHudDisplay.class,
+                p -> new ActionBarHudDisplay(p, displayManager.getHudRenderer()));
+        hud.setSlot(CenterContentPriority.COMBO_STATE,
+                new IndefiniteCenterContent(buildComboDisplay(sequence, totalLength)));
     }
 }
 
 // Per-player state lives on the player object — no global map, no cleanup needed
 public class McRPGPlayer extends CorePlayer {
-    public void setActionBarCenterContent(Component content, long expiryTick) { ... }
-    public Optional<Component> getActionBarCenterContent(long currentTick) { ... }
+    public <T extends PlayerDisplay> Optional<T> getDisplay(Class<T> type) { ... }
+    public <T extends PlayerDisplay> void setDisplay(Class<T> type, T display) { ... }
 }
 ```
 

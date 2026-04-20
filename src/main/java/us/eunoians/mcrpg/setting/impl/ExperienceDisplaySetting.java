@@ -6,10 +6,13 @@ import com.diamonddagger590.mccore.util.LinkedNode;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.display.DisplayManager;
 import us.eunoians.mcrpg.display.impl.ActionBarExperienceDisplay;
 import us.eunoians.mcrpg.display.impl.BossBarExperienceDisplay;
 import us.eunoians.mcrpg.display.impl.ExperienceDisplay;
+import us.eunoians.mcrpg.display.impl.persistent.PersistentExperienceDisplay;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.setting.slot.ExperienceDisplaySettingSlot;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -21,7 +24,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * A player setting that allows players to configure how they want
@@ -90,12 +92,59 @@ public enum ExperienceDisplaySetting implements McRPGSetting {
     @Override
     public void onSettingChange(@NotNull CorePlayer player, @NotNull Optional<PlayerSetting> oldSetting) {
         assert(player instanceof McRPGPlayer);
-        McRPG mcRPG = ((McRPGPlayer) player).getPlugin();
-        DisplayManager displayManager = mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY);
-        UUID uuid = player.getUUID();
-        if (displayManager.hasActiveDisplay(uuid)) {
-            displayManager.createDisplay((McRPGPlayer) player);
+        McRPGPlayer mcRPGPlayer = (McRPGPlayer) player;
+        DisplayManager displayManager = mcRPGPlayer.getPlugin().registryAccess()
+                .registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY);
+        // Only rebuild if they already had a display; otherwise next XP gain
+        // will lazily materialise the right subclass via sendExperienceUpdate.
+        if (displayManager.hasDisplay(mcRPGPlayer, ExperienceDisplay.class)) {
+            ExperienceDisplay fresh = resolveSetting(mcRPGPlayer).getExperienceDisplay(mcRPGPlayer);
+            displayManager.setDisplay(mcRPGPlayer, ExperienceDisplay.class, fresh);
         }
+    }
+
+    /**
+     * Routes an experience update for {@code skillKey} through the player's
+     * configured {@link ExperienceDisplay}, materialising or rebuilding the
+     * display as needed.
+     * <p>
+     * Replaces the old {@code DisplayManager#sendExperienceUpdate} flow so the
+     * display manager can stay a thin generic coordinator while the XP
+     * lifecycle stays encapsulated with the setting that owns the display
+     * type.
+     *
+     * @param mcRPGPlayer The player to send the update to.
+     * @param skillKey    The skill that gained experience.
+     */
+    public static void sendExperienceUpdate(@NotNull McRPGPlayer mcRPGPlayer, @NotNull NamespacedKey skillKey) {
+        McRPG mcRPG = mcRPGPlayer.getPlugin();
+        boolean enabled = mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG)
+                .getBoolean(MainConfigFile.DISPLAY_EXPERIENCE_UPDATES_ENABLED, false);
+        if (!enabled) {
+            return;
+        }
+        DisplayManager displayManager = mcRPG.registryAccess()
+                .registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY);
+        ExperienceDisplaySetting setting = resolveSetting(mcRPGPlayer);
+        ExperienceDisplay display = displayManager.getDisplay(mcRPGPlayer, ExperienceDisplay.class).orElse(null);
+        boolean rebuild = display == null || display.getSetting() != setting;
+        if (!rebuild && display instanceof PersistentExperienceDisplay persistent && persistent.hasExpired()) {
+            rebuild = true;
+        }
+        if (rebuild) {
+            display = setting.getExperienceDisplay(mcRPGPlayer);
+            displayManager.setDisplay(mcRPGPlayer, ExperienceDisplay.class, display);
+        }
+        display.sendExperienceUpdate(skillKey);
+    }
+
+    @NotNull
+    private static ExperienceDisplaySetting resolveSetting(@NotNull McRPGPlayer mcRPGPlayer) {
+        return mcRPGPlayer.getPlayerSetting(SETTING_KEY)
+                .filter(ExperienceDisplaySetting.class::isInstance)
+                .map(ExperienceDisplaySetting.class::cast)
+                .orElse(FIRST_SETTING.getNodeValue());
     }
 
     @NotNull

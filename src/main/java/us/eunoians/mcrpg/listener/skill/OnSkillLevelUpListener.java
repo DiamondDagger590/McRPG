@@ -39,6 +39,7 @@ import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.sql.Connection;
@@ -211,7 +212,7 @@ public class OnSkillLevelUpListener implements Listener {
 
         if(Bukkit.getEntity(skillHolder.getUUID()) instanceof Player player && player.isOnline() && playerOptional.isPresent()) {
             McRPGPlayer mcRPGPlayer = playerOptional.get();
-            McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY).sendExperienceUpdate(mcRPGPlayer, skill.getSkillKey());
+            ExperienceDisplaySetting.sendExperienceUpdate(mcRPGPlayer, skill.getSkillKey());
         }
     }
 }

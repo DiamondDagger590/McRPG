@@ -1,9 +1,9 @@
 package us.eunoians.mcrpg.listener.entity.player;
 
-import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.route.Route;
-import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -11,6 +11,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.display.hud.ActionBarHudDisplay;
+import us.eunoians.mcrpg.display.hud.CenterContentPriority;
+import us.eunoians.mcrpg.display.hud.content.TimedCenterContent;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.entity.player.PlayerSafeZoneStateChangeEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -23,21 +26,33 @@ import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceOnlineAccumulat
  */
 public class PlayerSafeZoneStateChangeListener implements Listener {
 
+    /**
+     * How long safe-zone enter/leave flashes stay pinned in the HUD's safe-zone
+     * slot before being released (roughly how long a vanilla action bar sticks
+     * around before auto-fading).
+     */
+    private static final long DISPLAY_DURATION_TICKS = 40L;
+
     @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerSafeZoneStateChange(PlayerSafeZoneStateChangeEvent playerSafeZoneStateChangeEvent) {
-        boolean safeZoneAllowed = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE)
+        McRPGPlayer mcRPGPlayer = playerSafeZoneStateChangeEvent.getMcRPGPlayer();
+        var registryAccess = mcRPGPlayer.getPlugin().registryAccess();
+        boolean safeZoneAllowed = registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE)
                 .getFile(FileType.MAIN_CONFIG).getBoolean(MainConfigFile.SAFE_ZONE_ALLOW_ACCUMULATION);
         // Only send the update if safe zone accumulation is allowed
         if (safeZoneAllowed) {
             PlayerSafeZoneStateChangeEvent.SafeZoneStateChangeType changeType = playerSafeZoneStateChangeEvent.getSafeZoneStateChangeType();
-            McRPGPlayer mcRPGPlayer = playerSafeZoneStateChangeEvent.getMcRPGPlayer();
-            McRPGLocalizationManager localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-            Audience audience = mcRPGPlayer.getAsBukkitPlayer().get();
+            McRPGLocalizationManager localizationManager = registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
             RestedExperienceOnlineAccumulationSetting restedExperienceOnlineAccumulationSetting = RestedExperienceOnlineAccumulationSetting.getCurrentSetting()
                     .orElseThrow(() -> new IllegalArgumentException("Invalid rested experience setting was provided. Please reach out to a developer to resolve."));
             Route localizationRoute = restedExperienceOnlineAccumulationSetting != RestedExperienceOnlineAccumulationSetting.DISABLED
                     ? getOnlineMessage(changeType) : getOfflineMessage(changeType);
-            audience.sendActionBar(localizationManager.getLocalizedMessageAsComponent(audience, localizationRoute));
+            Component message = localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, localizationRoute);
+
+            ActionBarHudDisplay hud = registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY)
+                    .getOrCreateActionBarHud(mcRPGPlayer);
+            long expiryTick = Bukkit.getCurrentTick() + DISPLAY_DURATION_TICKS;
+            hud.setSlot(CenterContentPriority.SAFE_ZONE_TRANSITION, new TimedCenterContent(message, expiryTick));
         }
     }
 

@@ -9,24 +9,13 @@ import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
  * An experience display is used to visually display experience gains in a given
  * {@link us.eunoians.mcrpg.skill.Skill} to players.
  */
-public abstract class ExperienceDisplay {
+public abstract class ExperienceDisplay extends PlayerDisplay {
 
-    private final McRPGPlayer mcRPGPlayer;
     private final ExperienceDisplaySetting setting;
 
     public ExperienceDisplay(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ExperienceDisplaySetting setting) {
-        this.mcRPGPlayer = mcRPGPlayer;
+        super(mcRPGPlayer);
         this.setting = setting;
-    }
-
-    /**
-     * Gets the {@link McRPGPlayer} this display is for.
-     *
-     * @return The {@link McRPGPlayer} this display is for.
-     */
-    @NotNull
-    public final McRPGPlayer getMcRPGPlayer() {
-        return mcRPGPlayer;
     }
 
     /**
@@ -48,9 +37,4 @@ public abstract class ExperienceDisplay {
      * @param skillKey The {@link NamespacedKey} to update the display for.
      */
     public abstract void sendExperienceUpdate(@NotNull NamespacedKey skillKey);
-
-    /**
-     * Cleans up the current display from the users screen.
-     */
-    public abstract void cleanDisplay();
 }

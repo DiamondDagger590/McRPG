@@ -14,6 +14,10 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
+import us.eunoians.mcrpg.display.hud.ActionBarHudDisplay;
+import us.eunoians.mcrpg.display.hud.CenterContentPriority;
+import us.eunoians.mcrpg.display.hud.content.CountdownCooldownCenterContent;
+import us.eunoians.mcrpg.display.hud.content.TimedCenterContent;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -101,10 +105,9 @@ public class OnComboCompleteListener implements Listener {
 
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
 
-            mcRPGPlayer.setActionBarCenterContent(
-                    Component.text("On Cooldown (" + remainingSeconds + "s)", NamedTextColor.RED),
-                    Bukkit.getCurrentTick() + CENTER_CONTENT_DURATION_TICKS
-            );
+            ActionBarHudDisplay hud = getOrCreateHud(mcRPG, mcRPGPlayer);
+            hud.setSlot(CenterContentPriority.ABILITY_FEEDBACK,
+                    new CountdownCooldownCenterContent(ability.getName(), expiryMillis, mcRPG.getTimeProvider()));
 
             player.sendMessage(
                     Component.text(ability.getName() + " is on cooldown! ", NamedTextColor.RED)
@@ -122,10 +125,10 @@ public class OnComboCompleteListener implements Listener {
 
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
 
-            mcRPGPlayer.setActionBarCenterContent(
-                    Component.text("Not Enough Mana", NamedTextColor.RED),
-                    Bukkit.getCurrentTick() + CENTER_CONTENT_DURATION_TICKS
-            );
+            ActionBarHudDisplay hud = getOrCreateHud(mcRPG, mcRPGPlayer);
+            long expiryTick = Bukkit.getCurrentTick() + CENTER_CONTENT_DURATION_TICKS;
+            hud.setSlot(CenterContentPriority.ABILITY_FEEDBACK,
+                    new TimedCenterContent(Component.text("Not Enough Mana", NamedTextColor.RED), expiryTick));
 
             player.sendMessage(
                     Component.text("Not enough mana to use " + ability.getName() + "! ", NamedTextColor.RED)
@@ -139,5 +142,12 @@ public class OnComboCompleteListener implements Listener {
         if (comboAbility instanceof CooldownableAbility cooldownableAbility) {
             cooldownableAbility.putHolderOnCooldown(abilityHolder);
         }
+    }
+
+    @NotNull
+    private ActionBarHudDisplay getOrCreateHud(@NotNull McRPG mcRPG, @NotNull McRPGPlayer mcRPGPlayer) {
+        return mcRPG.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY)
+                .getOrCreateActionBarHud(mcRPGPlayer);
     }
 }

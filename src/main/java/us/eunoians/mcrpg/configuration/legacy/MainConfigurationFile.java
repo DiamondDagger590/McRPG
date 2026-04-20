@@ -72,7 +72,7 @@
 //    EXP_UPDATES_ENABLED("configuration.display.exp-updates.enabled", false, false,
 //        "#If set to true, players will get a visual update whenever experience is gained (unless their setting disables this)"),
 //    EXP_UPDATES_DISPLAY_TYPE("configuration.display.exp-updates.display-type", "BOSSBAR", false,
-//        "#What type should the display be. Accepted values are: BOSSBAR, SCOREBOARD, or ACTIONBAR"),
+//        "#What type should the display be. Accepted values are: BOSSBAR or ACTIONBAR"),
 //    EXP_UPDATES_DISPLAY_DURATION("configuration.display.exp-updates.display-duration", 3, false,
 //        "#Duration of the reminder in seconds. Only used for scoreboard and bossbar"),
 //

@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
+import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
 import us.eunoians.mcrpg.display.hud.ActionBarHudTask;
 import us.eunoians.mcrpg.listener.ability.OnAbilityActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnComboCompleteListener;
@@ -88,8 +88,8 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         // Action bar HUD task
         int hudInterval = plugin.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
-                .getInt(ComboConfigFile.HUD_UPDATE_INTERVAL_TICKS, 2);
+                .manager(McRPGManagerKey.FILE).getFile(FileType.HUD_CONFIG)
+                .getInt(HudConfigFile.ACTION_BAR_UPDATE_INTERVAL_TICKS, 2);
         new ActionBarHudTask(plugin, hudInterval).start();
 
         // Ability activation/ready listeners

@@ -1,0 +1,18 @@
+config-version: 1
+
+# HUD / display surface configuration.
+#
+# This file currently owns the action bar HUD used by the combat rework
+# (HP / mana pools, combo dots, cooldown countdowns, XP gain messages, and
+# safe-zone transition notifications). Additional HUD surfaces (boss bar,
+# custom fonts, etc.) should also live here rather than in unrelated feature
+# configs.
+
+action-bar:
+  # How often (in server ticks) the action bar HUD refreshes. 2 ticks = 100ms at 20 TPS.
+  # Lower values are smoother but marginally more expensive. Range: 1-20.
+  update-interval-ticks: 2
+  # Whether HP and Mana are rendered continuously on the action bar.
+  # Set to false if HP/Mana are shown via a scoreboard, resource pack, or another HUD plugin.
+  # Combo dots, XP gain messages, ability feedback, and safe-zone notifications still display regardless.
+  persistent-pool-display: true

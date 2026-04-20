@@ -1,4 +1,4 @@
-config-version: 2
+config-version: 3
 
 # Combat stat base values. These define the starting pools for all players.
 stats:
@@ -11,12 +11,7 @@ stats:
     # Passive mana regeneration rate (mana points restored per second).
     regen-per-second: 5
 
-# Action bar HUD configuration.
-hud:
-  action-bar:
-    # How often (in server ticks) the action bar HUD refreshes. 2 ticks = 100ms at 20 TPS.
-    # Lower values are smoother but marginally more expensive. Range: 1-20.
-    update-interval-ticks: 2
+# HUD / action bar display settings moved to hud_configuration.yml.
 
 combo:
   # Items that are allowed to register combo inputs. An empty hand always counts regardless of this list,

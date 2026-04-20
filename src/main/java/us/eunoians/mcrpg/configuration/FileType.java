@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
 import us.eunoians.mcrpg.configuration.file.ConfigFile;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
+import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
@@ -28,6 +29,7 @@ public enum FileType {
     HERBALISM_CONFIG("skill_configuration" + "/" + "herbalism_configuration.yml", new HerbalismConfigFile()),
     BOARD_CONFIG("quest-board" + "/" + "board.yml", new BoardConfigFile()),
     COMBO_CONFIG("combo_configuration.yml", new ComboConfigFile()),
+    HUD_CONFIG("hud_configuration.yml", new HudConfigFile()),
     ;
 
     private final String filePath;

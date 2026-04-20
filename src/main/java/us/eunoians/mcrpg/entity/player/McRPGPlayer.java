@@ -8,10 +8,10 @@ import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
-import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.display.impl.PlayerDisplay;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
@@ -40,6 +40,8 @@ import us.eunoians.mcrpg.stat.PlayerCombatData;
 
 import java.sql.Connection;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,8 +62,7 @@ public class McRPGPlayer extends CorePlayer {
     private final PlayerExperienceExtras playerExperienceExtras;
     private final PlayerCombatData playerCombatData;
     private final PlayerComboState comboState = new PlayerComboState();
-    private Component actionBarCenterContent;
-    private long actionBarCenterContentExpiryTick;
+    private final Map<Class<? extends PlayerDisplay>, PlayerDisplay> displays = new HashMap<>();
     private boolean standingInSafeZone;
 
     public McRPGPlayer(@NotNull Player player, @NotNull McRPG mcRPG) {
@@ -233,60 +234,94 @@ public class McRPGPlayer extends CorePlayer {
         return comboState;
     }
 
-    // TODO(#216): Move the action bar center content API off McRPGPlayer and
-    // into the display manager system. McRPGPlayer should not own HUD-layer state
-    // directly — the display manager should hold per-player center content with
-    // priority/layering so third-party plugins can compete for the zone cleanly.
-
     /**
-     * Sets the action bar center content with a tick-based expiry. The content is
-     * automatically cleared by the HUD renderer once the current server tick reaches
-     * or exceeds the expiry tick. Newer writes overwrite older ones.
+     * Gets the {@link PlayerDisplay} of the provided type associated with this player,
+     * if one has been registered.
+     * <p>
+     * Displays are keyed by the base class passed in ({@code ExperienceDisplay.class},
+     * {@code ActionBarHudDisplay.class}, etc.) so concrete subclasses are interchangeable
+     * lookups.
      *
-     * @param content    The component to display in the center zone.
-     * @param expiryTick The server tick at which this content expires.
-     */
-    public void setActionBarCenterContent(@NotNull Component content, long expiryTick) {
-        this.actionBarCenterContent = content;
-        this.actionBarCenterContentExpiryTick = expiryTick;
-    }
-
-    /**
-     * Sets the action bar center content that persists until explicitly cleared.
-     * Used for ongoing displays like combo progress dots.
-     *
-     * @param content The component to display in the center zone.
-     */
-    public void setActionBarCenterContentPersistent(@NotNull Component content) {
-        this.actionBarCenterContent = content;
-        this.actionBarCenterContentExpiryTick = Long.MAX_VALUE;
-    }
-
-    /**
-     * Returns the current action bar center content if it has not expired, or empty
-     * if no content is set or the entry has expired.
-     *
-     * @param currentTick The current server tick for expiry checking.
-     * @return The center content component, or empty.
+     * @param type The base {@link PlayerDisplay} class to look up.
+     * @param <T>  The display type.
+     * @return An {@link Optional} containing the registered display, or empty if none.
      */
     @NotNull
-    public Optional<Component> getActionBarCenterContent(long currentTick) {
-        if (actionBarCenterContent == null) {
-            return Optional.empty();
-        }
-        if (currentTick >= actionBarCenterContentExpiryTick) {
-            clearActionBarCenterContent();
-            return Optional.empty();
-        }
-        return Optional.of(actionBarCenterContent);
+    public <T extends PlayerDisplay> Optional<T> getDisplay(@NotNull Class<T> type) {
+        return Optional.ofNullable(displays.get(type)).map(type::cast);
     }
 
     /**
-     * Clears the action bar center content immediately.
+     * Checks whether this player currently has a registered {@link PlayerDisplay} of
+     * the provided type.
+     *
+     * @param type The base {@link PlayerDisplay} class to check.
+     * @return {@code true} if a display of the given type is registered.
      */
-    public void clearActionBarCenterContent() {
-        this.actionBarCenterContent = null;
-        this.actionBarCenterContentExpiryTick = 0;
+    public boolean hasDisplay(@NotNull Class<? extends PlayerDisplay> type) {
+        return displays.containsKey(type);
+    }
+
+    /**
+     * Registers a {@link PlayerDisplay} for this player, cleaning up any previously
+     * registered display of the same type.
+     *
+     * @param type    The base {@link PlayerDisplay} class to register under.
+     * @param display The display instance to register.
+     * @param <T>     The display type.
+     */
+    public <T extends PlayerDisplay> void setDisplay(@NotNull Class<T> type, @NotNull T display) {
+        PlayerDisplay previous = displays.put(type, display);
+        if (previous != null && previous != display) {
+            previous.cleanDisplay();
+        }
+    }
+
+    /**
+     * Removes the registered {@link PlayerDisplay} for this player, invoking
+     * {@link PlayerDisplay#cleanDisplay()} if present.
+     *
+     * @param type The base {@link PlayerDisplay} class to remove.
+     */
+    public void removeDisplay(@NotNull Class<? extends PlayerDisplay> type) {
+        PlayerDisplay previous = displays.remove(type);
+        if (previous != null) {
+            previous.cleanDisplay();
+        }
+    }
+
+    /**
+     * Copies every {@link PlayerDisplay} currently registered on this player
+     * into the caller-provided {@code sink}.
+     * <p>
+     * Using a caller-owned buffer lets hot-path iterators (e.g. the HUD tick
+     * loop) reuse a single collection across players and avoid allocating a
+     * fresh snapshot list every tick. Once populated, the caller can iterate
+     * {@code sink} safely even if a display mutates the player's display map
+     * during iteration.
+     *
+     * @param sink The destination collection. Expected to be cleared by the
+     *             caller prior to this call if only the current snapshot is
+     *             wanted; this method only appends.
+     */
+    public void snapshotDisplaysInto(@NotNull Collection<? super PlayerDisplay> sink) {
+        if (displays.isEmpty()) {
+            return;
+        }
+        sink.addAll(displays.values());
+    }
+
+    /**
+     * Cleans up and removes every {@link PlayerDisplay} registered for this player.
+     */
+    public void clearAllDisplays() {
+        if (displays.isEmpty()) {
+            return;
+        }
+        for (PlayerDisplay display : displays.values()) {
+            display.cleanDisplay();
+        }
+        displays.clear();
     }
 
     /**

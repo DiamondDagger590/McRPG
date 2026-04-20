@@ -6,6 +6,5 @@ package us.eunoians.mcrpg.display;
 public enum DisplayType {
 
     BOSSBAR,
-    SCOREBOARD,
     ACTIONBAR
 }

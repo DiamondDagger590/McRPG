@@ -14,6 +14,10 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
+import us.eunoians.mcrpg.display.DisplayManager;
+import us.eunoians.mcrpg.display.hud.ActionBarHudDisplay;
+import us.eunoians.mcrpg.display.hud.CenterContentPriority;
+import us.eunoians.mcrpg.display.hud.content.IndefiniteCenterContent;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.combo.ComboCompleteEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -145,7 +149,7 @@ public class ComboManager extends Manager<McRPG> {
         PlayerComboState state = mcRPGPlayer.getComboState();
         cancelTimeout(state);
         state.clearSequence();
-        mcRPGPlayer.clearActionBarCenterContent();
+        getHudDisplay(mcRPGPlayer).ifPresent(hud -> hud.clearSlot(CenterContentPriority.COMBO_STATE));
     }
 
     /**
@@ -176,7 +180,26 @@ public class ComboManager extends Manager<McRPG> {
     private void updateDisplay(@NotNull McRPGPlayer mcRPGPlayer, @NotNull List<ComboInput> sequence) {
         int totalLength = ComboPattern.SLOT_1.getLength();
         Component display = buildComboDisplay(sequence, totalLength);
-        mcRPGPlayer.setActionBarCenterContentPersistent(display);
+        DisplayManager displayManager = plugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY);
+        ActionBarHudDisplay hud = displayManager.getOrCreateActionBarHud(mcRPGPlayer);
+        hud.setSlot(CenterContentPriority.COMBO_STATE, new IndefiniteCenterContent(display));
+    }
+
+    /**
+     * Looks up the player's {@link ActionBarHudDisplay} <em>without</em>
+     * materialising one if none exists, used when clearing combo feedback so
+     * we don't create an empty HUD display for offline / unknown players.
+     *
+     * @param mcRPGPlayer The player whose HUD display should be read.
+     * @return An {@link Optional} containing the HUD display, or empty if the
+     * player has no HUD display registered.
+     */
+    @NotNull
+    private Optional<ActionBarHudDisplay> getHudDisplay(@NotNull McRPGPlayer mcRPGPlayer) {
+        return plugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY)
+                .getDisplay(mcRPGPlayer, ActionBarHudDisplay.class);
     }
 
     /**

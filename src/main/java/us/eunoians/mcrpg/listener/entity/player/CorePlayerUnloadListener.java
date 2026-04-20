@@ -22,7 +22,7 @@ public class CorePlayerUnloadListener implements Listener {
             mcRPGPlayer.asSkillHolder().cleanupHolder();
             mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).removeAbilityHolder(mcRPGPlayer.getUUID());
             mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).removePlayer(mcRPGPlayer.getUUID());
-            mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY).removeDisplay(mcRPGPlayer.getUUID());
+            mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DISPLAY).clearAllDisplays(mcRPGPlayer);
         }
 
     }
