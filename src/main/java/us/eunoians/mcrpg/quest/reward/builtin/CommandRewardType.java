@@ -30,8 +30,10 @@ import java.util.Optional;
  * commands:
  *   - "give {player} diamond 5"
  *   - "broadcast {player} completed a quest!"
- * display: "Special Reward"           # inline fallback label (MiniMessage)
  * </pre>
+ * <p>
+ * The inline display label is provided via the parent quest or template's
+ * {@code display.rewards.<label>} block, not on the reward definition itself.
  * <p>
  * At grant time each command string is resolved in two passes:
  * <ol>
@@ -84,7 +86,7 @@ public class CommandRewardType implements QuestRewardType {
     public CommandRewardType parseConfig(@NotNull Section section) {
         return new CommandRewardType(
                 section.getStringList("commands"),
-                section.getString("display", ""),
+                "",
                 null);
     }
 
@@ -105,6 +107,12 @@ public class CommandRewardType implements QuestRewardType {
     @Override
     public CommandRewardType withLocalizationRoute(@NotNull Route route) {
         return new CommandRewardType(commands, displayLabel, route);
+    }
+
+    @NotNull
+    @Override
+    public CommandRewardType withInlineDisplayLabel(@NotNull String label) {
+        return new CommandRewardType(commands, label, localizationRoute);
     }
 
     @Override

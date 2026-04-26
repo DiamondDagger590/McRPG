@@ -742,6 +742,14 @@ public final class QuestTemplateConfigLoader {
                 }
             }
         }
+        if (displaySection.contains("rewards")) {
+            Section rewardDisplaySection = displaySection.getSection("rewards");
+            if (rewardDisplaySection != null) {
+                for (String rewardKey : rewardDisplaySection.getRoutesAsStrings(false)) {
+                    display.put("reward." + rewardKey, rewardDisplaySection.getString(rewardKey));
+                }
+            }
+        }
         return display;
     }
 }

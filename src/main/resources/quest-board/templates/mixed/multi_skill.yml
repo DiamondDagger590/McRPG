@@ -127,6 +127,8 @@ quest-templates:
     display:
       name: "Lucky Strike"
       description: "Mine iron ore, with a bonus diamond phase for rare+"
+      rewards:
+        bonus_reward: "Bonus Diamonds"
     display-name-route: quest-templates.lucky-strike
     board-eligible: true
     scope: mcrpg:single_player
@@ -177,6 +179,5 @@ quest-templates:
         amount: ore_count * 20
       bonus_reward:
         type: mcrpg:scalable_command
-        display: "Bonus Diamonds"
         command: "give {player} diamond {amount}"
         base-amount: 3

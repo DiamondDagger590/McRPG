@@ -125,6 +125,8 @@ quest-templates:
     display:
       name: "Champion Challenge"
       description: "Prove your worth to earn the Champion title"
+      rewards:
+        champion_title: "Champion Title"
     display-name-route: quest-templates.champion-challenge
     board-eligible: true
     scope: mcrpg:single_player
@@ -157,7 +159,6 @@ quest-templates:
     rewards:
       champion_title:
         type: mcrpg:command
-        display: "Champion Title"
         commands:
           - "title grant {player} champion"
         fallback:

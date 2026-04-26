@@ -80,8 +80,8 @@ McRPG ships six reward types registered by `McRPGExpansion`.
 | Class | Key | Config Fields | Scalable |
 |-------|-----|--------------|----------|
 | `ExperienceRewardType` | `mcrpg:experience` | `skill`, `amount` | Yes |
-| `CommandRewardType` | `mcrpg:command` | `commands` (list), `display` | No |
-| `ScalableCommandRewardType` | `mcrpg:scalable_command` | `command`, `base-amount`, `display` | Yes (`{amount}` token) |
+| `CommandRewardType` | `mcrpg:command` | `commands` (list) | No |
+| `ScalableCommandRewardType` | `mcrpg:scalable_command` | `command`, `base-amount` | Yes (`{amount}` token) |
 | `AbilityUpgradeRewardType` | `mcrpg:ability_upgrade` | `ability`, `tier` | No |
 | `AbilityUpgradeNextTierRewardType` | `mcrpg:ability_upgrade_next_tier` | `ability` | No |
 | `ItemRewardType` | `mcrpg:item` | `item` (map: material, amount, enchantments, name, lore, custom-model-data, glowing), top-level `amount` | Partial (top-level `amount` only) |
@@ -101,10 +101,9 @@ xp-reward:
 
 # mcrpg:command
 # Executes commands as console. {player} is replaced with the player's name.
-# display: optional human-readable label shown in GUIs
+# Display label lives in the quest's display.rewards block, not here.
 command-reward:
   type: mcrpg:command
-  display: "5 Diamonds"
   commands:
     - "give {player} diamond 5"
     - "broadcast {player} just completed a quest!"
@@ -116,7 +115,6 @@ scalable-reward:
   type: mcrpg:scalable_command
   command: "eco give {player} {amount}"
   base-amount: 1000
-  display: "$1000"
 
 # mcrpg:ability_upgrade
 # Upgrades a specific ability to a fixed tier.
@@ -162,9 +160,14 @@ Rewards appear in two contexts in quest YAML. **Inline rewards** are granted dir
 
 The `rewards:` block can appear at the **quest, phase, stage, or objective** level. On completion of that level, every qualifying player receives each listed reward in full -- no splitting, no contribution math. This is the most common reward format and the only one relevant for solo (`mcrpg:single_player` scope) quests.
 
-Rewards within the block are named map keys (the label is for human organization only; it has no effect on behavior):
+Rewards within the block are named map keys (the label is for human organization only; it has no effect on behavior). Display labels for rewards belong in the quest's `display.rewards:` block rather than on the reward definition itself — see section 5 for details:
 
 ```yaml
+display:
+  name: "Ore Rush"
+  description: "Mine precious ores"
+  rewards:
+    bonus-command: "5 Diamonds"   # inline display label for this reward
 rewards:
   mining-xp:
     type: mcrpg:experience
@@ -172,7 +175,6 @@ rewards:
     amount: 500
   bonus-command:
     type: mcrpg:command
-    display: "5 Diamonds"
     commands:
       - "give {player} diamond 5"
 ```
@@ -249,14 +251,12 @@ reward-distribution:
         type: mcrpg:command
         commands:
           - "title grant {player} mining_champion"
-        display: "Mining Champion Title"
         pot-behavior: TOP_N
         top-count: 1
       consolation-badge:
         type: mcrpg:command
         commands:
           - "badge grant {player} top_miner"
-        display: "Top Miner Badge"
         pot-behavior: ALL
 
   # INDIVIDUAL tier: everyone who participated gets 250 XP in full — no split.
@@ -296,12 +296,14 @@ A `RewardFallback` lets you attach a conditional substitute to any reward. When 
 The typical use case is avoiding duplicate or meaningless grants — for example, granting a title command as the primary reward, but substituting bonus XP if the player already has the title (detected via a permission check).
 
 ```yaml
+display:
+  rewards:
+    title-reward: "Hero Title"   # inline label for this reward
 rewards:
   title-reward:
     type: mcrpg:command
     commands:
       - "title grant {player} hero"
-    display: "Hero Title"
     fallback:
       condition:
         # Condition evaluates to true when the player already has the title.
@@ -319,21 +321,29 @@ The `condition` block supports all built-in condition shorthand (`permission`, `
 
 **Localizing reward display labels**
 
-`mcrpg:command` and `mcrpg:scalable_command` rewards support the following display resolution order:
+`mcrpg:command`, `mcrpg:scalable_command`, and `mcrpg:item` rewards support the following display resolution order:
 
 1. **Auto-derived locale route** — McRPG automatically generates a route from the quest key and reward label, e.g. `quests.mcrpg.daily_ore_rush.rewards.hero_title`. Add an entry at that path in `en_quest.yml` (or a `DynamicLocale` file for custom languages) to provide a localized label.
-2. **Inline `display` field** — a literal string on the reward definition, used as a fallback when no locale entry exists.
-3. **Generic type fallback** — the `quest-reward-types.command.fallback-display` locale key, used when neither of the above resolves.
+2. **Inline `display.rewards:<label>` in the quest's `display:` block** — a literal string co-located with all other display text for the quest, used as a fallback when no locale entry exists.
+3. **Generic type fallback** — the `quest-reward-types.command.fallback-display` locale key (for `mcrpg:command` / `mcrpg:scalable_command`), or the auto-generated material description (for `mcrpg:item`), used when neither of the above resolves.
 
-Quest YAML usage:
+All inline display text for a quest (name, description, objective labels, reward labels) lives under the `display:` block:
 
 ```yaml
-rewards:
-  hero_title:
-    type: mcrpg:command
-    commands:
-      - "title grant {player} hero"
-    display: "Hero Title"   # inline fallback if no locale entry exists
+quests:
+  mcrpg:daily_ore_rush:
+    display:
+      name: "Ore Rush"
+      description: "Mine precious ores"
+      objectives:
+        break_gold: "Mine gold ore"
+      rewards:
+        hero_title: "Hero Title"   # inline fallback if no locale entry exists
+    rewards:
+      hero_title:
+        type: mcrpg:command
+        commands:
+          - "title grant {player} hero"
 ```
 
 Locale entry in `en_quest.yml`:
@@ -356,7 +366,7 @@ quests:
         hero_title: "Titre de Héros"
 ```
 
-Custom `QuestRewardType` implementations that want the same localization support should override `describeForDisplay(McRPGPlayer)` and attempt locale resolution via the auto-derived route before falling back to `describeForDisplay()`.
+Custom `QuestRewardType` implementations that want the same localization support should override `withInlineDisplayLabel(String)`, store the label, and use it in `describeForDisplay(McRPGPlayer)` when the locale route lookup fails.
 
 **Runtime classes:**
 - [`QuestRewardEntry`](board/template/condition/QuestRewardEntry.java) — wraps an inline reward + optional fallback; exposes `resolveForPlayer(ConditionContext)` which returns either primary or fallback

@@ -161,4 +161,22 @@ public interface QuestRewardType extends McRPGContent {
     default QuestRewardType withLocalizationRoute(@NotNull Route route) {
         return this;
     }
+
+    /**
+     * Returns a new configured instance of this reward type with the given inline display label set.
+     * The label is sourced from the {@code display.rewards.<rewardLabel>} entry in the quest or
+     * template YAML's {@code display:} block — the same block that holds quest name, description,
+     * and objective labels. This is the inline fallback used when no locale file entry exists.
+     * <p>
+     * The default implementation returns {@code this} unchanged. Reward types that support
+     * inline display labels (e.g. {@code mcrpg:command}) should override this to store the
+     * label and return it in {@link #describeForDisplay(McRPGPlayer)} when the locale lookup fails.
+     *
+     * @param label the inline display label from the quest's {@code display.rewards} block
+     * @return a new instance with the label set, or {@code this} if the type does not use it
+     */
+    @NotNull
+    default QuestRewardType withInlineDisplayLabel(@NotNull String label) {
+        return this;
+    }
 }

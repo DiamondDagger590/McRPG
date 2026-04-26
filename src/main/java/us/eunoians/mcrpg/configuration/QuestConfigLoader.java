@@ -228,7 +228,8 @@ public class QuestConfigLoader {
                 : null;
 
         String questLocalizationPrefix = "quests." + questKey.getNamespace() + "." + questKey.getKey();
-        List<QuestRewardType> rewards = parseRewards(section, fileName, questKey.toString(), questLocalizationPrefix);
+        Map<String, String> inlineDisplay = parseInlineDisplay(section);
+        List<QuestRewardType> rewards = parseRewards(section, fileName, questKey.toString(), questLocalizationPrefix, inlineDisplay);
 
         Section phasesSection = section.getSection("phases");
         if (phasesSection == null) {
@@ -253,7 +254,6 @@ public class QuestConfigLoader {
         }
 
         Map<NamespacedKey, QuestDefinitionMetadata> metadata = parseBoardMetadata(section);
-        Map<String, String> inlineDisplay = parseInlineDisplay(section);
 
         return new QuestDefinition(questKey, scopeType, expiration, phases, rewards,
                 repeatMode, repeatCooldown, repeatLimit, expansionKey,
@@ -353,6 +353,14 @@ public class QuestConfigLoader {
                 }
             }
         }
+        if (displaySection.contains("rewards")) {
+            Section rewardDisplaySection = displaySection.getSection("rewards");
+            if (rewardDisplaySection != null) {
+                for (String rewardKey : rewardDisplaySection.getRoutesAsStrings(false)) {
+                    display.put("reward." + rewardKey, rewardDisplaySection.getString(rewardKey));
+                }
+            }
+        }
         return display;
     }
 
@@ -404,7 +412,7 @@ public class QuestConfigLoader {
         String phaseLocalizationPrefix = "quests." + questKey.getNamespace() + "." + questKey.getKey()
                 + ".phases.phase-" + phaseIndex;
         List<QuestRewardType> rewards = parseRewards(phaseSection, fileName,
-                questKey + "/phase-" + phaseIndex, phaseLocalizationPrefix);
+                questKey + "/phase-" + phaseIndex, phaseLocalizationPrefix, null);
 
         return new QuestPhaseDefinition(phaseIndex, mode, stages, rewards,
                 parseRewardDistribution(phaseSection, fileName, questKey + "/phase-" + phaseIndex, conditionParser).orElse(null));
@@ -434,7 +442,7 @@ public class QuestConfigLoader {
         String stageLocalizationPrefix = "quests." + questKey.getNamespace() + "." + questKey.getKey()
                 + ".stages." + stageKey.getKey();
         List<QuestRewardType> rewards = parseRewards(stageSection, fileName, questKey + "/" + stageKey,
-                stageLocalizationPrefix);
+                stageLocalizationPrefix, null);
 
         Section objectivesSection = stageSection.getSection("objectives");
         if (objectivesSection == null) {
@@ -532,7 +540,7 @@ public class QuestConfigLoader {
         String objectiveLocalizationPrefix = "quests." + questKey.getNamespace() + "." + questKey.getKey()
                 + ".objectives." + objectiveKey.getKey();
         List<QuestRewardType> rewards = parseRewards(objectiveSection, fileName, questKey + "/" + objectiveKey,
-                objectiveLocalizationPrefix);
+                objectiveLocalizationPrefix, null);
         RewardDistributionConfig rewardDistribution = parseRewardDistribution(objectiveSection, fileName,
                 questKey + "/" + objectiveKey, conditionParser).orElse(null);
 
@@ -550,19 +558,27 @@ public class QuestConfigLoader {
      * localization route via {@link QuestRewardType#withLocalizationRoute}. The route follows
      * the pattern {@code <prefix>.rewards.<rewardLabel>}, e.g.
      * {@code quests.mcrpg.my_quest.objectives.break_gold.rewards.hero_title}.
+     * <p>
+     * When {@code inlineDisplay} is provided, each reward's inline display label is sourced from
+     * the {@code reward.<rewardLabel>} entry in the map (populated from the quest's
+     * {@code display.rewards} block). This keeps all inline display text co-located in the
+     * {@code display:} block rather than scattered across reward definitions.
      *
      * @param parentSection       the parent section containing the optional {@code rewards} subsection
      * @param fileName            the source file name (for log messages)
      * @param contextKey          a human-readable context path (for log messages)
      * @param localizationPrefix  the localization route prefix up to (but not including) {@code .rewards.<label>},
      *                            or {@code null} to skip route assignment
+     * @param inlineDisplay       the inline display map from the parent quest's {@code display:} block,
+     *                            or {@code null} if no inline display context is available
      * @return the list of configured reward type instances (may be empty)
      */
     @NotNull
     static List<QuestRewardType> parseRewards(@NotNull Section parentSection,
                                               @NotNull String fileName,
                                               @NotNull String contextKey,
-                                              @Nullable String localizationPrefix) {
+                                              @Nullable String localizationPrefix,
+                                              @Nullable Map<String, String> inlineDisplay) {
         Section rewardsSection = parentSection.getSection("rewards");
         if (rewardsSection == null) {
             return List.of();
@@ -613,6 +629,12 @@ public class QuestConfigLoader {
                 if (localizationPrefix != null) {
                     configuredReward = configuredReward.withLocalizationRoute(
                             Route.fromString(localizationPrefix + ".rewards." + rewardLabel));
+                }
+                if (inlineDisplay != null) {
+                    String inlineLabel = inlineDisplay.get("reward." + rewardLabel);
+                    if (inlineLabel != null && !inlineLabel.isEmpty()) {
+                        configuredReward = configuredReward.withInlineDisplayLabel(inlineLabel);
+                    }
                 }
                 rewards.add(configuredReward);
             } catch (Exception e) {

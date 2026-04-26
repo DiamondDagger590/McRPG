@@ -214,7 +214,7 @@ public final class QuestTemplateEngine {
         NamespacedKey questKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), questKeyStr);
 
         List<QuestPhaseDefinition> phases = buildPhases(template, rarityKey, questKey, filteredPhases, context, objectiveConfigs);
-        List<QuestRewardType> rewards = buildRewards(template, rarityKey, context);
+        List<QuestRewardType> rewards = buildRewards(template, rarityKey, context, template.getInlineDisplay());
 
         Map<String, String> inlineDisplay = template.getInlineDisplay().isEmpty()
                 ? null
@@ -399,7 +399,8 @@ public final class QuestTemplateEngine {
     @NotNull
     private List<QuestRewardType> buildRewards(@NotNull QuestTemplate template,
                                                @NotNull NamespacedKey rarityKey,
-                                               @NotNull ResolvedVariableContext context) {
+                                               @NotNull ResolvedVariableContext context,
+                                               @NotNull Map<String, String> templateInlineDisplay) {
         double rewardMultiplier = template.getEffectiveRewardMultiplier(rarityKey, rarityRegistry);
         List<QuestRewardType> rewards = new ArrayList<>();
 
@@ -413,10 +414,16 @@ public final class QuestTemplateEngine {
 
             Map<String, Object> resolvedConfig = resolveRewardConfig(
                     templateReward.config(), context, rewardMultiplier);
-            var reward = baseType.fromSerializedConfig(resolvedConfig)
+            QuestRewardType reward = baseType.fromSerializedConfig(resolvedConfig)
                     .withLocalizationRoute(Route.fromString(
                             "templates." + template.getKey().getNamespace() + "."
                             + template.getKey().getKey() + ".rewards." + templateReward.label()));
+
+            String inlineLabel = templateInlineDisplay.get("reward." + templateReward.label());
+            if (inlineLabel != null && !inlineLabel.isEmpty()) {
+                reward = reward.withInlineDisplayLabel(inlineLabel);
+            }
+
             rewards.add(reward);
         }
 

@@ -32,8 +32,10 @@ import java.util.OptionalLong;
  * type: mcrpg:scalable_command
  * command: "give {player} diamond {amount}"
  * base-amount: 10
- * display: "Diamond Reward"           # inline fallback label (MiniMessage)
  * </pre>
+ * <p>
+ * The inline display label is provided via the parent quest or template's
+ * {@code display.rewards.<label>} block, not on the reward definition itself.
  * <p>
  * At grant time the command string is resolved in two passes:
  * <ol>
@@ -167,7 +169,7 @@ public final class ScalableCommandRewardType implements QuestRewardType {
         return new ScalableCommandRewardType(
                 section.getString("command", ""),
                 section.getLong("base-amount", 0L),
-                section.getString("display", ""),
+                "",
                 null);
     }
 
@@ -202,6 +204,12 @@ public final class ScalableCommandRewardType implements QuestRewardType {
     @Override
     public ScalableCommandRewardType withLocalizationRoute(@NotNull Route route) {
         return new ScalableCommandRewardType(commandTemplate, baseAmount, displayLabel, route);
+    }
+
+    @NotNull
+    @Override
+    public ScalableCommandRewardType withInlineDisplayLabel(@NotNull String label) {
+        return new ScalableCommandRewardType(commandTemplate, baseAmount, label, localizationRoute);
     }
 
     @NotNull

@@ -77,6 +77,8 @@ public class ItemRewardType implements QuestRewardType {
     private final int amount;
     @Nullable
     private final Route localizationRoute;
+    @NotNull
+    private final String displayLabel;
 
     /**
      * Creates an unconfigured base instance for registry registration.
@@ -85,13 +87,15 @@ public class ItemRewardType implements QuestRewardType {
         this.itemConfig = Map.of();
         this.amount = 0;
         this.localizationRoute = null;
+        this.displayLabel = "";
     }
 
     private ItemRewardType(@NotNull Map<String, Object> itemConfig, int amount,
-                           @Nullable Route localizationRoute) {
+                           @Nullable Route localizationRoute, @NotNull String displayLabel) {
         this.itemConfig = Map.copyOf(itemConfig);
         this.amount = amount;
         this.localizationRoute = localizationRoute;
+        this.displayLabel = displayLabel;
     }
 
     @NotNull
@@ -116,7 +120,7 @@ public class ItemRewardType implements QuestRewardType {
             resolvedAmount = 1;
         }
 
-        return new ItemRewardType(rawConfig, Math.max(1, resolvedAmount), null);
+        return new ItemRewardType(rawConfig, Math.max(1, resolvedAmount), null, "");
     }
 
     @SuppressWarnings("unchecked")
@@ -139,8 +143,9 @@ public class ItemRewardType implements QuestRewardType {
         Route route = config.containsKey("localization-route")
                 ? Route.fromString(config.get("localization-route").toString())
                 : null;
+        String label = config.getOrDefault("display", "").toString();
 
-        return new ItemRewardType(rawConfig, Math.max(1, resolvedAmount), route);
+        return new ItemRewardType(rawConfig, Math.max(1, resolvedAmount), route, label);
     }
 
     @Override
@@ -169,6 +174,9 @@ public class ItemRewardType implements QuestRewardType {
         Map<String, Object> map = new LinkedHashMap<>();
         map.put("item", new LinkedHashMap<>(itemConfig));
         map.put("amount", amount);
+        if (!displayLabel.isEmpty()) {
+            map.put("display", displayLabel);
+        }
         if (localizationRoute != null) {
             map.put("localization-route", localizationRoute.join('.'));
         }
@@ -185,18 +193,27 @@ public class ItemRewardType implements QuestRewardType {
     @Override
     public QuestRewardType withAmountMultiplier(double multiplier) {
         int scaled = Math.max(1, (int) Math.round(amount * multiplier));
-        return new ItemRewardType(itemConfig, scaled, localizationRoute);
+        return new ItemRewardType(itemConfig, scaled, localizationRoute, displayLabel);
     }
 
     @NotNull
     @Override
     public QuestRewardType withLocalizationRoute(@NotNull Route route) {
-        return new ItemRewardType(itemConfig, amount, route);
+        return new ItemRewardType(itemConfig, amount, route, displayLabel);
+    }
+
+    @NotNull
+    @Override
+    public QuestRewardType withInlineDisplayLabel(@NotNull String label) {
+        return new ItemRewardType(itemConfig, amount, localizationRoute, label);
     }
 
     @NotNull
     @Override
     public String describeForDisplay() {
+        if (!displayLabel.isEmpty()) {
+            return displayLabel;
+        }
         String materialName = itemConfig.getOrDefault("material", "Item").toString();
         String formatted = materialName.toLowerCase().replace('_', ' ');
         if (!formatted.isEmpty()) {
@@ -215,7 +232,7 @@ public class ItemRewardType implements QuestRewardType {
                         .manager(McRPGManagerKey.LOCALIZATION);
                 return localization.getLocalizedMessage(player, localizationRoute);
             } catch (Exception ignored) {
-                // Fall through to default
+                // Fall through to inline label
             }
         }
         return describeForDisplay();
