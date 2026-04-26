@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.definition.QuestStageDefinition;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageState;
+import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashMap;
@@ -78,6 +79,17 @@ public class QuestDetailStageSlot implements McRPGSlot {
         builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer,
                 LocalizationKey.QUEST_DETAIL_GUI_STAGE_STATE_LINE,
                 Map.of("state", stateLabel)));
+
+        if (!stageDef.getRewards().isEmpty()) {
+            builder.addDisplayLore("");
+            builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer,
+                    LocalizationKey.QUEST_DETAIL_GUI_INLINE_REWARD_HEADER));
+            for (QuestRewardType reward : stageDef.getRewards()) {
+                builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer,
+                        LocalizationKey.QUEST_DETAIL_GUI_INLINE_REWARD_LINE,
+                        Map.of("reward", reward.describeForDisplay(mcRPGPlayer))));
+            }
+        }
 
         return builder;
     }

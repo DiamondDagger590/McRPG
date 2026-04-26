@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.quest.definition;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
+import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,6 +24,7 @@ public class QuestPhaseDefinition {
     private final int phaseIndex;
     private final PhaseCompletionMode completionMode;
     private final List<QuestStageDefinition> stages;
+    private final List<QuestRewardType> rewards;
     private final RewardDistributionConfig rewardDistribution;
 
     /**
@@ -31,12 +33,14 @@ public class QuestPhaseDefinition {
      * @param phaseIndex          the zero-based index of this phase within the parent quest
      * @param completionMode      the mode determining how stages must complete for the phase to advance
      * @param stages              the stage definitions within this phase (must contain at least one)
+     * @param rewards             the rewards granted upon phase completion
      * @param rewardDistribution  the distribution configuration for phase-level rewards, or {@code null} if none
      * @throws IllegalArgumentException if {@code phaseIndex} is negative or {@code stages} is empty
      */
     public QuestPhaseDefinition(int phaseIndex,
                                 @NotNull PhaseCompletionMode completionMode,
                                 @NotNull List<QuestStageDefinition> stages,
+                                @NotNull List<QuestRewardType> rewards,
                                 @Nullable RewardDistributionConfig rewardDistribution) {
         if (phaseIndex < 0) {
             throw new IllegalArgumentException("phaseIndex must be non-negative");
@@ -47,6 +51,7 @@ public class QuestPhaseDefinition {
         this.phaseIndex = phaseIndex;
         this.completionMode = completionMode;
         this.stages = List.copyOf(stages);
+        this.rewards = List.copyOf(rewards);
         this.rewardDistribution = rewardDistribution;
     }
 
@@ -78,6 +83,16 @@ public class QuestPhaseDefinition {
     @NotNull
     public List<QuestStageDefinition> getStages() {
         return stages;
+    }
+
+    /**
+     * Gets the immutable list of rewards granted when this phase completes.
+     *
+     * @return an immutable list of configured reward types
+     */
+    @NotNull
+    public List<QuestRewardType> getRewards() {
+        return rewards;
     }
 
     /**

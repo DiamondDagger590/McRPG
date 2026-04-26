@@ -334,11 +334,12 @@ At Common rarity (1.0x reward), the player gets 5 diamonds. At Rare (2.5x), they
 
 ### Where Rewards Can Go
 
-Rewards can be attached at three levels:
+Rewards can be attached at four levels:
 
 | Level | When granted | Use for |
 |-------|-------------|---------|
 | Quest-level (`rewards:` at the top) | When the entire quest is completed | Main quest rewards |
+| Phase-level | When all stages in that phase are done | Mid-quest milestone rewards between phases |
 | Stage-level | When all objectives in that stage are done | Bonus rewards for completing a specific stage |
 | Objective-level | When that specific objective is done | Small milestone rewards |
 
@@ -354,6 +355,12 @@ quests:
     phases:
       main:
         completion-mode: ALL
+        # ... phase-level reward (given when all stages in this phase are done)
+        rewards:
+          phase_bonus:
+            type: mcrpg:experience
+            skill: MINING
+            amount: 500
         stages:
           stage_one:
             key: mcrpg:stage_one
@@ -400,6 +407,12 @@ quests:
       # Step 1: Mine iron first
       step_one:
         completion-mode: ALL
+        # Phase reward: granted when Step 1 completes (before Step 2 activates)
+        rewards:
+          step_one_bonus:
+            type: mcrpg:experience
+            skill: MINING
+            amount: 100
         stages:
           mine_iron:
             key: mcrpg:step1_mine_iron

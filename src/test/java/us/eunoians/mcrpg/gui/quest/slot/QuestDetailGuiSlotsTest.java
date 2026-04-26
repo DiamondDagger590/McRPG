@@ -50,7 +50,7 @@ class QuestDetailGuiSlotsTest extends McRPGBaseTest {
     @DisplayName("getValidGuiTypes returns QuestDetailGui for a reward slot")
     void getValidGuiTypes_returnsQuestDetailGui_whenRewardSlot(McRPGPlayer player) {
         QuestDefinition def = QuestTestHelper.singlePhaseQuest("detail_reward_quest");
-        var slot = new QuestDetailRewardSlot(def, player);
+        var slot = new QuestDetailRewardSlot(def);
         assertEquals(Set.of(QuestDetailGui.class), slot.getValidGuiTypes());
     }
 

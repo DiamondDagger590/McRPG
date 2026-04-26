@@ -323,7 +323,7 @@ class GeneratedQuestDefinitionSerializerTest {
                 STAGE_KEY, List.of(objective), List.of(), null);
 
         QuestPhaseDefinition phase = new QuestPhaseDefinition(
-                0, PhaseCompletionMode.ALL, List.of(stage), null);
+                0, PhaseCompletionMode.ALL, List.of(stage), List.of(), null);
 
         QuestRewardType rewardType = mock(QuestRewardType.class);
         when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
@@ -406,7 +406,7 @@ class GeneratedQuestDefinitionSerializerTest {
         QuestStageDefinition stage = new QuestStageDefinition(
                 STAGE_KEY, List.of(objective), List.of(), null);
         QuestPhaseDefinition phase = new QuestPhaseDefinition(
-                0, PhaseCompletionMode.ALL, List.of(stage), null);
+                0, PhaseCompletionMode.ALL, List.of(stage), List.of(), null);
 
         QuestRewardType rewardType = mock(QuestRewardType.class);
         when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
@@ -426,7 +426,7 @@ class GeneratedQuestDefinitionSerializerTest {
         QuestStageDefinition stage = new QuestStageDefinition(
                 STAGE_KEY, List.of(objective), List.of(), createSingleTierDistribution());
         QuestPhaseDefinition phase = new QuestPhaseDefinition(
-                0, PhaseCompletionMode.ALL, List.of(stage), null);
+                0, PhaseCompletionMode.ALL, List.of(stage), List.of(), null);
 
         QuestRewardType rewardType = mock(QuestRewardType.class);
         when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
@@ -446,7 +446,7 @@ class GeneratedQuestDefinitionSerializerTest {
         QuestStageDefinition stage = new QuestStageDefinition(
                 STAGE_KEY, List.of(objective), List.of(), null);
         QuestPhaseDefinition phase = new QuestPhaseDefinition(
-                0, PhaseCompletionMode.ALL, List.of(stage), createSingleTierDistribution());
+                0, PhaseCompletionMode.ALL, List.of(stage), List.of(), createSingleTierDistribution());
 
         QuestRewardType rewardType = mock(QuestRewardType.class);
         when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);

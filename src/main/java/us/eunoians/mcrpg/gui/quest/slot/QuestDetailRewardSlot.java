@@ -11,9 +11,6 @@ import us.eunoians.mcrpg.gui.quest.QuestDetailGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
-import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
-import us.eunoians.mcrpg.quest.definition.QuestPhaseDefinition;
-import us.eunoians.mcrpg.quest.definition.QuestStageDefinition;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -24,17 +21,16 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Reward summary slot shown in the board preview detail GUI,
- * displaying all rewards the quest can grant grouped by source level.
+ * Reward summary slot shown in the quest detail GUI, displaying only
+ * quest-completion rewards. Phase, stage, and objective rewards are shown
+ * inline on their respective slots.
  */
 public class QuestDetailRewardSlot implements McRPGSlot {
 
     private final QuestDefinition definition;
-    private final McRPGPlayer viewer;
 
-    public QuestDetailRewardSlot(@NotNull QuestDefinition definition, @NotNull McRPGPlayer viewer) {
+    public QuestDetailRewardSlot(@NotNull QuestDefinition definition) {
         this.definition = definition;
-        this.viewer = viewer;
     }
 
     @Override
@@ -50,9 +46,7 @@ public class QuestDetailRewardSlot implements McRPGSlot {
                 .manager(McRPGManagerKey.LOCALIZATION);
         Map<String, String> placeholders = new HashMap<>();
         List<String> rewardLines = new ArrayList<>();
-        boolean hasAnyReward = false;
 
-        // Quest-level rewards
         List<QuestRewardType> questRewards = definition.getRewards();
         if (!questRewards.isEmpty()) {
             rewardLines.add(localization.getLocalizedMessage(mcRPGPlayer,
@@ -62,37 +56,7 @@ public class QuestDetailRewardSlot implements McRPGSlot {
                         LocalizationKey.QUEST_DETAIL_GUI_REWARD_ENTRY_LINE,
                         Map.of("reward", reward.describeForDisplay(mcRPGPlayer))));
             }
-            hasAnyReward = true;
-        }
-
-        // Phase/stage/objective-level rewards
-        int phaseNum = 0;
-        for (QuestPhaseDefinition phase : definition.getPhases()) {
-            phaseNum++;
-            for (QuestStageDefinition stage : phase.getStages()) {
-                for (QuestObjectiveDefinition obj : stage.getObjectives()) {
-                    List<QuestRewardType> objRewards = obj.getRewards();
-                    if (!objRewards.isEmpty()) {
-                        if (hasAnyReward) {
-                            rewardLines.add("");
-                        }
-                        String objDesc = obj.getDescription(mcRPGPlayer, definition.getQuestKey());
-                        String objLabel = truncate(objDesc, 40);
-                        rewardLines.add(localization.getLocalizedMessage(mcRPGPlayer,
-                                LocalizationKey.QUEST_DETAIL_GUI_REWARD_PHASE_HEADER,
-                                Map.of("phase", String.valueOf(phaseNum), "objective", objLabel)));
-                        for (QuestRewardType reward : objRewards) {
-                            rewardLines.add(localization.getLocalizedMessage(mcRPGPlayer,
-                                    LocalizationKey.QUEST_DETAIL_GUI_REWARD_ENTRY_LINE,
-                                    Map.of("reward", reward.describeForDisplay(mcRPGPlayer))));
-                        }
-                        hasAnyReward = true;
-                    }
-                }
-            }
-        }
-
-        if (!hasAnyReward) {
+        } else {
             rewardLines.add(localization.getLocalizedMessage(mcRPGPlayer,
                     LocalizationKey.QUEST_DETAIL_GUI_REWARD_SLOT_NO_REWARDS));
         }
@@ -108,15 +72,6 @@ public class QuestDetailRewardSlot implements McRPGSlot {
         }
 
         return builder;
-    }
-
-    @NotNull
-    private static String truncate(@NotNull String text, int maxLen) {
-        String firstLine = text.contains("\n") ? text.substring(0, text.indexOf('\n')) : text;
-        if (firstLine.length() <= maxLen) {
-            return firstLine;
-        }
-        return firstLine.substring(0, maxLen - 3) + "...";
     }
 
     @NotNull

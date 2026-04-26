@@ -210,6 +210,17 @@ public final class GeneratedQuestDefinitionSerializer {
         }
         phaseObj.add("stages", stagesArray);
 
+        if (!phase.getRewards().isEmpty()) {
+            JsonArray rewardsArray = new JsonArray();
+            for (QuestRewardType reward : phase.getRewards()) {
+                JsonObject rewardObj = new JsonObject();
+                rewardObj.addProperty("type", reward.getKey().toString());
+                rewardObj.add("config", GSON.toJsonTree(reward.serializeConfig()));
+                rewardsArray.add(rewardObj);
+            }
+            phaseObj.add("rewards", rewardsArray);
+        }
+
         phase.getRewardDistribution()
                 .ifPresent(dist -> phaseObj.add("reward_distribution", serializeDistribution(dist)));
 
@@ -317,12 +328,29 @@ public final class GeneratedQuestDefinitionSerializer {
                 stages.add(new QuestStageDefinition(stageKey, objectives, List.of(), stageDist));
             }
 
+            List<QuestRewardType> phaseRewards = List.of();
+            if (phaseObj.has("rewards")) {
+                List<QuestRewardType> parsed = new ArrayList<>();
+                for (JsonElement rewardElement : phaseObj.getAsJsonArray("rewards")) {
+                    JsonObject rewardObj = rewardElement.getAsJsonObject();
+                    NamespacedKey typeKey = NamespacedKey.fromString(rewardObj.get("type").getAsString());
+                    QuestRewardType baseType = rewardTypeRegistry.get(typeKey)
+                            .orElseThrow(() -> new QuestDeserializationException(
+                                    "Unknown reward type '" + typeKey + "' in phase of quest " + questKeyString
+                                            + ". Is the type registered?",
+                                    questKeyString, "phase reward type " + typeKey));
+                    Map<String, Object> configMap = jsonObjectToMap(rewardObj.getAsJsonObject("config"));
+                    parsed.add(baseType.fromSerializedConfig(configMap));
+                }
+                phaseRewards = parsed;
+            }
+
             RewardDistributionConfig phaseDist = phaseObj.has("reward_distribution")
                     ? deserializeDistribution(phaseObj.getAsJsonObject("reward_distribution"), rewardTypeRegistry,
                     conditionTypeRegistry, questKeyString)
                     : null;
 
-            phases.add(new QuestPhaseDefinition(phaseIdx, completionMode, stages, phaseDist));
+            phases.add(new QuestPhaseDefinition(phaseIdx, completionMode, stages, phaseRewards, phaseDist));
         }
         return phases;
     }

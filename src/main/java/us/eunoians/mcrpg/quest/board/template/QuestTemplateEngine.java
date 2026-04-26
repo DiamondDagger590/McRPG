@@ -268,7 +268,7 @@ public final class QuestTemplateEngine {
                 stages.add(new QuestStageDefinition(stageKey, objectives, List.of(), null));
             }
 
-            phases.add(new QuestPhaseDefinition(phaseIdx, templatePhase.completionMode(), stages, null));
+            phases.add(new QuestPhaseDefinition(phaseIdx, templatePhase.completionMode(), stages, List.of(), null));
         }
 
         return phases;

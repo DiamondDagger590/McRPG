@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
 import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveInstance;
 import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveState;
+import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashMap;
@@ -91,6 +92,17 @@ public class QuestDetailObjectiveSlot implements McRPGSlot {
         builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer,
                 LocalizationKey.QUEST_DETAIL_GUI_OBJECTIVE_STATE,
                 Map.of("state", state)));
+
+        if (!objectiveDef.getRewards().isEmpty()) {
+            builder.addDisplayLore("");
+            builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer,
+                    LocalizationKey.QUEST_DETAIL_GUI_INLINE_REWARD_HEADER));
+            for (QuestRewardType reward : objectiveDef.getRewards()) {
+                builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer,
+                        LocalizationKey.QUEST_DETAIL_GUI_INLINE_REWARD_LINE,
+                        Map.of("reward", reward.describeForDisplay(mcRPGPlayer))));
+            }
+        }
 
         return builder;
     }

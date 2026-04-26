@@ -168,7 +168,7 @@ public class QuestManagerStartQuestVariablesTest extends McRPGBaseTest {
                 List.of(),
                 null
         );
-        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage), null);
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage), List.of(), null);
 
         return new QuestDefinition(
                 new NamespacedKey("mcrpg", questKey),

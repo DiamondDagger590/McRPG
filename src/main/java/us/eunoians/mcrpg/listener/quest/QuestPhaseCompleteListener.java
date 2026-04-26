@@ -49,15 +49,16 @@ public class QuestPhaseCompleteListener implements Listener {
 
         questManager.getQuestDefinition(quest.getQuestKey()).ifPresent(definition -> {
             int completedPhaseIndex = event.getCompletedPhaseIndex();
-            definition.getPhase(completedPhaseIndex).ifPresent(phaseDef ->
-                    phaseDef.getRewardDistribution().ifPresent(config -> {
-                        Map<UUID, Long> contributions = QuestContributionAggregator.fromPhase(quest, completedPhaseIndex);
-                        Set<UUID> groupMembers = quest.getQuestScope()
-                                .map(scope -> scope.getCurrentPlayersInScope())
-                                .orElse(Set.of());
-                        distributionService.resolveAndGrant(config, contributions, groupMembers, quest);
-                    })
-            );
+            definition.getPhase(completedPhaseIndex).ifPresent(phaseDef -> {
+                quest.grantRewards(phaseDef.getRewards());
+                phaseDef.getRewardDistribution().ifPresent(config -> {
+                    Map<UUID, Long> contributions = QuestContributionAggregator.fromPhase(quest, completedPhaseIndex);
+                    Set<UUID> groupMembers = quest.getQuestScope()
+                            .map(scope -> scope.getCurrentPlayersInScope())
+                            .orElse(Set.of());
+                    distributionService.resolveAndGrant(config, contributions, groupMembers, quest);
+                });
+            });
 
             int nextPhaseIndex = completedPhaseIndex + 1;
             if (definition.hasPhase(nextPhaseIndex)) {

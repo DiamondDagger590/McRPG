@@ -139,7 +139,7 @@ public final class QuestTestHelper {
     @NotNull
     public static QuestPhaseDefinition singlePhaseDef(@NotNull PhaseCompletionMode mode,
                                                       @NotNull QuestStageDefinition... stages) {
-        return new QuestPhaseDefinition(0, mode, Arrays.asList(stages), null);
+        return new QuestPhaseDefinition(0, mode, Arrays.asList(stages), List.of(), null);
     }
 
     /**
@@ -154,7 +154,7 @@ public final class QuestTestHelper {
     public static QuestPhaseDefinition phaseDef(int phaseIndex,
                                                 @NotNull PhaseCompletionMode mode,
                                                 @NotNull QuestStageDefinition... stages) {
-        return new QuestPhaseDefinition(phaseIndex, mode, Arrays.asList(stages), null);
+        return new QuestPhaseDefinition(phaseIndex, mode, Arrays.asList(stages), List.of(), null);
     }
 
     /**

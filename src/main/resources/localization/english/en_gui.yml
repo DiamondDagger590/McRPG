@@ -341,9 +341,11 @@ gui:
     reward-slot:
       display-item:
         material: GOLD_INGOT
-        name: "<gold>Rewards"
+        name: "<gold>Quest Completion Rewards"
         lore:
-          - '<gray>Rewards for completing this quest:'
+          - '<gray>Rewards earned when the entire quest is'
+          - '<gray>completed. Phase, stage, and objective'
+          - '<gray>rewards are shown on each slot.'
           - ''
       # Shown as a lore line in the reward slot when the quest has no configured rewards.
       no-rewards: '<gray>No rewards listed'
@@ -354,6 +356,12 @@ gui:
       phase-header: "<gold>Phase <phase> - <objective>:"
       # Individual reward entry. Placeholder: <reward>
       reward-entry-line: "<gray>  - <white><reward>"
+    # Header appended to phase/stage/objective slot lore when that level has rewards.
+    # No placeholders.
+    inline-reward-header: "<gold>Rewards:"
+    # Individual reward entry appended below the inline-reward-header.
+    # Placeholder: <reward> = the reward's display description
+    inline-reward-line: "<gray>  - <white><reward>"
     # PhaseCompletionMode display labels used in the <completion_mode> placeholder.
     completion-mode:
       # All stages in the phase must be completed.

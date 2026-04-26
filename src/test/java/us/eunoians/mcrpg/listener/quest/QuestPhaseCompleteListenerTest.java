@@ -86,7 +86,7 @@ public class QuestPhaseCompleteListenerTest extends McRPGBaseTest {
         RewardDistributionConfig distConfig = new RewardDistributionConfig(List.of(tier));
 
         QuestStageDefinition stage = QuestTestHelper.singleStageDef("phase_dist_s", "phase_dist_o");
-        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage), distConfig);
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage), List.of(), distConfig);
         QuestDefinition def = QuestTestHelper.multiPhaseQuest("phase_dist_quest", phase);
         when(mockQuestManager.getQuestDefinition(any(NamespacedKey.class))).thenReturn(Optional.of(def));
 

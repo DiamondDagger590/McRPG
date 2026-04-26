@@ -496,7 +496,9 @@ QuestStageDefinition stage = new QuestStageDefinition(
 QuestPhaseDefinition phase = new QuestPhaseDefinition(
     0,
     PhaseCompletionMode.ALL,
-    List.of(stage)
+    List.of(stage),
+    List.of(),
+    null
 );
 
 QuestDefinition quest = new QuestDefinition(

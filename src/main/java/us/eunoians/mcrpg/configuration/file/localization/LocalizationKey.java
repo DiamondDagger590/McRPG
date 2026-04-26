@@ -439,6 +439,10 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_DETAIL_GUI_OBJECTIVE_STATE_CANCELLED = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "objective-state.cancelled"));
     // Reward slot entry line. Placeholder: <reward>
     public static final Route QUEST_DETAIL_GUI_REWARD_ENTRY_LINE = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "reward-slot.reward-entry-line"));
+    // Inline reward header appended to phase/stage/objective slot lore when that level has rewards. No placeholders.
+    public static final Route QUEST_DETAIL_GUI_INLINE_REWARD_HEADER = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "inline-reward-header"));
+    // Inline reward entry appended below the inline-reward-header. Placeholder: <reward>
+    public static final Route QUEST_DETAIL_GUI_INLINE_REWARD_LINE = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "inline-reward-line"));
 
     // Quest Abandon Confirm GUI
     private static final String QUEST_ABANDON_CONFIRM_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-abandon-confirm-gui");

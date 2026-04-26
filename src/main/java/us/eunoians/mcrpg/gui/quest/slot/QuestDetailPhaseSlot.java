@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.definition.QuestPhaseDefinition;
+import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashMap;
@@ -48,8 +49,21 @@ public class QuestDetailPhaseSlot implements McRPGSlot {
         placeholders.put("phase_total", String.valueOf(totalPhases));
         placeholders.put("completion_mode", resolveCompletionModeLabel(localization, mcRPGPlayer));
 
-        return ItemBuilder.from(localization.getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_PHASE_HEADER_DISPLAY_ITEM))
+        ItemBuilder builder = ItemBuilder.from(localization.getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_PHASE_HEADER_DISPLAY_ITEM))
                 .addPlaceholders(placeholders);
+
+        if (!phaseDef.getRewards().isEmpty()) {
+            builder.addDisplayLore("");
+            builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer,
+                    LocalizationKey.QUEST_DETAIL_GUI_INLINE_REWARD_HEADER));
+            for (QuestRewardType reward : phaseDef.getRewards()) {
+                builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer,
+                        LocalizationKey.QUEST_DETAIL_GUI_INLINE_REWARD_LINE,
+                        Map.of("reward", reward.describeForDisplay(mcRPGPlayer))));
+            }
+        }
+
+        return builder;
     }
 
     @NotNull

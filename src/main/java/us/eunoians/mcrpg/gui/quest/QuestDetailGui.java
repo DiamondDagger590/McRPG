@@ -155,7 +155,7 @@ public class QuestDetailGui extends McRPGPaginatedGui {
                 }
             }
 
-            slots.add(new QuestDetailRewardSlot(def, player));
+            slots.add(new QuestDetailRewardSlot(def));
             slots.add(new QuestDetailDurationSlot(def));
         }
 

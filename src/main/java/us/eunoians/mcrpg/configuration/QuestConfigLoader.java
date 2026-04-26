@@ -401,7 +401,12 @@ public class QuestConfigLoader {
             stages.add(parseStageDefinition(stageSection, fileName, questKey));
         }
 
-        return new QuestPhaseDefinition(phaseIndex, mode, stages,
+        String phaseLocalizationPrefix = "quests." + questKey.getNamespace() + "." + questKey.getKey()
+                + ".phases.phase-" + phaseIndex;
+        List<QuestRewardType> rewards = parseRewards(phaseSection, fileName,
+                questKey + "/phase-" + phaseIndex, phaseLocalizationPrefix);
+
+        return new QuestPhaseDefinition(phaseIndex, mode, stages, rewards,
                 parseRewardDistribution(phaseSection, fileName, questKey + "/phase-" + phaseIndex, conditionParser).orElse(null));
     }
 
