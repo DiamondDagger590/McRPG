@@ -44,7 +44,6 @@ import java.util.Optional;
  * <p>
  * Display label resolution order:
  * <ol>
- *     <li>{@code display-key} locale route (explicit override, backwards compat)</li>
  *     <li>Auto-derived quest-scoped / template-scoped localization route</li>
  *     <li>Inline {@code display} field</li>
  *     <li>{@link LocalizationKey#QUEST_REWARD_COMMAND_FALLBACK_DISPLAY} generic fallback</li>
@@ -56,7 +55,6 @@ public class CommandRewardType implements QuestRewardType {
 
     private final List<String> commands;
     private final String displayLabel;
-    private final String displayKey;
     private final Route localizationRoute;
 
     /**
@@ -65,15 +63,13 @@ public class CommandRewardType implements QuestRewardType {
     public CommandRewardType() {
         this.commands = List.of();
         this.displayLabel = "";
-        this.displayKey = "";
         this.localizationRoute = null;
     }
 
     private CommandRewardType(@NotNull List<String> commands, @NotNull String displayLabel,
-                              @NotNull String displayKey, @Nullable Route localizationRoute) {
+                              @Nullable Route localizationRoute) {
         this.commands = List.copyOf(commands);
         this.displayLabel = displayLabel;
-        this.displayKey = displayKey;
         this.localizationRoute = localizationRoute;
     }
 
@@ -89,7 +85,6 @@ public class CommandRewardType implements QuestRewardType {
         return new CommandRewardType(
                 section.getStringList("commands"),
                 section.getString("display", ""),
-                section.getString("display-key", ""),
                 null);
     }
 
@@ -100,17 +95,16 @@ public class CommandRewardType implements QuestRewardType {
         Object raw = config.getOrDefault("commands", List.of());
         List<String> cmds = raw instanceof List<?> ? ((List<String>) raw) : List.of();
         String label = config.getOrDefault("display", "").toString();
-        String key = config.getOrDefault("display-key", "").toString();
         Route route = config.containsKey("localization-route")
                 ? Route.fromString(config.get("localization-route").toString())
                 : null;
-        return new CommandRewardType(cmds, label, key, route);
+        return new CommandRewardType(cmds, label, route);
     }
 
     @NotNull
     @Override
     public CommandRewardType withLocalizationRoute(@NotNull Route route) {
-        return new CommandRewardType(commands, displayLabel, displayKey, route);
+        return new CommandRewardType(commands, displayLabel, route);
     }
 
     @Override
@@ -133,13 +127,6 @@ public class CommandRewardType implements QuestRewardType {
         var localization = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
-        if (!displayKey.isEmpty()) {
-            try {
-                return localization.getLocalizedMessage(player, Route.fromString(displayKey));
-            } catch (Exception ignored) {
-                // Fall through to auto-derived route
-            }
-        }
         if (localizationRoute != null) {
             try {
                 return localization.getLocalizedMessage(player, localizationRoute);
@@ -164,9 +151,6 @@ public class CommandRewardType implements QuestRewardType {
         map.put("commands", commands);
         if (!displayLabel.isEmpty()) {
             map.put("display", displayLabel);
-        }
-        if (!displayKey.isEmpty()) {
-            map.put("display-key", displayKey);
         }
         if (localizationRoute != null) {
             map.put("localization-route", localizationRoute.join('.'));

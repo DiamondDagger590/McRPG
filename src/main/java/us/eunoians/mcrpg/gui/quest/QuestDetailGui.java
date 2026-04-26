@@ -150,7 +150,9 @@ public class QuestDetailGui extends McRPGPaginatedGui {
 
                     for (QuestObjectiveDefinition objDef : stageDef.getObjectives()) {
                         QuestObjectiveInstance objInstance = findObjectiveInstance(objDef.getObjectiveKey());
-                        slots.add(new QuestDetailObjectiveSlot(questKey, objDef, objInstance));
+                        String inlineDesc = def.getInlineDisplayValue(
+                                "objective." + objDef.getObjectiveKey().getKey()).orElse(null);
+                        slots.add(new QuestDetailObjectiveSlot(questKey, objDef, objInstance, inlineDesc));
                     }
                 }
             }

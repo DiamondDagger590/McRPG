@@ -31,13 +31,23 @@ public class QuestDetailObjectiveSlot implements McRPGSlot {
     private final QuestObjectiveDefinition objectiveDef;
     @Nullable
     private final QuestObjectiveInstance objectiveInstance;
+    @Nullable
+    private final String inlineDescription;
 
     public QuestDetailObjectiveSlot(@NotNull NamespacedKey questKey,
                                     @NotNull QuestObjectiveDefinition objectiveDef,
                                     @Nullable QuestObjectiveInstance objectiveInstance) {
+        this(questKey, objectiveDef, objectiveInstance, null);
+    }
+
+    public QuestDetailObjectiveSlot(@NotNull NamespacedKey questKey,
+                                    @NotNull QuestObjectiveDefinition objectiveDef,
+                                    @Nullable QuestObjectiveInstance objectiveInstance,
+                                    @Nullable String inlineDescription) {
         this.questKey = questKey;
         this.objectiveDef = objectiveDef;
         this.objectiveInstance = objectiveInstance;
+        this.inlineDescription = inlineDescription;
     }
 
     @Override
@@ -50,7 +60,7 @@ public class QuestDetailObjectiveSlot implements McRPGSlot {
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         Map<String, String> placeholders = new HashMap<>();
 
-        String description = objectiveDef.getDescription(mcRPGPlayer, questKey);
+        String description = objectiveDef.getDescription(mcRPGPlayer, questKey, inlineDescription);
         String[] descLines = description.split("\n");
         placeholders.put("objective_description", descLines[0]);
 

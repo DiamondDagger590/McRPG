@@ -18,7 +18,7 @@ class WeightedObjectiveSelectorTest {
 
     private TemplateObjectiveDefinition obj(String name, int weight) {
         return new TemplateObjectiveDefinition(
-                NamespacedKey.fromString("mcrpg:" + name), "10", Map.of(), null, weight);
+                name, NamespacedKey.fromString("mcrpg:" + name), "10", Map.of(), null, weight);
     }
 
     @Test

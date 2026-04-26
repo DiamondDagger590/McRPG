@@ -1,4 +1,4 @@
-# Weekly combat quests for the quest board.
+﻿# Weekly combat quests for the quest board.
 
 quests:
   # -------------------------------------------------------------------
@@ -11,10 +11,6 @@ quests:
       objectives:
         weekly_slay_blazes: "Slay blazes"
         weekly_slay_wither_skeletons: "Slay wither skeletons"
-      rewards:
-        swords_xp: "Swords XP"
-        blaze_rod_bonus: "Blaze Rods"
-        wither_skull: "Wither Skeleton Skull"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:
@@ -77,9 +73,6 @@ quests:
       description: "Purge hostile mobs across the overworld"
       objectives:
         weekly_slay_overworld_hostiles: "Slay overworld hostile mobs"
-      rewards:
-        swords_xp: "Swords XP"
-        xp_bottle_bonus: "Experience Bottles"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:
@@ -130,9 +123,6 @@ quests:
       objectives:
         weekly_vault_overworld: "Slay overworld hostile mobs"
         weekly_vault_nether: "Slay Nether hostile mobs"
-      rewards:
-        swords_xp: "Swords XP"
-        trial_key: "Trial Key"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:
@@ -196,9 +186,6 @@ quests:
       objectives:
         weekly_ominous_nether: "Slay Nether hostile mobs"
         weekly_ominous_endermen: "Slay endermen"
-      rewards:
-        swords_xp: "Swords XP"
-        ominous_key: "Ominous Trial Key"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:

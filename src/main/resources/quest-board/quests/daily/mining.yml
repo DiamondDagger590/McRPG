@@ -1,4 +1,4 @@
-# Daily mining quests for the quest board.
+﻿# Daily mining quests for the quest board.
 
 quests:
   # -------------------------------------------------------------------
@@ -10,8 +10,6 @@ quests:
       description: "Mine a stack of various stone types"
       objectives:
         daily_break_stone: "Mine stone blocks"
-      rewards:
-        mining_xp: "Mining XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -54,8 +52,6 @@ quests:
       description: "Mine deepslate deep underground"
       objectives:
         daily_break_deepslate: "Mine deepslate blocks"
-      rewards:
-        mining_xp: "Mining XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -96,9 +92,6 @@ quests:
       objectives:
         daily_break_gold: "Mine gold ore"
         daily_break_diamond: "Mine diamond ore"
-      rewards:
-        mining_xp: "Mining XP"
-        gem_bonus: "Bonus Diamonds"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -151,8 +144,6 @@ quests:
       description: "Collect copper ore from the mines"
       objectives:
         daily_break_copper: "Mine copper ore"
-      rewards:
-        mining_xp: "Mining XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:

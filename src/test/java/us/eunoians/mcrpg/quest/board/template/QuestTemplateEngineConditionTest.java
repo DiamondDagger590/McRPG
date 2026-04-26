@@ -166,7 +166,7 @@ class QuestTemplateEngineConditionTest {
         TemplateCondition rareGate = new RarityCondition(RARE);
         TemplateObjectiveDefinition unconditionalObj = objective();
         TemplateObjectiveDefinition conditionalObj = new TemplateObjectiveDefinition(
-                OBJ_TYPE_KEY, "20", Map.of(), rareGate, 1);
+                "", OBJ_TYPE_KEY, "20", Map.of(), rareGate, 1);
 
         TemplateStageDefinition stage = new TemplateStageDefinition(
                 List.of(unconditionalObj, conditionalObj));
@@ -183,7 +183,7 @@ class QuestTemplateEngineConditionTest {
     void stageRemovedWhenAllObjectivesExcluded() {
         TemplateCondition legendaryGate = new RarityCondition(LEGENDARY);
         TemplateObjectiveDefinition conditionalObj = new TemplateObjectiveDefinition(
-                OBJ_TYPE_KEY, "10", Map.of(), legendaryGate, 1);
+                "", OBJ_TYPE_KEY, "10", Map.of(), legendaryGate, 1);
 
         TemplateStageDefinition conditionalStage = new TemplateStageDefinition(
                 List.of(conditionalObj));

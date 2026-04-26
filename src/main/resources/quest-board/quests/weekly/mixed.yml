@@ -1,4 +1,4 @@
-# Weekly mixed-skill quests for the quest board.
+﻿# Weekly mixed-skill quests for the quest board.
 
 quests:
   # -------------------------------------------------------------------
@@ -11,9 +11,6 @@ quests:
       objectives:
         weekly_all_rounder_mine_stone: "Mine stone blocks"
         weekly_all_rounder_slay_mobs: "Slay hostile mobs"
-      rewards:
-        mining_xp: "Mining XP"
-        swords_xp: "Swords XP"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:

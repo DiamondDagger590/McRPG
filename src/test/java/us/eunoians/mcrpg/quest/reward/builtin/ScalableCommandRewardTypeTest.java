@@ -98,18 +98,6 @@ class ScalableCommandRewardTypeTest {
     }
 
     @Test
-    @DisplayName("display-key is preserved in serialized config (backwards compat)")
-    void serializeConfig_preservesDisplayKey() {
-        Map<String, Object> config = Map.of(
-                "command", "give {player} diamond {amount}",
-                "base-amount", 5L,
-                "display-key", "quest-reward-display.legacy-key"
-        );
-        ScalableCommandRewardType restored = new ScalableCommandRewardType().fromSerializedConfig(config);
-        assertEquals("quest-reward-display.legacy-key", restored.serializeConfig().get("display-key"));
-    }
-
-    @Test
     @DisplayName("withAmountMultiplier preserves the localization route on the scaled instance")
     void withAmountMultiplier_preservesLocalizationRoute() {
         Route route = Route.fromString("quests.mcrpg.my_quest.rewards.diamond_reward");

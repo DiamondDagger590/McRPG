@@ -17,6 +17,9 @@ import java.util.Optional;
  * The {@code requiredProgressExpression} may also reference template variables
  * (e.g., {@code "block_count"}).
  *
+ * @param label                      the YAML section key used to identify this objective in the template
+ *                                   (e.g., {@code "kill_mobs"}); preserved so the template engine can
+ *                                   remap {@code inlineDisplay} objective entries after key generation
  * @param typeKey                    the objective type key (e.g., {@code mcrpg:block_break})
  * @param requiredProgressExpression expression string for required progress, may reference variables
  * @param config                     raw config map, may contain variable references as string values
@@ -24,6 +27,7 @@ import java.util.Optional;
  * @param weight                     weight for weighted random selection (default 1)
  */
 public record TemplateObjectiveDefinition(
+        @NotNull String label,
         @NotNull NamespacedKey typeKey,
         @NotNull String requiredProgressExpression,
         @NotNull Map<String, Object> config,
@@ -45,7 +49,7 @@ public record TemplateObjectiveDefinition(
     public TemplateObjectiveDefinition(@NotNull NamespacedKey typeKey,
                                        @NotNull String requiredProgressExpression,
                                        @NotNull Map<String, Object> config) {
-        this(typeKey, requiredProgressExpression, config, null, 1);
+        this("", typeKey, requiredProgressExpression, config, null, 1);
     }
 
     /**

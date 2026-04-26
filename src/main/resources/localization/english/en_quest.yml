@@ -1,4 +1,4 @@
-# Quest-specific localization file.
+﻿# Quest-specific localization file.
 # This file contains locale strings for quest reward display labels and other
 # quest content that does not belong in the command, GUI, or general locale files.
 #
@@ -28,10 +28,9 @@
 #     e.g.  templates.mcrpg.template_champion_challenge.rewards.champion_title
 #
 # Fallback order:
-#   1. display-key locale route (explicit override, see legacy section below)
-#   2. Auto-derived route above
-#   3. Inline 'display' field on the reward in quest YAML
-#   4. Generic type fallback (see quest-reward-types section below)
+#   1. Auto-derived route above
+#   2. Inline 'display' field on the reward in quest YAML
+#   3. Generic type fallback (see quest-reward-types section below)
 #
 # Example quest YAML:
 #   rewards:
@@ -52,31 +51,8 @@
 # Note: {player} / {amount} inside 'commands' entries are Bukkit dispatch
 # substitutions — those stay as {} and are NOT localization placeholders.
 #
-# -----------------------------------------------------------------------
-# LEGACY: display-key
-# -----------------------------------------------------------------------
-#
-# The 'display-key' field on a reward is still supported as an explicit
-# override. It points to any route in any locale file, and is checked
-# before the auto-derived route above. Useful for sharing one translation
-# across many quests:
-#
-#   rewards:
-#     title_reward:
-#       type: mcrpg:command
-#       display-key: "quest-reward-display.hero-title"
-#
-# The quest-reward-display section below is kept for backwards compatibility.
-# New quests should use the auto-derived route pattern instead.
-
 locale: en
 config-version: 1
-
-quest-reward-display:
-  # Legacy section. New quests should use auto-derived routes (see above).
-  # Add shared reward label entries here if you use display-key on multiple quests:
-  # hero-title: "Hero Title"
-  # mining-champion: "Mining Champion Badge"
 
 # Fallback descriptions for built-in objective types.
 # These are shown when no quest-specific locale entry exists for an objective
@@ -156,6 +132,9 @@ quest-templates:
 # Quest display name route:
 #   quests.<namespace>.<quest_key>.display-name
 #
+# Quest description route (optional):
+#   quests.<namespace>.<quest_key>.description
+#
 # Objective description route:
 #   quests.<namespace>.<quest_key>.objectives.<objective_key>.description
 #
@@ -174,18 +153,21 @@ quests:
     # Enhanced Bleed
     enhanced_bleed_tier2:
       display-name: "Arachnid Training"
+      description: "Hunt venomous spiders to sharpen your bleed"
       objectives:
         enhanced_bleed_tier2_obj:
           description: "Slay spiders and cave spiders"
 
     enhanced_bleed_tier3:
       display-name: "Witch Hunt"
+      description: "Seek out venomous creatures and potion-wielding witches"
       objectives:
         enhanced_bleed_tier3_obj:
           description: "Slay spiders, cave spiders, and witches"
 
     enhanced_bleed_tier4:
       display-name: "Venom and Decay"
+      description: "Overcome venomous threats and face the Nether's wither servants"
       objectives:
         enhanced_bleed_tier4_primary:
           description: "Slay spiders, cave spiders, and witches"
@@ -194,6 +176,7 @@ quests:
 
     enhanced_bleed_tier5:
       display-name: "Master of Hemorrhage"
+      description: "Prove mastery over the deadliest venomous foes"
       objectives:
         enhanced_bleed_tier5_primary:
           description: "Slay venomous mobs"
@@ -202,6 +185,7 @@ quests:
 
     enhanced_bleed_upgrade:
       display-name: "Enhanced Bleed Mastery"
+      description: "Continue improving Enhanced Bleed by hunting venomous mobs"
       objectives:
         enhanced_bleed_upgrade_obj:
           description: "Slay spiders, witches, and wither skeletons"
@@ -209,18 +193,21 @@ quests:
     # Deeper Wound
     deeper_wound_tier2:
       display-name: "Bone Piercer"
+      description: "Hone your piercing strikes against skeletal archers"
       objectives:
         deeper_wound_tier2_obj:
           description: "Slay skeletons and strays"
 
     deeper_wound_tier3:
       display-name: "The Mossy Threat"
+      description: "Hunt skeletal ranged enemies across swamp and tundra"
       objectives:
         deeper_wound_tier3_obj:
           description: "Slay skeletons, strays, and bogged"
 
     deeper_wound_tier4:
       display-name: "Arrows and Rot"
+      description: "Pierce hardened ranged attackers and face the mossy fallen"
       objectives:
         deeper_wound_tier4_primary:
           description: "Slay skeletons and strays"
@@ -229,6 +216,7 @@ quests:
 
     deeper_wound_tier5:
       display-name: "Bone Shatterer"
+      description: "Prove your piercing mastery against the toughest skeletal foes"
       objectives:
         deeper_wound_tier5_primary:
           description: "Slay skeletons, strays, and bogged"
@@ -237,6 +225,7 @@ quests:
 
     deeper_wound_upgrade:
       display-name: "Deeper Wound Mastery"
+      description: "Continue improving Deeper Wound by hunting skeletal ranged mobs"
       objectives:
         deeper_wound_upgrade_obj:
           description: "Slay skeletons, strays, bogged, and wither skeletons"
@@ -244,18 +233,21 @@ quests:
     # Vampire
     vampire_tier2:
       display-name: "Undead Feast"
+      description: "Drain life from the walking dead"
       objectives:
         vampire_tier2_obj:
           description: "Slay zombies and drowned"
 
     vampire_tier3:
       display-name: "Desert Hunger"
+      description: "Devour undead mobs from overworld biomes"
       objectives:
         vampire_tier3_obj:
           description: "Slay zombies, drowned, and husks"
 
     vampire_tier4:
       display-name: "Condemned Harvest"
+      description: "Drain life from the undead and hunt rare condemned variants"
       objectives:
         vampire_tier4_primary:
           description: "Slay zombies, drowned, and husks"
@@ -264,6 +256,7 @@ quests:
 
     vampire_tier5:
       display-name: "Apex Predator"
+      description: "Feed on the rarest undead creatures"
       objectives:
         vampire_tier5_primary:
           description: "Slay core undead mobs"
@@ -272,6 +265,7 @@ quests:
 
     vampire_upgrade:
       display-name: "Vampire Mastery"
+      description: "Continue improving Vampire by draining undead mobs"
       objectives:
         vampire_upgrade_obj:
           description: "Slay zombies, drowned, husks, zombie villagers, phantoms, and zoglins"
@@ -279,18 +273,21 @@ quests:
     # Serrated Strikes
     serrated_strikes_tier2:
       display-name: "Explosive Practice"
+      description: "Strike down burst-damage foes that test your AoE"
       objectives:
         serrated_strikes_tier2_obj:
           description: "Slay creepers and slimes"
 
     serrated_strikes_tier3:
       display-name: "Volatile Encounters"
+      description: "Hunt explosive and gelatinous creatures from multiple biomes"
       objectives:
         serrated_strikes_tier3_obj:
           description: "Slay creepers, slimes, and magma cubes"
 
     serrated_strikes_tier4:
       display-name: "Fire and Gel"
+      description: "Fight burst threats and push into the Nether's fiery hostiles"
       objectives:
         serrated_strikes_tier4_primary:
           description: "Slay creepers and slimes"
@@ -299,6 +296,7 @@ quests:
 
     serrated_strikes_tier5:
       display-name: "Infernal Carnage"
+      description: "Conquer the most explosive threats in the Overworld and Nether"
       objectives:
         serrated_strikes_tier5_primary:
           description: "Slay creepers, slimes, and magma cubes"
@@ -307,6 +305,7 @@ quests:
 
     serrated_strikes_upgrade:
       display-name: "Serrated Strikes Mastery"
+      description: "Continue improving Serrated Strikes against explosive and fiery mobs"
       objectives:
         serrated_strikes_upgrade_obj:
           description: "Slay creepers, slimes, magma cubes, blazes, and ghasts"
@@ -314,18 +313,21 @@ quests:
     # Rage Spike
     rage_spike_tier2:
       display-name: "Provoked Fury"
+      description: "Unleash your rage spike against aggressive Nether mobs"
       objectives:
         rage_spike_tier2_obj:
           description: "Slay endermen and piglins"
 
     rage_spike_tier3:
       display-name: "Nether Patrol"
+      description: "Hunt provocation-driven mobs through the Nether"
       objectives:
         rage_spike_tier3_obj:
           description: "Slay endermen, piglins, and zombified piglins"
 
     rage_spike_tier4:
       display-name: "Into the Warped"
+      description: "Battle the most aggressive Nether dwellers"
       objectives:
         rage_spike_tier4_primary:
           description: "Slay endermen and piglins"
@@ -334,6 +336,7 @@ quests:
 
     rage_spike_tier5:
       display-name: "Nether Warlord"
+      description: "Dominate the Nether's most dangerous and aggressive threats"
       objectives:
         rage_spike_tier5_primary:
           description: "Slay endermen, piglins, and zombified piglins"
@@ -342,6 +345,7 @@ quests:
 
     rage_spike_upgrade:
       display-name: "Rage Spike Mastery"
+      description: "Continue improving Rage Spike against aggressive Nether mobs"
       objectives:
         rage_spike_upgrade_obj:
           description: "Slay endermen, piglins, zombified piglins, hoglins, and ghasts"
@@ -353,18 +357,21 @@ quests:
     # It's A Triple
     its_a_triple_tier2:
       display-name: "Common Extraction"
+      description: "Mine coal and copper to practice your triple strike"
       objectives:
         its_a_triple_tier2_obj:
           description: "Mine coal and copper ores"
 
     its_a_triple_tier3:
       display-name: "Iron Frenzy"
+      description: "Extract iron ore to sharpen your triple-drop technique"
       objectives:
         its_a_triple_tier3_obj:
           description: "Mine iron ores"
 
     its_a_triple_tier4:
       display-name: "Precious Veins"
+      description: "Mine precious ores and seek rare secondary deposits"
       objectives:
         its_a_triple_tier4_primary:
           description: "Mine iron and gold ores"
@@ -373,6 +380,7 @@ quests:
 
     its_a_triple_tier5:
       display-name: "Legendary Triples"
+      description: "Achieve mastery by tripling the rarest ores"
       objectives:
         its_a_triple_tier5_primary:
           description: "Mine iron, gold, and redstone ores"
@@ -381,6 +389,7 @@ quests:
 
     its_a_triple_upgrade:
       display-name: "It's A Triple Mastery"
+      description: "Continue improving triple drops by mining ores"
       objectives:
         its_a_triple_upgrade_obj:
           description: "Mine coal, copper, iron, gold, redstone, and diamond ores"
@@ -388,18 +397,21 @@ quests:
     # Remote Transfer
     remote_transfer_tier2:
       display-name: "Metal Pipeline"
+      description: "Mine iron to fuel your remote transfer ability"
       objectives:
         remote_transfer_tier2_obj:
           description: "Mine iron ores"
 
     remote_transfer_tier3:
       display-name: "Golden Network"
+      description: "Extract gold from the Overworld and Nether"
       objectives:
         remote_transfer_tier3_obj:
           description: "Mine gold and Nether gold ores"
 
     remote_transfer_tier4:
       display-name: "Precious Transit"
+      description: "Transport gold and Nether gold, then branch into utility ores"
       objectives:
         remote_transfer_tier4_primary:
           description: "Mine gold and Nether gold ores"
@@ -408,6 +420,7 @@ quests:
 
     remote_transfer_tier5:
       display-name: "Masterwork Pipeline"
+      description: "Complete the precious metal pipeline and reach diamonds"
       objectives:
         remote_transfer_tier5_primary:
           description: "Mine gold, Nether gold, and lapis ores"
@@ -416,6 +429,7 @@ quests:
 
     remote_transfer_upgrade:
       display-name: "Remote Transfer Mastery"
+      description: "Continue improving Remote Transfer by mining metal and utility ores"
       objectives:
         remote_transfer_upgrade_obj:
           description: "Mine iron, gold, Nether gold, lapis, redstone, and diamond ores"
@@ -423,18 +437,21 @@ quests:
     # Ore Scanner
     ore_scanner_tier2:
       display-name: "Rare Earth Survey"
+      description: "Scan for and mine the rarest Overworld ores"
       objectives:
         ore_scanner_tier2_obj:
           description: "Mine diamond and emerald ores"
 
     ore_scanner_tier3:
       display-name: "Nether Seeker"
+      description: "Extend your scanning range into Nether quartz deposits"
       objectives:
         ore_scanner_tier3_obj:
           description: "Mine diamond, emerald, and Nether quartz ores"
 
     ore_scanner_tier4:
       display-name: "Deep Scan"
+      description: "Mine rare Overworld ores and probe Nether ore deposits"
       objectives:
         ore_scanner_tier4_primary:
           description: "Mine diamond and emerald ores"
@@ -443,6 +460,7 @@ quests:
 
     ore_scanner_tier5:
       display-name: "Ancient Discovery"
+      description: "Track down the most elusive ore in the game"
       objectives:
         ore_scanner_tier5_primary:
           description: "Mine diamond, emerald, and Nether quartz ores"
@@ -451,6 +469,7 @@ quests:
 
     ore_scanner_upgrade:
       display-name: "Ore Scanner Mastery"
+      description: "Continue improving Ore Scanner by mining rare and exotic ores"
       objectives:
         ore_scanner_upgrade_obj:
           description: "Mine diamonds, emeralds, Nether ores, and ancient debris"
@@ -462,18 +481,21 @@ quests:
     # Heavy Swing
     heavy_swing_tier2:
       display-name: "Temperate Lumberjack"
+      description: "Fell temperate forest trees with your heavy swing"
       objectives:
         heavy_swing_tier2_obj:
           description: "Chop oak, spruce, and birch logs"
 
     heavy_swing_tier3:
       display-name: "Dense Canopy Cutter"
+      description: "Clear dark and jungle canopy trees with powerful swings"
       objectives:
         heavy_swing_tier3_obj:
           description: "Chop dark oak, jungle, and acacia logs"
 
     heavy_swing_tier4:
       display-name: "Exotic Timber"
+      description: "Cut dense canopy logs and seek out rare exotic trees"
       objectives:
         heavy_swing_tier4_primary:
           description: "Chop dark oak, jungle, and acacia logs"
@@ -482,6 +504,7 @@ quests:
 
     heavy_swing_tier5:
       display-name: "Otherworldly Harvest"
+      description: "Fell the most exotic wood including Nether fungal stems"
       objectives:
         heavy_swing_tier5_primary:
           description: "Chop dense canopy and mangrove logs"
@@ -490,6 +513,7 @@ quests:
 
     heavy_swing_upgrade:
       display-name: "Heavy Swing Mastery"
+      description: "Continue improving Heavy Swing by felling a variety of trees"
       objectives:
         heavy_swing_upgrade_obj:
           description: "Chop logs from any biome including Nether stems"
@@ -497,18 +521,21 @@ quests:
     # Dryad's Gift
     dryads_gift_tier2:
       display-name: "Tropical Grove"
+      description: "Harvest warm biome logs to attune with nature"
       objectives:
         dryads_gift_tier2_obj:
           description: "Chop jungle and acacia logs"
 
     dryads_gift_tier3:
       display-name: "Wetland Harvest"
+      description: "Fell jungle, acacia, and mangrove trees for nature's gift"
       objectives:
         dryads_gift_tier3_obj:
           description: "Chop jungle, acacia, and mangrove logs"
 
     dryads_gift_tier4:
       display-name: "Blossom and Bamboo"
+      description: "Harvest tropical woods and seek delicate flowering trees"
       objectives:
         dryads_gift_tier4_primary:
           description: "Chop jungle, acacia, and mangrove logs"
@@ -517,6 +544,7 @@ quests:
 
     dryads_gift_tier5:
       display-name: "Nature's Bounty"
+      description: "Achieve mastery by harvesting nature's most vibrant woods"
       objectives:
         dryads_gift_tier5_primary:
           description: "Chop jungle, acacia, mangrove, and cherry logs"
@@ -525,6 +553,7 @@ quests:
 
     dryads_gift_upgrade:
       display-name: "Dryad's Gift Mastery"
+      description: "Continue improving Dryad's Gift by harvesting tropical and exotic woods"
       objectives:
         dryads_gift_upgrade_obj:
           description: "Chop jungle, acacia, mangrove, cherry logs, and bamboo"
@@ -532,18 +561,21 @@ quests:
     # Nymph's Vitality
     nymphs_vitality_tier2:
       display-name: "Cold Forest Walk"
+      description: "Harvest cool-climate logs to channel the nymph's power"
       objectives:
         nymphs_vitality_tier2_obj:
           description: "Chop birch and spruce logs"
 
     nymphs_vitality_tier3:
       display-name: "Dark Grove"
+      description: "Fell cool-climate and deep forest logs to strengthen your vitality"
       objectives:
         nymphs_vitality_tier3_obj:
           description: "Chop birch, spruce, and dark oak logs"
 
     nymphs_vitality_tier4:
       display-name: "Mystic Wetland"
+      description: "Harvest cool-climate and deep forest woods, then seek marshy timber"
       objectives:
         nymphs_vitality_tier4_primary:
           description: "Chop birch, spruce, and dark oak logs"
@@ -552,6 +584,7 @@ quests:
 
     nymphs_vitality_tier5:
       display-name: "Otherworldly Attunement"
+      description: "Complete your vitality mastery with otherworldly fungal growth"
       objectives:
         nymphs_vitality_tier5_primary:
           description: "Chop birch, spruce, dark oak, and mangrove logs"
@@ -560,6 +593,7 @@ quests:
 
     nymphs_vitality_upgrade:
       display-name: "Nymph's Vitality Mastery"
+      description: "Continue improving Nymph's Vitality by harvesting cool-climate and Nether wood"
       objectives:
         nymphs_vitality_upgrade_obj:
           description: "Chop birch, spruce, dark oak, mangrove logs, and Nether stems"
@@ -571,18 +605,21 @@ quests:
     # Verdant Surge
     verdant_surge_tier2:
       display-name: "First Harvest"
+      description: "Harvest basic farm crops to grow your verdant power"
       objectives:
         verdant_surge_tier2_obj:
           description: "Harvest wheat and carrots"
 
     verdant_surge_tier3:
       display-name: "Root Harvest"
+      description: "Tend to a wider variety of farm crops"
       objectives:
         verdant_surge_tier3_obj:
           description: "Harvest wheat, carrots, potatoes, and beetroots"
 
     verdant_surge_tier4:
       display-name: "Garden Expansion"
+      description: "Harvest core crops and seek out gourd produce"
       objectives:
         verdant_surge_tier4_primary:
           description: "Harvest wheat, carrots, potatoes, and beetroots"
@@ -591,6 +628,7 @@ quests:
 
     verdant_surge_tier5:
       display-name: "Exotic Garden"
+      description: "Complete your mastery with rare and exotic crops"
       objectives:
         verdant_surge_tier5_primary:
           description: "Harvest core Overworld crops"
@@ -599,6 +637,7 @@ quests:
 
     verdant_surge_upgrade:
       display-name: "Verdant Surge Mastery"
+      description: "Continue improving Verdant Surge by tending to all crop types"
       objectives:
         verdant_surge_upgrade_obj:
           description: "Harvest wheat, carrots, potatoes, beetroots, gourds, and exotic crops"
@@ -606,18 +645,21 @@ quests:
     # Mass Harvest
     mass_harvest_tier2:
       display-name: "Bulk Harvest"
+      description: "Gather large quantities of common crops"
       objectives:
         mass_harvest_tier2_obj:
           description: "Harvest wheat and potatoes"
 
     mass_harvest_tier3:
       display-name: "Sugar Rush"
+      description: "Harvest crops and sugar cane in bulk"
       objectives:
         mass_harvest_tier3_obj:
           description: "Harvest wheat, potatoes, beetroots, and sugar cane"
 
     mass_harvest_tier4:
       display-name: "Berry and Grain"
+      description: "Harvest staple crops and forage for sweet berry bushes"
       objectives:
         mass_harvest_tier4_primary:
           description: "Harvest wheat, potatoes, beetroots, and sugar cane"
@@ -626,6 +668,7 @@ quests:
 
     mass_harvest_tier5:
       display-name: "Master Harvester"
+      description: "Complete your bulk harvest mastery with the rarest plants"
       objectives:
         mass_harvest_tier5_primary:
           description: "Harvest crops and sweet berry bushes"
@@ -634,6 +677,7 @@ quests:
 
     mass_harvest_upgrade:
       display-name: "Mass Harvest Mastery"
+      description: "Continue improving Mass Harvest by gathering large quantities of plants"
       objectives:
         mass_harvest_upgrade_obj:
           description: "Harvest crops, sweet berries, nether wart, and chorus plants"
@@ -644,12 +688,14 @@ quests:
 
     daily_pest_control:
       display-name: "Pest Control"
+      description: "Eliminate common undead creatures"
       objectives:
         daily_slay_zombies:
           description: "Slay zombies and their variants"
 
     daily_dungeon_sweep:
       display-name: "Dungeon Sweep"
+      description: "Clear out skeletons and spiders"
       objectives:
         daily_slay_skeletons:
           description: "Slay skeletons"
@@ -658,6 +704,7 @@ quests:
 
     daily_nether_hunt:
       display-name: "Nether Hunt"
+      description: "Brave the Nether and slay its denizens"
       objectives:
         daily_slay_blazes:
           description: "Slay blazes"
@@ -666,18 +713,21 @@ quests:
 
     daily_creeper_culling:
       display-name: "Creeper Culling"
+      description: "Eliminate creepers before they explode"
       objectives:
         daily_slay_creepers:
           description: "Slay creepers"
 
     daily_spider_hunt:
       display-name: "Spider Hunt"
+      description: "Clear out spider nests"
       objectives:
         daily_slay_all_spiders:
           description: "Slay spiders and cave spiders"
 
     daily_arena_combatant:
       display-name: "Arena Combatant"
+      description: "Fight a variety of overworld hostile mobs"
       objectives:
         daily_slay_mixed_hostiles:
           description: "Slay overworld hostile mobs"
@@ -688,18 +738,21 @@ quests:
 
     daily_stone_haul:
       display-name: "Stone Haul"
+      description: "Mine a stack of various stone types"
       objectives:
         daily_break_stone:
           description: "Mine stone blocks"
 
     daily_deepslate_delver:
       display-name: "Deepslate Delver"
+      description: "Mine deepslate deep underground"
       objectives:
         daily_break_deepslate:
           description: "Mine deepslate blocks"
 
     daily_ore_rush:
       display-name: "Ore Rush"
+      description: "Mine precious gold and diamond ores"
       objectives:
         daily_break_gold:
           description: "Mine gold ore"
@@ -708,6 +761,7 @@ quests:
 
     daily_copper_collector:
       display-name: "Copper Collector"
+      description: "Collect copper ore from the mines"
       objectives:
         daily_break_copper:
           description: "Mine copper ore"
@@ -718,18 +772,21 @@ quests:
 
     daily_timber_run:
       display-name: "Timber Run"
+      description: "Chop down common trees"
       objectives:
         daily_chop_common_logs:
           description: "Chop common logs"
 
     daily_exotic_lumber:
       display-name: "Exotic Lumber"
+      description: "Harvest exotic wood from rare biomes"
       objectives:
         daily_chop_exotic_logs:
           description: "Chop exotic logs"
 
     daily_leaf_clearing:
       display-name: "Leaf Clearing"
+      description: "Clear out leaves from the forest"
       objectives:
         daily_break_leaves:
           description: "Break leaves"
@@ -740,18 +797,21 @@ quests:
 
     daily_garden_tender:
       display-name: "Garden Tender"
+      description: "Harvest crops from the fields"
       objectives:
         daily_break_crops:
           description: "Harvest crops"
 
     daily_mushroom_forager:
       display-name: "Mushroom Forager"
+      description: "Harvest mushroom blocks from dark forests"
       objectives:
         daily_break_mushrooms:
           description: "Break mushroom blocks"
 
     daily_nether_farm:
       display-name: "Nether Farm"
+      description: "Harvest nether wart from soul sand gardens"
       objectives:
         daily_break_nether_wart:
           description: "Harvest nether wart"
@@ -762,6 +822,7 @@ quests:
 
     weekly_nether_conquest:
       display-name: "Nether Conquest"
+      description: "Conquer the Nether's most dangerous denizens"
       objectives:
         weekly_slay_blazes:
           description: "Slay blazes"
@@ -770,12 +831,14 @@ quests:
 
     weekly_overworld_purge:
       display-name: "Overworld Purge"
+      description: "Purge hostile mobs across the overworld"
       objectives:
         weekly_slay_overworld_hostiles:
           description: "Slay overworld hostile mobs"
 
     weekly_vault_contender:
       display-name: "Vault Contender"
+      description: "Prove your worth across overworld and Nether"
       objectives:
         weekly_vault_overworld:
           description: "Slay overworld hostile mobs"
@@ -784,6 +847,7 @@ quests:
 
     weekly_ominous_contender:
       display-name: "Ominous Contender"
+      description: "Face the most dangerous foes across dimensions"
       objectives:
         weekly_ominous_nether:
           description: "Slay Nether hostile mobs"
@@ -796,6 +860,7 @@ quests:
 
     weekly_deep_dive:
       display-name: "Deep Dive"
+      description: "Venture deep for ancient debris and diamonds"
       objectives:
         weekly_break_ancient_debris:
           description: "Mine ancient debris"
@@ -808,6 +873,7 @@ quests:
 
     weekly_lumber_contract:
       display-name: "Lumber Contract"
+      description: "Fulfill a large lumber order"
       objectives:
         weekly_chop_mixed_logs:
           description: "Chop mixed logs"
@@ -818,6 +884,7 @@ quests:
 
     weekly_harvest_festival:
       display-name: "Harvest Festival"
+      description: "Bring in a massive crop harvest"
       objectives:
         weekly_break_mixed_crops:
           description: "Harvest mixed crops"
@@ -828,6 +895,7 @@ quests:
 
     weekly_all_rounder:
       display-name: "All-Rounder"
+      description: "Test your skills across mining and combat"
       objectives:
         weekly_all_rounder_mine_stone:
           description: "Mine stone blocks"
@@ -840,6 +908,7 @@ quests:
 
     legendary_master_smith:
       display-name: "Master Smith"
+      description: "Gather the finest ores to forge a legendary pickaxe"
       objectives:
         legendary_break_diamond:
           description: "Mine diamond ore"
@@ -848,6 +917,7 @@ quests:
 
     legendary_world_champion:
       display-name: "World Champion"
+      description: "Prove your combat mastery across all dimensions"
       objectives:
         legendary_slay_endermen:
           description: "Slay endermen"
@@ -858,6 +928,7 @@ quests:
 
     legendary_trial_master:
       display-name: "Trial Master"
+      description: "Complete the ultimate combat trial — once and for all"
       objectives:
         legendary_trial_overworld:
           description: "Slay overworld hostile mobs"
@@ -872,30 +943,35 @@ quests:
 
     land_daily_stone_quarry:
       display-name: "Stone Quarry"
+      description: "Quarry stone for your land's construction projects"
       objectives:
         land_daily_break_stone:
           description: "Mine stone blocks"
 
     land_daily_ore_collection:
       display-name: "Ore Collection"
+      description: "Gather ores for your land's smelters"
       objectives:
         land_daily_break_ores:
           description: "Mine mixed ores"
 
     land_daily_perimeter_patrol:
       display-name: "Perimeter Patrol"
+      description: "Defend your land from hostile mobs"
       objectives:
         land_daily_slay_hostiles:
           description: "Slay hostile mobs"
 
     land_daily_lumber_supply:
       display-name: "Lumber Supply"
+      description: "Supply your land with fresh lumber"
       objectives:
         land_daily_chop_logs:
           description: "Chop mixed logs"
 
     land_daily_crop_harvest:
       display-name: "Crop Harvest"
+      description: "Harvest crops to feed your land's people"
       objectives:
         land_daily_break_crops:
           description: "Harvest mixed crops"
@@ -906,6 +982,7 @@ quests:
 
     land_weekly_grand_excavation:
       display-name: "Grand Excavation"
+      description: "Excavate mountains of stone and ore for your land"
       objectives:
         land_weekly_break_stone:
           description: "Mine stone blocks"
@@ -914,12 +991,14 @@ quests:
 
     land_weekly_stronghold_defense:
       display-name: "Stronghold Defense"
+      description: "Defend your land from waves of hostile mobs"
       objectives:
         land_weekly_slay_hostiles:
           description: "Slay hostile mobs"
 
     land_weekly_nether_raid:
       display-name: "Nether Raid"
+      description: "Launch a coordinated raid into the Nether"
       objectives:
         land_weekly_slay_blazes:
           description: "Slay blazes"
@@ -928,6 +1007,7 @@ quests:
 
     land_weekly_resource_stockpile:
       display-name: "Resource Stockpile"
+      description: "Stockpile lumber and crops for your land"
       objectives:
         land_weekly_chop_logs:
           description: "Chop mixed logs"

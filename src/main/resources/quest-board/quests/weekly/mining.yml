@@ -1,4 +1,4 @@
-# Weekly mining quests for the quest board.
+﻿# Weekly mining quests for the quest board.
 
 quests:
   # -------------------------------------------------------------------
@@ -11,9 +11,6 @@ quests:
       objectives:
         weekly_break_ancient_debris: "Mine ancient debris"
         weekly_break_diamonds: "Mine diamond ore"
-      rewards:
-        mining_xp: "Mining XP"
-        netherite_scrap: "Netherite Scrap"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:

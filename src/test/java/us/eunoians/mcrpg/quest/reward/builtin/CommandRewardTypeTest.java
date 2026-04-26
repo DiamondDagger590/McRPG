@@ -91,18 +91,6 @@ public class CommandRewardTypeTest extends McRPGBaseTest {
         assertEquals("quests.mcrpg.my_quest.rewards.hero_title", serialized.get("localization-route"));
     }
 
-    @DisplayName("Given a reward with display-key set, when serializing, then display-key is preserved (backwards compat)")
-    @Test
-    public void serializeConfig_preservesDisplayKey() {
-        Map<String, Object> config = Map.of(
-                "commands", List.of("title grant {player} hero"),
-                "display-key", "quest-reward-display.hero-title"
-        );
-        CommandRewardType configured = baseType.fromSerializedConfig(config);
-        Map<String, Object> serialized = configured.serializeConfig();
-        assertEquals("quest-reward-display.hero-title", serialized.get("display-key"));
-    }
-
     @DisplayName("Given a base instance, when describeForDisplay is called without player, then it returns fallback string")
     @Test
     public void describeForDisplay_noArgs_returnsFallback() {

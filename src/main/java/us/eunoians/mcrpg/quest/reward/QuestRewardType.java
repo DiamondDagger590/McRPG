@@ -128,8 +128,8 @@ public interface QuestRewardType extends McRPGContent {
     /**
      * Returns a localized, human-readable description of this configured reward for GUI display,
      * resolved through the player's locale chain. Implementations should attempt locale resolution
-     * (via any auto-derived route or explicit {@code display-key}) and fall back to
-     * {@link #describeForDisplay()} if no translation is found.
+     * via the auto-derived route and fall back to {@link #describeForDisplay()} if no translation
+     * is found.
      * <p>
      * The default implementation delegates to the no-arg {@link #describeForDisplay()}.
      *

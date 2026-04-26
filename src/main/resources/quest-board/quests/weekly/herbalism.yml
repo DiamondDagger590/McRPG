@@ -1,4 +1,4 @@
-# Weekly herbalism quests for the quest board.
+﻿# Weekly herbalism quests for the quest board.
 
 quests:
   # -------------------------------------------------------------------
@@ -10,9 +10,6 @@ quests:
       description: "Bring in a massive crop harvest"
       objectives:
         weekly_break_mixed_crops: "Harvest mixed crops"
-      rewards:
-        herbalism_xp: "Herbalism XP"
-        bread_bonus: "Bread"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:

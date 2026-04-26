@@ -514,7 +514,7 @@ public final class QuestTemplateConfigLoader {
 
             Map<String, Object> config = parseConfigMap(objSection.getSection("config"));
             objectives.add(new TemplateObjectiveDefinition(
-                    typeKey, requiredProgressExpression, config, objCondition, weight));
+                    objLabel, typeKey, requiredProgressExpression, config, objCondition, weight));
         }
 
         if (objectives.isEmpty()) {
@@ -739,14 +739,6 @@ public final class QuestTemplateConfigLoader {
             if (objSection != null) {
                 for (String objKey : objSection.getRoutesAsStrings(false)) {
                     display.put("objective." + objKey, objSection.getString(objKey));
-                }
-            }
-        }
-        if (displaySection.contains("rewards")) {
-            Section rewardSection = displaySection.getSection("rewards");
-            if (rewardSection != null) {
-                for (String rewardKey : rewardSection.getRoutesAsStrings(false)) {
-                    display.put("reward." + rewardKey, rewardSection.getString(rewardKey));
                 }
             }
         }

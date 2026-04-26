@@ -47,7 +47,6 @@ import java.util.OptionalLong;
  * <p>
  * Display label resolution order:
  * <ol>
- *     <li>{@code display-key} locale route (explicit override, backwards compat)</li>
  *     <li>Auto-derived quest-scoped / template-scoped localization route</li>
  *     <li>Inline {@code display} field</li>
  *     <li>{@link LocalizationKey#QUEST_REWARD_SCALABLE_COMMAND_FALLBACK_DISPLAY} generic fallback</li>
@@ -60,7 +59,6 @@ public final class ScalableCommandRewardType implements QuestRewardType {
     private final String commandTemplate;
     private final long baseAmount;
     private final String displayLabel;
-    private final String displayKey;
     private final Route localizationRoute;
 
     /**
@@ -70,17 +68,15 @@ public final class ScalableCommandRewardType implements QuestRewardType {
         this.commandTemplate = "";
         this.baseAmount = 0;
         this.displayLabel = "";
-        this.displayKey = "";
         this.localizationRoute = null;
     }
 
     private ScalableCommandRewardType(@NotNull String commandTemplate, long baseAmount,
-                                      @NotNull String displayLabel, @NotNull String displayKey,
+                                      @NotNull String displayLabel,
                                       @Nullable Route localizationRoute) {
         this.commandTemplate = commandTemplate;
         this.baseAmount = baseAmount;
         this.displayLabel = displayLabel;
-        this.displayKey = displayKey;
         this.localizationRoute = localizationRoute;
     }
 
@@ -106,13 +102,6 @@ public final class ScalableCommandRewardType implements QuestRewardType {
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
         String amountSuffix = resolveAmountSuffix(localization, player);
-        if (!displayKey.isEmpty()) {
-            try {
-                return localization.getLocalizedMessage(player, Route.fromString(displayKey)) + amountSuffix;
-            } catch (Exception ignored) {
-                // Fall through to auto-derived route
-            }
-        }
         if (localizationRoute != null) {
             try {
                 return localization.getLocalizedMessage(player, localizationRoute) + amountSuffix;
@@ -150,7 +139,7 @@ public final class ScalableCommandRewardType implements QuestRewardType {
     @Override
     public QuestRewardType withAmountMultiplier(double multiplier) {
         long scaled = Math.max(1, Math.round(baseAmount * multiplier));
-        return new ScalableCommandRewardType(commandTemplate, scaled, displayLabel, displayKey, localizationRoute);
+        return new ScalableCommandRewardType(commandTemplate, scaled, displayLabel, localizationRoute);
     }
 
     @NotNull
@@ -179,7 +168,6 @@ public final class ScalableCommandRewardType implements QuestRewardType {
                 section.getString("command", ""),
                 section.getLong("base-amount", 0L),
                 section.getString("display", ""),
-                section.getString("display-key", ""),
                 null);
     }
 
@@ -191,9 +179,6 @@ public final class ScalableCommandRewardType implements QuestRewardType {
         map.put("base-amount", baseAmount);
         if (!displayLabel.isEmpty()) {
             map.put("display", displayLabel);
-        }
-        if (!displayKey.isEmpty()) {
-            map.put("display-key", displayKey);
         }
         if (localizationRoute != null) {
             map.put("localization-route", localizationRoute.join('.'));
@@ -207,17 +192,16 @@ public final class ScalableCommandRewardType implements QuestRewardType {
         String cmd = config.getOrDefault("command", "").toString();
         long amt = config.containsKey("base-amount") ? ((Number) config.get("base-amount")).longValue() : 0;
         String label = config.getOrDefault("display", "").toString();
-        String key = config.getOrDefault("display-key", "").toString();
         Route route = config.containsKey("localization-route")
                 ? Route.fromString(config.get("localization-route").toString())
                 : null;
-        return new ScalableCommandRewardType(cmd, amt, label, key, route);
+        return new ScalableCommandRewardType(cmd, amt, label, route);
     }
 
     @NotNull
     @Override
     public ScalableCommandRewardType withLocalizationRoute(@NotNull Route route) {
-        return new ScalableCommandRewardType(commandTemplate, baseAmount, displayLabel, displayKey, route);
+        return new ScalableCommandRewardType(commandTemplate, baseAmount, displayLabel, route);
     }
 
     @NotNull

@@ -199,7 +199,9 @@ public class QuestProgressNotificationListener implements Listener {
         Optional<QuestObjectiveDefinition> objDefOpt = definition.findObjectiveDefinition(
                 event.getObjectiveInstance().getQuestObjectiveKey());
         return objDefOpt
-                .map(objDef -> objDef.getDescription(player, quest.getQuestKey()).split("\n")[0])
+                .map(objDef -> objDef.getDescription(player, quest.getQuestKey(),
+                        definition.getInlineDisplayValue("objective." + objDef.getObjectiveKey().getKey()).orElse(null))
+                        .split("\n")[0])
                 .orElse(event.getObjectiveInstance().getQuestObjectiveKey().getKey());
     }
 }

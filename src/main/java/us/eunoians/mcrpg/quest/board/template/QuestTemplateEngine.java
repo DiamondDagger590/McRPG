@@ -216,7 +216,9 @@ public final class QuestTemplateEngine {
         List<QuestPhaseDefinition> phases = buildPhases(template, rarityKey, questKey, filteredPhases, context, objectiveConfigs);
         List<QuestRewardType> rewards = buildRewards(template, rarityKey, context);
 
-        Map<String, String> inlineDisplay = template.getInlineDisplay().isEmpty() ? null : template.getInlineDisplay();
+        Map<String, String> inlineDisplay = template.getInlineDisplay().isEmpty()
+                ? null
+                : remapInlineDisplayObjectiveKeys(template.getInlineDisplay(), filteredPhases, phases);
 
         return new QuestDefinition(
                 questKey,
@@ -232,6 +234,59 @@ public final class QuestTemplateEngine {
                 template.getRewardDistribution().orElse(null),
                 inlineDisplay
         );
+    }
+
+    /**
+     * Remaps {@code inlineDisplay} objective entries from template labels to generated objective keys.
+     * <p>
+     * When a template is materialized, objective keys are generated as
+     * {@code gen_<templateKey>_<hex>_p<phase>s<stage>o<obj>}. The template's {@code inlineDisplay}
+     * map uses the original YAML section labels (e.g. {@code "objective.kill_mobs"}), so a direct
+     * lookup by generated key would always miss. This method rebuilds the map with remapped keys
+     * so that {@link us.eunoians.mcrpg.quest.definition.QuestDefinition#getInlineDisplayValue} works
+     * correctly for generated quests.
+     * <p>
+     * Non-objective entries (e.g. {@code "name"}, {@code "description"}) are preserved as-is.
+     *
+     * @param templateDisplay  the original inline display map from the template
+     * @param filteredPhases   the template phase list that was materialized (same indices as {@code phases})
+     * @param phases           the materialized quest phase list
+     * @return a new map with objective keys remapped to generated keys
+     */
+    @NotNull
+    private Map<String, String> remapInlineDisplayObjectiveKeys(
+            @NotNull Map<String, String> templateDisplay,
+            @NotNull List<TemplatePhaseDefinition> filteredPhases,
+            @NotNull List<QuestPhaseDefinition> phases) {
+        Map<String, String> remapped = new java.util.LinkedHashMap<>(templateDisplay);
+
+        for (int phaseIdx = 0; phaseIdx < filteredPhases.size() && phaseIdx < phases.size(); phaseIdx++) {
+            TemplatePhaseDefinition templatePhase = filteredPhases.get(phaseIdx);
+            QuestPhaseDefinition questPhase = phases.get(phaseIdx);
+            List<TemplateStageDefinition> templateStages = templatePhase.stages();
+            List<QuestStageDefinition> questStages = questPhase.getStages();
+
+            for (int stageIdx = 0; stageIdx < templateStages.size() && stageIdx < questStages.size(); stageIdx++) {
+                TemplateStageDefinition templateStage = templateStages.get(stageIdx);
+                QuestStageDefinition questStage = questStages.get(stageIdx);
+                List<TemplateObjectiveDefinition> templateObjs = templateStage.objectives();
+                List<QuestObjectiveDefinition> questObjs = questStage.getObjectives();
+
+                for (int objIdx = 0; objIdx < templateObjs.size() && objIdx < questObjs.size(); objIdx++) {
+                    String templateLabel = templateObjs.get(objIdx).label();
+                    if (templateLabel.isEmpty()) {
+                        continue;
+                    }
+                    String templateKey = "objective." + templateLabel;
+                    if (templateDisplay.containsKey(templateKey)) {
+                        String generatedKey = "objective." + questObjs.get(objIdx).getObjectiveKey().getKey();
+                        remapped.remove(templateKey);
+                        remapped.put(generatedKey, templateDisplay.get(templateKey));
+                    }
+                }
+            }
+        }
+        return remapped;
     }
 
     /**

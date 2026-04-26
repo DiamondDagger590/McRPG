@@ -1,4 +1,4 @@
-# Weekly land quests for the quest board (scope: land).
+﻿# Weekly land quests for the quest board (scope: land).
 #
 # XP rewards are in the top-level 'rewards:' section — all scope members receive
 # them on completion regardless of individual contribution.
@@ -22,8 +22,6 @@ quests:
       objectives:
         land_weekly_break_stone: "Mine stone blocks"
         land_weekly_break_ores: "Mine ore blocks"
-      rewards:
-        mining_xp: "Mining XP"
     scope: mcrpg:land_scope
     expiration: 10d
     board-metadata:
@@ -98,8 +96,6 @@ quests:
       description: "Defend your land from waves of hostile mobs"
       objectives:
         land_weekly_slay_hostiles: "Slay hostile mobs"
-      rewards:
-        swords_xp: "Swords XP"
     scope: mcrpg:land_scope
     expiration: 10d
     board-metadata:
@@ -154,8 +150,6 @@ quests:
       objectives:
         land_weekly_slay_blazes: "Slay blazes"
         land_weekly_slay_wither_skeletons: "Slay wither skeletons"
-      rewards:
-        swords_xp: "Swords XP"
     scope: mcrpg:land_scope
     expiration: 10d
     board-metadata:
@@ -228,9 +222,6 @@ quests:
       objectives:
         land_weekly_chop_logs: "Chop mixed logs"
         land_weekly_break_crops: "Harvest mixed crops"
-      rewards:
-        woodcutting_xp: "Woodcutting XP"
-        herbalism_xp: "Herbalism XP"
     scope: mcrpg:land_scope
     expiration: 10d
     board-metadata:

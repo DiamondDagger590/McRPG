@@ -1,4 +1,4 @@
-# Weekly woodcutting quests for the quest board.
+﻿# Weekly woodcutting quests for the quest board.
 
 quests:
   # -------------------------------------------------------------------
@@ -10,9 +10,6 @@ quests:
       description: "Fulfill a large lumber order"
       objectives:
         weekly_chop_mixed_logs: "Chop mixed logs"
-      rewards:
-        woodcutting_xp: "Woodcutting XP"
-        plank_bonus: "Oak Planks"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:

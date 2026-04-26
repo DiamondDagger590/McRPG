@@ -702,7 +702,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_OBJECTIVE_MOB_KILL_MULTI_HEADER = Route.fromString(toRoutePath(QUEST_OBJECTIVE_MOB_KILL_HEADER, "multi-header"));
     public static final Route QUEST_OBJECTIVE_MOB_KILL_MULTI_ITEM = Route.fromString(toRoutePath(QUEST_OBJECTIVE_MOB_KILL_HEADER, "multi-item"));
 
-    // Quest reward type fallback display labels (used when no display-key or display label is configured)
+    // Quest reward type fallback display labels (used when no localization route or inline display label is configured)
     private static final String QUEST_REWARD_TYPE_HEADER = "quest-reward-types";
     public static final Route QUEST_REWARD_COMMAND_FALLBACK_DISPLAY = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "command.fallback-display"));
     public static final Route QUEST_REWARD_SCALABLE_COMMAND_FALLBACK_DISPLAY = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "scalable-command.fallback-display"));

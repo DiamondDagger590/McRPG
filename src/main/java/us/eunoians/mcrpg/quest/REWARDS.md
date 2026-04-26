@@ -66,7 +66,7 @@ public interface QuestRewardType extends McRPGContent {
     @NotNull default String describeForDisplay() { ... }
 
     // Localized description resolved through the player's locale chain.
-    // Default delegates to describeForDisplay(). Override to support display-key.
+    // Default delegates to describeForDisplay(). Override to attempt locale resolution first.
     @NotNull default String describeForDisplay(@NotNull McRPGPlayer player) { return describeForDisplay(); }
 }
 ```
@@ -319,42 +319,44 @@ The `condition` block supports all built-in condition shorthand (`permission`, `
 
 **Localizing reward display labels**
 
-`mcrpg:command` and `mcrpg:scalable_command` rewards support two fields for the human-readable label shown in GUIs:
+`mcrpg:command` and `mcrpg:scalable_command` rewards support the following display resolution order:
 
-| Field | Purpose |
-|-------|---------|
-| `display` | A literal string fallback (e.g., `"Hero Title"`). Used when no `display-key` is set or the key has no translation for the player's locale. |
-| `display-key` | A locale route resolved through the player's locale chain (e.g., `"quest-reward-display.hero-title"`). If translation is found, it takes priority over `display`. |
-
-Translations for `display-key` live in the bundled `en_quest.yml` file (or a `DynamicLocale` file for custom languages):
-
-```yaml
-# en_quest.yml
-quest-reward-display:
-  hero-title: "Hero Title"
-  mining-champion: "Mining Champion Badge"
-```
+1. **Auto-derived locale route** — McRPG automatically generates a route from the quest key and reward label, e.g. `quests.mcrpg.daily_ore_rush.rewards.hero_title`. Add an entry at that path in `en_quest.yml` (or a `DynamicLocale` file for custom languages) to provide a localized label.
+2. **Inline `display` field** — a literal string on the reward definition, used as a fallback when no locale entry exists.
+3. **Generic type fallback** — the `quest-reward-types.command.fallback-display` locale key, used when neither of the above resolves.
 
 Quest YAML usage:
 
 ```yaml
 rewards:
-  title-reward:
+  hero_title:
     type: mcrpg:command
     commands:
       - "title grant {player} hero"
-    display-key: "quest-reward-display.hero-title"
-    display: "Hero Title"
+    display: "Hero Title"   # inline fallback if no locale entry exists
 ```
 
-A French server owner would add `plugins/McRPG/localization/french/fr_quest.yml`:
+Locale entry in `en_quest.yml`:
 
 ```yaml
-quest-reward-display:
-  hero-title: "Titre de Héros"
+quests:
+  mcrpg:
+    daily_ore_rush:
+      rewards:
+        hero_title: "Hero Title"
 ```
 
-Custom `QuestRewardType` implementations that want the same localization support should override `describeForDisplay(McRPGPlayer)` and perform the same try-resolve pattern.
+A French server owner would add the same route in `plugins/McRPG/localization/french/fr_quest.yml`:
+
+```yaml
+quests:
+  mcrpg:
+    daily_ore_rush:
+      rewards:
+        hero_title: "Titre de Héros"
+```
+
+Custom `QuestRewardType` implementations that want the same localization support should override `describeForDisplay(McRPGPlayer)` and attempt locale resolution via the auto-derived route before falling back to `describeForDisplay()`.
 
 **Runtime classes:**
 - [`QuestRewardEntry`](board/template/condition/QuestRewardEntry.java) — wraps an inline reward + optional fallback; exposes `resolveForPlayer(ConditionContext)` which returns either primary or fallback

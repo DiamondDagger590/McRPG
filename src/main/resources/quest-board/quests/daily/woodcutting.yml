@@ -1,4 +1,4 @@
-# Daily woodcutting quests for the quest board.
+﻿# Daily woodcutting quests for the quest board.
 
 quests:
   # -------------------------------------------------------------------
@@ -10,8 +10,6 @@ quests:
       description: "Chop down common trees"
       objectives:
         daily_chop_common_logs: "Chop common logs"
-      rewards:
-        woodcutting_xp: "Woodcutting XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -52,9 +50,6 @@ quests:
       description: "Harvest exotic wood from rare biomes"
       objectives:
         daily_chop_exotic_logs: "Chop exotic logs"
-      rewards:
-        woodcutting_xp: "Woodcutting XP"
-        stick_bonus: "Sticks"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -100,8 +95,6 @@ quests:
       description: "Clear out leaves from the forest"
       objectives:
         daily_break_leaves: "Break leaves"
-      rewards:
-        woodcutting_xp: "Woodcutting XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:

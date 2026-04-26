@@ -243,6 +243,42 @@ public class QuestDefinition implements McRPGContent {
     }
 
     /**
+     * Gets the {@link Route} used to look up this quest's description in the localization system.
+     * The route follows the pattern {@code quests.{namespace}.{key}.description}.
+     *
+     * @return the localization route for the description
+     */
+    @NotNull
+    public Route getDescriptionRoute() {
+        return Route.fromString("quests." + questKey.getNamespace() + "." + questKey.getKey() + ".description");
+    }
+
+    /**
+     * Gets the localized description for this quest, resolved through the player's locale chain.
+     * Falls back to the inline {@code display.description} value from the quest YAML if the
+     * localization entry is absent. Returns empty if neither source provides a description,
+     * since not all quests require a description.
+     *
+     * @param player the player whose locale chain determines the language
+     * @return an {@link Optional} containing the description, or empty if none is configured
+     */
+    @NotNull
+    public Optional<String> getDescription(@NotNull McRPGPlayer player) {
+        try {
+            return Optional.of(RegistryAccess.registryAccess()
+                    .registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION)
+                    .getLocalizedMessage(player, getDescriptionRoute()));
+        } catch (Exception e) {
+            String inline = inlineDisplay.get("description");
+            if (inline != null && !inline.isEmpty()) {
+                return Optional.of(inline);
+            }
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Gets the localized display name for this quest, resolved through the player's locale chain.
      * Falls back to a formatted version of the quest key if no localization entry exists.
      *

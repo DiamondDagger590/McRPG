@@ -103,8 +103,9 @@ public class ActiveQuestSlot implements McRPGSlot {
 
         for (var stage : questInstance.getActiveQuestStages()) {
             for (QuestObjectiveInstance obj : stage.getQuestObjectives()) {
-                String objDesc = defOpt.flatMap(def -> def.findObjectiveDefinition(obj.getQuestObjectiveKey()))
-                        .map(objDef -> objDef.getDescription(mcRPGPlayer, questInstance.getQuestKey()))
+                String objDesc = defOpt.flatMap(def -> def.findObjectiveDefinition(obj.getQuestObjectiveKey())
+                        .map(objDef -> objDef.getDescription(mcRPGPlayer, questInstance.getQuestKey(),
+                                def.getInlineDisplayValue("objective." + objDef.getObjectiveKey().getKey()).orElse(null))))
                         .orElse(obj.getQuestObjectiveKey().getKey());
 
                 String[] descLines = objDesc.split("\n");

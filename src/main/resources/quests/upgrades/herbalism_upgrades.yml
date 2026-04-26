@@ -1,4 +1,4 @@
-# Ability upgrade quests for Herbalism abilities (tiers 2–5).
+﻿# Ability upgrade quests for Herbalism abilities (tiers 2–5).
 #
 # T2/T3: Single objective. Crop variety escalates per tier.
 # T4/T5: Two independent objectives in one stage — both must complete.
@@ -18,8 +18,6 @@ quests:
       description: "Harvest basic farm crops to grow your verdant power"
       objectives:
         verdant_surge_tier2_obj: "Harvest wheat and carrots"
-      rewards:
-        upgrade: "Ability Upgrade"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -47,8 +45,6 @@ quests:
       description: "Tend to a wider variety of farm crops"
       objectives:
         verdant_surge_tier3_obj: "Harvest wheat, carrots, potatoes, and beetroots"
-      rewards:
-        upgrade: "Ability Upgrade"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -77,8 +73,6 @@ quests:
       objectives:
         verdant_surge_tier4_primary: "Harvest wheat, carrots, potatoes, and beetroots"
         verdant_surge_tier4_secondary: "Harvest melons and pumpkins"
-      rewards:
-        upgrade: "Ability Upgrade"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -113,8 +107,6 @@ quests:
       objectives:
         verdant_surge_tier5_primary: "Harvest core Overworld crops"
         verdant_surge_tier5_secondary: "Harvest nether wart and cocoa beans"
-      rewards:
-        upgrade: "Ability Upgrade"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -152,8 +144,6 @@ quests:
       description: "Gather large quantities of common crops"
       objectives:
         mass_harvest_tier2_obj: "Harvest wheat and potatoes"
-      rewards:
-        upgrade: "Ability Upgrade"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -181,8 +171,6 @@ quests:
       description: "Harvest crops and sugar cane in bulk"
       objectives:
         mass_harvest_tier3_obj: "Harvest wheat, potatoes, beetroots, and sugar cane"
-      rewards:
-        upgrade: "Ability Upgrade"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -211,8 +199,6 @@ quests:
       objectives:
         mass_harvest_tier4_primary: "Harvest wheat, potatoes, beetroots, and sugar cane"
         mass_harvest_tier4_secondary: "Harvest sweet berry bushes"
-      rewards:
-        upgrade: "Ability Upgrade"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -247,8 +233,6 @@ quests:
       objectives:
         mass_harvest_tier5_primary: "Harvest crops and sweet berry bushes"
         mass_harvest_tier5_secondary: "Harvest nether wart and chorus plants"
-      rewards:
-        upgrade: "Ability Upgrade"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:

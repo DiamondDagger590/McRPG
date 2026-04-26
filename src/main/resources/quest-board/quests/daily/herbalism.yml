@@ -1,4 +1,4 @@
-# Daily herbalism quests for the quest board.
+﻿# Daily herbalism quests for the quest board.
 
 quests:
   # -------------------------------------------------------------------
@@ -10,8 +10,6 @@ quests:
       description: "Harvest crops from the fields"
       objectives:
         daily_break_crops: "Harvest crops"
-      rewards:
-        herbalism_xp: "Herbalism XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -52,9 +50,6 @@ quests:
       description: "Harvest mushroom blocks from dark forests"
       objectives:
         daily_break_mushrooms: "Break mushroom blocks"
-      rewards:
-        herbalism_xp: "Herbalism XP"
-        stew_bonus: "Mushroom Stew"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -99,8 +94,6 @@ quests:
       description: "Harvest nether wart from soul sand gardens"
       objectives:
         daily_break_nether_wart: "Harvest nether wart"
-      rewards:
-        herbalism_xp: "Herbalism XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
