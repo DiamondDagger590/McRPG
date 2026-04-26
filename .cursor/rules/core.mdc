@@ -18,6 +18,8 @@ McCore provides: `CorePlugin`, `CoreBootstrap`, `Registry`, `Manager`, `Registry
 - `./gradlew fastShadowJar` — clean + build (no tests)
 - `./gradlew test` — tests only
 
+**The entire test suite must pass before a task is considered complete.** Run `./gradlew verifiedShadowJar` and verify zero failures across all test classes — not just tests related to the current change. Regressions in unrelated tests still block completion.
+
 ## Entity Hierarchy
 
 `AbilityHolder` → `LoadoutHolder` → `SkillHolder` → `McRPGPlayer`

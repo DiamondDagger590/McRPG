@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.quest;
 
+import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.response.GetItemRequest;
 import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
@@ -113,7 +114,7 @@ public class QuestManager extends Manager<McRPG> {
     };
     private static final String DEFAULT_GENERIC_UPGRADE_QUEST_RESOURCE = "quests/upgrades/generic_ability_upgrades.yml";
 
-    private final long finishedQuestKeepAliveNanos;
+    private final ReloadableContent<Long> finishedQuestKeepAliveNanos;
 
     private final QuestObjectiveTypeRegistry objectiveTypeRegistry;
     private final QuestRewardTypeRegistry rewardTypeRegistry;
@@ -166,12 +167,12 @@ public class QuestManager extends Manager<McRPG> {
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.MAIN_CONFIG);
-        if (mainConfig != null) {
-            this.finishedQuestKeepAliveNanos = Duration.ofMinutes(
-                    mainConfig.getInt(MainConfigFile.QUEST_CACHE_FINISHED_KEEP_ALIVE_MINUTES, 15)).toNanos();
-        } else {
-            this.finishedQuestKeepAliveNanos = Duration.ofMinutes(15).toNanos();
-        }
+        this.finishedQuestKeepAliveNanos = new ReloadableContent<>(mainConfig,
+                MainConfigFile.QUEST_CACHE_FINISHED_KEEP_ALIVE_MINUTES,
+                (document, route) -> Duration.ofMinutes(document.getInt(route, 15)).toNanos());
+        registryAccess.registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.RELOADABLE_CONTENT)
+                .trackReloadableContent(finishedQuestKeepAliveNanos);
 
         extractDefaultQuestResources(plugin);
 
@@ -180,13 +181,13 @@ public class QuestManager extends Manager<McRPG> {
         this.cachedFinishedQuests = Caffeine.newBuilder().ticker(ticker).expireAfter(new Expiry<UUID, QuestInstance>() {
             @Override
             public long expireAfterCreate(UUID uuid, QuestInstance questInstance, long currentTime) {
-                return finishedQuestKeepAliveNanos;
+                return finishedQuestKeepAliveNanos.getContent();
             }
 
             @Override
             public long expireAfterUpdate(UUID uuid, QuestInstance questInstance, long currentTime,
                                           @NonNegative long currentDuration) {
-                return finishedQuestKeepAliveNanos;
+                return finishedQuestKeepAliveNanos.getContent();
             }
 
             @Override

@@ -1,13 +1,18 @@
 package us.eunoians.mcrpg.quest;
 
+import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.route.Route;
 import com.github.benmanes.caffeine.cache.Ticker;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.configuration.FileManager;
+import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
@@ -23,6 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -57,6 +63,11 @@ public class QuestManagerCacheTtlTest extends McRPGBaseTest {
 
     @BeforeEach
     public void setup() throws Exception {
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mock(ReloadableContentManager.class));
+        YamlDocument mainConfig = mock(YamlDocument.class);
+        when(mainConfig.getInt(any(Route.class), anyInt())).thenAnswer(inv -> inv.getArgument(1));
+        FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
+        when(fileManager.getFile(any(FileType.class))).thenReturn(mainConfig);
         ticker = new ManualTicker();
         questManager = new QuestManager(mcRPG, ticker);
 

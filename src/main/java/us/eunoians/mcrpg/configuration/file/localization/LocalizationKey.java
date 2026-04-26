@@ -412,6 +412,11 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_DETAIL_GUI_OVERVIEW_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "overview-slot.display-item"));
     public static final Route QUEST_DETAIL_GUI_PHASE_HEADER_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "phase-header.display-item"));
     public static final Route QUEST_DETAIL_GUI_STAGE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.display-item"));
+    public static final Route QUEST_DETAIL_GUI_STAGE_STATE_LINE = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.state-line"));
+    public static final Route QUEST_DETAIL_GUI_STAGE_STATE_NOT_STARTED = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.stage-state.not-started"));
+    public static final Route QUEST_DETAIL_GUI_STAGE_STATE_IN_PROGRESS = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.stage-state.in-progress"));
+    public static final Route QUEST_DETAIL_GUI_STAGE_STATE_COMPLETED = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.stage-state.completed"));
+    public static final Route QUEST_DETAIL_GUI_STAGE_STATE_CANCELLED = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.stage-state.cancelled"));
     public static final Route QUEST_DETAIL_GUI_OBJECTIVE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "objective-slot.display-item"));
     public static final Route QUEST_DETAIL_GUI_REWARD_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "reward-slot.display-item"));
     public static final Route QUEST_DETAIL_GUI_DURATION_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "duration-slot.display-item"));

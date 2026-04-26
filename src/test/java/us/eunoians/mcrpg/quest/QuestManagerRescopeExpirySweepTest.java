@@ -1,14 +1,18 @@
 package us.eunoians.mcrpg.quest;
 
+import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.event.HandlerList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.configuration.FileManager;
+import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
@@ -45,6 +49,9 @@ public class QuestManagerRescopeExpirySweepTest extends McRPGBaseTest {
 
     @BeforeEach
     public void setup() throws Exception {
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mock(ReloadableContentManager.class));
+        FileManager fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
+        when(fileManager.getFile(any(FileType.class))).thenReturn(mock(YamlDocument.class));
         questManager = new QuestManager(mcRPG);
 
         McRPGDatabaseManager mockDbManager = mock(McRPGDatabaseManager.class);

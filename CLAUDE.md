@@ -474,6 +474,7 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - New utility classes and non-Bukkit logic belong in `src/test/java/` (mirrors main package structure)
 - Extend `McRPGBaseTest` for any test that requires Bukkit or MockBukkit setup
 - Shared test helpers and fixtures go in `src/testFixtures/java/`
+- **The entire test suite must pass before a task is considered complete** — run `./gradlew verifiedShadowJar` (or `./gradlew test`) and verify zero failures across all test classes, not just tests related to the current change. Regressions in unrelated tests still block completion.
 
 ---
 

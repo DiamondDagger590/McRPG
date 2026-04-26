@@ -303,12 +303,23 @@ gui:
         name: "<gold>Phase <phase_number>/<phase_total>"
         lore:
           - '<gray>Completion mode: <gold><completion_mode>'
-    # Stage slot (reserved for future use if stages need individual display)
+    # Stage slot. Placeholders: <stage_number>, <stage_total>, <objective_count>
+    # State line is appended dynamically using the stage-state.* keys below.
     stage-slot:
       display-item:
         material: PAPER
-        name: "<gold>Stage"
-        lore: []
+        name: "<gold>Stage <stage_number>/<stage_total>"
+        lore:
+          - '<gray>Objectives: <gold><objective_count>'
+      # State lore line appended below the stage display item lore.
+      # Placeholder: <state> = stage state display label (resolved from stage-state.* below)
+      state-line: "<gray>State: <gold><state>"
+      # QuestStageState display labels used in the <state> placeholder.
+      stage-state:
+        not-started: "Not Started"
+        in-progress: "In Progress"
+        completed: "Completed"
+        cancelled: "Cancelled"
     # Objective slot. Placeholders: <objective_description>
     # Progress and state lines are appended dynamically using the keys below.
     objective-slot:

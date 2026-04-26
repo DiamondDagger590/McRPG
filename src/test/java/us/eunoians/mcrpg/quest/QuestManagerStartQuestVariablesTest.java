@@ -1,11 +1,16 @@
 package us.eunoians.mcrpg.quest;
 
+import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.configuration.FileManager;
+import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
@@ -23,6 +28,7 @@ import us.eunoians.mcrpg.quest.reward.builtin.CommandRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.ExperienceRewardType;
 import us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
 import java.util.Map;
@@ -31,12 +37,18 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class QuestManagerStartQuestVariablesTest extends McRPGBaseTest {
 
     @BeforeEach
     public void setup() {
         RegistryAccess registryAccess = RegistryAccess.registryAccess();
+        registryAccess.registry(RegistryKey.MANAGER).register(mock(ReloadableContentManager.class));
+        FileManager fileManager = registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
+        when(fileManager.getFile(any(FileType.class))).thenReturn(mock(YamlDocument.class));
 
         AbilityRegistry abilityRegistry = registryAccess.registry(McRPGRegistryKey.ABILITY);
         if (abilityRegistry == null) {

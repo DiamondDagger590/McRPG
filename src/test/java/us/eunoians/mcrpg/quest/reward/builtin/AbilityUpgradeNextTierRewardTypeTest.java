@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
+import us.eunoians.mcrpg.ability.StubTierableAbility;
 import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemBuilder;
@@ -81,7 +82,7 @@ public class AbilityUpgradeNextTierRewardTypeTest extends McRPGBaseTest {
         UUID playerUUID = player.getUniqueId();
 
         NamespacedKey abilityKey = NamespacedKey.fromString("mcrpg:test_next_tier");
-        TestTierableAbility ability = new TestTierableAbility(mcRPG, abilityKey, 5, 2);
+        StubTierableAbility ability = new StubTierableAbility(mcRPG, abilityKey).withMaxTier(5).withCurrentTier(2);
         abilityRegistry.register(ability);
 
         McRPGPlayer mcRPGPlayer = mock(McRPGPlayer.class);
@@ -113,7 +114,7 @@ public class AbilityUpgradeNextTierRewardTypeTest extends McRPGBaseTest {
         UUID playerUUID = player.getUniqueId();
 
         NamespacedKey abilityKey = NamespacedKey.fromString("mcrpg:test_next_tier_max");
-        TestTierableAbility ability = new TestTierableAbility(mcRPG, abilityKey, 3, 3);
+        StubTierableAbility ability = new StubTierableAbility(mcRPG, abilityKey).withMaxTier(3).withCurrentTier(3);
         abilityRegistry.register(ability);
 
         McRPGPlayer mcRPGPlayer = mock(McRPGPlayer.class);
@@ -188,104 +189,6 @@ public class AbilityUpgradeNextTierRewardTypeTest extends McRPGBaseTest {
 
         AbilityUpgradeNextTierRewardType parsed = new AbilityUpgradeNextTierRewardType().parseConfig(section);
         assertEquals("mcrpg:parse_config_ability", parsed.serializeConfig().get("ability"));
-    }
-
-    private static final class TestTierableAbility implements TierableAbility {
-        private final McRPG plugin;
-        private final NamespacedKey key;
-        private final int maxTier;
-        private final int currentTier;
-
-        private TestTierableAbility(McRPG plugin, NamespacedKey key, int maxTier, int currentTier) {
-            this.plugin = plugin;
-            this.key = key;
-            this.maxTier = maxTier;
-            this.currentTier = currentTier;
-        }
-
-        @Override
-        public int getMaxTier() {
-            return maxTier;
-        }
-
-        @Override
-        public int getUnlockLevelForTier(int tier) {
-            return 1;
-        }
-
-        @Override
-        public int getUpgradeCostForTier(int tier) {
-            return 0;
-        }
-
-        @Override
-        public int getCurrentAbilityTier(@NotNull AbilityHolder abilityHolder) {
-            return currentTier;
-        }
-
-        @Override
-        public @NotNull Plugin getPlugin() {
-            return plugin;
-        }
-
-        @Override
-        public @NotNull NamespacedKey getAbilityKey() {
-            return key;
-        }
-
-        @Override
-        public @NotNull Set<NamespacedKey> getApplicableAttributes() {
-            return Set.of();
-        }
-
-        @Override
-        public @NotNull String getDatabaseName() {
-            return key.getKey();
-        }
-
-        @Override
-        public @NotNull String getName(@NotNull McRPGPlayer player) {
-            return "TestTierableAbility";
-        }
-
-        @Override
-        public @NotNull String getName() {
-            return "TestTierableAbility";
-        }
-
-        @Override
-        public Component getDisplayName(@NotNull McRPGPlayer player) {
-            return Component.text("TestTierableAbility");
-        }
-
-        @Override
-        public Component getDisplayName() {
-            return Component.text("TestTierableAbility");
-        }
-
-        @Override
-        public AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        }
-
-        @Override
-        public boolean isAbilityEnabled() {
-            return true;
-        }
-
-        @Override
-        public boolean isPassive() {
-            return true;
-        }
-
-        @Override
-        public @NotNull Optional<NamespacedKey> getExpansionKey() {
-            return Optional.empty();
-        }
     }
 
     private static final class TestSkillTierableAbility implements TierableAbility, SkillAbility {

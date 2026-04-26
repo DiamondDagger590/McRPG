@@ -22,6 +22,7 @@ import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailObjectiveSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailOverviewSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailPhaseSlot;
+import us.eunoians.mcrpg.gui.quest.slot.QuestDetailStageSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailAbandonSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailDurationSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestDetailRewardSlot;
@@ -140,7 +141,13 @@ public class QuestDetailGui extends McRPGPaginatedGui {
             for (QuestPhaseDefinition phaseDef : def.getPhases()) {
                 slots.add(new QuestDetailPhaseSlot(phaseDef, def.getPhaseCount()));
 
+                int stageNumber = 0;
+                int totalStages = phaseDef.getStages().size();
                 for (QuestStageDefinition stageDef : phaseDef.getStages()) {
+                    stageNumber++;
+                    QuestStageInstance stageInstance = findStageInstance(stageDef.getStageKey()).orElse(null);
+                    slots.add(new QuestDetailStageSlot(stageDef, stageInstance, stageNumber, totalStages));
+
                     for (QuestObjectiveDefinition objDef : stageDef.getObjectives()) {
                         QuestObjectiveInstance objInstance = findObjectiveInstance(objDef.getObjectiveKey());
                         slots.add(new QuestDetailObjectiveSlot(questKey, objDef, objInstance));
@@ -165,6 +172,23 @@ public class QuestDetailGui extends McRPGPaginatedGui {
                 .filter(obj -> obj.getQuestObjectiveKey().equals(objectiveKey))
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * Finds the runtime stage instance matching the given stage definition key,
+     * or returns empty when viewing a preview or history entry with no live instance.
+     *
+     * @param stageKey the stage definition key to look up
+     * @return an {@link Optional} containing the matching stage instance, or empty
+     */
+    @NotNull
+    private Optional<QuestStageInstance> findStageInstance(@NotNull NamespacedKey stageKey) {
+        if (questInstance == null) {
+            return Optional.empty();
+        }
+        return questInstance.getQuestStageInstances().stream()
+                .filter(stage -> stage.getStageKey().equals(stageKey))
+                .findFirst();
     }
 
     @NotNull
