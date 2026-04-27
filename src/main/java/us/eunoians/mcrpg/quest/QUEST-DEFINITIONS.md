@@ -284,7 +284,7 @@ QuestDefinitionRegistry registry = RegistryAccess.registryAccess()
 Optional<QuestDefinition> def = registry.get(questKey);
 ```
 
-**Reload:** `/mcrpg quest admin reload` calls `QuestManager.loadQuestDefinitions()` which clears and replaces all config-loaded definitions. Expansion-registered definitions are re-added by their content handlers.
+**Reload:** `/mcrpg admin reload` calls `QuestManager.loadQuestDefinitions()` which clears and replaces all config-loaded definitions. Expansion-registered definitions are re-added by their content handlers.
 
 ---
 

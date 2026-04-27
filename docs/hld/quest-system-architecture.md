@@ -650,7 +650,6 @@ Commands use the existing Cloud command framework (via McCore's `CoreCommandMana
 /quest admin complete <quest_uuid>      -- Force-complete a quest
 /quest admin setstate <quest_uuid> <stage_key> <state>  -- Set a stage's state
 /quest admin setprogress <quest_uuid> <objective_key> <progress>  -- Set objective progress
-/quest admin reload                     -- Reload quest definitions from quests/ directory
 ```
 
 ### Implementation Notes
@@ -660,7 +659,7 @@ Commands use the existing Cloud command framework (via McCore's `CoreCommandMana
 - **`/quest start`**: Looks up `QuestDefinition` from registry, creates a new `QuestInstance`, assigns scope, adds to Tier 1
 - **`/quest info`**: Uses `getQuestInstance()` which walks Tier 1 -> 2 -> 3, displays full tree with progress bars (MiniMessage + `Methods.getProgressBar`)
 - **`/quest history`**: Queries SQL with pagination, loads results into Tier 2 cache
-- **`/quest admin reload`**: Clears `QuestDefinitionRegistry`, re-runs `QuestConfigLoader` on the `quests/` directory. Active quest instances keep running (they reference definitions by key; if a definition is removed, warn in console but don't kill active instances)
+- **`/mcrpg admin reload`**: Reloads all config files, reloadable content, quest definitions, and player level caches in a single command. Quest reloading clears `QuestDefinitionRegistry` and re-runs `QuestConfigLoader` on the `quests/` and `quest-board/quests/` directories. Active quest instances keep running (they reference definitions by key; if a definition is removed, warn in console but don't kill active instances).
 - **`/quest admin setstate`** and **`/quest admin setprogress`**: Useful for debugging and server admin control. Triggers the normal lifecycle checks (stage advancement, phase completion) after the manual change
 
 ### Base Class

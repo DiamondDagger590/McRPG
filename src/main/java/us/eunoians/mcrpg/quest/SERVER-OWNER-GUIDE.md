@@ -62,7 +62,7 @@ plugins/McRPG/
 
 **How to reload after making changes:**
 
-Run `/mcrpg quest admin reload` in-game or from the console. You do not need to restart the server.
+Run `/mcrpg admin reload` in-game or from the console. You do not need to restart the server.
 
 **File format:** All quest files use `.yml` extension (YAML). Any `.yml` or `.yaml` file placed inside the `quests/` or `quest-board/quests/` folders (including subfolders) is loaded automatically. You can organize files however you want — create subfolders by theme, skill, difficulty, etc.
 
@@ -99,7 +99,7 @@ quests:
                     - COBBLESTONE
 ```
 
-Run `/mcrpg quest admin reload` and the quest is live.
+Run `/mcrpg admin reload` and the quest is live.
 
 **What each part means:**
 
@@ -1201,7 +1201,7 @@ rewards:
 ### Quest Not Appearing?
 
 1. Check for YAML syntax errors — even one misplaced space can break the whole file. Use a YAML validator (many are available online for free).
-2. Run `/mcrpg quest admin reload` after saving changes.
+2. Run `/mcrpg admin reload` after saving changes.
 3. Check the server console for warnings — McRPG logs specific error messages when a quest fails to load.
 4. For board quests: make sure `board-metadata.board-eligible` is `true` and `supported-rarities` / `supported-refresh-types` match your board configuration.
 5. For templates: make sure `supported-rarities` lists at least one rarity that exists in your `board.yml`.
@@ -1217,7 +1217,7 @@ rewards:
 - Start simple. Get one basic quest working before adding phases, branching, or templates.
 - Use short expirations (`5m`) and low targets (`required-progress: 3`) while testing, then increase for production.
 - For board testing, you can temporarily set all rarity weights the same to test each tier evenly.
-- Check the console after `/mcrpg quest admin reload` for any errors or warnings.
+- Check the console after `/mcrpg admin reload` for any errors or warnings.
 
 ### Performance
 

@@ -138,8 +138,6 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_CANCEL_SUCCESS = Route.fromString(toRoutePath(QUEST_CANCEL_COMMAND_HEADER, "success"));
 
     private static final String QUEST_ADMIN_COMMAND_HEADER = toRoutePath(QUEST_COMMAND_HEADER, "admin");
-    private static final String QUEST_ADMIN_RELOAD_HEADER = toRoutePath(QUEST_ADMIN_COMMAND_HEADER, "reload");
-    public static final Route QUEST_ADMIN_RELOAD_SUCCESS = Route.fromString(toRoutePath(QUEST_ADMIN_RELOAD_HEADER, "success"));
 
     private static final String QUEST_ADMIN_COMPLETE_HEADER = toRoutePath(QUEST_ADMIN_COMMAND_HEADER, "complete");
     public static final Route QUEST_ADMIN_COMPLETE_NOT_IN_PROGRESS = Route.fromString(toRoutePath(QUEST_ADMIN_COMPLETE_HEADER, "not-in-progress"));

@@ -445,10 +445,6 @@ commands:
       success: "<green>Cancelled quest <white><quest_key></white> <gray>(UUID: <quest_uuid>)"
     # Configure /mcrpg quest admin commands
     admin:
-      # Configure /mcrpg quest admin reload
-      reload:
-        # Supports: <after_count>, <before_count>
-        success: "<green>Quest definitions reloaded. <gray>(<after_count> definitions loaded, was <before_count>)"
       # Configure /mcrpg quest admin complete
       complete:
         # Supports: <quest_state>
