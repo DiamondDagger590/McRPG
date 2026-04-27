@@ -321,13 +321,27 @@ The `condition` block supports all built-in condition shorthand (`permission`, `
 
 **Localizing reward display labels**
 
-`mcrpg:command`, `mcrpg:scalable_command`, and `mcrpg:item` rewards support the following display resolution order:
+All six built-in reward types resolve their display label through the same four-step chain:
 
-1. **Auto-derived locale route** — McRPG automatically generates a route from the quest key and reward label, e.g. `quests.mcrpg.daily_ore_rush.rewards.hero_title`. Add an entry at that path in `en_quest.yml` (or a `DynamicLocale` file for custom languages) to provide a localized label.
-2. **Inline `display.rewards:<label>` in the quest's `display:` block** — a literal string co-located with all other display text for the quest, used as a fallback when no locale entry exists.
-3. **Generic type fallback** — the `quest-reward-types.command.fallback-display` locale key (for `mcrpg:command` / `mcrpg:scalable_command`), or the auto-generated material description (for `mcrpg:item`), used when neither of the above resolves.
+1. **Auto-derived locale route** — McRPG generates a route from the quest key and reward label, e.g. `quests.mcrpg.daily_ore_rush.rewards.mining_xp`. Add an entry at that path in `en_quest.yml` (or a `DynamicLocale` file for another language) to provide a per-quest localized label.
+2. **Inline `display.rewards:<label>` in the quest's `display:` block** — a MiniMessage string with type-specific placeholders, co-located with all other display text. This is the easiest place to customize a single reward. Every shipped quest YAML includes these entries.
+3. **Type-level format template** — the `quest-reward-types.<type>.format` key in `en_quest.yml`, used as a global default for all rewards of that type. Edit this to change the format globally across every quest.
+4. **Hard-coded English fallback** — should never be reached for built-in types.
 
-All inline display text for a quest (name, description, objective labels, reward labels) lives under the `display:` block:
+**Placeholders available in `display.rewards:` and format templates:**
+
+| Reward type | Placeholders |
+|---|---|
+| `mcrpg:experience` | `<amount>` (XP amount), `<skill>` (formatted skill name, e.g. "Mining") |
+| `mcrpg:item` | `<amount>` (stack count), `<material>` (formatted material name, e.g. "Diamond") |
+| `mcrpg:ability_upgrade` | `<ability>` (formatted ability name), `<tier>` (target tier number) |
+| `mcrpg:ability_upgrade_next_tier` | `<ability>` (formatted ability name) |
+| `mcrpg:command` | No data placeholders — use a literal label |
+| `mcrpg:scalable_command` | No data placeholders for the main label |
+
+MiniMessage styling tags (`<gold>`, `<bold>`, etc.) work in all positions.
+
+All inline display text for a quest lives under the `display:` block:
 
 ```yaml
 quests:
@@ -338,22 +352,41 @@ quests:
       objectives:
         break_gold: "Mine gold ore"
       rewards:
-        hero_title: "Hero Title"   # inline fallback if no locale entry exists
+        mining_xp: "<amount> <skill> XP"      # experience: placeholders resolved at display time
+        gem_bonus:  "<amount>x <material>"    # item: same
+        hero_title: "Hero Title"              # command: literal (no placeholders)
     rewards:
+      mining_xp:
+        type: mcrpg:experience
+        skill: MINING
+        amount: 5000
+      gem_bonus:
+        type: mcrpg:item
+        item:
+          material: DIAMOND
+        amount: 2
       hero_title:
         type: mcrpg:command
         commands:
           - "title grant {player} hero"
 ```
 
-Locale entry in `en_quest.yml`:
+To change the format globally for all experience rewards at once, edit `en_quest.yml`:
+
+```yaml
+quest-reward-types:
+  experience:
+    format: "<gold><amount> <skill> XP"   # applies to every experience reward globally
+```
+
+Locale entry for a per-quest override in `en_quest.yml`:
 
 ```yaml
 quests:
   mcrpg:
     daily_ore_rush:
       rewards:
-        hero_title: "Hero Title"
+        mining_xp: "<gold><amount> Mining XP"
 ```
 
 A French server owner would add the same route in `plugins/McRPG/localization/french/fr_quest.yml`:
@@ -363,10 +396,10 @@ quests:
   mcrpg:
     daily_ore_rush:
       rewards:
-        hero_title: "Titre de Héros"
+        mining_xp: "<amount> XP de Minage"
 ```
 
-Custom `QuestRewardType` implementations that want the same localization support should override `withInlineDisplayLabel(String)`, store the label, and use it in `describeForDisplay(McRPGPlayer)` when the locale route lookup fails.
+Custom `QuestRewardType` implementations that want the same localization support should override `withLocalizationRoute(Route)` and `withInlineDisplayLabel(String)`, store both, and apply the same four-step resolution in `describeForDisplay(McRPGPlayer)`.
 
 **Runtime classes:**
 - [`QuestRewardEntry`](board/template/condition/QuestRewardEntry.java) — wraps an inline reward + optional fallback; exposes `resolveForPlayer(ConditionContext)` which returns either primary or fallback

@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.setting.impl.LocalePlayerSetting;
 import us.eunoians.mcrpg.setting.impl.SpecificLocaleSetting;
 
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -39,6 +40,30 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
 
     public McRPGLocalizationManager(McRPG mcRPG) {
         super(mcRPG);
+    }
+
+    /**
+     * Resolves a literal MiniMessage template string by substituting the supplied placeholder map.
+     * This is an overload of {@link #getLocalizedMessage} for inline display strings sourced from
+     * quest YAML (e.g. {@code display.rewards.<label>}) where there is no {@link dev.dejvokep.boostedyaml.route.Route}
+     * to look up — it applies the same {@code <key>} placeholder substitution semantics as the
+     * route-based variant so that tokens like {@code <amount>} or {@code <skill>} resolve uniformly.
+     * <p>
+     * The returned string may contain MiniMessage styling tags (e.g. {@code <gold>}) which are
+     * preserved as-is for downstream MiniMessage parsing by the GUI layer.
+     *
+     * @param template     raw template string containing {@code <key>} placeholders and optional
+     *                     MiniMessage tags
+     * @param placeholders map of placeholder key names to their substitution values
+     * @return the template with all {@code <key>} tokens replaced by their corresponding values
+     */
+    @NotNull
+    public String getLocalizedMessage(@NotNull String template, @NotNull Map<String, String> placeholders) {
+        String result = template;
+        for (Map.Entry<String, String> entry : placeholders.entrySet()) {
+            result = result.replace("<" + entry.getKey() + ">", entry.getValue());
+        }
+        return result;
     }
 
     /**

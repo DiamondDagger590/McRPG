@@ -10,6 +10,9 @@ quests:
       description: "Bring in a massive crop harvest"
       objectives:
         weekly_break_mixed_crops: "Harvest mixed crops"
+      rewards:
+        herbalism_xp: "<amount> <skill> XP"
+        bread_bonus: "<amount>x <material>"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:

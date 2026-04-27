@@ -1,4 +1,4 @@
-﻿# Ability upgrade quests for Mining abilities (tiers 2–5).
+# Ability upgrade quests for Mining abilities (tiers 2–5).
 #
 # T2/T3: Single objective. Ore tier escalates per tier.
 # T4/T5: Two independent objectives in one stage — both must complete.
@@ -18,6 +18,8 @@ quests:
       description: "Mine coal and copper to practice your triple strike"
       objectives:
         its_a_triple_tier2_obj: "Mine coal and copper ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -45,6 +47,8 @@ quests:
       description: "Extract iron ore to sharpen your triple-drop technique"
       objectives:
         its_a_triple_tier3_obj: "Mine iron ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -73,6 +77,8 @@ quests:
       objectives:
         its_a_triple_tier4_primary: "Mine iron and gold ores"
         its_a_triple_tier4_secondary: "Mine redstone and lapis ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -107,6 +113,8 @@ quests:
       objectives:
         its_a_triple_tier5_primary: "Mine iron, gold, and redstone ores"
         its_a_triple_tier5_secondary: "Mine diamond and emerald ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -145,6 +153,8 @@ quests:
       description: "Mine iron to fuel your remote transfer ability"
       objectives:
         remote_transfer_tier2_obj: "Mine iron ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -172,6 +182,8 @@ quests:
       description: "Extract gold from the Overworld and Nether"
       objectives:
         remote_transfer_tier3_obj: "Mine gold and Nether gold ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -200,6 +212,8 @@ quests:
       objectives:
         remote_transfer_tier4_primary: "Mine gold and Nether gold ores"
         remote_transfer_tier4_secondary: "Mine lapis and redstone ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -234,6 +248,8 @@ quests:
       objectives:
         remote_transfer_tier5_primary: "Mine gold, Nether gold, and lapis ores"
         remote_transfer_tier5_secondary: "Mine diamond ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -272,6 +288,8 @@ quests:
       description: "Scan for and mine the rarest Overworld ores"
       objectives:
         ore_scanner_tier2_obj: "Mine diamond and emerald ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -299,6 +317,8 @@ quests:
       description: "Extend your scanning range into Nether quartz deposits"
       objectives:
         ore_scanner_tier3_obj: "Mine diamond, emerald, and Nether quartz ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -328,6 +348,8 @@ quests:
       objectives:
         ore_scanner_tier4_primary: "Mine diamond and emerald ores"
         ore_scanner_tier4_secondary: "Mine Nether quartz and Nether gold ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -362,6 +384,8 @@ quests:
       objectives:
         ore_scanner_tier5_primary: "Mine diamond, emerald, and Nether quartz ores"
         ore_scanner_tier5_secondary: "Mine ancient debris"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:

@@ -10,6 +10,8 @@ quests:
       description: "Eliminate common undead creatures"
       objectives:
         daily_slay_zombies: "Slay zombies and their variants"
+      rewards:
+        swords_xp: "<amount> <skill> XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -51,6 +53,8 @@ quests:
       objectives:
         daily_slay_skeletons: "Slay skeletons"
         daily_slay_spiders: "Slay spiders"
+      rewards:
+        swords_xp: "<amount> <skill> XP"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -103,6 +107,9 @@ quests:
       objectives:
         daily_slay_blazes: "Slay blazes"
         daily_slay_piglins: "Slay piglin brutes and zombified piglins"
+      rewards:
+        swords_xp: "<amount> <skill> XP"
+        blaze_bonus: "<amount>x <material>"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -157,6 +164,9 @@ quests:
       description: "Eliminate creepers before they explode"
       objectives:
         daily_slay_creepers: "Slay creepers"
+      rewards:
+        swords_xp: "<amount> <skill> XP"
+        gunpowder_bonus: "<amount>x <material>"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -200,6 +210,9 @@ quests:
       description: "Clear out spider nests"
       objectives:
         daily_slay_all_spiders: "Slay spiders and cave spiders"
+      rewards:
+        swords_xp: "<amount> <skill> XP"
+        string_bonus: "<amount>x <material>"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:
@@ -244,6 +257,9 @@ quests:
       description: "Fight a variety of overworld hostile mobs"
       objectives:
         daily_slay_mixed_hostiles: "Slay overworld hostile mobs"
+      rewards:
+        swords_xp: "<amount> <skill> XP"
+        wind_charge_bonus: "<amount>x <material>"
     scope: mcrpg:single_player
     expiration: 24h
     board-metadata:

@@ -1,4 +1,4 @@
-﻿# Ability upgrade quests for Swords abilities (tiers 2–5).
+# Ability upgrade quests for Swords abilities (tiers 2–5).
 #
 # T2/T3: Single objective. Targets escalate in difficulty per tier.
 # T4/T5: Two independent objectives in one stage — both must complete.
@@ -18,6 +18,8 @@ quests:
       description: "Hunt venomous spiders to sharpen your bleed"
       objectives:
         enhanced_bleed_tier2_obj: "Slay spiders and cave spiders"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -45,6 +47,8 @@ quests:
       description: "Seek out venomous creatures and potion-wielding witches"
       objectives:
         enhanced_bleed_tier3_obj: "Slay spiders, cave spiders, and witches"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -73,6 +77,8 @@ quests:
       objectives:
         enhanced_bleed_tier4_primary: "Slay spiders, cave spiders, and witches"
         enhanced_bleed_tier4_secondary: "Slay wither skeletons"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -107,6 +113,8 @@ quests:
       objectives:
         enhanced_bleed_tier5_primary: "Slay venomous mobs"
         enhanced_bleed_tier5_secondary: "Slay wither skeletons"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -144,6 +152,8 @@ quests:
       description: "Hone your piercing strikes against skeletal archers"
       objectives:
         deeper_wound_tier2_obj: "Slay skeletons and strays"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -171,6 +181,8 @@ quests:
       description: "Hunt skeletal ranged enemies across swamp and tundra"
       objectives:
         deeper_wound_tier3_obj: "Slay skeletons, strays, and bogged"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -199,6 +211,8 @@ quests:
       objectives:
         deeper_wound_tier4_primary: "Slay skeletons and strays"
         deeper_wound_tier4_secondary: "Slay bogged"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -233,6 +247,8 @@ quests:
       objectives:
         deeper_wound_tier5_primary: "Slay skeletons, strays, and bogged"
         deeper_wound_tier5_secondary: "Slay wither skeletons"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -270,6 +286,8 @@ quests:
       description: "Drain life from the walking dead"
       objectives:
         vampire_tier2_obj: "Slay zombies and drowned"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -297,6 +315,8 @@ quests:
       description: "Devour undead mobs from overworld biomes"
       objectives:
         vampire_tier3_obj: "Slay zombies, drowned, and husks"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -325,6 +345,8 @@ quests:
       objectives:
         vampire_tier4_primary: "Slay zombies, drowned, and husks"
         vampire_tier4_secondary: "Slay zombie villagers and phantoms"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -359,6 +381,8 @@ quests:
       objectives:
         vampire_tier5_primary: "Slay core undead mobs"
         vampire_tier5_secondary: "Slay phantoms and zoglins"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -396,6 +420,8 @@ quests:
       description: "Strike down burst-damage foes that test your AoE"
       objectives:
         serrated_strikes_tier2_obj: "Slay creepers and slimes"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -423,6 +449,8 @@ quests:
       description: "Hunt explosive and gelatinous creatures from multiple biomes"
       objectives:
         serrated_strikes_tier3_obj: "Slay creepers, slimes, and magma cubes"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -451,6 +479,8 @@ quests:
       objectives:
         serrated_strikes_tier4_primary: "Slay creepers and slimes"
         serrated_strikes_tier4_secondary: "Slay magma cubes and blazes"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -485,6 +515,8 @@ quests:
       objectives:
         serrated_strikes_tier5_primary: "Slay creepers, slimes, and magma cubes"
         serrated_strikes_tier5_secondary: "Slay blazes and ghasts"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -522,6 +554,8 @@ quests:
       description: "Unleash your rage spike against aggressive Nether mobs"
       objectives:
         rage_spike_tier2_obj: "Slay endermen and piglins"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -549,6 +583,8 @@ quests:
       description: "Hunt provocation-driven mobs through the Nether"
       objectives:
         rage_spike_tier3_obj: "Slay endermen, piglins, and zombified piglins"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -577,6 +613,8 @@ quests:
       objectives:
         rage_spike_tier4_primary: "Slay endermen and piglins"
         rage_spike_tier4_secondary: "Slay hoglins and zombified piglins"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -611,6 +649,8 @@ quests:
       objectives:
         rage_spike_tier5_primary: "Slay endermen, piglins, and zombified piglins"
         rage_spike_tier5_secondary: "Slay hoglins and ghasts"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:

@@ -11,6 +11,9 @@ quests:
       objectives:
         weekly_break_ancient_debris: "Mine ancient debris"
         weekly_break_diamonds: "Mine diamond ore"
+      rewards:
+        mining_xp: "<amount> <skill> XP"
+        netherite_scrap: "<amount>x <material>"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:

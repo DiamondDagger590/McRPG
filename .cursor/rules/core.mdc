@@ -105,7 +105,7 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - 4-space indentation, K&R brace style (standard Java)
 - Prefer `var` for local variables when the declared type is long/nested and would be more distracting than helpful; otherwise prefer explicit types
 - Javadoc on all methods (public and private) with `@param` and `@return` semantics
-- Prefer object collaborators with instance methods for domain behavior; avoid introducing static helper classes when behavior naturally belongs to a service/slot/manager object
+- Prefer object collaborators with instance methods for domain behavior; avoid introducing static helper classes when behavior naturally belongs to a service/slot/manager object. Demote private helpers to instance scope when they logically operate on or near the enclosing class's instance state — declaring them `static` misrepresents their relationship to that state and makes future dependency additions harder. If a helper is genuinely shared cross-class plumbing (e.g. template placeholder substitution), push it onto the appropriate manager or service rather than duplicating it.
 - No section-divider comments (`// --- Section name ---` or `// ===== Section =====`) — if a class needs labeled sections, it is too large or has too many concerns. Extract a collaborator or use natural method ordering instead
 - **Third-party developer mindset:** McRPG is extensible by external plugins. Changes to public APIs, events, and registries should be made as if you were a third-party plugin hooking in — prefer additive non-breaking changes, fire Bukkit events where external plugins would want to intercept, document extension points.
 
@@ -121,7 +121,8 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - **No direct entity casts** — use `instanceof` pattern matching: `if (entity instanceof Player p) { ... }`
 - **No McRPG-specific logic in McCore** — McCore changes affect all downstream plugins
 - **No fully-qualified type references in method bodies** — always use a top-level `import` statement; inline package paths (e.g. `org.bukkit.Location loc`) are forbidden
-- **No `e.printStackTrace()`** — always use `Logger.log(Level.SEVERE, "context message", e)` so stack traces route through the server logger and are preserved in log aggregators
+- **Plugin logger only** — every logger call must come through `McRPG.getInstance().getLogger()`. Do not use `player.getServer().getLogger()`, `Bukkit.getLogger()`, or `Logger.getLogger(<Class>.class.getName())` — those bypass the plugin logger prefix and any plugin-scoped log handlers
+- **No `e.printStackTrace()`** — always use `McRPG.getInstance().getLogger().log(Level.SEVERE, "context message", e)` so stack traces route through the plugin logger and are preserved in log aggregators
 - **No `Optional.get()` without a guard** — use `orElse`, `orElseGet`, `orElseThrow`, or an `isPresent()` check first; bare `.get()` crashes on the empty path
 - **No Bukkit API calls from async threads** — world, entity, and inventory mutations must be scheduled on the main thread via `Bukkit.getScheduler().runTask(plugin, () -> { ... })`
 - **No blocking `.get()` / `.join()` on a `CompletableFuture` from the main thread** — deadlocks when the future's completion path needs the main-thread scheduler

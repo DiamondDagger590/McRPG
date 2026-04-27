@@ -27,10 +27,49 @@ If behavior needs runtime context (player, manager, offering, scope, config), mo
 - Hiding dependency lookup inside static methods (calling `SomeClass.getInstance()` or `McRPG.getInstance()` inside a static method IS a hidden dependency).
 - `getInstance()` singletons for per-player or per-system state. Per-player state belongs on `McRPGPlayer`; per-system state should be a `Manager` in the registry.
 
+## Anti-pattern: per-class private static helpers
+
+A common slip is writing a helper inside an already-stateful class and marking it `static` just because it happens not to read `this`:
+
+**Before (smell):**
+```java
+public class ExperienceRewardType implements QuestRewardType {
+    private final String skillName;
+    private final long amount;
+
+    // Static despite the class having instance state it logically belongs to.
+    // Becomes a hidden dependency once it needs a registry or manager.
+    private static String formatSkillName(@NotNull String raw) { ... }
+    private static String applyVars(@NotNull String template, @NotNull Map<String, String> vars) { ... }
+}
+```
+
+**After (correct):**
+```java
+public class ExperienceRewardType implements QuestRewardType {
+    private final String skillName;
+    private final long amount;
+
+    // Instance method — honest about its relationship to the class.
+    private String formatSkillName(@NotNull String raw) { ... }
+
+    // Cross-class plumbing belongs on the manager, not duplicated per type.
+    // localization.getLocalizedMessage(displayLabel, vars) replaces applyVars().
+}
+```
+
+Key signals that a `static` helper should be an instance method (or pushed to a manager):
+- The helper is `private` and lives inside a class that already has instance fields.
+- Removing `static` compiles without any other change — the helper was never truly stateless in context.
+- The same helper (or near-identical copy) exists in more than one class.
+
+Key signal that a helper should move to a manager/service instead:
+- The same logic is duplicated across multiple unrelated classes (e.g. `applyVars` in four reward types → `McRPGLocalizationManager.getLocalizedMessage(String, Map)`).
+
 ## Allowed exceptions
 
 - DAO operations that are intentionally static by project convention.
-- Pure constants or tiny stateless value-format helpers where no domain dependency exists.
+- Pure constants or tiny stateless value-format helpers where **no domain dependency exists and the logic could plausibly live on any class without changing meaning** (e.g. a string-to-title-case utility on `McRPGMethods`). The moment the helper is private to a class with instance state, or appears in more than one class, it no longer qualifies.
 
 ## Concrete example: ComboDisplayManager refactor
 

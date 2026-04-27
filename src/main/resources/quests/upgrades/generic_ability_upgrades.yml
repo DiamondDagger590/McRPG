@@ -1,4 +1,4 @@
-﻿# Generic (formula-scaled) ability upgrade quests — one per tierable ability.
+# Generic (formula-scaled) ability upgrade quests — one per tierable ability.
 #
 # These quests use the mcrpg:ability_upgrade_next_tier reward type, which upgrades
 # the ability to currentTier + 1 rather than a fixed tier. The required-progress
@@ -24,6 +24,8 @@ quests:
       description: "Continue improving Enhanced Bleed by hunting venomous mobs"
       objectives:
         enhanced_bleed_upgrade_obj: "Slay spiders, witches, and wither skeletons"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -50,6 +52,8 @@ quests:
       description: "Continue improving Deeper Wound by hunting skeletal ranged mobs"
       objectives:
         deeper_wound_upgrade_obj: "Slay skeletons, strays, bogged, and wither skeletons"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -76,6 +80,8 @@ quests:
       description: "Continue improving Vampire by draining undead mobs"
       objectives:
         vampire_upgrade_obj: "Slay zombies, drowned, husks, zombie villagers, phantoms, and zoglins"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -102,6 +108,8 @@ quests:
       description: "Continue improving Serrated Strikes against explosive and fiery mobs"
       objectives:
         serrated_strikes_upgrade_obj: "Slay creepers, slimes, magma cubes, blazes, and ghasts"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -128,6 +136,8 @@ quests:
       description: "Continue improving Rage Spike against aggressive Nether mobs"
       objectives:
         rage_spike_upgrade_obj: "Slay endermen, piglins, zombified piglins, hoglins, and ghasts"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -157,6 +167,8 @@ quests:
       description: "Continue improving triple drops by mining ores"
       objectives:
         its_a_triple_upgrade_obj: "Mine coal, copper, iron, gold, redstone, and diamond ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -186,6 +198,8 @@ quests:
       description: "Continue improving Remote Transfer by mining metal and utility ores"
       objectives:
         remote_transfer_upgrade_obj: "Mine iron, gold, Nether gold, lapis, redstone, and diamond ores"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -214,6 +228,8 @@ quests:
       description: "Continue improving Ore Scanner by mining rare and exotic ores"
       objectives:
         ore_scanner_upgrade_obj: "Mine diamonds, emeralds, Nether ores, and ancient debris"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -244,6 +260,8 @@ quests:
       description: "Continue improving Heavy Swing by felling a variety of trees"
       objectives:
         heavy_swing_upgrade_obj: "Chop logs from any biome including Nether stems"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -271,6 +289,8 @@ quests:
       description: "Continue improving Dryad's Gift by harvesting tropical and exotic woods"
       objectives:
         dryads_gift_upgrade_obj: "Chop jungle, acacia, mangrove, cherry logs, and bamboo"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -297,6 +317,8 @@ quests:
       description: "Continue improving Nymph's Vitality by harvesting cool-climate and Nether wood"
       objectives:
         nymphs_vitality_upgrade_obj: "Chop birch, spruce, dark oak, mangrove logs, and Nether stems"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -327,6 +349,8 @@ quests:
       description: "Continue improving Verdant Surge by tending to all crop types"
       objectives:
         verdant_surge_upgrade_obj: "Harvest wheat, carrots, potatoes, beetroots, gourds, and exotic crops"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:
@@ -353,6 +377,8 @@ quests:
       description: "Continue improving Mass Harvest by gathering large quantities of plants"
       objectives:
         mass_harvest_upgrade_obj: "Harvest crops, sweet berries, nether wart, and chorus plants"
+      rewards:
+        upgrade: "Upgrade: <ability> (Next Tier)"
     scope: mcrpg:single_player
     repeat-mode: REPEATABLE
     rewards:

@@ -104,19 +104,22 @@ public final class ScalableCommandRewardType implements QuestRewardType {
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
         String amountSuffix = resolveAmountSuffix(localization, player);
+        String label;
         if (localizationRoute != null) {
             try {
-                return localization.getLocalizedMessage(player, localizationRoute) + amountSuffix;
+                label = localization.getLocalizedMessage(player, localizationRoute) + amountSuffix;
+                return prependDefaultColor(localization, player, label);
             } catch (Exception ignored) {
                 // Fall through to inline display label
             }
         }
         if (!displayLabel.isEmpty()) {
-            return displayLabel + amountSuffix;
+            return prependDefaultColor(localization, player, displayLabel + amountSuffix);
         }
         try {
-            return localization.getLocalizedMessage(player,
+            label = localization.getLocalizedMessage(player,
                     LocalizationKey.QUEST_REWARD_SCALABLE_COMMAND_FALLBACK_DISPLAY) + amountSuffix;
+            return prependDefaultColor(localization, player, label);
         } catch (Exception ignored) {
             return describeForDisplay();
         }
@@ -218,3 +221,4 @@ public final class ScalableCommandRewardType implements QuestRewardType {
         return Optional.of(McRPGExpansion.EXPANSION_KEY);
     }
 }
+

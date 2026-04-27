@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
@@ -27,7 +28,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Built-in reward type that grants an item directly to a player's inventory using
@@ -163,8 +163,7 @@ public class ItemRewardType implements QuestRewardType {
                 player.getWorld().dropItemNaturally(player.getLocation(), leftover);
             }
         } catch (Exception e) {
-            Logger.getLogger(ItemRewardType.class.getName())
-                    .log(Level.WARNING, "Failed to grant item reward to " + player.getName(), e);
+            McRPG.getInstance().getLogger().log(Level.WARNING, "Failed to grant item reward to " + player.getName(), e);
         }
     }
 
@@ -211,9 +210,6 @@ public class ItemRewardType implements QuestRewardType {
     @NotNull
     @Override
     public String describeForDisplay() {
-        if (!displayLabel.isEmpty()) {
-            return displayLabel;
-        }
         String materialName = itemConfig.getOrDefault("material", "Item").toString();
         String formatted = materialName.toLowerCase().replace('_', ' ');
         if (!formatted.isEmpty()) {
@@ -225,17 +221,45 @@ public class ItemRewardType implements QuestRewardType {
     @NotNull
     @Override
     public String describeForDisplay(@NotNull McRPGPlayer player) {
+        var localization = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+        Map<String, String> vars = rewardVars();
+        String label;
+
         if (localizationRoute != null) {
             try {
-                var localization = RegistryAccess.registryAccess()
-                        .registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION);
-                return localization.getLocalizedMessage(player, localizationRoute);
+                label = localization.getLocalizedMessage(player, localizationRoute);
+                return prependDefaultColor(localization, player, label);
             } catch (Exception ignored) {
-                // Fall through to inline label
+                // Fall through to inline display label
             }
         }
-        return describeForDisplay();
+        if (!displayLabel.isEmpty()) {
+            label = localization.getLocalizedMessage(displayLabel, vars);
+            return prependDefaultColor(localization, player, label);
+        }
+        try {
+            label = localization.getLocalizedMessage(player, LocalizationKey.QUEST_REWARD_ITEM_FORMAT, vars);
+            return prependDefaultColor(localization, player, label);
+        } catch (Exception ignored) {
+            return describeForDisplay();
+        }
+    }
+
+    /**
+     * Builds the placeholder variable map for MiniMessage resolution.
+     * Keys match the placeholders documented in {@code en_quest.yml}:
+     * {@code <amount>} and {@code <material>}.
+     */
+    @NotNull
+    private Map<String, String> rewardVars() {
+        String materialName = itemConfig.getOrDefault("material", "Item").toString();
+        String formatted = materialName.toLowerCase().replace('_', ' ');
+        if (!formatted.isEmpty()) {
+            formatted = Character.toUpperCase(formatted.charAt(0)) + formatted.substring(1);
+        }
+        return Map.of("amount", String.valueOf(amount), "material", formatted);
     }
 
     @NotNull
@@ -291,3 +315,4 @@ public class ItemRewardType implements QuestRewardType {
         return map;
     }
 }
+

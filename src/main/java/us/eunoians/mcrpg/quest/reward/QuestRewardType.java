@@ -5,8 +5,10 @@ import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 
 import java.util.Map;
 import java.util.OptionalLong;
@@ -178,5 +180,34 @@ public interface QuestRewardType extends McRPGContent {
     @NotNull
     default QuestRewardType withInlineDisplayLabel(@NotNull String label) {
         return this;
+    }
+
+    /**
+     * Prepends the configured default reward color (from {@link LocalizationKey#QUEST_REWARD_DEFAULT_COLOR})
+     * to the given display label. The color value is resolved through the player's locale chain so
+     * server owners can customise it in {@code en_quest.yml} under
+     * {@code quest-reward-types.default-color}.
+     * <p>
+     * If the configured color is blank or the locale entry is missing, the label is returned unchanged
+     * — server owners opt out by setting {@code default-color: ""}.
+     * <p>
+     * Any explicit MiniMessage color tag already present in {@code label} overrides the prepended
+     * default because of MiniMessage stream ordering — the later tag wins for everything after it.
+     *
+     * @param localization the localization manager, already resolved by the caller
+     * @param player       the player whose locale chain is used to look up the color value
+     * @param label        the display label to potentially prefix
+     * @return the label with the default color prepended, or the label unchanged if no color is set
+     */
+    @NotNull
+    default String prependDefaultColor(@NotNull McRPGLocalizationManager localization,
+                                       @NotNull McRPGPlayer player,
+                                       @NotNull String label) {
+        try {
+            String color = localization.getLocalizedMessage(player, LocalizationKey.QUEST_REWARD_DEFAULT_COLOR);
+            return color.isBlank() ? label : color + label;
+        } catch (Exception ignored) {
+            return label;
+        }
     }
 }

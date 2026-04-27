@@ -6,50 +6,73 @@
 # HOW REWARD DISPLAY LABELS WORK
 # -----------------------------------------------------------------------
 #
-# McRPG automatically generates a localization route for every command reward
-# based on the quest key and the reward's YAML section key. You don't need to
-# configure the route yourself — just add an entry at the derived path.
+# Every reward shown in the quest GUI goes through a four-step resolution:
 #
-# Route patterns:
+#   1. Per-quest locale entry (most specific, highest priority)
+#      Add an entry at the auto-derived route in this file (or any locale
+#      override file for another language). Format:
 #
-#   Quest-level reward:
-#     quests.<namespace>.<quest_key>.rewards.<reward_label>
-#     e.g.  quests.mcrpg.daily_ore_rush.rewards.hero_title
+#        quests.<namespace>.<quest_key>.rewards.<reward_label>
+#        e.g.  quests.mcrpg.daily_ore_rush.rewards.hero_title: "Hero Title"
 #
-#   Objective-level reward:
-#     quests.<namespace>.<quest_key>.objectives.<objective_key>.rewards.<reward_label>
-#     e.g.  quests.mcrpg.daily_ore_rush.objectives.break_gold.rewards.hero_title
+#      Other supported route patterns:
+#        quests.<namespace>.<quest_key>.objectives.<obj_key>.rewards.<label>
+#        quests.<namespace>.<quest_key>.stages.<stage_key>.rewards.<label>
+#        templates.<namespace>.<template_key>.rewards.<label>
 #
-#   Stage-level reward:
-#     quests.<namespace>.<quest_key>.stages.<stage_key>.rewards.<reward_label>
+#   2. Inline display.rewards label from the quest YAML (easy per-quest override)
+#      In the quest's display: block, add a rewards: sub-section:
 #
-#   Template reward (applies to all quests generated from that template):
-#     templates.<namespace>.<template_key>.rewards.<reward_label>
-#     e.g.  templates.mcrpg.template_champion_challenge.rewards.champion_title
+#        display:
+#          name: "Ore Rush"
+#          rewards:
+#            mining_xp: "<amount> <skill> XP"   # MiniMessage with placeholders
+#            gem_bonus:  "<amount>x <material>"
 #
-# Fallback order:
-#   1. Auto-derived route above
-#   2. Inline 'display' field on the reward in quest YAML
-#   3. Generic type fallback (see quest-reward-types section below)
+#      Placeholders like <amount>, <skill>, <material>, <ability>, <tier> are
+#      substituted with the reward's actual config values at display time.
+#      This is the EASIEST place to customize a single reward without editing
+#      locale files. Every shipped quest YAML includes these entries so you can
+#      see and edit them immediately.
 #
-# Example quest YAML:
-#   rewards:
-#     hero_title:
-#       type: mcrpg:command
-#       commands:
-#         - "title grant {player} hero"
-#       display: "Hero Title"    # inline fallback if no locale entry exists
+#   3. Type-level format template (global default for all rewards of that type)
+#      Edit the quest-reward-types section below to change the format globally
+#      across every quest that uses that reward type.
 #
-# Then in this file (or any DynamicLocale file for the player's language):
-#   quests:
-#     mcrpg:
-#       daily_ore_rush:
-#         rewards:
-#           hero_title: "Hero Title"
+#   4. Hard-coded English fallback (should never be reached for built-in types)
 #
-# Display strings use MiniMessage <variable> syntax for placeholders.
-# Note: {player} / {amount} inside 'commands' entries are Bukkit dispatch
-# substitutions — those stay as {} and are NOT localization placeholders.
+# -----------------------------------------------------------------------
+# QUICK REFERENCE — placeholders per reward type
+# -----------------------------------------------------------------------
+#
+#   mcrpg:experience         <amount>  <skill>
+#   mcrpg:item               <amount>  <material>
+#   mcrpg:ability_upgrade    <ability> <tier>
+#   mcrpg:ability_upgrade_next_tier  <ability>
+#   mcrpg:command            (no data placeholders — use a literal label)
+#   mcrpg:scalable_command   (no data placeholders for the main label)
+#
+# -----------------------------------------------------------------------
+# EXAMPLE — customizing a single reward per-quest
+# -----------------------------------------------------------------------
+#
+#   In the quest YAML:
+#     display:
+#       name: "Ore Rush"
+#       rewards:
+#         mining_xp: "<gold><amount> <skill> XP"   # override with gold color
+#         gem_bonus:  "Rare Diamond"                # literal label
+#
+#   In this file (global locale override for all players):
+#     quests:
+#       mcrpg:
+#         daily_ore_rush:
+#           rewards:
+#             mining_xp: "<gold><amount> Mining XP"
+#
+# All display strings use MiniMessage syntax for styling (e.g. <gold>, <bold>).
+# Note: {player} / {amount} inside reward 'commands' entries are Bukkit dispatch
+# substitutions — those use {} braces and are NOT localization placeholders.
 #
 locale: en
 config-version: 1
@@ -70,17 +93,83 @@ quest-objective-types:
     multi-header: "Kill <count> mobs"
     multi-item: "  - <entity>"
 
-# Fallback display labels for built-in reward types.
-# These are shown when no locale entry and no 'display' field is configured on the reward.
+# -----------------------------------------------------------------------
+# REWARD TYPE FORMAT TEMPLATES
+# -----------------------------------------------------------------------
+# These entries control how each built-in reward type is displayed in
+# quest GUIs. Edit them here to change the format globally across all
+# quests, or override per-reward in the quest YAML's display.rewards block.
+#
+# All values use MiniMessage syntax for styling (e.g. <gold>, <bold>).
+# Available placeholders vary by type — see comments on each entry.
+#
+# Quickest way to customize a single reward:
+#   In the quest YAML, set display.rewards.<label> to any string.
+#   Example: swords_xp: "<gold><amount> Swords XP"
+#
+# To change the format for ALL rewards of a type at once, edit the
+# 'format' value below.
+# -----------------------------------------------------------------------
 quest-reward-types:
+
+  # Default MiniMessage color/style prepended to every reward display label before it is
+  # shown in a GUI. It applies regardless of whether the label came from a locale entry,
+  # a per-type format template, or a per-quest inline display.rewards value.
+  #
+  # Any explicit color tag inside a template or inline label automatically overrides this
+  # default because of MiniMessage stream ordering — the later tag wins.
+  #
+  # Examples:
+  #   default-color: "<gold>"       # warm gold theme (shipped default)
+  #   default-color: "<#ffaa00>"    # custom hex colour
+  #   default-color: ""             # no default; only template-level colours apply
+  default-color: "<gold>"
+
+  # mcrpg:experience — grants McRPG skill XP to the completing player.
+  # Placeholders:
+  #   <amount> — the XP amount configured on the reward (e.g. 1500)
+  #   <skill>  — formatted skill name derived from the 'skill' config key
+  #              (e.g. "SWORDS" becomes "Swords", "mcrpg:mining" becomes "Mining")
+  experience:
+    format: "<amount> <skill> XP"
+
+  # mcrpg:command — executes one or more console commands on completion.
+  # No inherent runtime data to use as placeholders, so a fixed fallback
+  # is used when no per-quest locale entry or display.rewards label is set.
   command:
     fallback-display: "Special Reward"
+
+  # mcrpg:scalable_command — like mcrpg:command but supports an {amount}
+  # token in the command that scales with rarity reward-multiplier.
+  # Placeholders for amount-suffix:
+  #   <amount> — the scaled numeric amount at grant time
   scalable-command:
     fallback-display: "Scaled Reward"
     amount-suffix: " (x<amount>)"
+
+  # mcrpg:item — grants an ItemStack directly to the player's inventory.
+  # Placeholders:
+  #   <amount>   — number of items granted (the top-level 'amount' key)
+  #   <material> — formatted material name derived from the item's
+  #                'material' config key (e.g. "DIAMOND_PICKAXE" becomes
+  #                "Diamond Pickaxe")
   item:
-    fallback-display: "Item Reward"
-    amount-suffix: " (x<amount>)"
+    format: "<amount>x <material>"
+
+  # mcrpg:ability_upgrade — upgrades a specific ability to a fixed tier.
+  # Placeholders:
+  #   <ability> — formatted ability name derived from the 'ability' key
+  #               (e.g. "mcrpg:bleed" becomes "Bleed")
+  #   <tier>    — the target tier number configured on the reward
+  ability-upgrade:
+    format: "Upgrade: <ability> (Tier <tier>)"
+
+  # mcrpg:ability_upgrade_next_tier — upgrades an ability to whatever
+  # its next unlocked tier is at grant time.
+  # Placeholders:
+  #   <ability> — formatted ability name (same derivation as above)
+  ability-upgrade-next-tier:
+    format: "Upgrade: <ability> (Next Tier)"
 
 # Display names for quest templates.
 # These are resolved via the 'display-name-route' field on each template definition.

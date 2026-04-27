@@ -1,4 +1,4 @@
-﻿# Ability upgrade quests for Woodcutting abilities (tiers 2–5).
+# Ability upgrade quests for Woodcutting abilities (tiers 2–5).
 #
 # T2/T3: Single objective. Wood types escalate by biome rarity.
 # T4/T5: Two independent objectives in one stage — both must complete.
@@ -18,6 +18,8 @@ quests:
       description: "Fell temperate forest trees with your heavy swing"
       objectives:
         heavy_swing_tier2_obj: "Chop oak, spruce, and birch logs"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -45,6 +47,8 @@ quests:
       description: "Clear dark and jungle canopy trees with powerful swings"
       objectives:
         heavy_swing_tier3_obj: "Chop dark oak, jungle, and acacia logs"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -73,6 +77,8 @@ quests:
       objectives:
         heavy_swing_tier4_primary: "Chop dark oak, jungle, and acacia logs"
         heavy_swing_tier4_secondary: "Chop mangrove and cherry logs"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -107,6 +113,8 @@ quests:
       objectives:
         heavy_swing_tier5_primary: "Chop dense canopy and mangrove logs"
         heavy_swing_tier5_secondary: "Chop crimson and warped stems"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -144,6 +152,8 @@ quests:
       description: "Harvest warm biome logs to attune with nature"
       objectives:
         dryads_gift_tier2_obj: "Chop jungle and acacia logs"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -171,6 +181,8 @@ quests:
       description: "Fell jungle, acacia, and mangrove trees for nature's gift"
       objectives:
         dryads_gift_tier3_obj: "Chop jungle, acacia, and mangrove logs"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -199,6 +211,8 @@ quests:
       objectives:
         dryads_gift_tier4_primary: "Chop jungle, acacia, and mangrove logs"
         dryads_gift_tier4_secondary: "Chop cherry logs and bamboo blocks"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -233,6 +247,8 @@ quests:
       objectives:
         dryads_gift_tier5_primary: "Chop jungle, acacia, mangrove, and cherry logs"
         dryads_gift_tier5_secondary: "Chop bamboo blocks"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -270,6 +286,8 @@ quests:
       description: "Harvest cool-climate logs to channel the nymph's power"
       objectives:
         nymphs_vitality_tier2_obj: "Chop birch and spruce logs"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -297,6 +315,8 @@ quests:
       description: "Fell cool-climate and deep forest logs to strengthen your vitality"
       objectives:
         nymphs_vitality_tier3_obj: "Chop birch, spruce, and dark oak logs"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -325,6 +345,8 @@ quests:
       objectives:
         nymphs_vitality_tier4_primary: "Chop birch, spruce, and dark oak logs"
         nymphs_vitality_tier4_secondary: "Chop mangrove logs"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:
@@ -359,6 +381,8 @@ quests:
       objectives:
         nymphs_vitality_tier5_primary: "Chop birch, spruce, dark oak, and mangrove logs"
         nymphs_vitality_tier5_secondary: "Chop crimson and warped stems"
+      rewards:
+        upgrade: "Upgrade: <ability> (Tier <tier>)"
     scope: mcrpg:single_player
     repeat-mode: ONCE
     rewards:

@@ -135,18 +135,21 @@ public class CommandRewardType implements QuestRewardType {
         var localization = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
+        String label;
         if (localizationRoute != null) {
             try {
-                return localization.getLocalizedMessage(player, localizationRoute);
+                label = localization.getLocalizedMessage(player, localizationRoute);
+                return prependDefaultColor(localization, player, label);
             } catch (Exception ignored) {
                 // Fall through to inline display label
             }
         }
         if (!displayLabel.isEmpty()) {
-            return displayLabel;
+            return prependDefaultColor(localization, player, displayLabel);
         }
         try {
-            return localization.getLocalizedMessage(player, LocalizationKey.QUEST_REWARD_COMMAND_FALLBACK_DISPLAY);
+            label = localization.getLocalizedMessage(player, LocalizationKey.QUEST_REWARD_COMMAND_FALLBACK_DISPLAY);
+            return prependDefaultColor(localization, player, label);
         } catch (Exception ignored) {
             return describeForDisplay();
         }
@@ -172,3 +175,4 @@ public class CommandRewardType implements QuestRewardType {
         return Optional.of(McRPGExpansion.EXPANSION_KEY);
     }
 }
+

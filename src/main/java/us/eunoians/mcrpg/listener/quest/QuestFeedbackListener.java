@@ -48,10 +48,10 @@ public class QuestFeedbackListener implements Listener {
     public void onQuestStart(@NotNull QuestStartEvent event) {
         QuestInstance quest = event.getQuestInstance();
         Optional<QuestDefinition> defOpt = resolveDefinition(quest);
-        String fallback = QuestDefinition.formatFallbackDisplayName(quest.getQuestKey().getKey());
         notifyScope(quest, LocalizationKey.QUEST_STARTED_NOTIFICATION,
                 player -> Map.of("quest_name",
-                        defOpt.map(def -> def.getDisplayName(player)).orElse(fallback)));
+                        defOpt.map(def -> def.getDisplayName(player))
+                              .orElseGet(() -> formatKeyAsDisplayName(quest.getQuestKey().getKey()))));
     }
 
     /**
@@ -61,10 +61,10 @@ public class QuestFeedbackListener implements Listener {
     public void onQuestComplete(@NotNull QuestCompleteEvent event) {
         QuestInstance quest = event.getQuestInstance();
         Optional<QuestDefinition> defOpt = resolveDefinition(quest);
-        String fallback = QuestDefinition.formatFallbackDisplayName(quest.getQuestKey().getKey());
         notifyScope(quest, LocalizationKey.QUEST_COMPLETED_NOTIFICATION,
                 player -> Map.of("quest_name",
-                        defOpt.map(def -> def.getDisplayName(player)).orElse(fallback)));
+                        defOpt.map(def -> def.getDisplayName(player))
+                              .orElseGet(() -> formatKeyAsDisplayName(quest.getQuestKey().getKey()))));
         playSoundToScope(quest, Sound.UI_TOAST_CHALLENGE_COMPLETE, 1.0f, 1.0f);
     }
 
@@ -77,10 +77,10 @@ public class QuestFeedbackListener implements Listener {
     public void onQuestExpire(@NotNull QuestExpireEvent event) {
         QuestInstance quest = event.getQuestInstance();
         Optional<QuestDefinition> defOpt = resolveDefinition(quest);
-        String fallback = QuestDefinition.formatFallbackDisplayName(quest.getQuestKey().getKey());
         notifyScope(quest, LocalizationKey.QUEST_EXPIRED_NOTIFICATION,
                 player -> Map.of("quest_name",
-                        defOpt.map(def -> def.getDisplayName(player)).orElse(fallback)));
+                        defOpt.map(def -> def.getDisplayName(player))
+                              .orElseGet(() -> formatKeyAsDisplayName(quest.getQuestKey().getKey()))));
     }
 
     /**
@@ -94,10 +94,10 @@ public class QuestFeedbackListener implements Listener {
         }
         QuestInstance quest = event.getQuestInstance();
         Optional<QuestDefinition> defOpt = resolveDefinition(quest);
-        String fallback = QuestDefinition.formatFallbackDisplayName(quest.getQuestKey().getKey());
         notifyScope(quest, LocalizationKey.QUEST_CANCELLED_NOTIFICATION,
                 player -> Map.of("quest_name",
-                        defOpt.map(def -> def.getDisplayName(player)).orElse(fallback)));
+                        defOpt.map(def -> def.getDisplayName(player))
+                              .orElseGet(() -> formatKeyAsDisplayName(quest.getQuestKey().getKey()))));
     }
 
     /**
@@ -107,11 +107,11 @@ public class QuestFeedbackListener implements Listener {
     public void onQuestPhaseComplete(@NotNull QuestPhaseCompleteEvent event) {
         QuestInstance quest = event.getQuestInstance();
         Optional<QuestDefinition> defOpt = resolveDefinition(quest);
-        String fallback = QuestDefinition.formatFallbackDisplayName(quest.getQuestKey().getKey());
         int humanPhaseNumber = event.getCompletedPhaseIndex() + 1;
         notifyScope(quest, LocalizationKey.QUEST_PHASE_COMPLETED_NOTIFICATION,
                 player -> Map.of(
-                        "quest_name", defOpt.map(def -> def.getDisplayName(player)).orElse(fallback),
+                        "quest_name", defOpt.map(def -> def.getDisplayName(player))
+                                            .orElseGet(() -> formatKeyAsDisplayName(quest.getQuestKey().getKey())),
                         "phase_number", String.valueOf(humanPhaseNumber)
                 ));
     }
@@ -192,5 +192,19 @@ public class QuestFeedbackListener implements Listener {
                         });
             }
         });
+    }
+
+    /**
+     * Produces a human-readable display name from a raw quest key as a safety fallback
+     * for the rare case when no {@link QuestDefinition} can be resolved at runtime.
+     * Strips the {@code mcrpg:} namespace prefix if present and replaces underscores with spaces.
+     *
+     * @param rawKey the raw namespaced key string (e.g. {@code "mcrpg:choose_path"})
+     * @return a display-ready string (e.g. {@code "choose path"})
+     */
+    @NotNull
+    private String formatKeyAsDisplayName(@NotNull String rawKey) {
+        String key = rawKey.contains(":") ? rawKey.substring(rawKey.indexOf(':') + 1) : rawKey;
+        return key.replace('_', ' ');
     }
 }

@@ -297,25 +297,20 @@ public class QuestDefinition implements McRPGContent {
             if (inline != null && !inline.isEmpty()) {
                 return inline;
             }
-            return formatFallbackDisplayName(questKey.getKey());
+            return formatFallbackDisplayName();
         }
     }
 
     /**
-     * Produces a readable fallback name from a raw key, stripping generated prefixes
+     * Produces a readable fallback name from this quest's key, stripping generated prefixes
      * and UUID suffixes (e.g. {@code gen_template_choose_path_1f97a1b5} becomes {@code Choose Path}).
-     * This is shared by systems that need a safe display fallback when no definition
-     * localization can be resolved at runtime.
-     * <p>
-     * This method is {@code public} rather than {@code private} so it can be directly exercised
-     * by unit tests without needing to construct a full {@link QuestDefinition}. Callers outside
-     * this class should treat it as an implementation detail subject to change.
+     * Used when neither the locale file nor the inline display name yields a result.
      *
-     * @param rawKey the raw namespaced key string to convert
-     * @return a human-readable title-cased string
+     * @return a human-readable title-cased string derived from the quest key
      */
     @NotNull
-    public static String formatFallbackDisplayName(@NotNull String rawKey) {
+    private String formatFallbackDisplayName() {
+        String rawKey = questKey.getKey();
         String cleaned = rawKey;
         if (cleaned.startsWith("gen_template_")) {
             cleaned = cleaned.substring("gen_template_".length());

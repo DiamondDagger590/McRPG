@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.QuestTemplateConfigLoader;
 import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplate;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.board.template.condition.ConditionParser;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
@@ -15,7 +16,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * Custom {@link ReloadableContent} subclass that re-scans the primary templates directory
@@ -35,7 +35,7 @@ public class ReloadableTemplateConfig extends ReloadableContent<Map<NamespacedKe
         super(boardConfig, BoardConfigFile.MINIMUM_TOTAL_OFFERINGS, (doc, route) -> {
             var conditionParser = new ConditionParser(conditionRegistry);
             QuestTemplateConfigLoader loader = new QuestTemplateConfigLoader(
-                    Logger.getLogger(ReloadableTemplateConfig.class.getName()),
+                    McRPG.getInstance().getLogger(),
                     conditionParser);
 
             List<File> allDirectories = new ArrayList<>();

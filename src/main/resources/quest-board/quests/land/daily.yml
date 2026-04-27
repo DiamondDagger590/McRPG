@@ -10,6 +10,8 @@ quests:
       description: "Quarry stone for your land's construction projects"
       objectives:
         land_daily_break_stone: "Mine stone blocks"
+      rewards:
+        mining_xp: "<amount> <skill> XP"
     scope: mcrpg:land_scope
     expiration: 3d
     board-metadata:
@@ -52,6 +54,9 @@ quests:
       description: "Gather ores for your land's smelters"
       objectives:
         land_daily_break_ores: "Mine mixed ores"
+      rewards:
+        mining_xp: "<amount> <skill> XP"
+        iron_bonus: "<amount>x <material>"
     scope: mcrpg:land_scope
     expiration: 3d
     board-metadata:
@@ -103,6 +108,8 @@ quests:
       description: "Defend your land from hostile mobs"
       objectives:
         land_daily_slay_hostiles: "Slay hostile mobs"
+      rewards:
+        swords_xp: "<amount> <skill> XP"
     scope: mcrpg:land_scope
     expiration: 3d
     board-metadata:
@@ -145,6 +152,8 @@ quests:
       description: "Supply your land with fresh lumber"
       objectives:
         land_daily_chop_logs: "Chop mixed logs"
+      rewards:
+        woodcutting_xp: "<amount> <skill> XP"
     scope: mcrpg:land_scope
     expiration: 3d
     board-metadata:
@@ -188,6 +197,8 @@ quests:
       description: "Harvest crops to feed your land's people"
       objectives:
         land_daily_break_crops: "Harvest mixed crops"
+      rewards:
+        herbalism_xp: "<amount> <skill> XP"
     scope: mcrpg:land_scope
     expiration: 3d
     board-metadata:

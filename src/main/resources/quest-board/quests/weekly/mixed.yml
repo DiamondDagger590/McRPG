@@ -11,6 +11,9 @@ quests:
       objectives:
         weekly_all_rounder_mine_stone: "Mine stone blocks"
         weekly_all_rounder_slay_mobs: "Slay hostile mobs"
+      rewards:
+        mining_xp: "<amount> <skill> XP"
+        swords_xp: "<amount> <skill> XP"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:

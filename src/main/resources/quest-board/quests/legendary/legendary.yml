@@ -11,6 +11,9 @@ quests:
       objectives:
         legendary_break_diamond: "Mine diamond ore"
         legendary_break_debris: "Mine ancient debris"
+      rewards:
+        mining_xp: "<amount> <skill> XP"
+        master_pick: "<amount>x <material>"
     scope: mcrpg:single_player
     expiration: 14d
     board-metadata:
@@ -81,6 +84,9 @@ quests:
         legendary_slay_endermen: "Slay endermen"
         legendary_slay_blazes: "Slay blazes"
         legendary_slay_wither_skeletons: "Slay wither skeletons"
+      rewards:
+        swords_xp: "<amount> <skill> XP"
+        champion_blade: "<amount>x <material>"
     scope: mcrpg:single_player
     expiration: 14d
     board-metadata:
@@ -163,6 +169,9 @@ quests:
         legendary_trial_overworld: "Slay overworld hostile mobs"
         legendary_trial_nether: "Slay Nether hostile mobs"
         legendary_trial_endermen: "Slay endermen"
+      rewards:
+        swords_xp: "<amount> <skill> XP"
+        heavy_core: "<amount>x <material>"
     scope: mcrpg:single_player
     expiration: 14d
     repeat-mode: ONCE

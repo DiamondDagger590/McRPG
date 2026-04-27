@@ -702,11 +702,18 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_OBJECTIVE_MOB_KILL_MULTI_HEADER = Route.fromString(toRoutePath(QUEST_OBJECTIVE_MOB_KILL_HEADER, "multi-header"));
     public static final Route QUEST_OBJECTIVE_MOB_KILL_MULTI_ITEM = Route.fromString(toRoutePath(QUEST_OBJECTIVE_MOB_KILL_HEADER, "multi-item"));
 
-    // Quest reward type fallback display labels (used when no localization route or inline display label is configured)
+    // Quest reward type display templates and fallback labels.
+    // Format routes resolve a MiniMessage string with type-specific placeholders (e.g. <amount>, <skill>).
+    // Fallback routes resolve a plain string used when no format or per-quest route is available.
     private static final String QUEST_REWARD_TYPE_HEADER = "quest-reward-types";
+    public static final Route QUEST_REWARD_DEFAULT_COLOR = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "default-color"));
+    public static final Route QUEST_REWARD_EXPERIENCE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "experience.format"));
     public static final Route QUEST_REWARD_COMMAND_FALLBACK_DISPLAY = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "command.fallback-display"));
     public static final Route QUEST_REWARD_SCALABLE_COMMAND_FALLBACK_DISPLAY = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "scalable-command.fallback-display"));
     public static final Route QUEST_REWARD_SCALABLE_AMOUNT_SUFFIX = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "scalable-command.amount-suffix"));
+    public static final Route QUEST_REWARD_ITEM_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "item.format"));
+    public static final Route QUEST_REWARD_ABILITY_UPGRADE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "ability-upgrade.format"));
+    public static final Route QUEST_REWARD_ABILITY_UPGRADE_NEXT_TIER_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "ability-upgrade-next-tier.format"));
 
     // Statistic commands
     private static final String STATISTIC_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "statistic");

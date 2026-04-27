@@ -10,6 +10,9 @@ quests:
       description: "Fulfill a large lumber order"
       objectives:
         weekly_chop_mixed_logs: "Chop mixed logs"
+      rewards:
+        woodcutting_xp: "<amount> <skill> XP"
+        plank_bonus: "<amount>x <material>"
     scope: mcrpg:single_player
     expiration: 7d
     board-metadata:
