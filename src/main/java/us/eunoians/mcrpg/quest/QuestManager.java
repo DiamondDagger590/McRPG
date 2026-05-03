@@ -38,7 +38,7 @@ import us.eunoians.mcrpg.configuration.QuestConfigLoader;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
 import us.eunoians.mcrpg.quest.board.BoardOffering;
-import us.eunoians.mcrpg.quest.board.template.GeneratedQuestDefinitionSerializer;
+import us.eunoians.mcrpg.quest.board.template.GeneratedQuestDefinitionCodec;
 import us.eunoians.mcrpg.quest.board.template.condition.ConditionParser;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
@@ -122,6 +122,7 @@ public class QuestManager extends Manager<McRPG> {
     private final QuestScopeProviderRegistry scopeProviderRegistry;
     private final QuestConfigLoader configLoader;
     private final QuestDefinitionRegistry questDefinitionRegistry;
+    private final GeneratedQuestDefinitionCodec codec;
 
     /** Tier 1: active quests keyed by quest UUID. */
     private final Map<UUID, QuestInstance> activeQuests;
@@ -161,6 +162,7 @@ public class QuestManager extends Manager<McRPG> {
         this.scopeProviderRegistry = registryAccess.registry(McRPGRegistryKey.QUEST_SCOPE_PROVIDER);
         this.questDefinitionRegistry = registryAccess.registry(McRPGRegistryKey.QUEST_DEFINITION);
 
+        this.codec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, rewardTypeRegistry, conditionTypeRegistry);
         this.configLoader = new QuestConfigLoader(new ConditionParser(this.conditionTypeRegistry));
 
         YamlDocument mainConfig = registryAccess
@@ -929,8 +931,7 @@ public class QuestManager extends Manager<McRPG> {
                     BoardOfferingDAO.loadOfferingByQuestInstanceUUID(connection, shell.getQuestUUID());
             if (offering.isPresent() && offering.get().getGeneratedDefinition().isPresent()) {
                 String json = offering.get().getGeneratedDefinition().get();
-                QuestDefinition recovered = GeneratedQuestDefinitionSerializer.deserialize(
-                        json, objectiveTypeRegistry, rewardTypeRegistry, conditionTypeRegistry);
+                QuestDefinition recovered = codec.deserialize(json);
                 definitionRegistry.register(recovered);
                 plugin().getLogger().fine("Recovered ephemeral definition " + defKey + " from offering");
                 return true;

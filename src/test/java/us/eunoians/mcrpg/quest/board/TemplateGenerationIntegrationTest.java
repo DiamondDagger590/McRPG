@@ -36,6 +36,11 @@ import us.eunoians.mcrpg.quest.board.template.TemplateRewardDefinition;
 import us.eunoians.mcrpg.quest.board.template.TemplateStageDefinition;
 import us.eunoians.mcrpg.quest.board.template.condition.RarityCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateCondition;
+import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
+import us.eunoians.mcrpg.quest.board.template.GeneratedQuestDefinitionCodec;
+import us.eunoians.mcrpg.quest.board.template.WeightedObjectiveSelector;
+import us.eunoians.mcrpg.quest.board.distribution.QuestContributionAggregator;
+import us.eunoians.mcrpg.quest.board.distribution.QuestRewardDistributionResolver;
 import us.eunoians.mcrpg.quest.board.template.variable.TemplateVariable;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
@@ -127,7 +132,9 @@ public class TemplateGenerationIntegrationTest extends McRPGBaseTest {
         when(mockRewardType.serializeConfig()).thenReturn(Map.of("amount", 100));
         when(rewardTypeRegistry.get(REWARD_TYPE_KEY)).thenReturn(Optional.of(mockRewardType));
 
-        engine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry, mcRPG);
+        var conditionRegistry = mock(TemplateConditionRegistry.class);
+        var codec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        engine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry, mcRPG, new WeightedObjectiveSelector(), codec);
 
         distributionTypeRegistry = RegistryAccess.registryAccess()
                 .registry(McRPGRegistryKey.REWARD_DISTRIBUTION_TYPE);
@@ -142,8 +149,10 @@ public class TemplateGenerationIntegrationTest extends McRPGBaseTest {
         server.getPluginManager().clearEvents();
         var rarityReg = RegistryAccess.registryAccess().registry(McRPGRegistryKey.QUEST_RARITY);
         var distTypeReg = RegistryAccess.registryAccess().registry(McRPGRegistryKey.REWARD_DISTRIBUTION_TYPE);
-        var distService = new DistributionCompletionService(rarityReg, distTypeReg, new RewardDistributionGranter(mcRPG));
-        server.getPluginManager().registerEvents(new QuestCompleteListener(new QuestBoardTerminator(mcRPG), distService), mcRPG);
+        var aggregator = new QuestContributionAggregator();
+        var resolver = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test"));
+        var distService = new DistributionCompletionService(rarityReg, distTypeReg, new RewardDistributionGranter(mcRPG), aggregator, resolver);
+        server.getPluginManager().registerEvents(new QuestCompleteListener(new QuestBoardTerminator(mcRPG), distService, aggregator), mcRPG);
         mockQuestManager = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST);
@@ -290,7 +299,7 @@ public class TemplateGenerationIntegrationTest extends McRPGBaseTest {
             var snapshot = new ContributionSnapshot(Map.of(p1, 70L, p2, 20L, p3, 10L), 100,
                     Set.of(p1, p2, p3), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(
                     config, snapshot, null, new QuestRarityRegistry(), fullRegistry);
 
             // p1 is top contributor → gets both top-bonus and participation

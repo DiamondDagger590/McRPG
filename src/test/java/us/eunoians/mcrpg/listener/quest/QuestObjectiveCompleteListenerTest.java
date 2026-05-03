@@ -14,6 +14,8 @@ import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.QuestTestHelper;
 import us.eunoians.mcrpg.quest.board.distribution.DistributionCompletionService;
 import us.eunoians.mcrpg.quest.board.distribution.DistributionTierConfig;
+import us.eunoians.mcrpg.quest.board.distribution.QuestContributionAggregator;
+import us.eunoians.mcrpg.quest.board.distribution.QuestRewardDistributionResolver;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionGranter;
 import us.eunoians.mcrpg.quest.board.distribution.RewardSplitMode;
@@ -53,9 +55,11 @@ public class QuestObjectiveCompleteListenerTest extends McRPGBaseTest {
         server.getPluginManager().clearEvents();
         var rarityRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.QUEST_RARITY);
         var distTypeRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.REWARD_DISTRIBUTION_TYPE);
+        var aggregator = new QuestContributionAggregator();
+        var resolver = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test"));
         var distributionService = new DistributionCompletionService(
-                rarityRegistry, distTypeRegistry, new RewardDistributionGranter(mcRPG));
-        server.getPluginManager().registerEvents(new QuestObjectiveCompleteListener(distributionService), mcRPG);
+                rarityRegistry, distTypeRegistry, new RewardDistributionGranter(mcRPG), aggregator, resolver);
+        server.getPluginManager().registerEvents(new QuestObjectiveCompleteListener(distributionService, aggregator), mcRPG);
         definition = QuestTestHelper.singlePhaseQuest("obj_complete_test");
 
         mockQuestManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST);

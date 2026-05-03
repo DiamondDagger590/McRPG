@@ -28,9 +28,12 @@ import java.util.UUID;
 public class QuestPhaseCompleteListener implements Listener {
 
     private final DistributionCompletionService distributionService;
+    private final QuestContributionAggregator contributionAggregator;
 
-    public QuestPhaseCompleteListener(@NotNull DistributionCompletionService distributionService) {
+    public QuestPhaseCompleteListener(@NotNull DistributionCompletionService distributionService,
+                                      @NotNull QuestContributionAggregator contributionAggregator) {
         this.distributionService = distributionService;
+        this.contributionAggregator = contributionAggregator;
     }
 
     /**
@@ -52,7 +55,7 @@ public class QuestPhaseCompleteListener implements Listener {
             definition.getPhase(completedPhaseIndex).ifPresent(phaseDef -> {
                 quest.grantRewards(phaseDef.getRewards());
                 phaseDef.getRewardDistribution().ifPresent(config -> {
-                    Map<UUID, Long> contributions = QuestContributionAggregator.fromPhase(quest, completedPhaseIndex);
+                    Map<UUID, Long> contributions = contributionAggregator.fromPhase(quest, completedPhaseIndex);
                     Set<UUID> groupMembers = quest.getQuestScope()
                             .map(scope -> scope.getCurrentPlayersInScope())
                             .orElse(Set.of());

@@ -41,6 +41,7 @@ public class MultiLevelDistributionIntegrationTest extends McRPGBaseTest {
 
     private RewardDistributionTypeRegistry typeRegistry;
     private QuestRarityRegistry rarityRegistry;
+    private final QuestContributionAggregator aggregator = new QuestContributionAggregator();
 
     @BeforeEach
     void setUp() {
@@ -78,14 +79,14 @@ public class MultiLevelDistributionIntegrationTest extends McRPGBaseTest {
 
             // Objective level: only p1 contributed to this specific objective
             Map<UUID, Long> objectiveContributions = Map.of(p1, 50L);
-            ContributionSnapshot objectiveSnapshot = QuestContributionAggregator.toSnapshot(
+            ContributionSnapshot objectiveSnapshot = aggregator.toSnapshot(
                     objectiveContributions, Set.of(p1, p2));
 
             QuestRewardType objectiveReward = scalableReward();
             RewardDistributionConfig objectiveConfig = new RewardDistributionConfig(
                     List.of(trackingTier(objectiveReward)));
 
-            var objectiveResult = new QuestRewardDistributionResolver().resolve(
+            var objectiveResult = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(
                     objectiveConfig, objectiveSnapshot, null, rarityRegistry, typeRegistry);
 
             // Only p1 contributed to this objective → only p1 receives objective reward
@@ -100,14 +101,14 @@ public class MultiLevelDistributionIntegrationTest extends McRPGBaseTest {
 
             // Quest level: both players contributed across the whole quest
             Map<UUID, Long> questContributions = Map.of(p1, 60L, p2, 40L);
-            ContributionSnapshot questSnapshot = QuestContributionAggregator.toSnapshot(
+            ContributionSnapshot questSnapshot = aggregator.toSnapshot(
                     questContributions, Set.of(p1, p2));
 
             QuestRewardType questReward = scalableReward();
             RewardDistributionConfig questConfig = new RewardDistributionConfig(
                     List.of(trackingTier(questReward)));
 
-            var questResult = new QuestRewardDistributionResolver().resolve(
+            var questResult = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(
                     questConfig, questSnapshot, null, rarityRegistry, typeRegistry);
 
             // Both players contributed to the quest → both receive quest reward
@@ -126,17 +127,17 @@ public class MultiLevelDistributionIntegrationTest extends McRPGBaseTest {
             // Objective-level distribution
             RewardDistributionConfig objectiveConfig = new RewardDistributionConfig(
                     List.of(trackingTier(objectiveReward)));
-            ContributionSnapshot objectiveSnapshot = QuestContributionAggregator.toSnapshot(
+            ContributionSnapshot objectiveSnapshot = aggregator.toSnapshot(
                     Map.of(p1, 100L), Set.of(p1));
-            var objectiveResult = new QuestRewardDistributionResolver().resolve(
+            var objectiveResult = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(
                     objectiveConfig, objectiveSnapshot, null, rarityRegistry, typeRegistry);
 
             // Quest-level distribution
             RewardDistributionConfig questConfig = new RewardDistributionConfig(
                     List.of(trackingTier(questReward)));
-            ContributionSnapshot questSnapshot = QuestContributionAggregator.toSnapshot(
+            ContributionSnapshot questSnapshot = aggregator.toSnapshot(
                     Map.of(p1, 100L), Set.of(p1));
-            var questResult = new QuestRewardDistributionResolver().resolve(
+            var questResult = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(
                     questConfig, questSnapshot, null, rarityRegistry, typeRegistry);
 
             // Player should receive rewards from both levels
@@ -176,9 +177,9 @@ public class MultiLevelDistributionIntegrationTest extends McRPGBaseTest {
             for (int i = 0; i < 4; i++) {
                 RewardDistributionConfig config = new RewardDistributionConfig(
                         List.of(trackingTier(rewards[i])));
-                ContributionSnapshot snapshot = QuestContributionAggregator.toSnapshot(
+                ContributionSnapshot snapshot = aggregator.toSnapshot(
                         contributions.get(i), new HashSet<>(contributions.get(i).keySet()));
-                var result = new QuestRewardDistributionResolver().resolve(
+                var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(
                         config, snapshot, null, rarityRegistry, typeRegistry);
 
                 if (result.containsKey(p1)) p1RewardCount++;
@@ -206,18 +207,18 @@ public class MultiLevelDistributionIntegrationTest extends McRPGBaseTest {
             // Quest-scope: both contributed
             Map<UUID, Long> questContribs = Map.of(p1, 100L, p2, 100L);
 
-            ContributionSnapshot objSnapshot = QuestContributionAggregator.toSnapshot(
+            ContributionSnapshot objSnapshot = aggregator.toSnapshot(
                     objectiveContribs, Set.of(p1, p2));
-            ContributionSnapshot questSnapshot = QuestContributionAggregator.toSnapshot(
+            ContributionSnapshot questSnapshot = aggregator.toSnapshot(
                     questContribs, Set.of(p1, p2));
 
             QuestRewardType objReward = scalableReward();
             QuestRewardType questReward = scalableReward();
 
-            var objResult = new QuestRewardDistributionResolver().resolve(
+            var objResult = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(
                     new RewardDistributionConfig(List.of(trackingTier(objReward))),
                     objSnapshot, null, rarityRegistry, typeRegistry);
-            var questResult = new QuestRewardDistributionResolver().resolve(
+            var questResult = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(
                     new RewardDistributionConfig(List.of(trackingTier(questReward))),
                     questSnapshot, null, rarityRegistry, typeRegistry);
 

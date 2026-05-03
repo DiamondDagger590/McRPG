@@ -46,7 +46,7 @@ import java.util.stream.Collectors;
  *     <li>Validate the rarity is supported by the template</li>
  *     <li>Resolve all template variables into a {@link ResolvedVariableContext}</li>
  *     <li>Build a fully materialized {@link QuestDefinition} from the template structure</li>
- *     <li>Serialize the definition to JSON via {@link GeneratedQuestDefinitionSerializer}</li>
+ *     <li>Serialize the definition to JSON via {@link GeneratedQuestDefinitionCodec}</li>
  *     <li>Return a {@link GeneratedQuestResult} containing the definition, template key, and JSON</li>
  * </ol>
  */
@@ -56,15 +56,31 @@ public final class QuestTemplateEngine {
     private final QuestObjectiveTypeRegistry objectiveTypeRegistry;
     private final QuestRewardTypeRegistry rewardTypeRegistry;
     private final McRPG plugin;
+    private final WeightedObjectiveSelector objectiveSelector;
+    private final GeneratedQuestDefinitionCodec codec;
 
+    /**
+     * Creates a new template engine with all required collaborators.
+     *
+     * @param rarityRegistry        registry for rarity lookups and rolling
+     * @param objectiveTypeRegistry registry for objective type resolution
+     * @param rewardTypeRegistry    registry for reward type resolution
+     * @param plugin                the plugin instance for logging
+     * @param objectiveSelector     the collaborator for weighted objective selection
+     * @param codec                 the codec for serializing generated quest definitions
+     */
     public QuestTemplateEngine(@NotNull QuestRarityRegistry rarityRegistry,
                                @NotNull QuestObjectiveTypeRegistry objectiveTypeRegistry,
                                @NotNull QuestRewardTypeRegistry rewardTypeRegistry,
-                               @NotNull McRPG plugin) {
+                               @NotNull McRPG plugin,
+                               @NotNull WeightedObjectiveSelector objectiveSelector,
+                               @NotNull GeneratedQuestDefinitionCodec codec) {
         this.rarityRegistry = rarityRegistry;
         this.objectiveTypeRegistry = objectiveTypeRegistry;
         this.rewardTypeRegistry = rewardTypeRegistry;
         this.plugin = plugin;
+        this.objectiveSelector = objectiveSelector;
+        this.codec = codec;
     }
 
     /**
@@ -133,7 +149,7 @@ public final class QuestTemplateEngine {
         Map<NamespacedKey, Map<String, Object>> objectiveConfigs = new LinkedHashMap<>();
         QuestDefinition definition = buildDefinition(
                 template, rarityKey, variableContext, filteredPhases, random, objectiveConfigs);
-        String json = GeneratedQuestDefinitionSerializer.serialize(
+        String json = codec.serialize(
                 definition, template.getKey(), rarityKey, variableContext, objectiveConfigs);
         return new GeneratedQuestResult(definition, template.getKey(), json);
     }
@@ -625,7 +641,7 @@ public final class QuestTemplateEngine {
                     ObjectiveSelectionConfig selConfig = stage.getObjectiveSelection().get();
                     if (selConfig.mode() == ObjectiveSelectionConfig.ObjectiveSelectionMode.WEIGHTED_RANDOM) {
                         try {
-                            filteredObjectives = WeightedObjectiveSelector.select(
+                            filteredObjectives = objectiveSelector.select(
                                     filteredObjectives, selConfig, random);
                         } catch (IllegalStateException e) {
                             plugin.getLogger().warning("[QuestTemplateEngine] Stage excluded: " + e.getMessage());

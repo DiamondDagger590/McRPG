@@ -17,7 +17,7 @@ import java.util.OptionalLong;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
-import us.eunoians.mcrpg.McRPG;
+import java.util.logging.Logger;
 
 /**
  * Performs distribution resolution. Handles {@link RewardSplitMode} scaling with
@@ -26,6 +26,17 @@ import us.eunoians.mcrpg.McRPG;
  * Stateless — a new instance can be created whenever needed.
  */
 public final class QuestRewardDistributionResolver {
+
+    private final Logger logger;
+
+    /**
+     * Creates a new distribution resolver with the given logger.
+     *
+     * @param logger the logger for warning messages about unrecognized or non-scalable types
+     */
+    public QuestRewardDistributionResolver(@NotNull Logger logger) {
+        this.logger = logger;
+    }
 
     /**
      * Evaluates all tiers in the distribution config against the contribution
@@ -77,7 +88,7 @@ public final class QuestRewardDistributionResolver {
             }
             Optional<RewardDistributionType> type = typeRegistry.get(tier.getTypeKey());
             if (type.isEmpty()) {
-                McRPG.getInstance().getLogger().warning("Unrecognized distribution type key: " + tier.getTypeKey()
+                logger.warning("Unrecognized distribution type key: " + tier.getTypeKey()
                         + " in tier '" + tier.getTierKey() + "' — skipping");
                 continue;
             }
@@ -92,11 +103,20 @@ public final class QuestRewardDistributionResolver {
         return result;
     }
 
-    private static void applyTierRewards(@NotNull DistributionTierConfig tier,
-                                         @NotNull Set<UUID> qualifyingPlayers,
-                                         @NotNull ContributionSnapshot snapshot,
-                                         @NotNull Map<UUID, List<QuestRewardType>> result,
-                                         @NotNull Random random) {
+    /**
+     * Applies tier rewards to qualifying players based on the split mode.
+     *
+     * @param tier              the tier configuration
+     * @param qualifyingPlayers the set of qualifying players
+     * @param snapshot          the contribution snapshot
+     * @param result            the reward map to populate
+     * @param random            the random source for remainder distribution
+     */
+    private void applyTierRewards(@NotNull DistributionTierConfig tier,
+                                  @NotNull Set<UUID> qualifyingPlayers,
+                                  @NotNull ContributionSnapshot snapshot,
+                                  @NotNull Map<UUID, List<QuestRewardType>> result,
+                                  @NotNull Random random) {
         switch (tier.getSplitMode()) {
             case INDIVIDUAL -> {
                 for (UUID playerUUID : qualifyingPlayers) {
@@ -131,7 +151,17 @@ public final class QuestRewardDistributionResolver {
         }
     }
 
-    private static void distributeRewardEntry(
+    /**
+     * Distributes a single reward entry to qualifying players using the configured pot behavior.
+     *
+     * @param entry             the reward entry to distribute
+     * @param baseMultiplier    the base multiplier for SCALE mode
+     * @param qualifyingPlayers the set of qualifying players
+     * @param snapshot          the contribution snapshot
+     * @param result            the reward map to populate
+     * @param random            the random source for remainder distribution
+     */
+    private void distributeRewardEntry(
             @NotNull DistributionRewardEntry entry,
             double baseMultiplier,
             @NotNull Set<UUID> qualifyingPlayers,
@@ -158,7 +188,7 @@ public final class QuestRewardDistributionResolver {
                 boolean isScalable = scaled != entry.reward();
 
                 if (!isScalable) {
-                    McRPG.getInstance().getLogger().warning("Non-scalable reward '" + entry.reward().getKey()
+                    logger.warning("Non-scalable reward '" + entry.reward().getKey()
                             + "' used with SCALE pot-behavior; granting unscaled to all qualifying players");
                     for (UUID playerUUID : qualifyingPlayers) {
                         result.computeIfAbsent(playerUUID, k -> new ArrayList<>())
@@ -184,7 +214,17 @@ public final class QuestRewardDistributionResolver {
         }
     }
 
-    private static void distributeProportional(
+    /**
+     * Distributes a reward entry proportionally to qualifying players based on their contributions.
+     *
+     * @param entry             the reward entry to distribute
+     * @param qualifyingPlayers the set of qualifying players
+     * @param snapshot          the contribution snapshot
+     * @param totalContribution the total contribution across all qualifying players
+     * @param result            the reward map to populate
+     * @param random            the random source (unused in proportional but passed for consistency)
+     */
+    private void distributeProportional(
             @NotNull DistributionRewardEntry entry,
             @NotNull Set<UUID> qualifyingPlayers,
             @NotNull ContributionSnapshot snapshot,
@@ -214,7 +254,7 @@ public final class QuestRewardDistributionResolver {
                     boolean isScalable = scaled != entry.reward();
 
                     if (!isScalable) {
-                        McRPG.getInstance().getLogger().warning("Non-scalable reward '" + entry.reward().getKey()
+                        logger.warning("Non-scalable reward '" + entry.reward().getKey()
                                 + "' used with SCALE pot-behavior; granting unscaled to all");
                         for (UUID uuid : qualifyingPlayers) {
                             result.computeIfAbsent(uuid, k -> new ArrayList<>())
@@ -234,7 +274,17 @@ public final class QuestRewardDistributionResolver {
         }
     }
 
-    private static void distributeRemainder(
+    /**
+     * Distributes any remainder reward to one or more players based on the configured strategy.
+     *
+     * @param entry             the reward entry with remainder configuration
+     * @param baseMultiplier    the base multiplier used for per-player calculation
+     * @param qualifyingPlayers the set of qualifying players
+     * @param snapshot          the contribution snapshot
+     * @param result            the reward map to populate
+     * @param random            the random source for RANDOM remainder strategy
+     */
+    private void distributeRemainder(
             @NotNull DistributionRewardEntry entry,
             double baseMultiplier,
             @NotNull Set<UUID> qualifyingPlayers,
@@ -275,6 +325,14 @@ public final class QuestRewardDistributionResolver {
         }
     }
 
+    /**
+     * Returns the top N contributors from the qualifying players, sorted by contribution descending.
+     *
+     * @param qualifyingPlayers the set of qualifying players
+     * @param snapshot          the contribution snapshot
+     * @param count             the maximum number of top contributors to return
+     * @return the list of top contributor UUIDs, up to {@code count}
+     */
     @NotNull
     private static List<UUID> findTopContributors(@NotNull Set<UUID> qualifyingPlayers,
                                                    @NotNull ContributionSnapshot snapshot,
@@ -288,6 +346,13 @@ public final class QuestRewardDistributionResolver {
                 .toList();
     }
 
+    /**
+     * Returns the single top contributor from the qualifying players.
+     *
+     * @param qualifyingPlayers the set of qualifying players
+     * @param snapshot          the contribution snapshot
+     * @return the UUID of the top contributor, or empty if no players are present
+     */
     @NotNull
     private static Optional<UUID> findTopContributor(@NotNull Set<UUID> qualifyingPlayers,
                                                       @NotNull ContributionSnapshot snapshot) {

@@ -12,13 +12,10 @@ import java.util.Random;
 import java.util.function.Predicate;
 
 /**
- * Stateless utility with pure functions for slot count computation and quest selection.
+ * Stateless collaborator with pure functions for slot count computation and quest selection.
  * No Bukkit dependency for testability.
  */
-public final class SlotGenerationLogic {
-
-    private SlotGenerationLogic() {
-    }
+public class SlotGenerationLogic {
 
     /**
      * Computes how many slots each category should receive for a rotation.
@@ -40,7 +37,7 @@ public final class SlotGenerationLogic {
      * @return a map of category key to slot count
      */
     @NotNull
-    public static Map<NamespacedKey, Integer> computeSlotCounts(
+    public Map<NamespacedKey, Integer> computeSlotCounts(
             @NotNull List<BoardSlotCategory> categories,
             int minimumTotalOfferings,
             @NotNull Random random,
@@ -97,8 +94,8 @@ public final class SlotGenerationLogic {
      * @param random   the random source
      * @return the number of slots for this category (at least {@code category.getMin()})
      */
-    public static int computeSlotCountForCategory(@NotNull BoardSlotCategory category,
-                                                   @NotNull Random random) {
+    public int computeSlotCountForCategory(@NotNull BoardSlotCategory category,
+                                           @NotNull Random random) {
         int slots = category.getMin();
         for (int i = slots; i < category.getMax(); i++) {
             if (random.nextDouble() < category.getChancePerSlot()) {
@@ -116,7 +113,7 @@ public final class SlotGenerationLogic {
      * @return the selected definition key, or empty if the list is empty
      */
     @NotNull
-    public static Optional<NamespacedKey> selectQuestForSlot(
+    public Optional<NamespacedKey> selectQuestForSlot(
             @NotNull List<NamespacedKey> eligibleDefinitions,
             @NotNull Random random) {
         if (eligibleDefinitions.isEmpty()) {

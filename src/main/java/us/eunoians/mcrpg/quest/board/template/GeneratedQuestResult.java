@@ -12,7 +12,7 @@ import us.eunoians.mcrpg.quest.definition.QuestDefinition;
  * @param definition           the fully materialized quest definition ready for
  *                             {@code QuestManager.startQuest()}
  * @param templateKey          which template produced this definition (for traceability and display)
- * @param serializedDefinition JSON snapshot produced by {@link GeneratedQuestDefinitionSerializer#serialize}.
+ * @param serializedDefinition JSON snapshot produced by {@link GeneratedQuestDefinitionCodec#serialize}.
  *                             Persisted in the {@code generated_definition} column of
  *                             {@code mcrpg_board_offering} so the definition can be deserialized
  *                             on future board loads without re-running the template engine.

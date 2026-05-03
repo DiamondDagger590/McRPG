@@ -112,7 +112,7 @@ class QuestAcceptorDistributionTypeTest {
                     Map.of(acceptor, 60L, participant1, 20L, participant2, 20L),
                     100, Set.of(acceptor, participant1, participant2), acceptor);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
             assertTrue(result.containsKey(acceptor), "Acceptor should receive leader reward");
             assertFalse(result.containsKey(participant1), "Non-acceptor should not receive leader reward");
@@ -140,7 +140,7 @@ class QuestAcceptorDistributionTypeTest {
                     Map.of(acceptor, 60L, participant, 40L),
                     100, Set.of(acceptor, participant), acceptor);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
             // Acceptor receives both leader bonus and participation rewards
             assertTrue(result.containsKey(acceptor));
@@ -165,7 +165,7 @@ class QuestAcceptorDistributionTypeTest {
             // null acceptorUUID = non-scoped quest
             var snapshot = new ContributionSnapshot(Map.of(participant, 100L), 100, Set.of(participant), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
             assertTrue(result.isEmpty(), "QUEST_ACCEPTOR tier should produce no rewards when acceptor is null");
         }

@@ -103,7 +103,7 @@ public class MinScaledAmountDistributionTest extends McRPGBaseTest {
             var config = new RewardDistributionConfig(List.of(tierWithMinScaled(reward, 1)));
             var snapshot = new ContributionSnapshot(contributions, 20, playerSet, null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
             // 1000 / 20 = 50 per player, well above min of 1 → all should receive
             assertFalse(result.isEmpty(), "All players should receive rewards when share exceeds min");
@@ -123,7 +123,7 @@ public class MinScaledAmountDistributionTest extends McRPGBaseTest {
             var config = new RewardDistributionConfig(List.of(tierWithMinScaled(reward, 0)));
             var snapshot = new ContributionSnapshot(contributions, 20, playerSet, null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
             // 5 / 20 rounds to 0 → with minScaledAmount=0, players whose share = 0 are skipped
             // Total granted should not exceed the original pot
@@ -143,7 +143,7 @@ public class MinScaledAmountDistributionTest extends McRPGBaseTest {
             var config = new RewardDistributionConfig(List.of(tierWithMinScaled(reward, 10)));
             var snapshot = new ContributionSnapshot(Map.of(p1, 1L, p2, 2L), 3, Set.of(p1, p2), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
             // Each player's share (≈1) is below min-scaled-amount 10 → reward skipped
             assertTrue(result.isEmpty() || result.values().stream()

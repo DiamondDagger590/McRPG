@@ -19,6 +19,8 @@ import us.eunoians.mcrpg.quest.impl.scope.impl.SinglePlayerQuestScope;
 import us.eunoians.mcrpg.quest.source.builtin.BoardPersonalQuestSource;
 import us.eunoians.mcrpg.quest.board.QuestBoardTerminator;
 import us.eunoians.mcrpg.quest.board.distribution.DistributionCompletionService;
+import us.eunoians.mcrpg.quest.board.distribution.QuestContributionAggregator;
+import us.eunoians.mcrpg.quest.board.distribution.QuestRewardDistributionResolver;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionGranter;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -37,9 +39,11 @@ public class QuestListenerBoardCountTest extends McRPGBaseTest {
         QuestBoardTerminator terminator = new QuestBoardTerminator(mcRPG);
         var rarityReg = RegistryAccess.registryAccess().registry(McRPGRegistryKey.QUEST_RARITY);
         var distTypeReg = RegistryAccess.registryAccess().registry(McRPGRegistryKey.REWARD_DISTRIBUTION_TYPE);
-        var distService = new DistributionCompletionService(rarityReg, distTypeReg, new RewardDistributionGranter(mcRPG));
+        var aggregator = new QuestContributionAggregator();
+        var resolver = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test"));
+        var distService = new DistributionCompletionService(rarityReg, distTypeReg, new RewardDistributionGranter(mcRPG), aggregator, resolver);
         server.getPluginManager().registerEvents(new QuestCancelListener(terminator), mcRPG);
-        server.getPluginManager().registerEvents(new QuestCompleteListener(terminator, distService), mcRPG);
+        server.getPluginManager().registerEvents(new QuestCompleteListener(terminator, distService, aggregator), mcRPG);
     }
 
     @DisplayName("QuestCancelListener decrements board count for board-sourced quest")

@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.quest.board.template.condition.ConditionContext;
 import us.eunoians.mcrpg.quest.board.template.condition.ConditionParser;
 import us.eunoians.mcrpg.quest.board.template.condition.QuestCompletionHistory;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateCondition;
+import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
 import us.eunoians.mcrpg.quest.board.template.variable.RangeVariable;
 import us.eunoians.mcrpg.quest.board.template.variable.TemplateVariable;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
@@ -81,7 +82,9 @@ class QuestTemplateEngineContextBranchTest {
 
         McRPG mockPlugin = mock(McRPG.class);
         when(mockPlugin.getLogger()).thenReturn(Logger.getLogger("QuestTemplateEngineContextBranchTest"));
-        engine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry, mockPlugin);
+        var conditionRegistry = mock(TemplateConditionRegistry.class);
+        var codec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        engine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry, mockPlugin, new WeightedObjectiveSelector(), codec);
     }
 
     @Test

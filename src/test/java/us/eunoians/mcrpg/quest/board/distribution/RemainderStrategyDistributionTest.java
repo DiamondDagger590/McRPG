@@ -99,7 +99,7 @@ public class RemainderStrategyDistributionTest extends McRPGBaseTest {
             var config = new RewardDistributionConfig(List.of(tier(reward, RemainderStrategy.DISCARD)));
             var snapshot = new ContributionSnapshot(Map.of(p1, 4L, p2, 3L, p3, 3L), 10, Set.of(p1, p2, p3), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(42));
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(42));
 
             // Each of the 3 players should receive exactly the base split (≈ 10/3 = 3)
             assertEquals(3, result.size());
@@ -125,7 +125,7 @@ public class RemainderStrategyDistributionTest extends McRPGBaseTest {
             // p1 is top contributor
             var snapshot = new ContributionSnapshot(Map.of(p1, 8L, p2, 1L, p3, 1L), 10, Set.of(p1, p2, p3), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(42));
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(42));
 
             assertEquals(3, result.size());
             // Top contributor p1 should have received the extra unit
@@ -146,7 +146,7 @@ public class RemainderStrategyDistributionTest extends McRPGBaseTest {
             // Tied contributions
             var snapshot = new ContributionSnapshot(Map.of(p1, 5L, p2, 5L), 10, Set.of(p1, p2), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(42));
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(42));
 
             // Both get rewards; one gets extra. Total stays close to 5.
             assertTrue(result.containsKey(p1) || result.containsKey(p2));
@@ -165,7 +165,7 @@ public class RemainderStrategyDistributionTest extends McRPGBaseTest {
             var config = new RewardDistributionConfig(List.of(tier(reward, RemainderStrategy.RANDOM)));
             var snapshot = new ContributionSnapshot(Map.of(p1, 4L, p2, 3L, p3, 3L), 10, Set.of(p1, p2, p3), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(42));
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(42));
 
             // All 3 players received at least their base share
             assertEquals(3, result.size());
@@ -182,8 +182,8 @@ public class RemainderStrategyDistributionTest extends McRPGBaseTest {
             var config = new RewardDistributionConfig(List.of(tier(reward, RemainderStrategy.RANDOM)));
             var snapshot = new ContributionSnapshot(Map.of(p1, 4L, p2, 3L, p3, 3L), 10, Set.of(p1, p2, p3), null);
 
-            var result1 = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(12345));
-            var result2 = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(12345));
+            var result1 = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(12345));
+            var result2 = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(12345));
 
             // Same seed → same extra recipient
             assertEquals(result1.keySet(), result2.keySet());

@@ -134,7 +134,7 @@ class QuestSystemBoundaryTest {
             var config = new RewardDistributionConfig(List.of(tier));
             var snapshot = new ContributionSnapshot(Map.of(solo, 100L), 100, Set.of(solo), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
             assertTrue(result.containsKey(solo), "Solo player should qualify");
         }
@@ -150,7 +150,7 @@ class QuestSystemBoundaryTest {
             var config = new RewardDistributionConfig(List.of(tier));
             var snapshot = new ContributionSnapshot(Map.of(), 0, Set.of(), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
             assertTrue(result.isEmpty(), "Empty contributions should yield no qualifying players");
         }
@@ -166,7 +166,7 @@ class QuestSystemBoundaryTest {
             var config = new RewardDistributionConfig(List.of(tier));
             var snapshot = new ContributionSnapshot(Map.of(p1, 100L), 100, Set.of(p1), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
             assertTrue(result.isEmpty(), "Unregistered type should cause tier to be skipped");
         }
@@ -184,7 +184,7 @@ class QuestSystemBoundaryTest {
             var config = new RewardDistributionConfig(List.of(tier));
             var snapshot = new ContributionSnapshot(Map.of(p1, 60L, p2, 40L), 100, Set.of(p1, p2), null);
 
-            var result = new QuestRewardDistributionResolver().resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+            var result = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test")).resolve(config, snapshot, null, rarityRegistry, typeRegistry);
 
             // ALL behavior: both players get the full reward regardless of split mode
             assertTrue(result.containsKey(p1) && result.containsKey(p2),

@@ -43,8 +43,9 @@ import us.eunoians.mcrpg.quest.board.refresh.builtin.DailyRefreshType;
 import us.eunoians.mcrpg.quest.board.refresh.builtin.WeeklyRefreshType;
 import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapter;
 import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry;
-import us.eunoians.mcrpg.quest.board.template.GeneratedQuestDefinitionSerializer;
+import us.eunoians.mcrpg.quest.board.template.GeneratedQuestDefinitionCodec;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateEngine;
+import us.eunoians.mcrpg.quest.board.template.WeightedObjectiveSelector;
 import us.eunoians.mcrpg.quest.board.template.condition.QuestCompletionHistory;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
@@ -102,6 +103,8 @@ public class QuestBoardManager extends Manager<McRPG> {
     private QuestPool questPool;
     private QuestTemplateEngine templateEngine;
     private PersonalOfferingGenerator personalOfferingGenerator;
+    private SlotGenerationLogic slotGenerationLogic;
+    private GeneratedQuestDefinitionCodec codec;
     private ReloadableRarityConfig rarityConfig;
     private ReloadableCategoryConfig categoryConfig;
     private ReloadableTemplateConfig templateConfig;
@@ -180,8 +183,10 @@ public class QuestBoardManager extends Manager<McRPG> {
         var conditionRegistry = plugin.registryAccess()
                 .registry(McRPGRegistryKey.TEMPLATE_CONDITION);
 
-        this.templateEngine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry, plugin);
-        this.personalOfferingGenerator = new PersonalOfferingGenerator();
+        this.codec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        this.templateEngine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry, plugin, new WeightedObjectiveSelector(), codec);
+        this.slotGenerationLogic = new SlotGenerationLogic();
+        this.personalOfferingGenerator = new PersonalOfferingGenerator(slotGenerationLogic);
         File primaryTemplatesDir = new File(plugin.getDataFolder(), "quest-board/templates");
         this.templateConfig = new ReloadableTemplateConfig(boardConfig, templateRegistry, conditionRegistry, primaryTemplatesDir);
         this.templateConfig.getContent();
@@ -448,7 +453,7 @@ public class QuestBoardManager extends Manager<McRPG> {
                 .sorted((a, b) -> Integer.compare(b.getPriority(), a.getPriority()))
                 .toList();
 
-        Map<NamespacedKey, Integer> slotCounts = SlotGenerationLogic.computeSlotCounts(
+        Map<NamespacedKey, Integer> slotCounts = slotGenerationLogic.computeSlotCounts(
                 categories, board.getMinimumTotalOfferings(), random, key -> false);
 
         String refreshType = rotation.getRefreshTypeKey().getKey().toUpperCase();
@@ -617,15 +622,7 @@ public class QuestBoardManager extends Manager<McRPG> {
 
         if (offering.isTemplateGenerated() && offering.getGeneratedDefinition().isPresent()) {
             try {
-                QuestObjectiveTypeRegistry objTypeRegistry = plugin().registryAccess()
-                        .registry(McRPGRegistryKey.QUEST_OBJECTIVE_TYPE);
-                QuestRewardTypeRegistry rewardTypeRegistry = plugin().registryAccess()
-                        .registry(McRPGRegistryKey.QUEST_REWARD_TYPE);
-                TemplateConditionRegistry conditionTypeRegistry = plugin().registryAccess()
-                        .registry(McRPGRegistryKey.TEMPLATE_CONDITION);
-                return Optional.of(GeneratedQuestDefinitionSerializer.deserialize(
-                        offering.getGeneratedDefinition().get(), objTypeRegistry, rewardTypeRegistry,
-                        conditionTypeRegistry));
+                return Optional.of(codec.deserialize(offering.getGeneratedDefinition().get()));
             } catch (Exception e) {
                 plugin().getLogger().log(Level.WARNING, "[QuestBoard] Failed to deserialize generated definition for "
                         + offering.getQuestDefinitionKey(), e);
@@ -660,12 +657,6 @@ public class QuestBoardManager extends Manager<McRPG> {
     private void reRegisterGeneratedDefinitions(@NotNull List<BoardOffering> offerings) {
         QuestDefinitionRegistry defRegistry = plugin().registryAccess()
                 .registry(McRPGRegistryKey.QUEST_DEFINITION);
-        QuestObjectiveTypeRegistry objTypeRegistry = plugin().registryAccess()
-                .registry(McRPGRegistryKey.QUEST_OBJECTIVE_TYPE);
-        QuestRewardTypeRegistry rewardTypeRegistry = plugin().registryAccess()
-                .registry(McRPGRegistryKey.QUEST_REWARD_TYPE);
-        TemplateConditionRegistry conditionTypeRegistry = plugin().registryAccess()
-                .registry(McRPGRegistryKey.TEMPLATE_CONDITION);
 
         int registered = 0;
         for (BoardOffering offering : offerings) {
@@ -676,9 +667,7 @@ public class QuestBoardManager extends Manager<McRPG> {
                 continue;
             }
             try {
-                QuestDefinition def = GeneratedQuestDefinitionSerializer.deserialize(
-                        offering.getGeneratedDefinition().get(), objTypeRegistry, rewardTypeRegistry,
-                        conditionTypeRegistry);
+                QuestDefinition def = codec.deserialize(offering.getGeneratedDefinition().get());
                 defRegistry.register(def);
                 registered++;
             } catch (Exception e) {
@@ -993,7 +982,7 @@ public class QuestBoardManager extends Manager<McRPG> {
 
             Set<String> activeEntities = adapter.get().getAllActiveEntities();
             for (String entityId : activeEntities) {
-                Map<NamespacedKey, Integer> slotCounts = SlotGenerationLogic.computeSlotCounts(
+                Map<NamespacedKey, Integer> slotCounts = slotGenerationLogic.computeSlotCounts(
                         List.of(category), 0, random, key -> false);
 
                 int count = slotCounts.getOrDefault(category.getKey(), 0);

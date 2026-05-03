@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.template.condition.ConditionContext;
 import us.eunoians.mcrpg.quest.board.template.condition.RarityCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateCondition;
+import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
 import us.eunoians.mcrpg.quest.board.template.variable.TemplateVariable;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
@@ -84,7 +85,9 @@ class QuestTemplateEngineConditionTest {
 
         McRPG mockPlugin = mock(McRPG.class);
         when(mockPlugin.getLogger()).thenReturn(Logger.getLogger("QuestTemplateEngineConditionTest"));
-        engine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry, mockPlugin);
+        var conditionRegistry = mock(TemplateConditionRegistry.class);
+        var codec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        engine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry, mockPlugin, new WeightedObjectiveSelector(), codec);
     }
 
     private QuestTemplate buildTemplate(List<TemplatePhaseDefinition> phases) {

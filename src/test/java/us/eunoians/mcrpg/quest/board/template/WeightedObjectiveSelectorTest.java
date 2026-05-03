@@ -16,6 +16,8 @@ class WeightedObjectiveSelectorTest {
 
     private static final NamespacedKey TYPE_KEY = NamespacedKey.fromString("mcrpg:block_break");
 
+    private final WeightedObjectiveSelector selector = new WeightedObjectiveSelector();
+
     private TemplateObjectiveDefinition obj(String name, int weight) {
         return new TemplateObjectiveDefinition(
                 name, NamespacedKey.fromString("mcrpg:" + name), "10", Map.of(), null, weight);
@@ -29,7 +31,7 @@ class WeightedObjectiveSelectorTest {
         ObjectiveSelectionConfig config = new ObjectiveSelectionConfig(
                 ObjectiveSelectionConfig.ObjectiveSelectionMode.WEIGHTED_RANDOM, 2, 2);
 
-        List<TemplateObjectiveDefinition> result = WeightedObjectiveSelector.select(
+        List<TemplateObjectiveDefinition> result = selector.select(
                 candidates, config, new Random(42));
         assertEquals(2, result.size());
     }
@@ -42,7 +44,7 @@ class WeightedObjectiveSelectorTest {
         ObjectiveSelectionConfig config = new ObjectiveSelectionConfig(
                 ObjectiveSelectionConfig.ObjectiveSelectionMode.WEIGHTED_RANDOM, 3, 3);
 
-        List<TemplateObjectiveDefinition> result = WeightedObjectiveSelector.select(
+        List<TemplateObjectiveDefinition> result = selector.select(
                 candidates, config, new Random(42));
         assertEquals(3, result.size());
     }
@@ -56,7 +58,7 @@ class WeightedObjectiveSelectorTest {
                 ObjectiveSelectionConfig.ObjectiveSelectionMode.WEIGHTED_RANDOM, 3, 3);
 
         assertThrows(IllegalStateException.class,
-                () -> WeightedObjectiveSelector.select(candidates, config, new Random(42)));
+                () -> selector.select(candidates, config, new Random(42)));
     }
 
     @Test
@@ -66,7 +68,7 @@ class WeightedObjectiveSelectorTest {
         ObjectiveSelectionConfig config = new ObjectiveSelectionConfig(
                 ObjectiveSelectionConfig.ObjectiveSelectionMode.WEIGHTED_RANDOM, 1, 1);
 
-        List<TemplateObjectiveDefinition> result = WeightedObjectiveSelector.select(
+        List<TemplateObjectiveDefinition> result = selector.select(
                 List.of(sole), config, new Random(42));
         assertEquals(1, result.size());
         assertSame(sole, result.get(0));
@@ -80,7 +82,7 @@ class WeightedObjectiveSelectorTest {
         ObjectiveSelectionConfig config = new ObjectiveSelectionConfig(
                 ObjectiveSelectionConfig.ObjectiveSelectionMode.WEIGHTED_RANDOM, 3, 3);
 
-        List<TemplateObjectiveDefinition> result = WeightedObjectiveSelector.select(
+        List<TemplateObjectiveDefinition> result = selector.select(
                 candidates, config, new Random(42));
         Set<TemplateObjectiveDefinition> unique = new HashSet<>(result);
         assertEquals(result.size(), unique.size());
@@ -96,7 +98,7 @@ class WeightedObjectiveSelectorTest {
         ObjectiveSelectionConfig config = new ObjectiveSelectionConfig(
                 ObjectiveSelectionConfig.ObjectiveSelectionMode.WEIGHTED_RANDOM, 2, 2);
 
-        List<TemplateObjectiveDefinition> result = WeightedObjectiveSelector.select(
+        List<TemplateObjectiveDefinition> result = selector.select(
                 candidates, config, new Random(42));
 
         int idx0 = candidates.indexOf(result.get(0));
@@ -113,7 +115,7 @@ class WeightedObjectiveSelectorTest {
                 ObjectiveSelectionConfig.ObjectiveSelectionMode.WEIGHTED_RANDOM, 2, 4);
 
         for (int seed = 0; seed < 50; seed++) {
-            List<TemplateObjectiveDefinition> result = WeightedObjectiveSelector.select(
+            List<TemplateObjectiveDefinition> result = selector.select(
                     candidates, config, new Random(seed));
             assertTrue(result.size() >= 2 && result.size() <= 4,
                     "Result size " + result.size() + " should be between 2 and 4");
@@ -128,9 +130,9 @@ class WeightedObjectiveSelectorTest {
         ObjectiveSelectionConfig config = new ObjectiveSelectionConfig(
                 ObjectiveSelectionConfig.ObjectiveSelectionMode.WEIGHTED_RANDOM, 2, 2);
 
-        List<TemplateObjectiveDefinition> result1 = WeightedObjectiveSelector.select(
+        List<TemplateObjectiveDefinition> result1 = selector.select(
                 candidates, config, new Random(99));
-        List<TemplateObjectiveDefinition> result2 = WeightedObjectiveSelector.select(
+        List<TemplateObjectiveDefinition> result2 = selector.select(
                 candidates, config, new Random(99));
         assertEquals(result1, result2);
     }

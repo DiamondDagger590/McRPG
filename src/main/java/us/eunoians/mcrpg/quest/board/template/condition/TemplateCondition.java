@@ -62,7 +62,7 @@ public interface TemplateCondition extends McRPGContent {
     /**
      * Serializes this configured condition's state to a map that can be stored as JSON
      * and later reconstructed via {@link #fromConfig(Section)} using the
-     * {@code GeneratedQuestDefinitionSerializer} bridge. The keys in the returned map
+     * {@code GeneratedQuestDefinitionCodec} bridge. The keys in the returned map
      * must match what {@link #fromConfig} expects to read from its {@link Section}.
      * <p>
      * Implementations must not include a {@code "type"} key — the serializer injects

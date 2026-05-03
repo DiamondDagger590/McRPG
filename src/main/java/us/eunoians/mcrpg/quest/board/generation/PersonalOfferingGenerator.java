@@ -24,6 +24,17 @@ import java.util.UUID;
  */
 public final class PersonalOfferingGenerator {
 
+    private final SlotGenerationLogic slotGenerationLogic;
+
+    /**
+     * Creates a new personal offering generator with the given slot generation logic.
+     *
+     * @param slotGenerationLogic the slot generation logic collaborator
+     */
+    public PersonalOfferingGenerator(@NotNull SlotGenerationLogic slotGenerationLogic) {
+        this.slotGenerationLogic = slotGenerationLogic;
+    }
+
     /**
      * Generates personal offerings for a player for a given rotation. Uses configurable
      * source weights to choose between hand-crafted definitions and template-generated quests.
@@ -79,7 +90,7 @@ public final class PersonalOfferingGenerator {
         int slotIndex = 0;
 
         for (BoardSlotCategory category : categories) {
-            int count = SlotGenerationLogic.computeSlotCountForCategory(
+            int count = slotGenerationLogic.computeSlotCountForCategory(
                     category, new Random(computeSeed(playerUUID, rotation.getRotationEpoch(), slotIndex)));
 
             for (int i = 0; i < count; i++) {

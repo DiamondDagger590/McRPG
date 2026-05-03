@@ -21,6 +21,8 @@ import static org.mockito.Mockito.when;
 
 public class QuestContributionAggregatorTest extends McRPGBaseTest {
 
+    private final QuestContributionAggregator aggregator = new QuestContributionAggregator();
+
     @DisplayName("fromObjective returns the objective's raw contribution map")
     @Test
     void fromObjectiveReturnsRaw() {
@@ -28,7 +30,7 @@ public class QuestContributionAggregatorTest extends McRPGBaseTest {
         var objective = mock(QuestObjectiveInstance.class);
         when(objective.getPlayerContributions()).thenReturn(Map.of(p1, 42L));
 
-        Map<UUID, Long> result = QuestContributionAggregator.fromObjective(objective);
+        Map<UUID, Long> result = aggregator.fromObjective(objective);
         assertEquals(42L, result.get(p1));
     }
 
@@ -45,7 +47,7 @@ public class QuestContributionAggregatorTest extends McRPGBaseTest {
         var stage = mock(QuestStageInstance.class);
         when(stage.getQuestObjectives()).thenReturn(List.of(obj1, obj2));
 
-        Map<UUID, Long> result = QuestContributionAggregator.fromStage(stage);
+        Map<UUID, Long> result = aggregator.fromStage(stage);
         assertEquals(50L, result.get(p1));
         assertEquals(50L, result.get(p2));
     }
@@ -68,7 +70,7 @@ public class QuestContributionAggregatorTest extends McRPGBaseTest {
         var quest = mock(QuestInstance.class);
         when(quest.getStagesForPhase(0)).thenReturn(List.of(stage1, stage2));
 
-        Map<UUID, Long> result = QuestContributionAggregator.fromPhase(quest, 0);
+        Map<UUID, Long> result = aggregator.fromPhase(quest, 0);
         assertEquals(300L, result.get(p1));
     }
 
@@ -90,7 +92,7 @@ public class QuestContributionAggregatorTest extends McRPGBaseTest {
         var quest = mock(QuestInstance.class);
         when(quest.getQuestStageInstances()).thenReturn(List.of(stage1, stage2));
 
-        Map<UUID, Long> result = QuestContributionAggregator.fromQuest(quest);
+        Map<UUID, Long> result = aggregator.fromQuest(quest);
         assertEquals(80L, result.get(p1));
         assertEquals(70L, result.get(p2));
     }
@@ -102,7 +104,7 @@ public class QuestContributionAggregatorTest extends McRPGBaseTest {
         Map<UUID, Long> contributions = Map.of(p1, 60L, p2, 40L);
         Set<UUID> members = Set.of(p1, p2);
 
-        ContributionSnapshot snapshot = QuestContributionAggregator.toSnapshot(contributions, members);
+        ContributionSnapshot snapshot = aggregator.toSnapshot(contributions, members);
 
         assertEquals(100L, snapshot.totalProgress());
         assertEquals(60L, snapshot.contributions().get(p1));
@@ -113,7 +115,7 @@ public class QuestContributionAggregatorTest extends McRPGBaseTest {
     @DisplayName("toSnapshot with empty contributions gives zero total")
     @Test
     void toSnapshotEmptyContributions() {
-        ContributionSnapshot snapshot = QuestContributionAggregator.toSnapshot(Map.of(), Set.of());
+        ContributionSnapshot snapshot = aggregator.toSnapshot(Map.of(), Set.of());
         assertEquals(0L, snapshot.totalProgress());
         assertTrue(snapshot.contributions().isEmpty());
     }

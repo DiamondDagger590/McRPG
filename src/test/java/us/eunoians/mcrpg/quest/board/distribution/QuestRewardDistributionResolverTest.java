@@ -35,7 +35,7 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
         typeRegistry.register(new TopPlayersDistributionType());
         typeRegistry.register(new ParticipatedDistributionType());
         rarityRegistry = new QuestRarityRegistry();
-        resolver = new QuestRewardDistributionResolver();
+        resolver = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test"));
     }
 
     /**

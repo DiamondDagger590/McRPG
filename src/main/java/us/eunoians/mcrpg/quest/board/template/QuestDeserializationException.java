@@ -4,7 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Thrown when {@link GeneratedQuestDefinitionSerializer} fails to deserialize a
+ * Thrown when {@link GeneratedQuestDefinitionCodec} fails to deserialize a
  * JSON snapshot back into a {@link us.eunoians.mcrpg.quest.definition.QuestDefinition}.
  * Exposes the quest key (if parseable) and a description of the element that failed,
  * helping third-party expansion developers identify unregistered types or corrupted data.

@@ -31,9 +31,12 @@ import java.util.UUID;
 public class QuestObjectiveCompleteListener implements Listener {
 
     private final DistributionCompletionService distributionService;
+    private final QuestContributionAggregator contributionAggregator;
 
-    public QuestObjectiveCompleteListener(@NotNull DistributionCompletionService distributionService) {
+    public QuestObjectiveCompleteListener(@NotNull DistributionCompletionService distributionService,
+                                          @NotNull QuestContributionAggregator contributionAggregator) {
         this.distributionService = distributionService;
+        this.contributionAggregator = contributionAggregator;
     }
 
     /**
@@ -56,7 +59,7 @@ public class QuestObjectiveCompleteListener implements Listener {
                 .ifPresent(objectiveDef -> {
                     quest.grantRewards(objectiveDef.getRewards());
                     objectiveDef.getRewardDistribution().ifPresent(config -> {
-                        Map<UUID, Long> contributions = QuestContributionAggregator.fromObjective(event.getObjectiveInstance());
+                        Map<UUID, Long> contributions = contributionAggregator.fromObjective(event.getObjectiveInstance());
                         Set<UUID> groupMembers = quest.getQuestScope()
                                 .map(scope -> scope.getCurrentPlayersInScope())
                                 .orElse(Set.of());

@@ -59,7 +59,7 @@ class PersonalOfferingGeneratorTest extends McRPGBaseTest {
         questPool = new QuestPool(defRegistry, templateRegistry, mcRPG.getLogger());
 
         rotation = new BoardRotation(UUID.randomUUID(), BOARD_KEY, REFRESH_KEY, 12345L, 0L, 86400000L);
-        generator = new PersonalOfferingGenerator();
+        generator = new PersonalOfferingGenerator(new SlotGenerationLogic());
     }
 
     @Test

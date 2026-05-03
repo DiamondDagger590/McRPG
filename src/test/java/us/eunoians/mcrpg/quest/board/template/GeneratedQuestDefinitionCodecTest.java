@@ -32,7 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-class GeneratedQuestDefinitionSerializerTest {
+class GeneratedQuestDefinitionCodecTest {
 
     private static final NamespacedKey QUEST_KEY = NamespacedKey.fromString("mcrpg:gen_daily_mining_abcd1234");
     private static final NamespacedKey TEMPLATE_KEY = NamespacedKey.fromString("mcrpg:daily_mining");
@@ -46,12 +46,14 @@ class GeneratedQuestDefinitionSerializerTest {
     private QuestObjectiveTypeRegistry objectiveTypeRegistry;
     private QuestRewardTypeRegistry rewardTypeRegistry;
     private TemplateConditionRegistry conditionRegistry;
+    private GeneratedQuestDefinitionCodec codec;
 
     @BeforeEach
     void setUp() {
         objectiveTypeRegistry = mock(QuestObjectiveTypeRegistry.class);
         rewardTypeRegistry = mock(QuestRewardTypeRegistry.class);
         conditionRegistry = mock(TemplateConditionRegistry.class);
+        codec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
 
         QuestObjectiveType mockObjType = mock(QuestObjectiveType.class);
         when(mockObjType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
@@ -78,10 +80,9 @@ class GeneratedQuestDefinitionSerializerTest {
         ResolvedVariableContext context = createTestContext();
         Map<NamespacedKey, Map<String, Object>> objectiveConfigs = createObjectiveConfigs();
 
-        String json = GeneratedQuestDefinitionSerializer.serialize(
+        String json = codec.serialize(
                 original, TEMPLATE_KEY, RARITY_KEY, context, objectiveConfigs);
-        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
-                json, objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        QuestDefinition deserialized = codec.deserialize(json);
 
         assertEquals(original.getQuestKey(), deserialized.getQuestKey());
         assertEquals(original.getScopeType(), deserialized.getScopeType());
@@ -95,7 +96,7 @@ class GeneratedQuestDefinitionSerializerTest {
         QuestDefinition definition = createTestDefinition();
         ResolvedVariableContext context = createTestContext();
 
-        String json = GeneratedQuestDefinitionSerializer.serialize(
+        String json = codec.serialize(
                 definition, TEMPLATE_KEY, RARITY_KEY, context, createObjectiveConfigs());
         JsonObject root = JsonParser.parseString(json).getAsJsonObject();
 
@@ -118,8 +119,7 @@ class GeneratedQuestDefinitionSerializerTest {
     void deserialize_correctPhaseStageObjectiveStructure() {
         String json = serializeTestDefinition();
 
-        QuestDefinition def = GeneratedQuestDefinitionSerializer.deserialize(
-                json, objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        QuestDefinition def = codec.deserialize(json);
 
         assertEquals(1, def.getPhases().size());
         QuestPhaseDefinition phase = def.getPhases().get(0);
@@ -140,8 +140,7 @@ class GeneratedQuestDefinitionSerializerTest {
     void deserialize_correctRewards() {
         String json = serializeTestDefinition();
 
-        QuestDefinition def = GeneratedQuestDefinitionSerializer.deserialize(
-                json, objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        QuestDefinition def = codec.deserialize(json);
 
         assertEquals(1, def.getRewards().size());
         verify(rewardTypeRegistry).get(REWARD_TYPE_KEY);
@@ -152,7 +151,7 @@ class GeneratedQuestDefinitionSerializerTest {
     void deserialize_resolvesObjectiveTypesFromRegistry() {
         String json = serializeTestDefinition();
 
-        GeneratedQuestDefinitionSerializer.deserialize(json, objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        codec.deserialize(json);
 
         verify(objectiveTypeRegistry).get(OBJECTIVE_TYPE_KEY);
     }
@@ -164,8 +163,9 @@ class GeneratedQuestDefinitionSerializerTest {
         QuestObjectiveTypeRegistry emptyRegistry = mock(QuestObjectiveTypeRegistry.class);
         when(emptyRegistry.get(any())).thenReturn(Optional.empty());
 
+        var emptyCodec = new GeneratedQuestDefinitionCodec(emptyRegistry, rewardTypeRegistry, conditionRegistry);
         QuestDeserializationException ex = assertThrows(QuestDeserializationException.class,
-                () -> GeneratedQuestDefinitionSerializer.deserialize(json, emptyRegistry, rewardTypeRegistry, conditionRegistry));
+                () -> emptyCodec.deserialize(json));
 
         assertNotNull(ex.getQuestKey());
         assertTrue(ex.getFailedElement().contains("objective type"));
@@ -179,8 +179,9 @@ class GeneratedQuestDefinitionSerializerTest {
         QuestRewardTypeRegistry emptyRegistry = mock(QuestRewardTypeRegistry.class);
         when(emptyRegistry.get(any())).thenReturn(Optional.empty());
 
+        var emptyCodec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, emptyRegistry, conditionRegistry);
         QuestDeserializationException ex = assertThrows(QuestDeserializationException.class,
-                () -> GeneratedQuestDefinitionSerializer.deserialize(json, objectiveTypeRegistry, emptyRegistry, conditionRegistry));
+                () -> emptyCodec.deserialize(json));
 
         assertNotNull(ex.getQuestKey());
         assertTrue(ex.getFailedElement().contains("reward type"));
@@ -193,10 +194,9 @@ class GeneratedQuestDefinitionSerializerTest {
         ResolvedVariableContext context = createTestContext();
         Map<NamespacedKey, Map<String, Object>> objectiveConfigs = createObjectiveConfigs();
 
-        String json = GeneratedQuestDefinitionSerializer.serialize(
+        String json = codec.serialize(
                 original, TEMPLATE_KEY, RARITY_KEY, context, objectiveConfigs);
-        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
-                json, objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        QuestDefinition deserialized = codec.deserialize(json);
 
         assertTrue(deserialized.getRewardDistribution().isPresent(),
                 "Quest-level reward distribution should survive roundtrip");
@@ -222,10 +222,9 @@ class GeneratedQuestDefinitionSerializerTest {
         ResolvedVariableContext context = createTestContext();
         Map<NamespacedKey, Map<String, Object>> objectiveConfigs = createObjectiveConfigs();
 
-        String json = GeneratedQuestDefinitionSerializer.serialize(
+        String json = codec.serialize(
                 original, TEMPLATE_KEY, RARITY_KEY, context, objectiveConfigs);
-        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
-                json, objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        QuestDefinition deserialized = codec.deserialize(json);
 
         QuestStageDefinition stage = deserialized.getPhases().get(0).getStages().get(0);
         assertTrue(stage.getRewardDistribution().isPresent(),
@@ -240,10 +239,9 @@ class GeneratedQuestDefinitionSerializerTest {
         ResolvedVariableContext context = createTestContext();
         Map<NamespacedKey, Map<String, Object>> objectiveConfigs = createObjectiveConfigs();
 
-        String json = GeneratedQuestDefinitionSerializer.serialize(
+        String json = codec.serialize(
                 original, TEMPLATE_KEY, RARITY_KEY, context, objectiveConfigs);
-        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
-                json, objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        QuestDefinition deserialized = codec.deserialize(json);
 
         QuestPhaseDefinition phase = deserialized.getPhases().get(0);
         assertTrue(phase.getRewardDistribution().isPresent(),
@@ -258,10 +256,9 @@ class GeneratedQuestDefinitionSerializerTest {
         ResolvedVariableContext context = createTestContext();
         Map<NamespacedKey, Map<String, Object>> objectiveConfigs = createObjectiveConfigs();
 
-        String json = GeneratedQuestDefinitionSerializer.serialize(
+        String json = codec.serialize(
                 original, TEMPLATE_KEY, RARITY_KEY, context, objectiveConfigs);
-        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
-                json, objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        QuestDefinition deserialized = codec.deserialize(json);
 
         DistributionTierConfig tier = deserialized.getRewardDistribution().get().getTiers().get(0);
         assertTrue(tier.getTopPlayerCount().isPresent());
@@ -286,10 +283,9 @@ class GeneratedQuestDefinitionSerializerTest {
         QuestDefinition original = createDefinitionWithCustomDistribution(
                 new RewardDistributionConfig(List.of(tier)));
 
-        String json = GeneratedQuestDefinitionSerializer.serialize(
+        String json = codec.serialize(
                 original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
-        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
-                json, objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        QuestDefinition deserialized = codec.deserialize(json);
 
         DistributionTierConfig deserializedTier = deserialized.getRewardDistribution().get().getTiers().get(0);
         assertTrue(deserializedTier.getMinRarity().isPresent());
@@ -303,10 +299,9 @@ class GeneratedQuestDefinitionSerializerTest {
     void roundTrip_noDistribution_remainsEmpty() {
         QuestDefinition original = createTestDefinition();
 
-        String json = GeneratedQuestDefinitionSerializer.serialize(
+        String json = codec.serialize(
                 original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
-        QuestDefinition deserialized = GeneratedQuestDefinitionSerializer.deserialize(
-                json, objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        QuestDefinition deserialized = codec.deserialize(json);
 
         assertTrue(deserialized.getRewardDistribution().isEmpty(),
                 "Definition without reward distribution should remain empty after roundtrip");
@@ -356,7 +351,7 @@ class GeneratedQuestDefinitionSerializerTest {
     }
 
     private String serializeTestDefinition() {
-        return GeneratedQuestDefinitionSerializer.serialize(
+        return codec.serialize(
                 createTestDefinition(), TEMPLATE_KEY, RARITY_KEY,
                 createTestContext(), createObjectiveConfigs());
     }

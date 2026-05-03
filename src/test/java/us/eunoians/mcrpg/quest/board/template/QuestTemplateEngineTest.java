@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.quest.definition.QuestPhaseDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestStageDefinition;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
+import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 
@@ -82,7 +83,9 @@ class QuestTemplateEngineTest {
 
         McRPG mockPlugin = mock(McRPG.class);
         when(mockPlugin.getLogger()).thenReturn(Logger.getLogger("QuestTemplateEngineTest"));
-        engine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry, mockPlugin);
+        var conditionRegistry = mock(TemplateConditionRegistry.class);
+        var codec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, rewardTypeRegistry, conditionRegistry);
+        engine = new QuestTemplateEngine(rarityRegistry, objectiveTypeRegistry, rewardTypeRegistry, mockPlugin, new WeightedObjectiveSelector(), codec);
     }
 
     @Test

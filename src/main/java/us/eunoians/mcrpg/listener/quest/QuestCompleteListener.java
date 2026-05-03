@@ -35,11 +35,14 @@ public class QuestCompleteListener implements Listener {
 
     private final QuestBoardTerminator terminator;
     private final DistributionCompletionService distributionService;
+    private final QuestContributionAggregator contributionAggregator;
 
     public QuestCompleteListener(@NotNull QuestBoardTerminator terminator,
-                                 @NotNull DistributionCompletionService distributionService) {
+                                 @NotNull DistributionCompletionService distributionService,
+                                 @NotNull QuestContributionAggregator contributionAggregator) {
         this.terminator = terminator;
         this.distributionService = distributionService;
+        this.contributionAggregator = contributionAggregator;
     }
 
     /**
@@ -53,7 +56,7 @@ public class QuestCompleteListener implements Listener {
         questInstance.grantRewards(event.getQuestDefinition().getRewards());
 
         event.getQuestDefinition().getRewardDistribution().ifPresent(config -> {
-            Map<UUID, Long> contributions = QuestContributionAggregator.fromQuest(questInstance);
+            Map<UUID, Long> contributions = contributionAggregator.fromQuest(questInstance);
             Set<UUID> groupMembers = questInstance.getQuestScope()
                     .map(scope -> scope.getCurrentPlayersInScope())
                     .orElse(Set.of());

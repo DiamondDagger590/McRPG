@@ -9,13 +9,11 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * Stateless utility that performs weighted random selection of objectives from a
+ * Stateless collaborator that performs weighted random selection of objectives from a
  * candidate pool. Selection is without replacement — an objective is never selected
  * twice. Uses the generation context's {@link Random} for deterministic seeding.
  */
-public final class WeightedObjectiveSelector {
-
-    private WeightedObjectiveSelector() {}
+public class WeightedObjectiveSelector {
 
     /**
      * Selects a random subset of objectives from the candidates using weighted
@@ -25,10 +23,10 @@ public final class WeightedObjectiveSelector {
      * @param selectionConfig min/max count and mode
      * @param random          seeded random for deterministic generation
      * @return the selected subset, preserving relative order from the candidate list
-     * @throws QuestGenerationException if fewer candidates exist than minCount
+     * @throws IllegalStateException if fewer candidates exist than minCount
      */
     @NotNull
-    public static List<TemplateObjectiveDefinition> select(
+    public List<TemplateObjectiveDefinition> select(
             @NotNull List<TemplateObjectiveDefinition> candidates,
             @NotNull ObjectiveSelectionConfig selectionConfig,
             @NotNull Random random) {

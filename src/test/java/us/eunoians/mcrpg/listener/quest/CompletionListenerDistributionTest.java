@@ -30,6 +30,8 @@ import us.eunoians.mcrpg.quest.reward.MockQuestRewardType;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.quest.board.QuestBoardTerminator;
 import us.eunoians.mcrpg.quest.board.distribution.DistributionCompletionService;
+import us.eunoians.mcrpg.quest.board.distribution.QuestContributionAggregator;
+import us.eunoians.mcrpg.quest.board.distribution.QuestRewardDistributionResolver;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionGranter;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -75,9 +77,11 @@ public class CompletionListenerDistributionTest extends McRPGBaseTest {
         if (typeRegistry.get(MembershipDistributionType.KEY).isEmpty()) {
             typeRegistry.register(new MembershipDistributionType());
         }
-        distributionService = new DistributionCompletionService(rarityRegistry, typeRegistry, new RewardDistributionGranter(mcRPG));
+        var contributionAggregator = new QuestContributionAggregator();
+        var distributionResolver = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test"));
+        distributionService = new DistributionCompletionService(rarityRegistry, typeRegistry, new RewardDistributionGranter(mcRPG), contributionAggregator, distributionResolver);
         server.getPluginManager().registerEvents(
-                new QuestCompleteListener(new QuestBoardTerminator(mcRPG), distributionService), mcRPG);
+                new QuestCompleteListener(new QuestBoardTerminator(mcRPG), distributionService, contributionAggregator), mcRPG);
 
         mockQuestManager = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER)

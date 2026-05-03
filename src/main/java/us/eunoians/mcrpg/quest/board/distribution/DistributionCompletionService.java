@@ -21,13 +21,19 @@ public class DistributionCompletionService {
     private final QuestRarityRegistry rarityRegistry;
     private final RewardDistributionTypeRegistry typeRegistry;
     private final RewardDistributionGranter granter;
+    private final QuestContributionAggregator contributionAggregator;
+    private final QuestRewardDistributionResolver distributionResolver;
 
     public DistributionCompletionService(@NotNull QuestRarityRegistry rarityRegistry,
                                          @NotNull RewardDistributionTypeRegistry typeRegistry,
-                                         @NotNull RewardDistributionGranter granter) {
+                                         @NotNull RewardDistributionGranter granter,
+                                         @NotNull QuestContributionAggregator contributionAggregator,
+                                         @NotNull QuestRewardDistributionResolver distributionResolver) {
         this.rarityRegistry = rarityRegistry;
         this.typeRegistry = typeRegistry;
         this.granter = granter;
+        this.contributionAggregator = contributionAggregator;
+        this.distributionResolver = distributionResolver;
     }
 
     /**
@@ -44,9 +50,9 @@ public class DistributionCompletionService {
                                 @NotNull Map<UUID, Long> contributions,
                                 @NotNull Set<UUID> groupMembers,
                                 @NotNull QuestInstance quest) {
-        ContributionSnapshot snapshot = QuestContributionAggregator.toSnapshot(contributions, groupMembers);
+        ContributionSnapshot snapshot = contributionAggregator.toSnapshot(contributions, groupMembers);
         NamespacedKey rarityKey = quest.getBoardRarityKey().orElse(null);
-        Map<UUID, List<QuestRewardType>> resolved = new QuestRewardDistributionResolver().resolve(
+        Map<UUID, List<QuestRewardType>> resolved = distributionResolver.resolve(
                 config, snapshot, rarityKey, rarityRegistry, typeRegistry);
         granter.grant(resolved, quest.getQuestKey());
     }

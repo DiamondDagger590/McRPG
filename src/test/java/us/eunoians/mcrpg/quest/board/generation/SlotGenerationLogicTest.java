@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SlotGenerationLogicTest extends McRPGBaseTest {
 
+    private final SlotGenerationLogic logic = new SlotGenerationLogic();
+
     private static final NamespacedKey SCOPE_KEY = new NamespacedKey("mcrpg", "test_scope");
     private static final NamespacedKey DAILY_KEY = DailyRefreshType.KEY;
 
@@ -47,7 +49,7 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
         BoardSlotCategory cat = category(catKey, 2, 5, 0.0, 1); // chance=0 means no extras
         List<BoardSlotCategory> categories = List.of(cat);
 
-        Map<NamespacedKey, Integer> counts = SlotGenerationLogic.computeSlotCounts(
+        Map<NamespacedKey, Integer> counts = logic.computeSlotCounts(
                 categories, 1, new Random(42), k -> false);
 
         assertEquals(1, counts.size());
@@ -61,7 +63,7 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
         BoardSlotCategory cat = category(catKey, 2, 5, 1.0, 1);
         List<BoardSlotCategory> categories = List.of(cat);
 
-        Map<NamespacedKey, Integer> counts = SlotGenerationLogic.computeSlotCounts(
+        Map<NamespacedKey, Integer> counts = logic.computeSlotCounts(
                 categories, 1, new Random(42), k -> true); // all on cooldown
 
         assertTrue(counts.isEmpty());
@@ -74,7 +76,7 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
         BoardSlotCategory cat = category(catKey, 1, 5, 0.0, 1); // chance=0, so only 1 slot
         List<BoardSlotCategory> categories = List.of(cat);
 
-        Map<NamespacedKey, Integer> counts = SlotGenerationLogic.computeSlotCounts(
+        Map<NamespacedKey, Integer> counts = logic.computeSlotCounts(
                 categories, 4, new Random(42), k -> false);
 
         assertEquals(4, counts.get(catKey).intValue()); // backfilled to reach minimum 4
@@ -86,12 +88,12 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
         NamespacedKey catKey = new NamespacedKey("mcrpg", "chance_cat");
 
         BoardSlotCategory catZero = category(catKey, 2, 5, 0.0, 1);
-        Map<NamespacedKey, Integer> countsZero = SlotGenerationLogic.computeSlotCounts(
+        Map<NamespacedKey, Integer> countsZero = logic.computeSlotCounts(
                 List.of(catZero), 1, new Random(12345), k -> false);
         assertEquals(2, countsZero.get(catKey).intValue());
 
         BoardSlotCategory catOne = category(catKey, 2, 5, 1.0, 1);
-        Map<NamespacedKey, Integer> countsOne = SlotGenerationLogic.computeSlotCounts(
+        Map<NamespacedKey, Integer> countsOne = logic.computeSlotCounts(
                 List.of(catOne), 1, new Random(12345), k -> false);
         assertEquals(5, countsOne.get(catKey).intValue());
     }
@@ -102,7 +104,7 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
         NamespacedKey catKey = new NamespacedKey("mcrpg", "single_cat");
         BoardSlotCategory cat = category(catKey, 2, 5, 0.0, 1);
 
-        int count = SlotGenerationLogic.computeSlotCountForCategory(cat, new Random(42));
+        int count = logic.computeSlotCountForCategory(cat, new Random(42));
         assertEquals(2, count);
     }
 
@@ -112,7 +114,7 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
         NamespacedKey catKey = new NamespacedKey("mcrpg", "single_cat");
         BoardSlotCategory cat = category(catKey, 2, 5, 1.0, 1);
 
-        int count = SlotGenerationLogic.computeSlotCountForCategory(cat, new Random(42));
+        int count = logic.computeSlotCountForCategory(cat, new Random(42));
         assertEquals(5, count);
     }
 
@@ -122,7 +124,7 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
         NamespacedKey catKey = new NamespacedKey("mcrpg", "fixed_cat");
         BoardSlotCategory cat = category(catKey, 3, 3, 0.5, 1);
 
-        int count = SlotGenerationLogic.computeSlotCountForCategory(cat, new Random(42));
+        int count = logic.computeSlotCountForCategory(cat, new Random(42));
         assertEquals(3, count);
     }
 
@@ -132,8 +134,8 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
         NamespacedKey catKey = new NamespacedKey("mcrpg", "seed_cat");
         BoardSlotCategory cat = category(catKey, 1, 10, 0.5, 1);
 
-        int count1 = SlotGenerationLogic.computeSlotCountForCategory(cat, new Random(999));
-        int count2 = SlotGenerationLogic.computeSlotCountForCategory(cat, new Random(999));
+        int count1 = logic.computeSlotCountForCategory(cat, new Random(999));
+        int count2 = logic.computeSlotCountForCategory(cat, new Random(999));
         assertEquals(count1, count2);
     }
 
@@ -141,7 +143,7 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
     @Test
     void selectQuestForSlot_singleEligible_returnsIt() {
         NamespacedKey questKey = new NamespacedKey("mcrpg", "single_quest");
-        Optional<NamespacedKey> result = SlotGenerationLogic.selectQuestForSlot(
+        Optional<NamespacedKey> result = logic.selectQuestForSlot(
                 List.of(questKey), new Random());
 
         assertTrue(result.isPresent());
@@ -151,7 +153,7 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
     @DisplayName("selectQuestForSlot: empty list returns empty Optional")
     @Test
     void selectQuestForSlot_emptyList_returnsEmpty() {
-        Optional<NamespacedKey> result = SlotGenerationLogic.selectQuestForSlot(
+        Optional<NamespacedKey> result = logic.selectQuestForSlot(
                 List.of(), new Random());
 
         assertFalse(result.isPresent());
@@ -165,8 +167,8 @@ public class SlotGenerationLogicTest extends McRPGBaseTest {
         List<NamespacedKey> eligible = List.of(a, b);
 
         // Deterministic seed - same seed gives same result
-        Optional<NamespacedKey> result1 = SlotGenerationLogic.selectQuestForSlot(eligible, new Random(999));
-        Optional<NamespacedKey> result2 = SlotGenerationLogic.selectQuestForSlot(eligible, new Random(999));
+        Optional<NamespacedKey> result1 = logic.selectQuestForSlot(eligible, new Random(999));
+        Optional<NamespacedKey> result2 = logic.selectQuestForSlot(eligible, new Random(999));
         assertEquals(result1, result2);
 
         // Result is one of the eligible
