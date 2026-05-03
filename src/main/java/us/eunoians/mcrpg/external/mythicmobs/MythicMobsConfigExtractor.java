@@ -32,17 +32,23 @@ public class MythicMobsConfigExtractor {
 
     private static final String JAR_RESOURCE_PREFIX = "mythicmobs/Packs/McRPG/";
 
-    private MythicMobsConfigExtractor() {
+    private final McRPG plugin;
+
+    /**
+     * Creates a new extractor backed by the given plugin instance.
+     *
+     * @param plugin the McRPG plugin instance used to locate resources and the data folder
+     */
+    public MythicMobsConfigExtractor(@NotNull McRPG plugin) {
+        this.plugin = plugin;
     }
 
     /**
      * Extracts all bundled pack files to the MythicMobs
      * {@code Packs/McRPG/} directory. Skips any file that already
      * exists on disk.
-     *
-     * @param plugin the McRPG plugin instance
      */
-    public static void extractBundledConfigs(@NotNull McRPG plugin) {
+    public void extractBundledConfigs() {
         Path packRoot = plugin.getDataFolder().toPath()
                 .getParent()  // plugins/
                 .resolve("MythicMobs")

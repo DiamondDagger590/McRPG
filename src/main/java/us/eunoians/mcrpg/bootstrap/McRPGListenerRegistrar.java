@@ -176,7 +176,7 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         // MythicMobs integration (conditional)
         if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.MYTHIC_MOBS).isPresent()) {
-            MythicMobsConfigExtractor.extractBundledConfigs(plugin);
+            new MythicMobsConfigExtractor(plugin).extractBundledConfigs();
             Bukkit.getPluginManager().registerEvents(new MythicMobsListener(), plugin);
             Bukkit.getPluginManager().registerEvents(new OnMobAbilityTriggerListener(), plugin);
 

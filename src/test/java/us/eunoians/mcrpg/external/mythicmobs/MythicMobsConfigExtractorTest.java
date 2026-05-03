@@ -44,7 +44,7 @@ public class MythicMobsConfigExtractorTest extends McRPGBaseTest {
     @Test
     public void extractBundledConfigs_createsPackDirectoriesAndFiles() {
         // The real plugin has the resources on the classpath, so getResource() should work
-        MythicMobsConfigExtractor.extractBundledConfigs(spyPlugin);
+        new MythicMobsConfigExtractor(spyPlugin).extractBundledConfigs();
 
         Path packRoot = tempDir.resolve("MythicMobs").resolve("Packs").resolve("McRPG");
         assertTrue(Files.exists(packRoot.resolve("Mobs/RiptideGuardian.yml")),
@@ -63,7 +63,7 @@ public class MythicMobsConfigExtractorTest extends McRPGBaseTest {
         String customContent = "# Custom server owner content";
         Files.writeString(existingFile, customContent);
 
-        MythicMobsConfigExtractor.extractBundledConfigs(spyPlugin);
+        new MythicMobsConfigExtractor(spyPlugin).extractBundledConfigs();
 
         // Existing file should NOT be overwritten
         String afterExtraction = Files.readString(existingFile);
@@ -77,7 +77,7 @@ public class MythicMobsConfigExtractorTest extends McRPGBaseTest {
         doReturn(null).when(spyPlugin).getResource(anyString());
 
         // Should not throw — just log warnings and continue
-        MythicMobsConfigExtractor.extractBundledConfigs(spyPlugin);
+        new MythicMobsConfigExtractor(spyPlugin).extractBundledConfigs();
 
         Path packRoot = tempDir.resolve("MythicMobs").resolve("Packs").resolve("McRPG");
         assertFalse(Files.exists(packRoot.resolve("Mobs/RiptideGuardian.yml")),
@@ -86,7 +86,7 @@ public class MythicMobsConfigExtractorTest extends McRPGBaseTest {
 
     @Test
     public void extractBundledConfigs_extractedFilesHaveContent() throws IOException {
-        MythicMobsConfigExtractor.extractBundledConfigs(spyPlugin);
+        new MythicMobsConfigExtractor(spyPlugin).extractBundledConfigs();
 
         Path packRoot = tempDir.resolve("MythicMobs").resolve("Packs").resolve("McRPG");
         Path mobFile = packRoot.resolve("Mobs/RiptideGuardian.yml");
