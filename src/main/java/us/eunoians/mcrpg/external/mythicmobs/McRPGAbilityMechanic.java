@@ -145,6 +145,14 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
         return SkillResult.SUCCESS;
     }
 
+    /**
+     * Retrieves or creates an {@link AbilityHolder} for the given caster entity. If the
+     * {@link EntityManager} already tracks a holder for this entity's UUID, it is returned;
+     * otherwise a new holder is created and registered.
+     *
+     * @param caster The living entity to get or create a holder for
+     * @return The existing or newly created {@link AbilityHolder}
+     */
     @NotNull
     private AbilityHolder getOrCreateHolder(@NotNull LivingEntity caster) {
         EntityManager entityManager = McRPG.getInstance().registryAccess()
@@ -160,6 +168,14 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
                 });
     }
 
+    /**
+     * Lazily attaches this mechanic's ability and attributes to the holder if not already
+     * present. This serves as a fallback for abilities that were not eagerly parsed at
+     * spawn time (e.g., dynamically added skills).
+     *
+     * @param holder  The mob's ability holder
+     * @param ability The ability to attach
+     */
     private void addAbilityToHolderIfAbsent(@NotNull AbilityHolder holder,
                                             @NotNull Ability ability) {
         if (holder.getAvailableAbilities().contains(ability.getAbilityKey())) {
@@ -170,8 +186,17 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
         holder.addAbilityData(abilityData);
     }
 
+    /**
+     * Iterates all registered {@link AbilityAttribute}s in the {@link AbilityAttributeRegistry}
+     * and checks the MythicMobs config for a value matching each attribute's
+     * {@link AbilityAttribute#getDatabaseKeyName()}. Present values are converted to typed
+     * attribute instances via {@link AbilityAttribute#create(String)}.
+     *
+     * @param config The MythicMobs line config to extract attribute values from
+     * @return An unmodifiable list of extracted attributes (may be empty)
+     */
     @NotNull
-    private static List<AbilityAttribute<?>> extractAttributes(@NotNull MythicLineConfig config) {
+    private List<AbilityAttribute<?>> extractAttributes(@NotNull MythicLineConfig config) {
         AbilityAttributeRegistry attributeRegistry = McRPG.getInstance().registryAccess()
                 .registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
         List<AbilityAttribute<?>> result = new ArrayList<>();
