@@ -5,6 +5,8 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -80,6 +82,16 @@ public class AbilityAttributeRegistry implements Registry<AbilityAttribute<?>> {
      */
     public boolean registered(@NotNull NamespacedKey namespacedKey) {
         return abilityAttributes.containsKey(namespacedKey);
+    }
+
+    /**
+     * Returns an unmodifiable view of all registered {@link AbilityAttribute} default instances.
+     *
+     * @return An unmodifiable collection of all registered attributes
+     */
+    @NotNull
+    public Collection<AbilityAttribute<?>> getRegisteredAttributes() {
+        return Collections.unmodifiableCollection(abilityAttributes.values());
     }
 
     /**

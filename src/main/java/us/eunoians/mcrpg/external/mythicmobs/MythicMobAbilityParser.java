@@ -43,7 +43,7 @@ import java.util.regex.Pattern;
  *   <li><strong>Direct mechanics:</strong> iterates top-level {@link SkillMechanic} entries
  *       across all {@link SkillTrigger} triggers and timer skills. If a mechanic is a
  *       {@link CustomMechanic} wrapping a {@link McRPGAbilityMechanic}, the ability key
- *       and tier are extracted directly from the mechanic instance.</li>
+ *       and attributes are extracted directly from the mechanic instance.</li>
  *   <li><strong>Nested skill references:</strong> for {@link MetaSkillMechanic} entries
  *       ({@code skill:SkillName}), the parser resolves the referenced {@link Skill} and
  *       reads its raw YAML {@code Skills} config lines, matching {@code mcrpg_ability{...}}
@@ -103,8 +103,9 @@ public class MythicMobAbilityParser {
 
     /**
      * Holds a parsed McRPG ability key and the attributes extracted from a MythicMobs skill
-     * definition. Attributes are populated by the registered {@link MechanicAttributeExtractor}s
-     * on the {@link MythicMobsHook}.
+     * definition. Attributes are populated by matching registered
+     * {@link us.eunoians.mcrpg.ability.attribute.AbilityAttribute}s from the
+     * {@link us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry}.
      *
      * @param abilityKey The McRPG ability {@link NamespacedKey}
      * @param attributes The extracted ability attributes (may be empty if none were configured)

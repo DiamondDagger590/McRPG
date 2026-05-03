@@ -16,12 +16,12 @@ import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,9 +48,11 @@ import java.util.List;
  * nested {@code MetaSkill} configs, so any new config fields added here are automatically
  * picked up by spawn-time parsing — there is no secondary YAML parser to keep in sync.
  * <p>
- * Attribute extraction is pluggable via {@link MechanicAttributeExtractor}s registered
- * on {@link MythicMobsHook}. McRPG ships a built-in extractor for {@code tier}; third-party
- * plugins register their own for custom parameters.
+ * Attribute extraction leverages the existing {@link AbilityAttributeRegistry}: every
+ * registered attribute's {@link AbilityAttribute#getDatabaseKeyName()} is checked against
+ * the config, and matching values are converted via {@link AbilityAttribute#create(String)}.
+ * Third-party plugins that register custom attributes in the registry automatically gain
+ * support in MythicMobs configs without additional wiring.
  * <p>
  * Usage in MythicMobs YAML:
  * <pre>
@@ -72,12 +74,13 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
      * so that MythicMobs fails mechanic registration loudly at config load time rather
      * than at mob cast time.
      * <p>
-     * All other parameters are extracted by the registered
-     * {@link MechanicAttributeExtractor}s on the {@link MythicMobsHook}. Each extractor
-     * is invoked against the config; non-empty results are collected as attributes.
+     * All other parameters are matched against registered {@link AbilityAttribute}s in the
+     * {@link AbilityAttributeRegistry} by their {@link AbilityAttribute#getDatabaseKeyName()}.
+     * If the config contains a non-empty value for an attribute's key, the attribute is
+     * instantiated via {@link AbilityAttribute#create(String)}.
      *
      * @param config The MythicMobs line config containing the {@code ability} parameter
-     *               and any additional parameters supported by registered extractors
+     *               and any additional attribute parameters (e.g., {@code tier=2})
      * @throws IllegalArgumentException If the {@code ability} parameter is missing or invalid
      */
     public McRPGAbilityMechanic(@NotNull MythicLineConfig config) {
@@ -103,8 +106,8 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
     }
 
     /**
-     * Gets the list of attributes extracted from the config by the registered
-     * {@link MechanicAttributeExtractor}s.
+     * Gets the list of attributes extracted from the config by matching registered
+     * {@link AbilityAttribute}s.
      *
      * @return An unmodifiable list of extracted ability attributes
      */
@@ -169,13 +172,14 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
 
     @NotNull
     private static List<AbilityAttribute<?>> extractAttributes(@NotNull MythicLineConfig config) {
-        MythicMobsHook hook = McRPG.getInstance().registryAccess()
-                .registry(RegistryKey.PLUGIN_HOOK)
-                .<MythicMobsHook>pluginHook(McRPGPluginHookKey.MYTHIC_MOBS)
-                .orElseThrow();
+        AbilityAttributeRegistry attributeRegistry = McRPG.getInstance().registryAccess()
+                .registry(McRPGRegistryKey.ABILITY_ATTRIBUTE);
         List<AbilityAttribute<?>> result = new ArrayList<>();
-        for (MechanicAttributeExtractor extractor : hook.getMechanicAttributeExtractors().values()) {
-            extractor.extract(config).ifPresent(result::add);
+        for (AbilityAttribute<?> defaultAttribute : attributeRegistry.getRegisteredAttributes()) {
+            String value = config.getString(defaultAttribute.getDatabaseKeyName(), "");
+            if (!value.isEmpty()) {
+                result.add(defaultAttribute.create(value));
+            }
         }
         return Collections.unmodifiableList(result);
     }

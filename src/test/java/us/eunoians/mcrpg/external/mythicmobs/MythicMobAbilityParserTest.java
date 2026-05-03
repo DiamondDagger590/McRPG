@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.external.mythicmobs;
 
-import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import io.lumine.mythic.api.config.MythicConfig;
@@ -18,7 +17,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -44,8 +45,7 @@ public class MythicMobAbilityParserTest extends McRPGBaseTest {
 
     @BeforeEach
     public void setup() {
-        MythicMobsHook hook = new MythicMobsHook(mcRPG);
-        mcRPG.registryAccess().registry(RegistryKey.PLUGIN_HOOK).register(hook);
+        mcRPG.registryAccess().register(new AbilityAttributeRegistry());
 
         mainConfig = mock(YamlDocument.class);
         // The ReloadableInteger inside the parser reads the TTL via Section::getInt(Route);
