@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.external.mythicmobs;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import io.lumine.mythic.api.config.MythicConfig;
@@ -15,14 +16,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
+import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
+import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Queue;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -32,7 +36,7 @@ import static org.mockito.Mockito.when;
 /**
  * Tests for {@link MythicMobAbilityParser}.
  */
-public class MythicMobAbilityParserTest {
+public class MythicMobAbilityParserTest extends McRPGBaseTest {
 
     private MockedStatic<SkillTrigger> skillTriggerStatic;
     private MythicMobAbilityParser parser;
@@ -40,6 +44,9 @@ public class MythicMobAbilityParserTest {
 
     @BeforeEach
     public void setup() {
+        MythicMobsHook hook = new MythicMobsHook(mcRPG);
+        mcRPG.registryAccess().registry(RegistryKey.PLUGIN_HOOK).register(hook);
+
         mainConfig = mock(YamlDocument.class);
         // The ReloadableInteger inside the parser reads the TTL via Section::getInt(Route);
         // returning a positive value lets the Caffeine cache build normally.
@@ -72,7 +79,7 @@ public class MythicMobAbilityParserTest {
 
         McRPGAbilityMechanic mcrpgMechanic = mock(McRPGAbilityMechanic.class);
         when(mcrpgMechanic.getAbilityKey()).thenReturn(expectedKey);
-        when(mcrpgMechanic.getTier()).thenReturn(2);
+        when(mcrpgMechanic.getAttributes()).thenReturn(List.of(new AbilityTierAttribute(2)));
 
         CustomMechanic customMechanic = mock(CustomMechanic.class);
         when(customMechanic.getMechanic()).thenReturn(Optional.of(mcrpgMechanic));
@@ -92,7 +99,10 @@ public class MythicMobAbilityParserTest {
 
         assertEquals(1, result.size());
         assertEquals(expectedKey, result.get(0).abilityKey());
-        assertEquals(2, result.get(0).tier());
+        assertEquals(1, result.get(0).attributes().size());
+        AbilityAttribute<?> attr = result.get(0).attributes().get(0);
+        assertInstanceOf(AbilityTierAttribute.class, attr);
+        assertEquals(2, ((AbilityTierAttribute) attr).getContent());
     }
 
     @Test
@@ -125,11 +135,14 @@ public class MythicMobAbilityParserTest {
 
         assertEquals(1, result.size());
         assertEquals(NamespacedKey.fromString("mcrpg:phase_shift"), result.get(0).abilityKey());
-        assertEquals(3, result.get(0).tier());
+        assertEquals(1, result.get(0).attributes().size());
+        AbilityAttribute<?> attr = result.get(0).attributes().get(0);
+        assertInstanceOf(AbilityTierAttribute.class, attr);
+        assertEquals(3, ((AbilityTierAttribute) attr).getContent());
     }
 
     @Test
-    public void parseAbilities_defaultsTierToOneWhenNotSpecified() {
+    public void parseAbilities_returnsEmptyAttributesWhenTierNotSpecified() {
         Skill namedSkill = mock(Skill.class);
         when(namedSkill.getInternalName()).thenReturn("Whirlpool");
 
@@ -156,7 +169,8 @@ public class MythicMobAbilityParserTest {
         List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertEquals(1, result.size());
-        assertEquals(1, result.get(0).tier());
+        assertTrue(result.get(0).attributes().isEmpty(),
+                "Attributes should be empty when no tier is specified");
     }
 
     @Test
@@ -164,7 +178,7 @@ public class MythicMobAbilityParserTest {
         // Ability from trigger skills
         McRPGAbilityMechanic mcrpgMechanic1 = mock(McRPGAbilityMechanic.class);
         when(mcrpgMechanic1.getAbilityKey()).thenReturn(NamespacedKey.fromString("mcrpg:phase_shift"));
-        when(mcrpgMechanic1.getTier()).thenReturn(1);
+        when(mcrpgMechanic1.getAttributes()).thenReturn(List.of(new AbilityTierAttribute(1)));
 
         CustomMechanic customMechanic1 = mock(CustomMechanic.class);
         when(customMechanic1.getMechanic()).thenReturn(Optional.of(mcrpgMechanic1));
@@ -198,10 +212,14 @@ public class MythicMobAbilityParserTest {
         List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertEquals(2, result.size());
+
         assertEquals(NamespacedKey.fromString("mcrpg:phase_shift"), result.get(0).abilityKey());
-        assertEquals(1, result.get(0).tier());
+        assertEquals(1, result.get(0).attributes().size());
+        assertEquals(1, ((AbilityTierAttribute) result.get(0).attributes().get(0)).getContent());
+
         assertEquals(NamespacedKey.fromString("mcrpg:whirlpool"), result.get(1).abilityKey());
-        assertEquals(2, result.get(1).tier());
+        assertEquals(1, result.get(1).attributes().size());
+        assertEquals(2, ((AbilityTierAttribute) result.get(1).attributes().get(0)).getContent());
     }
 
     @Test
@@ -276,21 +294,5 @@ public class MythicMobAbilityParserTest {
         List<MythicMobAbilityParser.ParsedAbilityInfo> result = parser.parseAbilities(mythicMob);
 
         assertTrue(result.isEmpty());
-    }
-
-    @Test
-    public void parsedAbilityInfo_clampsZeroAndNegativeTierToOne() {
-        NamespacedKey key = NamespacedKey.fromString("mcrpg:phase_shift");
-
-        MythicMobAbilityParser.ParsedAbilityInfo zeroTier =
-                new MythicMobAbilityParser.ParsedAbilityInfo(key, 0);
-        MythicMobAbilityParser.ParsedAbilityInfo negativeTier =
-                new MythicMobAbilityParser.ParsedAbilityInfo(key, -5);
-        MythicMobAbilityParser.ParsedAbilityInfo validTier =
-                new MythicMobAbilityParser.ParsedAbilityInfo(key, 3);
-
-        assertEquals(1, zeroTier.tier(), "Tier 0 should be clamped to 1");
-        assertEquals(1, negativeTier.tier(), "Negative tier should be clamped to 1");
-        assertEquals(3, validTier.tier(), "Valid tier should be preserved");
     }
 }

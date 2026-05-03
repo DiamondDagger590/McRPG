@@ -22,7 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
-import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
@@ -159,7 +158,7 @@ public class MythicMobsListener implements Listener {
                 continue;
             }
             holder.addAvailableAbility(abilityKey);
-            AbilityData abilityData = new AbilityData(abilityKey, new AbilityTierAttribute(info.tier()));
+            AbilityData abilityData = new AbilityData(abilityKey, info.attributes());
             holder.addAbilityData(abilityData);
         }
 

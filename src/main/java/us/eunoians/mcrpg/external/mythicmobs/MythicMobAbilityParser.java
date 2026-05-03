@@ -18,6 +18,7 @@ import io.lumine.mythic.core.skills.mechanics.MetaSkillMechanic;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 
 import java.time.Duration;
@@ -101,17 +102,15 @@ public class MythicMobAbilityParser {
     private volatile Cache<String, List<ParsedAbilityInfo>> cache;
 
     /**
-     * Holds a parsed McRPG ability key and its configured tier from a MythicMobs skill definition.
-     * Tier is clamped to a minimum of {@code 1}; values of {@code 0} or below are silently
-     * raised to {@code 1} so downstream ability logic never sees a non-positive tier.
+     * Holds a parsed McRPG ability key and the attributes extracted from a MythicMobs skill
+     * definition. Attributes are populated by the registered {@link MechanicAttributeExtractor}s
+     * on the {@link MythicMobsHook}.
      *
      * @param abilityKey The McRPG ability {@link NamespacedKey}
-     * @param tier       The configured tier (clamped to at least 1)
+     * @param attributes The extracted ability attributes (may be empty if none were configured)
      */
-    public record ParsedAbilityInfo(@NotNull NamespacedKey abilityKey, int tier) {
-        public ParsedAbilityInfo {
-            tier = Math.max(1, tier);
-        }
+    public record ParsedAbilityInfo(@NotNull NamespacedKey abilityKey,
+                                    @NotNull List<AbilityAttribute<?>> attributes) {
     }
 
     /**
@@ -232,7 +231,7 @@ public class MythicMobAbilityParser {
         if (mechanic instanceof CustomMechanic customMechanic) {
             customMechanic.getMechanic().ifPresent(inner -> {
                 if (inner instanceof McRPGAbilityMechanic mcrpgMechanic) {
-                    results.add(new ParsedAbilityInfo(mcrpgMechanic.getAbilityKey(), mcrpgMechanic.getTier()));
+                    results.add(new ParsedAbilityInfo(mcrpgMechanic.getAbilityKey(), mcrpgMechanic.getAttributes()));
                 }
             });
         }
@@ -315,7 +314,7 @@ public class MythicMobAbilityParser {
         try {
             MythicLineConfig lineConfig = MythicLineConfigImpl.of(rawMechanicText);
             McRPGAbilityMechanic mechanic = new McRPGAbilityMechanic(lineConfig);
-            return Optional.of(new ParsedAbilityInfo(mechanic.getAbilityKey(), mechanic.getTier()));
+            return Optional.of(new ParsedAbilityInfo(mechanic.getAbilityKey(), mechanic.getAttributes()));
         } catch (IllegalArgumentException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING,
                     "Invalid mcrpg_ability config in MetaSkill: " + rawMechanicText + " — " + e.getMessage());

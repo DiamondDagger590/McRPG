@@ -15,12 +15,17 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
-import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * A custom MythicMobs mechanic that delegates ability execution to McRPG.
@@ -43,6 +48,10 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
  * nested {@code MetaSkill} configs, so any new config fields added here are automatically
  * picked up by spawn-time parsing — there is no secondary YAML parser to keep in sync.
  * <p>
+ * Attribute extraction is pluggable via {@link MechanicAttributeExtractor}s registered
+ * on {@link MythicMobsHook}. McRPG ships a built-in extractor for {@code tier}; third-party
+ * plugins register their own for custom parameters.
+ * <p>
  * Usage in MythicMobs YAML:
  * <pre>
  *   Skills:
@@ -53,7 +62,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 public class McRPGAbilityMechanic implements ITargetedEntitySkill {
 
     private final NamespacedKey abilityKey;
-    private final int tier;
+    private final List<AbilityAttribute<?>> attributes;
 
     /**
      * Creates a new ability mechanic from a MythicMobs line config.
@@ -61,10 +70,14 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
      * The {@code ability} parameter is <b>required</b>. If it is missing or not a valid
      * {@link NamespacedKey}, this constructor throws {@link IllegalArgumentException}
      * so that MythicMobs fails mechanic registration loudly at config load time rather
-     * than at mob cast time. The {@code tier} parameter is clamped to a minimum of {@code 1}.
+     * than at mob cast time.
+     * <p>
+     * All other parameters are extracted by the registered
+     * {@link MechanicAttributeExtractor}s on the {@link MythicMobsHook}. Each extractor
+     * is invoked against the config; non-empty results are collected as attributes.
      *
      * @param config The MythicMobs line config containing the {@code ability} parameter
-     *               and optional {@code tier} parameter (defaults to 1)
+     *               and any additional parameters supported by registered extractors
      * @throws IllegalArgumentException If the {@code ability} parameter is missing or invalid
      */
     public McRPGAbilityMechanic(@NotNull MythicLineConfig config) {
@@ -75,7 +88,7 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
                     "mcrpg_ability mechanic requires a valid 'ability' parameter (got: '" + keyString + "')");
         }
         this.abilityKey = parsedKey;
-        this.tier = Math.max(1, config.getInteger("tier", 1));
+        this.attributes = extractAttributes(config);
     }
 
     /**
@@ -90,12 +103,14 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
     }
 
     /**
-     * Gets the configured tier for this mechanic. Guaranteed to be at least {@code 1}.
+     * Gets the list of attributes extracted from the config by the registered
+     * {@link MechanicAttributeExtractor}s.
      *
-     * @return The tier value
+     * @return An unmodifiable list of extracted ability attributes
      */
-    public int getTier() {
-        return tier;
+    @NotNull
+    public List<AbilityAttribute<?>> getAttributes() {
+        return attributes;
     }
 
     @Override
@@ -127,13 +142,6 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
         return SkillResult.SUCCESS;
     }
 
-    /**
-     * Gets the tracked {@link AbilityHolder} for the caster, or creates and tracks a new one
-     * if none exists (edge case — e.g., spawn event was missed).
-     *
-     * @param caster The caster entity
-     * @return The tracked {@link AbilityHolder}
-     */
     @NotNull
     private AbilityHolder getOrCreateHolder(@NotNull LivingEntity caster) {
         EntityManager entityManager = McRPG.getInstance().registryAccess()
@@ -149,22 +157,26 @@ public class McRPGAbilityMechanic implements ITargetedEntitySkill {
                 });
     }
 
-    /**
-     * Attaches the ability to the holder with the configured tier if it is not already
-     * present on the holder. This is a safety net for cases where the spawn-time parser
-     * missed an ability (e.g., dynamically added skills).
-     *
-     * @param holder  The mob's ability holder
-     * @param ability The ability to attach
-     */
     private void addAbilityToHolderIfAbsent(@NotNull AbilityHolder holder,
                                             @NotNull Ability ability) {
         if (holder.getAvailableAbilities().contains(ability.getAbilityKey())) {
             return;
         }
         holder.addAvailableAbility(ability.getAbilityKey());
-        AbilityData abilityData = new AbilityData(ability.getAbilityKey(),
-                new AbilityTierAttribute(tier));
+        AbilityData abilityData = new AbilityData(ability.getAbilityKey(), attributes);
         holder.addAbilityData(abilityData);
+    }
+
+    @NotNull
+    private static List<AbilityAttribute<?>> extractAttributes(@NotNull MythicLineConfig config) {
+        MythicMobsHook hook = McRPG.getInstance().registryAccess()
+                .registry(RegistryKey.PLUGIN_HOOK)
+                .<MythicMobsHook>pluginHook(McRPGPluginHookKey.MYTHIC_MOBS)
+                .orElseThrow();
+        List<AbilityAttribute<?>> result = new ArrayList<>();
+        for (MechanicAttributeExtractor extractor : hook.getMechanicAttributeExtractors().values()) {
+            extractor.extract(config).ifPresent(result::add);
+        }
+        return Collections.unmodifiableList(result);
     }
 }
