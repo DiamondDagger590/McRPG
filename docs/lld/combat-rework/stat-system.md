@@ -1,7 +1,43 @@
 # McRPG Stat System Design
 
-> **Status:** Brainstorm / Early Design
+> **Status:** Design Spike -- Partially Shipped
+> **Last Updated:** 2026-05-03
 > **Scope:** Primary stats, secondary combat stats, Fitness skill, loadout system, HP implementation
+
+---
+
+## Spike Status
+
+This document was written as a **design spike** exploring a full stat system for McRPG's combat rework. It is not a formal feature specification -- it was used to explore the design space and inform a PoC implementation.
+
+### What shipped from this spike
+
+The following concepts were implemented as a PoC and are being formalized into production systems:
+
+- **Mana pool** -- a per-player resource pool (base max, passive regen) tracked in memory via `CombatStatInstance`
+- **Mana as the combo activation resource** -- combo abilities consume mana on activation; insufficient mana denies activation with feedback
+- **Action bar HUD** -- three-zone layout (HP / center / mana) with pixel-width anchoring, priority-based center content, and persistent pool display (see [Action Bar HUD LLD](action-bar-hud.md) for the production design)
+- **Combat stat infrastructure** -- `CombatStat`, `CombatStatRegistry`, `StatManager`, `PlayerCombatData`, and the modifier system (`CombatStatModifier`)
+
+### What is NOT shipping from this document
+
+The following sections remain as design exploration only. They have **not** been implemented and are **not** planned for immediate work. If any of these move forward, they will get their own HLD/LLD:
+
+- **Custom HP pool** (Sections 4, 10) -- the 100-275 HP range, percentage-mapped hearts, damage pipeline takeover. **Decision (2026-05-03):** HP on the action bar will mirror vanilla health directly for now. The renderer is future-proofed to show custom values later, but no custom HP pool exists.
+- **Defense stat and DR formula** (Section 5) -- the `Defense / (Defense + K)` formula and armor penetration math
+- **Attack Power** (Section 2) -- outgoing damage scaling stat
+- **Mana Regen as a visible stat** (Section 2) -- currently mana regen is a flat config value, not a player-facing stat
+- **Secondary combat stats** (Section 6) -- Tenacity, Armor Pen (flat and percentage)
+- **Stat passives and the loadout stat slot tradeoff** (Sections 7, 8) -- the 3-active/5-passive loadout model with stat passives competing for slots
+- **Fitness skill** (Section 9) -- the damage-based leveling skill with innate HP scaling and milestone passives
+- **HP growth sources** (Section 10) -- the multi-source additive HP model
+- **Shield layer** (Section 11) -- the crafting expansion's second HP pool on the boss bar
+
+### Forward references
+
+- **[Mana & Ability System HLD](../../hld/mana-ability-system.md)** -- the production plan for formalizing mana, migrating all abilities to combo activation, and removing the ready-state system
+- **[Action Bar HUD LLD](action-bar-hud.md)** -- the implemented HUD system (production quality)
+- **[Ability System Design](ability-system.md)** -- the companion spike doc for ability design (combo activation, cast times, CC system, base abilities)
 
 ---
 
