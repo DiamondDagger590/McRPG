@@ -1,14 +1,14 @@
 # Mana & Ability Activation System
 
-> **Last Updated:** 2026-05-03
-> **Status:** Proposed
+> **Last Updated:** 2026-05-06
+> **Status:** Phase 1 implemented; Phases 2-4 proposed
 > **Scope:** Mana as universal activation resource, combo-only activation for all active abilities, ready-state removal, config consolidation, Parser-based formula scaling, balance framework
 
 ---
 
 ## Architecture Overview
 
-The mana system replaces the legacy ready-state activation model with a unified combo-based activation path gated by mana. Every active ability is activated via click-combo sequences (RRR, RRL, RLR). Mana is consumed on activation (with a cancellable `CombatStatConsumeEvent` fired before each consumption); a small anti-spam cooldown prevents accidental double-casts. Passive abilities retain their event-driven activation but gain optional mana cost support in the infrastructure. Combat stats are registered through the `ContentExpansion` pack system and managed by `CombatStatRegistry` (no separate `StatManager`).
+The mana system replaces the legacy ready-state activation model with a unified combo-based activation path gated by mana. Every active ability is activated via click-combo sequences (RRR, RRL, RLR). Mana is consumed on activation (with a cancellable `PlayerStatConsumeEvent` fired before each consumption); a small anti-spam cooldown prevents accidental double-casts. Passive abilities retain their event-driven activation but gain optional mana cost support in the infrastructure. Player stats are registered through the `ContentExpansion` pack system and managed by `PlayerStatRegistry` (no separate `StatManager`).
 
 ```mermaid
 flowchart TD
@@ -31,10 +31,10 @@ flowchart TD
     end
 
     subgraph resource [Resource System]
-        CSR[CombatStatRegistry]
-        PCD[PlayerCombatData]
-        CSI[CombatStatInstance Mana]
-        CSCE[CombatStatConsumeEvent]
+        CSR[PlayerStatRegistry]
+        PCD[PlayerStatData]
+        CSI[PlayerStatInstance Mana]
+        CSCE[PlayerStatConsumeEvent]
     end
 
     subgraph ability [Ability Execution]
@@ -63,7 +63,7 @@ flowchart TD
 
     CSR --> PCD
     PCD --> CSI
-    CSI -->|"fire CombatStatConsumeEvent"| CSCE
+    CSI -->|"fire PlayerStatConsumeEvent"| CSCE
     CSCE -->|"consume/tickRegen"| ManaCheck
     CSI -->|"current/max"| ABHD
     ABHD --> Renderer
@@ -78,7 +78,7 @@ flowchart TD
 
 ### 1. Mana Pool
 
-Mana is a per-player resource pool tracked via `CombatStatInstance` keyed by `McRPGCombatStat.MANA_KEY`. It has a base maximum, a flat passive regeneration rate, and support for modifiers (flat and percentage bonuses from gear or abilities in the future).
+Mana is a per-player resource pool tracked via `PlayerStatInstance` keyed by `McRPGPlayerStat.MANA`. It has a base maximum, a flat passive regeneration rate, and support for modifiers (flat and percentage bonuses from gear or abilities in the future).
 
 **Base values:**
 
@@ -86,18 +86,24 @@ Mana is a per-player resource pool tracked via `CombatStatInstance` keyed by `Mc
 |----------|-------|-------|
 | Base max mana | 100 | Lower than the spike's 220; tighter resource feel |
 | Regen rate | 3/sec | Flat passive, always active |
-| Regen driver | HUD tick | `ActionBarHudDisplay.tick()` calls `PlayerCombatData.tickRegen()` |
+| Regen driver | HUD tick | `ActionBarHudDisplay.tick()` calls `PlayerStatData.tickRegen()` |
 | Persistence | Logout/save only | Restored on login; see Resolved Design Decisions |
 
 **Design target:** A player should be able to cast 2-3 abilities in quick succession, then wait ~10-15 seconds to refill for another burst. With 100 max mana and 3/sec regen, a player who spends 60 mana on a burst needs ~20 seconds for a full refill or ~7 seconds to afford a 20-cost ability again.
 
-**Modifier system:** `CombatStatModifier` records allow gear and future passives to adjust the pool:
+**Modifier system:** `PlayerStatModifier` is an extensible class (not a record) keyed by `NamespacedKey` for third-party collision safety. The base class provides fixed flat/percent bonuses. Subclasses can override virtual methods for dynamic scaling (e.g., stacking modifiers) and time-based expiration:
+
+- `getEffectiveFlatBonus()` / `getEffectivePercentBonus()` — base returns raw values; subclasses override for scaling (e.g., `perStack * currentStacks`)
+- `tick(double secondsElapsed)` — no-op in base; subclasses use for duration countdown or stack falloff
+- `isExpired()` — returns `false` in base; subclasses return `true` when duration elapses or stacks reach zero
+
+Future subclasses (not yet implemented): `StackablePlayerStatModifier`, `TimedPlayerStatModifier`, `TimedStackablePlayerStatModifier`.
 
 ```
-effectiveMax = (baseMana + sumFlatBonuses) * (1 + sumPercentBonuses)
+effectiveMax = (baseMana + sumEffectiveFlatBonuses) * (1 + sumEffectivePercentBonuses)
 ```
 
-This is already implemented in `CombatStatInstance.getEffectiveMax()` and does not require changes for this HLD.
+This is implemented in `PlayerStatInstance.getEffectiveMax()`, which calls the virtual methods on each modifier. `PlayerStatInstance.tickRegen()` also ticks all modifiers and auto-removes expired ones before applying regen.
 
 **Configuration:**
 
@@ -156,7 +162,7 @@ configuration:
 When a combo pattern completes, `OnComboCompleteListener` enforces two gates in order:
 
 1. **Cooldown check** -- if the ability implements `CooldownableAbility` and is on cooldown, deny with feedback (action bar countdown + chat message with ability name and remaining time).
-2. **Mana check** -- call `CombatStatInstance.consume(manaCost)`. If it returns false, deny with feedback (action bar "Not Enough Mana" + chat message with ability name, cost, and current mana).
+2. **Mana check** -- call `PlayerStatInstance.consume(manaCost)`. If it returns false, deny with feedback (action bar "Not Enough Mana" + chat message with ability name, cost, and current mana).
 
 If both gates pass, `comboActivate(abilityHolder)` fires and the anti-spam cooldown is applied.
 
@@ -252,7 +258,7 @@ The floor is applied in the `getManaCost()` resolution path after Parser evaluat
 
 The activation pipeline supports optional mana costs on passive abilities. No current passives use this -- it is pure infrastructure for future design space.
 
-**Contract:** `PassiveAbility` (or equivalent interface point in the activation chain) gains a `getManaCost(AbilityHolder)` default method returning `0`. `AbilityListener#activateAbilities` checks this value before firing a passive ability. When cost is `> 0`, it attempts `CombatStatInstance.consume(cost)` and skips the ability silently on failure (no feedback -- passive procs should not spam the player).
+**Contract:** `PassiveAbility` (or equivalent interface point in the activation chain) gains a `getManaCost(AbilityHolder)` default method returning `0`. `AbilityListener#activateAbilities` checks this value before firing a passive ability. When cost is `> 0`, it attempts `PlayerStatInstance.consume(cost)` and skips the ability silently on failure (no feedback -- passive procs should not spam the player).
 
 **Configuration:** A future passive could opt in by adding `mana-cost` to its tier-configuration or ability-configuration block. The pipeline requires no further changes.
 
@@ -324,15 +330,15 @@ Shockwave and Cleave were spike-only PoC abilities with no tiers, no localizatio
 - `ComboConfigFile.java` and `FileType.COMBO_CONFIG` exist as spike-only wrappers
 - Per-ability mana costs are flat values, not per-tier
 - `ComboManager` timeout is hardcoded to 14 ticks despite `TIMING_WINDOW_TICKS` route existing in config
-- `McRPGCombatStat.HEALTH` defaults to 200 max (spike value); needs to reflect vanilla 20
-- Combo ability names (`getName()`, `getDisplayName()`) are hardcoded strings, not localization keys
+- ~~`McRPGCombatStat.HEALTH` defaults to 200 max~~ — **resolved in Phase 1:** Health base value is vanilla 20
+- ~~Combo ability names (`getName()`, `getDisplayName()`) are hardcoded strings~~ — **resolved in Phase 1:** stat display routed through localization
 - Shockwave and Cleave are spike-only PoC classes with no tiers, no localization, and no production value -- to be deleted
 
 ### Infrastructure (production quality)
 
-- `CombatStat`, `CombatStatInstance`, `CombatStatModifier`, `CombatStatRegistry`, `PlayerCombatData` -- well-structured, tested; `StatManager` to be merged into `CombatStatRegistry`
-- `ComboManager`, `ComboPattern`, `PlayerComboState`, `ComboInput` -- clean, tested
-- `ActionBarHudDisplay`, `ActionBarHudRenderer`, `DisplayManager`, `FontWidthTable` -- production quality, fully tested, documented in [Action Bar HUD LLD](../lld/combat-rework/action-bar-hud.md)
+- `PlayerStat` (abstract base, `stat/`), `ResourcePoolPlayerStat` / `FlatPlayerStat` / `ConfigurableResourcePoolPlayerStat` (`stat/impl/`), `PlayerStatInstance` / `PlayerStatData` / `PlayerStatModifier` (`stat/instance/`) — renamed from `CombatStat*`, reorganized into subpackages, fully tested. `StatManager` merged into `PlayerStatRegistry`. Modifiers are `NamespacedKey`-keyed classes with virtual methods supporting future stacking/timed subclasses.
+- `ComboManager`, `ComboPattern`, `PlayerComboState`, `ComboInput` -- clean, tested. `ComboManager` supports third-party combo item registration via `registerAllowedItemSet()` and `addAllowedItem()`.
+- `ActionBarHudDisplay`, `ActionBarHudRenderer`, `DisplayManager`, `FontWidthTable` -- production quality, fully tested, documented in [Action Bar HUD LLD](../lld/combat-rework/action-bar-hud.md). HUD uses player-aware localized stat display symbols.
 - `OnComboInputListener`, `OnComboCompleteListener` -- functional but need updates for ready-state removal
 
 ---
@@ -376,13 +382,13 @@ Shockwave and Cleave were spike-only PoC abilities with no tiers, no localizatio
 - **Modify:** `herbalism_configuration.yml` -- merge MassHarvest mana cost into tiers
 - **Modify:** `SwordsConfigFile.java`, `MiningConfigFile.java`, `HerbalismConfigFile.java` -- add Route constants for new/migrated keys; remove Shockwave/Cleave routes
 - **Modify:** All 3 remaining combo ability classes -- update config reads from skill config routes instead of `ComboConfigFile` routes
-- **Modify:** `CombatStatRegistry` (formerly `StatManager`) -- absorb `PlayerCombatData` construction; read from `MainConfigFile` routes instead of `ComboConfigFile`
+- **Modify:** `PlayerStatRegistry` (formerly `StatManager` / `CombatStatRegistry`) -- `StatManager` merged; `PlayerStatData` resolves registry on demand
 - **Modify:** `ComboManager` -- read allowed items and timing from `MainConfigFile` routes; use config value instead of hardcoded 14-tick timeout
 - **Modify:** `OnComboCompleteListener` -- read failure feedback from `MainConfigFile` routes
 
 ### Health Stat Removal
 
-`stats.health.base-max` is removed from config entirely. The action bar HP zone reads vanilla health directly -- there is no custom HP pool to configure. `McRPGCombatStat.HEALTH` registration is retained in the registry (the `CombatStatInstance` for health is used by the HUD to source display values) but its base max reflects vanilla 20, not a configurable custom value.
+`stats.health.base-max` is removed from config entirely. The action bar HP zone reads vanilla health directly -- there is no custom HP pool to configure. `McRPGPlayerStat.HEALTH` registration is retained in the registry (the `PlayerStatInstance` for health provides display metadata and future modifier support) but its base max reflects vanilla 20, not a configurable custom value.
 
 ---
 
@@ -390,10 +396,13 @@ Shockwave and Cleave were spike-only PoC abilities with no tiers, no localizatio
 
 ### For Third-Party Plugins
 
-- **Custom `CombatStat` registration:** Plugins register additional combat stats via `CombatStatRegistry` (accessible through `registryAccess()` as `McRPGRegistryKey.COMBAT_STAT`). The registry owns stat definitions, per-player `PlayerCombatData` construction, and regen ticking -- there is no separate `StatManager`.
-- **`CombatStatConsumeEvent`:** A cancellable event fired before every `CombatStatInstance.consume()` call. Carries the `AbilityHolder`, the stat key (`NamespacedKey`), the requested amount, and allows modification of the effective cost or outright cancellation. This enables third-party plugins to implement mana-drain, mana-shield, cost reduction, or stat consumption logging. Fired on the combo activation path (`OnComboCompleteListener`), the passive mana-check path (`AbilityListener#activateAbilities`), and any future consumption site.
-- **`CombatStatContentPack`:** Combat stats are registered through the `ContentExpansion` system via a `CombatStatContentPack`, following the same pattern as `AbilityContentPack`, `StatisticContentPack`, and other content packs. Third-party expansions add custom stats by including a `CombatStatContentPack` in their `getExpansionContent()`.
+- **Custom `PlayerStat` registration:** Plugins register additional player stats via `PlayerStatRegistry` (accessible through `registryAccess()` as `McRPGRegistryKey.PLAYER_STAT`). The registry owns stat definitions; per-player `PlayerStatData` is constructed via a no-arg constructor that resolves the registry on demand -- there is no separate `StatManager`.
+- **`PlayerStatConsumeEvent`:** A cancellable event fired before every `PlayerStatInstance.consume()` call. Carries the `AbilityHolder`, the stat key (`NamespacedKey`), the requested amount, and allows modification of the effective cost or outright cancellation. This enables third-party plugins to implement mana-drain, mana-shield, cost reduction, or stat consumption logging. Fired on the combo activation path (`OnComboCompleteListener`), the passive mana-check path (`AbilityListener#activateAbilities`), and any future consumption site.
+- **`PlayerStatContentPack`:** Player stats are registered through the `ContentExpansion` system via a `PlayerStatContentPack`, following the same pattern as `AbilityContentPack`, `StatisticContentPack`, and other content packs. Third-party expansions add custom stats by including a `PlayerStatContentPack` in their `getExpansionContent()`.
 - **Custom `ComboActivatable` abilities:** Third-party abilities implementing `ComboActivatable` work with the combo system automatically if added to a player's loadout.
+- **Extensible combo allowed-item list:** `ComboManager` supports two extensibility paths for third-party plugins to add custom held items that can trigger combo inputs: (1) `registerAllowedItemSet(ReloadableSet<CustomItemWrapper>)` for config-backed item sets that update on reload, and (2) `addAllowedItem(CustomItemWrapper)` for individual programmatic entries. Both use concurrent collections (`CopyOnWriteArrayList`, `CopyOnWriteArraySet`) for thread safety.
+- **`PlayerStatModifier` subclassing:** `PlayerStatModifier` is a non-final class with virtual methods (`getEffectiveFlatBonus()`, `getEffectivePercentBonus()`, `tick()`, `isExpired()`). Third-party plugins can subclass it to implement custom modifier behaviors (stacking, timed decay, conditional bonuses) and register them on any `PlayerStatInstance` via `addModifier()`.
+- **Stat display localization:** `PlayerStat` display names and symbols are resolved through the localization system via convention-based routes (`stat.<key>.display-name`, `stat.<key>.display-symbol`). Third-party stats get localized automatically if locale entries exist; otherwise the constructor-provided fallback string is used.
 - **`ComboCompleteEvent`:** Already cancellable -- plugins can intercept combo completions.
 - **Action bar center content:** The priority-based slot system (`ActionBarSlotSetEvent`, `ActionBarSlotClearEvent`) allows plugins to write to the center zone without stomping McRPG's feedback.
 
@@ -401,7 +410,7 @@ Shockwave and Cleave were spike-only PoC abilities with no tiers, no localizatio
 
 New abilities added via `ContentExpansion` that implement `ComboActivatable` are automatically combo-eligible. They read mana costs from their own skill config files following the same `tier-configuration.mana-cost` pattern.
 
-New combat stats are added via `CombatStatContentPack` in a `ContentExpansion`. The stat definition, default base value, regen rate, and resource-pool flag are all declared in the `CombatStat` object and registered into `CombatStatRegistry` during expansion loading.
+New player stats are added via `PlayerStatContentPack` in a `ContentExpansion`. The stat definition, default base value, regen rate, and resource-pool flag are all declared in the `PlayerStat` object and registered into `PlayerStatRegistry` during expansion loading.
 
 ---
 
@@ -487,7 +496,7 @@ Mana is persisted on **player logout and full player saves only** -- not on ever
 
 This avoids per-tick write overhead while still preventing the "log out and return with full mana" exploit on PvP servers. Crash recovery is an accepted loss -- the pool refills fast enough (33 seconds from empty) that it is a minor inconvenience, not a gameplay issue.
 
-**Implementation:** A `CombatStatDAO` (or column on the existing player data table) stores `current_mana` as a double. Written during `McRPGPlayer` save events (logout, periodic server save). Read during `McRPGPlayer` construction to seed `CombatStatInstance.setCurrent()` after `createPlayerCombatData()` sets base values from config.
+**Implementation:** `PlayerStatDAO` stores per-player stat values generically (keyed by `NamespacedKey`). Written during `McRPGPlayer` save events (logout, periodic server save). Read during `McRPGPlayer` construction to seed `PlayerStatInstance.setCurrent()` after `new PlayerStatData()` resolves the registry and sets base values from config.
 
 ### Loadout Active Slot Count
 
@@ -520,7 +529,7 @@ Each phase gets its own LLD when implementation begins.
 - Update base mana values: 100 max, 3/sec regen
 - Update HP display: renderer shows vanilla health directly
 - Fix `ComboManager` to read timeout from config instead of hardcoded 14 ticks
-- Update `CombatStatRegistry` (formerly `StatManager`) `createPlayerCombatData()` to read from new config locations
+- ~~Update `CombatStatRegistry` (formerly `StatManager`)~~ — **done in Phase 1:** `StatManager` merged into `PlayerStatRegistry`; `PlayerStatData` resolves registry on demand
 - Add mana persistence: `CombatStatDAO` (or column on existing player table) to store `current_mana`; write on logout/full save, restore on login
 - Hardcode active loadout slot count to 3; remove `max-active-loadout-size` config key
 

@@ -1,11 +1,17 @@
 # Phase 1 LLD: Infrastructure & Config Cleanup
 
 > **HLD Reference:** [docs/hld/mana-ability-system.md](../../hld/mana-ability-system.md)
-> **Status:** Draft
+> **Status:** Implemented
 
 ## Scope
 
 Phase 1 delivers the foundational infrastructure for the mana-gated combo activation system: config consolidation from the spike's `combo_configuration.yml` into `config.yml` and per-skill config files, deletion of spike-only abilities and config artifacts, Parser-based formula scaling for all tier-config values (including the new `mana-cost` key), `PlayerStatConsumeEvent` for third-party extensibility, `StatManager` → `PlayerStatRegistry` merge with expansion-pack registration, config-agnostic `ReloadableContent` delegation for stat base/regen values, HP display correction to vanilla health, stat persistence, loadout slot hardcoding, and mana-atomicity guarantees (boolean return on `comboActivate()`/`activateAbility()` with refund on cancellation). As part of this phase, the entire `CombatStat` hierarchy is renamed to `PlayerStat` to avoid restricting the infrastructure to combat-only use cases, and `McRPGPlayerStat` becomes an enum of keys with stat objects created at expansion-registration time.
+
+**Post-initial-implementation additions:**
+- `PlayerStatModifier` converted from `record` to extensible `class` with `NamespacedKey` source keys and virtual methods (`getEffectiveFlatBonus()`, `getEffectivePercentBonus()`, `tick()`, `isExpired()`) to support future stacking/timed modifier subclasses. `PlayerStatInstance` calls virtual methods and gains `tickModifiers(double)` for auto-expiration.
+- `PlayerStat` display name and symbol routed through the localization system via convention-based `Route` methods (`stat.<key>.display-name` / `stat.<key>.display-symbol`), with fallback to constructor strings for tests and early startup. New `en_stats.yml` locale file added to `BundledLocale.ENGLISH`.
+- Stat package reorganized: `stat/impl/` (stat type subclasses), `stat/instance/` (per-player mutable state). Base interfaces and registry remain in `stat/`.
+- `ComboManager` gained extensible allowed-item API: `registerAllowedItemSet(ReloadableSet)` for third-party config-backed sets and `addAllowedItem(CustomItemWrapper)` for individual entries, both using concurrent collections.
 
 **In scope:**
 - Config consolidation: migrate system settings to `config.yml`, per-ability params to skill config files
@@ -59,14 +65,20 @@ classDiagram
     class PlayerStat {
         ~abstract~
         #key : NamespacedKey
-        #displayName : String
-        #displaySymbol : String
+        #fallbackDisplayName : String
+        #fallbackDisplaySymbol : String
         #defaultBaseValue : double
         #defaultRegenPerSecond : double
         +getKey() NamespacedKey
         +isResourcePool()* boolean
         +getBaseValue() double
         +getRegenPerSecond() double
+        +getDisplayNameRoute() Route
+        +getDisplaySymbolRoute() Route
+        +getDisplayName() String
+        +getDisplayName(McRPGPlayer) String
+        +getDisplaySymbol() String
+        +getDisplaySymbol(McRPGPlayer) String
         +getReloadableBaseValue() Optional~ReloadableContent~
         +getReloadableRegenPerSecond() Optional~ReloadableContent~
         +getReloadableContent() Set~ReloadableContent~
@@ -86,18 +98,25 @@ classDiagram
     class PlayerStatInstance {
         -definition : PlayerStat
         -current : double
-        -modifiers : Map
+        -modifiers : Map~NamespacedKey PlayerStatModifier~
         +consume(double) boolean
         +restore(double)
         +tickRegen(double)
+        +tickModifiers(double)
         +getEffectiveMax() double
+        +addModifier(PlayerStatModifier)
+        +removeModifier(NamespacedKey)
     }
 
     class PlayerStatModifier {
-        ~record~
-        +sourceKey : String
-        +flatBonus : double
-        +percentBonus : double
+        -sourceKey : NamespacedKey
+        -flatBonus : double
+        -percentBonus : double
+        +getSourceKey() NamespacedKey
+        +getEffectiveFlatBonus() double
+        +getEffectivePercentBonus() double
+        +tick(double)
+        +isExpired() boolean
     }
 
     class PlayerStatData {
@@ -568,62 +587,61 @@ Three interrelated changes replace the old snapshot-and-override pattern with co
 ```java
 public abstract class PlayerStat {
     private final NamespacedKey key;
-    private final String displayName;
-    private final String displaySymbol;
+    private final String fallbackDisplayName;
+    private final String fallbackDisplaySymbol;
     private final double defaultBaseValue;
     private final double defaultRegenPerSecond;
 
-    /**
-     * Returns optional reloadable config source for the base value.
-     * Default: empty (uses compile-time default). Override to back with config.
-     *
-     * @return The reloadable content for the base value, or empty if hardcoded.
-     */
+    // --- Localization ---
+
+    /** Convention-derived route: stat.<key>.display-name. Override for custom paths. */
     @NotNull
-    public Optional<ReloadableContent<Double>> getReloadableBaseValue() {
-        return Optional.empty();
+    public Route getDisplayNameRoute() {
+        return Route.fromString("stat." + key.getKey() + ".display-name");
     }
 
-    /**
-     * Returns optional reloadable config source for the regen rate.
-     * Default: empty (uses compile-time default). Override to back with config.
-     *
-     * @return The reloadable content for the regen rate, or empty if hardcoded.
-     */
+    /** Convention-derived route: stat.<key>.display-symbol. Override for custom paths. */
     @NotNull
-    public Optional<ReloadableContent<Double>> getReloadableRegenPerSecond() {
-        return Optional.empty();
+    public Route getDisplaySymbolRoute() {
+        return Route.fromString("stat." + key.getKey() + ".display-symbol");
     }
 
-    /**
-     * Returns the current base value. If a reloadable config source exists,
-     * returns the live config value; otherwise returns the compile-time default.
-     *
-     * @return The current base value.
-     */
+    /** Resolves display name from server default locale; falls back to constructor string. */
+    @NotNull
+    public String getDisplayName() { return resolveLocalized(getDisplayNameRoute(), fallbackDisplayName); }
+
+    /** Resolves display name from player's locale; falls back to constructor string. */
+    @NotNull
+    public String getDisplayName(@NotNull McRPGPlayer player) { ... }
+
+    /** Resolves display symbol from server default locale; falls back to constructor string. */
+    @NotNull
+    public String getDisplaySymbol() { return resolveLocalized(getDisplaySymbolRoute(), fallbackDisplaySymbol); }
+
+    /** Resolves display symbol from player's locale; falls back to constructor string. */
+    @NotNull
+    public String getDisplaySymbol(@NotNull McRPGPlayer player) { ... }
+
+    // --- Reloadable config delegation ---
+
+    @NotNull
+    public Optional<ReloadableContent<Double>> getReloadableBaseValue() { return Optional.empty(); }
+
+    @NotNull
+    public Optional<ReloadableContent<Double>> getReloadableRegenPerSecond() { return Optional.empty(); }
+
     public double getBaseValue() {
         return getReloadableBaseValue()
             .map(ReloadableContent::getContent)
             .orElse(defaultBaseValue);
     }
 
-    /**
-     * Returns the current regen rate. Same delegation as {@link #getBaseValue()}.
-     *
-     * @return The current regen rate per second.
-     */
     public double getRegenPerSecond() {
         return getReloadableRegenPerSecond()
             .map(ReloadableContent::getContent)
             .orElse(defaultRegenPerSecond);
     }
 
-    /**
-     * Collects any reloadable content for tracking by {@link ReloadableContentManager}.
-     * Called by the content handler during registration.
-     *
-     * @return Set of reloadable content to track, empty if this stat is hardcoded.
-     */
     @NotNull
     public Set<ReloadableContent<?>> getReloadableContent() {
         Set<ReloadableContent<?>> set = new HashSet<>();
@@ -631,10 +649,13 @@ public abstract class PlayerStat {
         getReloadableRegenPerSecond().ifPresent(set::add);
         return set;
     }
+
+    // resolveLocalized() tries RegistryAccess → localization manager → route;
+    // returns fallback on null result or exception (tests, early startup).
 }
 ```
 
-No mutation. The stat's configurability is a property of its type, determined at construction by the subclass.
+No mutation. The stat's configurability and display localization are properties of its type, determined at construction by the subclass. Display resolution gracefully falls back to the constructor-provided strings when localization is unavailable.
 
 #### 2.3.2 `ConfigurableResourcePoolPlayerStat` -- Config-Backed Subclass
 
@@ -651,16 +672,16 @@ public class ConfigurableResourcePoolPlayerStat extends ResourcePoolPlayerStat {
 
     /**
      * @param key                    Unique identifier for this stat.
-     * @param displayName            Human-readable name.
-     * @param displaySymbol          Symbol shown in the action bar HUD.
+     * @param fallbackDisplayName    Fallback name when localization unavailable.
+     * @param fallbackDisplaySymbol  Fallback symbol when localization unavailable.
      * @param defaultBaseValue       Compile-time fallback for base value.
      * @param defaultRegenPerSecond  Compile-time fallback for regen rate.
      * @param reloadableBaseValue    Config-backed base value source.
      * @param reloadableRegenPerSecond Config-backed regen rate source.
      */
     public ConfigurableResourcePoolPlayerStat(
-            @NotNull NamespacedKey key, @NotNull String displayName,
-            @NotNull String displaySymbol, double defaultBaseValue,
+            @NotNull NamespacedKey key, @NotNull String fallbackDisplayName,
+            @NotNull String fallbackDisplaySymbol, double defaultBaseValue,
             double defaultRegenPerSecond,
             @NotNull ReloadableContent<Double> reloadableBaseValue,
             @NotNull ReloadableContent<Double> reloadableRegenPerSecond) {
@@ -693,11 +714,8 @@ Third-party plugins use this subclass (or their own subclass of `ResourcePoolPla
 public class PlayerStatInstance {
     private final PlayerStat definition;
     private double current;
-    private final Map<String, PlayerStatModifier> modifiers;
+    private final Map<NamespacedKey, PlayerStatModifier> modifiers;
 
-    /**
-     * @param definition The stat definition this instance tracks.
-     */
     public PlayerStatInstance(@NotNull PlayerStat definition) {
         this.definition = definition;
         this.current = definition.isResourcePool() ? definition.getBaseValue() : 0;
@@ -705,32 +723,53 @@ public class PlayerStatInstance {
 
     /**
      * Effective max: {@code (definitionBase + flatSum) * (1 + percentSum)}.
-     * Reads {@code definition.getBaseValue()} live, so config reloads propagate
-     * automatically to all online players with zero iteration.
-     *
-     * @return The effective maximum value.
+     * Uses virtual getEffectiveFlatBonus() / getEffectivePercentBonus() so
+     * subclass modifiers (stackable, timed) contribute their scaled values.
      */
     public double getEffectiveMax() {
         double flatSum = modifiers.values().stream()
-            .mapToDouble(PlayerStatModifier::flatBonus).sum();
+            .mapToDouble(PlayerStatModifier::getEffectiveFlatBonus).sum();
         double percentSum = modifiers.values().stream()
-            .mapToDouble(PlayerStatModifier::percentBonus).sum();
+            .mapToDouble(PlayerStatModifier::getEffectivePercentBonus).sum();
         return Math.max(0, (definition.getBaseValue() + flatSum) * (1 + percentSum));
     }
 
     /**
-     * Regen rate delegates to definition, so config changes apply on next tick.
-     *
-     * @param secondsElapsed The time elapsed since the last regen tick, in seconds.
+     * Ticks modifiers first (removing expired ones), then applies regen.
      */
     public void tickRegen(double secondsElapsed) {
+        tickModifiers(secondsElapsed);
         if (definition.getRegenPerSecond() <= 0 || !definition.isResourcePool()) {
             return;
         }
         restore(definition.getRegenPerSecond() * secondsElapsed);
     }
 
-    // current, consume(), restore(), setCurrent(), modifiers, clampCurrent() unchanged
+    /**
+     * Ticks all modifiers and removes expired ones.
+     */
+    private void tickModifiers(double secondsElapsed) {
+        Iterator<PlayerStatModifier> it = modifiers.values().iterator();
+        boolean anyRemoved = false;
+        while (it.hasNext()) {
+            PlayerStatModifier mod = it.next();
+            mod.tick(secondsElapsed);
+            if (mod.isExpired()) { it.remove(); anyRemoved = true; }
+        }
+        if (anyRemoved) { clampCurrent(); }
+    }
+
+    public void addModifier(@NotNull PlayerStatModifier modifier) {
+        modifiers.put(modifier.getSourceKey(), modifier);
+        clampCurrent();
+    }
+
+    public void removeModifier(@NotNull NamespacedKey sourceKey) {
+        modifiers.remove(sourceKey);
+        clampCurrent();
+    }
+
+    // current, consume(), restore(), setCurrent(), clampCurrent() unchanged
     // setBaseValue() and setRegenPerSecond() are REMOVED
 }
 ```
@@ -790,7 +829,7 @@ public enum McRPGPlayerStat {
 
 #### 2.3.6 `McRPGExpansion` -- Stat Creation in Expansion Content Pack
 
-The `PlayerStat` objects for health and mana are created inside `getPlayerStatContent()` where the plugin context is available:
+The `PlayerStat` objects for health and mana are created inside `getPlayerStatContent()` where the plugin context is available. The constructor-provided display strings (`"Health"`, `"❤"`, etc.) serve as fallbacks; the actual display values are resolved at runtime from `en_stats.yml` via localization routes (`stat.health.display-name`, etc.):
 
 ```java
 @NotNull
@@ -1449,13 +1488,15 @@ Player logs out / server save
 ```
 ActionBarHudDisplay.tick(currentTick, secondsElapsed)
   ├─> statData.tickRegen(secondsElapsed)
-  │   └─> ManaInstance: current += regenPerSecond * elapsed, clamped to max
+  │   └─> ManaInstance: tickModifiers first, then current += regenPerSecond * elapsed
   ├─> Resolve center content (combo dots, cooldown countdown, etc.)
   ├─> If persistent pool display enabled:
   │   ├─> healthMax = player.getAttribute(MAX_HEALTH).getValue()  ← vanilla
   │   ├─> healthCurrent = player.getHealth()                      ← vanilla
+  │   ├─> healthSymbol = definition.getDisplaySymbol(mcRPGPlayer) ← localized
   │   ├─> manaCurrent = manaInstance.getCurrent()
   │   ├─> manaMax = manaInstance.getEffectiveMax()
+  │   ├─> manaSymbol = definition.getDisplaySymbol(mcRPGPlayer)   ← localized
   │   └─> renderer.buildFull(healthCurrent, healthMax, ..., manaCurrent, manaMax, ...)
   └─> Send action bar component
 ```
@@ -1499,12 +1540,28 @@ ActionBarHudDisplay.tick(currentTick, secondsElapsed)
 ### 6.1 New Locale Keys
 
 ```yaml
-# en.yml (bundled English locale)
+# en_abilities.yml (bundled English locale — mana/cooldown feedback)
 ability:
   mana-feedback:
     insufficient: "<red>Not enough mana to use <ability>! <gray>(need <cost>, have <current>)</gray></red>"
     cooldown-active: "<red><ability> is on cooldown! <gray>(<remaining>s remaining)</gray></red>"
 ```
+
+### 6.2 Stat Display Locale Keys
+
+```yaml
+# en_stats.yml (new bundled English locale file — added to BundledLocale.ENGLISH)
+locale: en
+stat:
+  health:
+    display-name: "Health"
+    display-symbol: "❤"
+  mana:
+    display-name: "Mana"
+    display-symbol: "✦"
+```
+
+`LocalizationKey.java` gains `STAT_HEADER`, `STAT_HEALTH_DISPLAY_NAME`, `STAT_HEALTH_DISPLAY_SYMBOL`, `STAT_MANA_DISPLAY_NAME`, `STAT_MANA_DISPLAY_SYMBOL` route constants. Third-party stats derive routes automatically from their `NamespacedKey` via `PlayerStat.getDisplayNameRoute()` / `getDisplaySymbolRoute()`.
 
 Placeholders:
 - `<ability>` -- the ability's display name
@@ -1512,7 +1569,7 @@ Placeholders:
 - `<current>` -- the player's current mana
 - `<remaining>` -- seconds remaining on cooldown
 
-### 6.2 Migration from Hardcoded Strings
+### 6.3 Migration from Hardcoded Strings
 
 `OnComboCompleteListener` currently uses hardcoded `Component.text(...)` calls for mana and cooldown feedback. These are replaced with localized messages:
 
@@ -1727,6 +1784,14 @@ player.sendMessage(message);
 
 17. **`McRPGPlayerStat` as enum**: `McRPGPlayerStat` is an enum of keys (`HEALTH`, `MANA`) rather than a utility class with `static final PlayerStat` fields. The actual `PlayerStat` objects (which require a `YamlDocument` for `ConfigurableResourcePoolPlayerStat`) are created at expansion-registration time inside `McRPGExpansion.getPlayerStatContent()`, where plugin context is available. This separates key identity (compile-time, safe for use in annotations and switch statements) from stat definition (runtime, needs config).
 
+18. **`PlayerStatModifier` as extensible class with `NamespacedKey`**: `PlayerStatModifier` was converted from a `record` (final, no subclasses) to a class with virtual methods. `String sourceKey` was changed to `NamespacedKey` to prevent third-party key collisions. The base class provides fixed flat/percent bonuses and never expires; virtual methods (`getEffectiveFlatBonus()`, `getEffectivePercentBonus()`, `tick()`, `isExpired()`) enable future subclasses for stacking and timed modifiers without changing the base system. `PlayerStatInstance.getEffectiveMax()` calls the virtual methods instead of record accessors, and `tickModifiers(double)` handles expiration automatically. This approach was chosen over compound string keys or per-modifier-type branching because it follows standard OOP extensibility and keeps the instance code simple — the instance doesn't need to know what kind of modifier it's ticking.
+
+19. **Stat display localization**: `PlayerStat.getDisplayName()` and `getDisplaySymbol()` now resolve through the localization system via `McRPGLocalizationManager`, with player-aware overloads for per-locale resolution. Routes are convention-derived (`stat.<key>.display-name` / `stat.<key>.display-symbol`) and overridable. The constructor-provided fallback strings are returned when localization is unavailable (null result or exception), which handles tests, early startup, and third-party stats that haven't added locale entries. A separate `en_stats.yml` file was added to `BundledLocale.ENGLISH` following the domain-per-file pattern established by `en_abilities.yml`, `en_skills.yml`, etc.
+
+20. **Extensible combo allowed-item list**: `ComboManager` uses a two-tier system: `contributedItemSets` (`CopyOnWriteArrayList<ReloadableSet<CustomItemWrapper>>`) for third-party config-backed sets that update on reload, and `staticAllowedItems` (`CopyOnWriteArraySet<CustomItemWrapper>`) for individual programmatic entries. `isAllowedHeldItem()` checks the built-in config set, then static items, then contributed sets. Concurrent collections were chosen over synchronized access to avoid contention on the hot input path.
+
+21. **Stat package reorganization**: The `stat/` package was reorganized into `stat/impl/` (stat type subclasses: `ResourcePoolPlayerStat`, `FlatPlayerStat`, `ConfigurableResourcePoolPlayerStat`) and `stat/instance/` (per-player mutable state: `PlayerStatInstance`, `PlayerStatData`, `PlayerStatModifier`). Base interfaces and the registry remain in `stat/`. This follows the organizational patterns established by `ability/impl/` and `skill/impl/`.
+
 ---
 
 ## 10. Open Items / Future Considerations
@@ -1742,3 +1807,5 @@ player.sendMessage(message);
 5. **Stat persistence write frequency**: Phase 1 writes only on logout and periodic server saves. If the save interval is very long (e.g., 30 minutes) and the server crashes, players could lose up to 30 minutes of mana state. This is an accepted trade-off per the HLD -- the pool refills in ~33 seconds from empty. If PvP server owners report this as a problem, a configurable stat-save-interval could be added.
 
 6. **Overtier formula behavior**: The minimum floor prevents negative costs from extreme tiers. However, other tier-config values (cooldown, damage, radius) do not have similar floors. If a cooldown formula produces 0 or negative values at overtiers, the ability would have no cooldown. This is deferred to the Phase 4 balance pass for case-by-case evaluation.
+
+7. **`PlayerStatModifier` subclasses**: The virtual methods (`tick()`, `isExpired()`, `getEffectiveFlatBonus()`, `getEffectivePercentBonus()`) are infrastructure for future `StackablePlayerStatModifier`, `TimedPlayerStatModifier`, and `TimedStackablePlayerStatModifier`. These would support abilities like "bonus attack damage per stack, falling off after a duration" — the design was discussed and the base infrastructure is in place, but the subclasses are not part of this phase.
