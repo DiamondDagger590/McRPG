@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.item.skillbook.SkillBookFactory;
+import us.eunoians.mcrpg.item.skillbook.SkillBookBuilder;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -30,7 +30,7 @@ import java.util.OptionalLong;
 /**
  * A quest reward type that grants a physical skill book item to the player.
  * <p>
- * The skill book is created via {@link SkillBookFactory} to ensure consistent
+ * The skill book is created via {@link SkillBookBuilder} to ensure consistent
  * PDC tags and formatting. When granted, the item is added to the player's
  * inventory; overflow drops naturally at the player's location.
  * <p>
@@ -114,12 +114,10 @@ public class SkillBookRewardType implements QuestRewardType {
 
         ItemStack skillBook;
         if (mcRPGPlayerOptional.isPresent()) {
-            skillBook = SkillBookFactory.createSkillBook(abilityKey, mcRPGPlayerOptional.get(), 1);
+            skillBook = SkillBookBuilder.fromConfig(abilityKey, mcRPGPlayerOptional.get()).asItemStack();
         } else {
-            // Fallback: player not loaded yet (e.g., PendingReward on login).
-            // Use server default locale with formatted key name.
-            String displayName = SkillBookFactory.formatKeyAsDisplayName(abilityKey);
-            skillBook = SkillBookFactory.createSkillBook(abilityKey, displayName, 1);
+            String displayName = SkillBookBuilder.formatKeyAsDisplayName(abilityKey);
+            skillBook = SkillBookBuilder.fromConfig(abilityKey, displayName).asItemStack();
         }
 
         // Add to inventory, drop overflow naturally
@@ -165,7 +163,7 @@ public class SkillBookRewardType implements QuestRewardType {
         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
-        String abilityName = SkillBookFactory.formatKeyAsDisplayName(abilityKey);
+        String abilityName = SkillBookBuilder.formatKeyAsDisplayName(abilityKey);
         return localizationManager.getLocalizedMessage(
                 LocalizationKey.SKILL_BOOK_ITEM_NAME, Map.of("ability", abilityName));
     }
@@ -190,7 +188,7 @@ public class SkillBookRewardType implements QuestRewardType {
             abilityName = plugin.getMiniMessage().serialize(
                     abilityRegistry.getRegisteredAbility(abilityKey).getDisplayName(player));
         } else {
-            abilityName = SkillBookFactory.formatKeyAsDisplayName(abilityKey);
+            abilityName = SkillBookBuilder.formatKeyAsDisplayName(abilityKey);
         }
 
         Map<String, String> placeholders = Map.of("ability", abilityName);

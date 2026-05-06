@@ -21,7 +21,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.AbilityUnlockEvent;
 import us.eunoians.mcrpg.event.item.SkillBookConsumeEvent;
-import us.eunoians.mcrpg.item.skillbook.SkillBookFactory;
+import us.eunoians.mcrpg.item.skillbook.SkillBookBuilder;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -53,7 +53,7 @@ public class SkillBookConsumeListener implements Listener {
         }
 
         ItemStack item = event.getItem();
-        if (item == null || !SkillBookFactory.isSkillBook(item)) {
+        if (item == null || !SkillBookBuilder.isSkillBook(item)) {
             return;
         }
 
@@ -64,7 +64,7 @@ public class SkillBookConsumeListener implements Listener {
         McRPG plugin = McRPG.getInstance();
 
         // Read the ability key from the item
-        String abilityKeyString = SkillBookFactory.getAbilityKeyString(item);
+        String abilityKeyString = SkillBookBuilder.getAbilityKeyString(item);
         if (abilityKeyString == null) {
             return;
         }

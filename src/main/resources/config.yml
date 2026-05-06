@@ -213,6 +213,33 @@ configuration:
   skill-books:
     # If set to true, then skill books will be unable to drop in the end
     disable-books-in-end: true
+    # Default item appearance for all skill books.
+    # Supports the <ability> placeholder for the ability name.
+    # Uses McCore's item builder format (material, name, lore, enchantments, etc.)
+    default-item:
+      material: "ENCHANTED_BOOK"
+      name: "<gold>Skill Book: <ability>"
+      lore:
+        - "<gray>A mysterious tome of knowledge."
+        - "<gray>Right-click to unlock <ability><gray>."
+      settings:
+        glowing: true
+    # Per-ability appearance overrides. Each key is the ability's namespace followed
+    # by its key (e.g., mcrpg.phase_shift for mcrpg:phase_shift).
+    # If present, the override section replaces the default-item section entirely,
+    # so include all desired properties.
+    # Example:
+    #   ability-overrides:
+    #     mcrpg:
+    #       phase_shift:
+    #         material: "ENCHANTED_BOOK"
+    #         name: "<dark_purple>Ancient Tome: <ability>"
+    #         lore:
+    #           - "<gray>An ancient tome pulsing with shadow energy."
+    #           - "<gray>Right-click to unlock <ability><gray>."
+    #         settings:
+    #           glowing: true
+    ability-overrides: {}
   # Configure various displays (scoreboard, actionbar, and bossbar) for McRPG
   display:
     # Configure displays for whenever experience is gained

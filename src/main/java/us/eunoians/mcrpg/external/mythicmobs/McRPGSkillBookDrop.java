@@ -8,7 +8,7 @@ import io.lumine.mythic.bukkit.adapters.item.ItemComponentBukkitItemStack;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.item.skillbook.SkillBookFactory;
+import us.eunoians.mcrpg.item.skillbook.SkillBookBuilder;
 
 /**
  * A custom MythicMobs drop type that generates an McRPG skill book item.
@@ -20,7 +20,7 @@ import us.eunoians.mcrpg.item.skillbook.SkillBookFactory;
  *     - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.1
  * </pre>
  * <p>
- * Delegates to {@link SkillBookFactory} for item creation, ensuring all skill books
+ * Delegates to {@link SkillBookBuilder} for item creation, ensuring all skill books
  * have consistent PDC tags and formatting regardless of source.
  */
 public class McRPGSkillBookDrop implements IItemDrop {
@@ -45,8 +45,9 @@ public class McRPGSkillBookDrop implements IItemDrop {
     @Override
     @NotNull
     public AbstractItemStack getDrop(@NotNull DropMetadata dropMetadata, double amount) {
-        ItemStack itemStack = SkillBookFactory.createSkillBook(
-                abilityKey, abilityDisplayName, Math.max(1, (int) amount));
+        ItemStack itemStack = SkillBookBuilder.fromConfig(abilityKey, abilityDisplayName)
+                .setAmount(Math.max(1, (int) amount))
+                .asItemStack();
         return new ItemComponentBukkitItemStack(itemStack);
     }
 }

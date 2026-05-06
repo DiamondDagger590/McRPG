@@ -109,7 +109,14 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route REDEEMABLE_EXPERIENCE_CUSTOM_AMOUNT_RESPONSE_TIMEOUT = Route.fromString(toRoutePath(REDEEMABLE_HEADER, "custom-experience-amount-response-timeout"));
     public static final Route REDEEMABLE_LEVELS_CUSTOM_AMOUNT_RESPONSE_TIMEOUT = Route.fromString(toRoutePath(REDEEMABLE_HEADER, "custom-levels-amount-response-timeout"));
 
+    // Skill Books
     public static final Route DISABLE_SKILL_BOOKS_IN_END = Route.fromString(toRoutePath(SKILL_BOOKS_CONFIGURATION_HEADER, "disable-books-in-end"));
+    public static final Route SKILL_BOOK_DEFAULT_ITEM = Route.fromString(toRoutePath(SKILL_BOOKS_CONFIGURATION_HEADER, "default-item"));
+    /**
+     * String form of the ability-overrides header, used to construct dynamic routes
+     * for per-ability item config sections (e.g., {@code skill-books.ability-overrides.mcrpg.phase_shift}).
+     */
+    public static final String SKILL_BOOK_ABILITY_OVERRIDES_HEADER_STRING = toRoutePath(SKILL_BOOKS_CONFIGURATION_HEADER, "ability-overrides");
     public static final Route EXPERIENCE_UPDATES_ENABLED = Route.fromString(toRoutePath(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "enabled"));
     public static final Route EXPERIENCE_UPDATE_DISPLAY_TYPE = Route.fromString(toRoutePath(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "display-type"));
     public static final Route EXPERIENCE_UPDATE_DISPLAY_DURATION = Route.fromString(toRoutePath(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "display-duration"));
