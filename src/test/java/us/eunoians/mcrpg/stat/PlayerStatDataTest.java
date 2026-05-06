@@ -1,29 +1,41 @@
 package us.eunoians.mcrpg.stat;
 
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.stat.impl.ResourcePoolPlayerStat;
+import us.eunoians.mcrpg.stat.instance.PlayerStatData;
+import us.eunoians.mcrpg.stat.instance.PlayerStatInstance;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class PlayerCombatDataTest extends McRPGBaseTest {
+/**
+ * Verifies {@link PlayerStatData} initialization and regen delegation.
+ * <p>
+ * Each test populates the {@link PlayerStatRegistry} (registered as an empty registry
+ * by {@link us.eunoians.mcrpg.TestBootstrap}) with the stats it needs before
+ * constructing a {@link PlayerStatData} instance.
+ */
+class PlayerStatDataTest extends McRPGBaseTest {
 
     private static final NamespacedKey MANA_KEY = new NamespacedKey("test", "mana");
     private static final NamespacedKey HP_KEY = new NamespacedKey("test", "hp");
 
-    private PlayerCombatData data;
+    private PlayerStatData data;
 
     @BeforeEach
     void setUp() {
-        CombatStatRegistry registry = new CombatStatRegistry();
-        registry.register(new ResourcePoolCombatStat(HP_KEY, "HP", "❤", 200, 0));
-        registry.register(new ResourcePoolCombatStat(MANA_KEY, "Mana", "✦", 100, 10));
+        PlayerStatRegistry registry = RegistryAccess.registryAccess()
+                .registry(McRPGRegistryKey.PLAYER_STAT);
+        registry.register(new ResourcePoolPlayerStat(HP_KEY, "HP", "❤", 200, 0));
+        registry.register(new ResourcePoolPlayerStat(MANA_KEY, "Mana", "✦", 100, 10));
 
-        data = new PlayerCombatData();
-        data.initFromRegistry(registry);
+        data = new PlayerStatData();
     }
 
     @DisplayName("getInstance returns initialized instances for all registered stats")
@@ -55,7 +67,7 @@ class PlayerCombatDataTest extends McRPGBaseTest {
     @DisplayName("Consume via instance works correctly")
     @Test
     void consumeViaInstance() {
-        CombatStatInstance mana = data.getInstance(MANA_KEY).orElseThrow();
+        PlayerStatInstance mana = data.getInstance(MANA_KEY).orElseThrow();
         assertTrue(mana.consume(30));
         assertEquals(70, mana.getCurrent());
     }

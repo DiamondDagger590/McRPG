@@ -29,6 +29,7 @@ import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoadoutSelectionDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
+import us.eunoians.mcrpg.database.table.PlayerStatDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.database.table.SkillDataSnapshot;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
@@ -101,6 +102,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             updatePlayerDataSyncFunctions.add(loadPlayerSettings(connection));
             updatePlayerDataSyncFunctions.add(loadPlayerExperienceExtras(connection));
             updatePlayerDataSyncFunctions.add(loadPlayerStatistics(connection));
+            updatePlayerDataSyncFunctions.add(loadPlayerStats(connection));
             updatePlayerDataSyncFunctions.add(awardRestedExperience(connection));
             updatePlayerDataSyncFunctions.add(loadBoardQuestCount(connection));
             updatePlayerLoginTimes(connection, loginTime);
@@ -448,6 +450,24 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         // Reset now that they've logged in
         loginInfoTransaction.addAll(PlayerLoginTimeDAO.saveLoggedOutInSafeZone(connection, uuid, false));
         loginInfoTransaction.executeTransaction();
+    }
+
+    /**
+     * Loads persisted resource pool stat values (e.g. mana) from the database and restores them
+     * on the main thread. Stats that have no persisted row are left at their definition's base value.
+     *
+     * @param connection The {@link Connection} to use.
+     * @return The {@link UpdatePlayerDataSyncFunction} to run on the main thread to restore stat values.
+     */
+    @NotNull
+    private UpdatePlayerDataSyncFunction loadPlayerStats(@NotNull Connection connection) {
+        UUID uuid = getCorePlayer().getUUID();
+        Map<NamespacedKey, Double> saved = PlayerStatDAO.loadAllStats(connection, uuid);
+        return () -> {
+            saved.forEach((key, value) ->
+                    getCorePlayer().getPlayerStatData().getInstance(key)
+                            .ifPresent(instance -> instance.setCurrent(value)));
+        };
     }
 
     /**

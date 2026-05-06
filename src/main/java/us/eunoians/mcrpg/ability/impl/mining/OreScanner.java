@@ -23,7 +23,6 @@ import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
-import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
 import us.eunoians.mcrpg.ability.ready.MiningReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -102,27 +101,23 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
         Player player = playerInteractEvent.getPlayer();
         abilityHolder.unreadyHolder();
-        if (performScan(abilityHolder, player)) {
+        boolean activated = performScan(abilityHolder, player);
+        if (activated) {
             putHolderOnCooldown(abilityHolder);
         }
+        return activated;
     }
 
     @Override
-    public void comboActivate(@NotNull AbilityHolder abilityHolder) {
+    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
         if (Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
-            performScan(abilityHolder, player);
+            return performScan(abilityHolder, player);
         }
-    }
-
-    @Override
-    public int getManaCost(@NotNull AbilityHolder abilityHolder) {
-        return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
-                .getInt(ComboConfigFile.ORE_SCANNER_MANA_COST, 40);
+        return true;
     }
 
     /**

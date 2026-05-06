@@ -88,16 +88,18 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         EntityDamageByEntityEvent damageEvent = (EntityDamageByEntityEvent) event;
         LivingEntity entity = (LivingEntity) damageEvent.getEntity();
         SerratedStrikesActivateEvent serratedStrikesActivateEvent = new SerratedStrikesActivateEvent(abilityHolder, entity, getDuration(getCurrentAbilityTier(abilityHolder)));
         Bukkit.getPluginManager().callEvent(serratedStrikesActivateEvent);
 
-        if (!serratedStrikesActivateEvent.isCancelled()) {
-            abilityHolder.addActiveAbility(this, serratedStrikesActivateEvent.getDuration());
-            putHolderOnCooldown(abilityHolder);
+        if (serratedStrikesActivateEvent.isCancelled()) {
+            return false;
         }
+        abilityHolder.addActiveAbility(this, serratedStrikesActivateEvent.getDuration());
+        putHolderOnCooldown(abilityHolder);
+        return true;
     }
 
     @NotNull

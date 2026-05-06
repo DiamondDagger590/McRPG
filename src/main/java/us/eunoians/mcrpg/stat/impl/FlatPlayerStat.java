@@ -1,24 +1,23 @@
-package us.eunoians.mcrpg.stat;
+package us.eunoians.mcrpg.stat.impl;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.stat.PlayerStat;
 
 /**
- * A {@link CombatStat} that represents a flat numerical value with no current/max tracking.
+ * A {@link PlayerStat} that represents a flat numerical value with no current/max tracking.
  * Defense and Attack Power are examples: they have an effective value computed from base +
  * modifiers, but no depletable pool.
- * <p>
- * Not used in the PoC but available for future stat types.
  */
-public class FlatCombatStat extends CombatStat {
+public class FlatPlayerStat extends PlayerStat {
 
     /**
-     * @param key             Unique identifier for this stat.
-     * @param displayName     Human-readable name.
-     * @param displaySymbol   Symbol shown in the action bar HUD.
+     * @param key              Unique identifier for this stat.
+     * @param displayName      Human-readable name.
+     * @param displaySymbol    Symbol shown in the action bar HUD.
      * @param defaultBaseValue The default base value before modifiers.
      */
-    public FlatCombatStat(@NotNull NamespacedKey key,
+    public FlatPlayerStat(@NotNull NamespacedKey key,
                            @NotNull String displayName,
                            @NotNull String displaySymbol,
                            double defaultBaseValue) {

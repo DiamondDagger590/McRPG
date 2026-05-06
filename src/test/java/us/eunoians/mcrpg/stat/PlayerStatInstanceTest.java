@@ -5,28 +5,32 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.stat.impl.FlatPlayerStat;
+import us.eunoians.mcrpg.stat.impl.ResourcePoolPlayerStat;
+import us.eunoians.mcrpg.stat.instance.PlayerStatInstance;
+import us.eunoians.mcrpg.stat.instance.PlayerStatModifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CombatStatInstanceTest extends McRPGBaseTest {
+class PlayerStatInstanceTest extends McRPGBaseTest {
 
-    private CombatStatInstance poolInstance;
-    private CombatStatInstance flatInstance;
+    private PlayerStatInstance poolInstance;
+    private PlayerStatInstance flatInstance;
 
     @BeforeEach
     void setUp() {
-        CombatStat poolStat = new ResourcePoolCombatStat(
+        PlayerStat poolStat = new ResourcePoolPlayerStat(
                 new NamespacedKey("test", "mana"), "Mana", "✦", 100, 5
         );
-        poolInstance = new CombatStatInstance(poolStat);
+        poolInstance = new PlayerStatInstance(poolStat);
 
-        CombatStat flatStat = new FlatCombatStat(
+        PlayerStat flatStat = new FlatPlayerStat(
                 new NamespacedKey("test", "defense"), "Defense", "⚔", 50
         );
-        flatInstance = new CombatStatInstance(flatStat);
+        flatInstance = new PlayerStatInstance(flatStat);
     }
 
     @DisplayName("Pool instance initializes current to base value")
@@ -95,7 +99,7 @@ class CombatStatInstanceTest extends McRPGBaseTest {
     @DisplayName("Modifier affects effective max and clamps current")
     @Test
     void modifierAffectsEffectiveMax() {
-        poolInstance.addModifier(new CombatStatModifier("buff", 50, 0));
+        poolInstance.addModifier(new PlayerStatModifier(new NamespacedKey("test", "buff"), 50, 0));
         assertEquals(150, poolInstance.getEffectiveMax());
         assertEquals(100, poolInstance.getCurrent());
 
@@ -106,18 +110,18 @@ class CombatStatInstanceTest extends McRPGBaseTest {
     @DisplayName("Percentage modifier scales effective max correctly")
     @Test
     void percentModifierScales() {
-        poolInstance.addModifier(new CombatStatModifier("buff", 0, 0.5));
+        poolInstance.addModifier(new PlayerStatModifier(new NamespacedKey("test", "buff"), 0, 0.5));
         assertEquals(150, poolInstance.getEffectiveMax());
     }
 
     @DisplayName("Removing modifier reduces effective max and clamps current")
     @Test
     void removeModifierClampsCurrent() {
-        poolInstance.addModifier(new CombatStatModifier("buff", 100, 0));
+        poolInstance.addModifier(new PlayerStatModifier(new NamespacedKey("test", "buff"), 100, 0));
         poolInstance.restore(200);
         assertEquals(200, poolInstance.getCurrent());
 
-        poolInstance.removeModifier("buff");
+        poolInstance.removeModifier(new NamespacedKey("test", "buff"));
         assertEquals(100, poolInstance.getEffectiveMax());
         assertEquals(100, poolInstance.getCurrent());
     }
@@ -125,17 +129,18 @@ class CombatStatInstanceTest extends McRPGBaseTest {
     @DisplayName("Combined flat and percent modifiers compute correctly")
     @Test
     void combinedModifiers() {
-        poolInstance.addModifier(new CombatStatModifier("flat", 100, 0));
-        poolInstance.addModifier(new CombatStatModifier("percent", 0, 0.5));
+        poolInstance.addModifier(new PlayerStatModifier(new NamespacedKey("test", "flat"), 100, 0));
+        poolInstance.addModifier(new PlayerStatModifier(new NamespacedKey("test", "percent"), 0, 0.5));
         // (100 + 100) * (1 + 0.5) = 300
         assertEquals(300, poolInstance.getEffectiveMax());
     }
 
-    @DisplayName("setBaseValue re-clamps current for pool stats")
+    @DisplayName("setCurrent clamps to effective max")
     @Test
-    void setBaseValueClampsCurrent() {
-        poolInstance.setBaseValue(50);
-        assertEquals(50, poolInstance.getEffectiveMax());
+    void setCurrentClampsToMax() {
+        poolInstance.setCurrent(50);
         assertEquals(50, poolInstance.getCurrent());
+        poolInstance.setCurrent(200);
+        assertEquals(100, poolInstance.getCurrent());
     }
 }

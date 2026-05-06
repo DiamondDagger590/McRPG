@@ -146,7 +146,8 @@ public class StubConfigurableTierableAbility implements ConfigurableTierableAbil
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        return true;
     }
 
     @Override

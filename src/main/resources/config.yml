@@ -2,6 +2,18 @@ config-version: 2
 ##################################
 ### Main Config For McRPG ###
 ##################################
+
+# Player resource pool stat configuration
+stats:
+  mana:
+    # Maximum mana pool. Combo abilities consume mana on activation.
+    base-max: 220
+    # Passive mana regeneration rate (mana points restored per second).
+    regen-per-second: 5
+    # Minimum mana cost enforced for any ability whose formula evaluates below this floor.
+    # Prevents abilities from becoming effectively free at high tiers.
+    minimum-ability-cost: 5
+
 configuration:
   database:
     # Sets the type of the database driver. The existing options are: 'SQLite'
@@ -177,13 +189,60 @@ configuration:
     loadout:
       max-loadout-amount: 10
       max-loadout-size: 9
-      max-active-loadout-size: 3
       loadout-display-name-response-timeout: 10
     redeemable:
       custom-experience-amount-response-timeout: 10
       custom-levels-amount-response-timeout: 10
     # If enabled, players will be required to have an empty off hand in order to ready their abilities
     require-empty-off-hand-to-ready: false
+    combo:
+      # Items that are allowed to register combo inputs. An empty hand always counts regardless of this list.
+      # Each entry is a Material name (e.g. DIAMOND_SWORD) or a custom item key.
+      # Reloads live via /mcrpg admin reload.
+      allowed-items:
+        - WOODEN_SWORD
+        - STONE_SWORD
+        - IRON_SWORD
+        - GOLDEN_SWORD
+        - DIAMOND_SWORD
+        - NETHERITE_SWORD
+        - WOODEN_AXE
+        - STONE_AXE
+        - IRON_AXE
+        - GOLDEN_AXE
+        - DIAMOND_AXE
+        - NETHERITE_AXE
+        - WOODEN_PICKAXE
+        - STONE_PICKAXE
+        - IRON_PICKAXE
+        - GOLDEN_PICKAXE
+        - DIAMOND_PICKAXE
+        - NETHERITE_PICKAXE
+        - WOODEN_SHOVEL
+        - STONE_SHOVEL
+        - IRON_SHOVEL
+        - GOLDEN_SHOVEL
+        - DIAMOND_SHOVEL
+        - NETHERITE_SHOVEL
+        - WOODEN_HOE
+        - STONE_HOE
+        - IRON_HOE
+        - GOLDEN_HOE
+        - DIAMOND_HOE
+        - NETHERITE_HOE
+        - BOW
+        - CROSSBOW
+        - TRIDENT
+        - MACE
+      timing:
+        # How many server ticks to wait for the next input before resetting the combo sequence.
+        # 30 ticks ≈ 1.5 seconds at 20 TPS.
+        window-ticks: 30
+      failure-feedback:
+        # Sound played when a combo fails (insufficient mana or cooldown).
+        sound: BLOCK_NOTE_BLOCK_BASS
+        volume: 1.0
+        pitch: 0.5
     # If enabled, then a player will not be able to gain experience past a certain level.
     # An example is if we set a player to have the permission 'mcrpg.swords.500'. This player would gain no exp past level 500 in swords
     # Use mcrpg.%skill%.%level% as the perm

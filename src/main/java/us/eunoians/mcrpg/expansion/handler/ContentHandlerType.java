@@ -15,9 +15,11 @@ import us.eunoians.mcrpg.expansion.content.QuestSourceContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestTemplateContentPack;
 import us.eunoians.mcrpg.expansion.content.RewardDistributionTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.ScopedBoardAdapterContentPack;
+import us.eunoians.mcrpg.expansion.content.PlayerStatContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.expansion.content.StatisticContentPack;
 import us.eunoians.mcrpg.expansion.content.TemplateConditionContentPack;
+import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -197,6 +199,27 @@ public enum ContentHandlerType {
         if (mcRPGContent instanceof StatisticContentPack statisticContent) {
             StatisticRegistry registry = mcRPG.registryAccess().registry(RegistryKey.STATISTIC);
             statisticContent.getContent().forEach(content -> registry.register(content.getStatistic()));
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link PlayerStatContentPack}s.
+     * <p>
+     * Each {@link us.eunoians.mcrpg.stat.PlayerStat} in the pack is registered to the
+     * {@link PlayerStatRegistry} and any reloadable config sources are tracked by the
+     * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}.
+     */
+    PLAYER_STAT((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof PlayerStatContentPack playerStatContent) {
+            PlayerStatRegistry registry = mcRPG.registryAccess().registry(McRPGRegistryKey.PLAYER_STAT);
+            playerStatContent.getContent().forEach(stat -> {
+                registry.register(stat);
+                stat.getReloadableContent().forEach(reloadable ->
+                        mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                                .manager(com.diamonddagger590.mccore.registry.manager.ManagerKey.RELOADABLE_CONTENT)
+                                .trackReloadableContent(reloadable));
+            });
             return true;
         }
         return false;

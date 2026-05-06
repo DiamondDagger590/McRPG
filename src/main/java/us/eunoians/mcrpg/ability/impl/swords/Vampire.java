@@ -58,18 +58,19 @@ public final class Vampire extends McRPGAbility implements ConfigurableTierableA
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BleedActivateEvent bleedActivateEvent = (BleedActivateEvent) event;
         VampireActivateEvent vampireActivateEvent = new VampireActivateEvent(abilityHolder, bleedActivateEvent.getBleedingEntity(), getAmountToHeal(getCurrentAbilityTier(abilityHolder)));
         Bukkit.getPluginManager().callEvent(vampireActivateEvent);
 
-        if (!vampireActivateEvent.isCancelled()) {
-            LivingEntity livingEntity = (LivingEntity) Bukkit.getEntity(abilityHolder.getUUID()); //We assert this in the vampire components
-            assert livingEntity != null;
-            livingEntity.setHealth(Math.min(Objects.requireNonNull(livingEntity.getAttribute(Attribute.MAX_HEALTH)).getValue(),
-                    livingEntity.getHealth() + vampireActivateEvent.getAmountToHeal()));
+        if (vampireActivateEvent.isCancelled()) {
+            return false;
         }
+        LivingEntity livingEntity = (LivingEntity) Bukkit.getEntity(abilityHolder.getUUID()); //We assert this in the vampire components
+        assert livingEntity != null;
+        livingEntity.setHealth(Math.min(Objects.requireNonNull(livingEntity.getAttribute(Attribute.MAX_HEALTH)).getValue(),
+                livingEntity.getHealth() + vampireActivateEvent.getAmountToHeal()));
+        return true;
     }
 
     @NotNull

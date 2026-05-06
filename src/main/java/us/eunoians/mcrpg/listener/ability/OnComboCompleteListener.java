@@ -22,11 +22,12 @@ import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.combo.ComboCompleteEvent;
+import us.eunoians.mcrpg.event.stat.PlayerStatConsumeEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.stat.CombatStatInstance;
-import us.eunoians.mcrpg.stat.McRPGCombatStat;
-import us.eunoians.mcrpg.stat.PlayerCombatData;
+import us.eunoians.mcrpg.stat.McRPGPlayerStat;
+import us.eunoians.mcrpg.stat.instance.PlayerStatData;
+import us.eunoians.mcrpg.stat.instance.PlayerStatInstance;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -116,11 +117,20 @@ public class OnComboCompleteListener implements Listener {
             return;
         }
 
-        PlayerCombatData combatData = mcRPGPlayer.getPlayerCombatData();
-        CombatStatInstance manaInstance = combatData.getInstance(McRPGCombatStat.MANA_KEY).orElseThrow();
+        PlayerStatData statData = mcRPGPlayer.getPlayerStatData();
+        PlayerStatInstance manaInstance = statData.getInstance(McRPGPlayerStat.MANA.getKey()).orElseThrow();
 
         int manaCost = comboAbility.getManaCost(abilityHolder);
-        if (!manaInstance.consume(manaCost)) {
+
+        PlayerStatConsumeEvent consumeEvent = new PlayerStatConsumeEvent(abilityHolder, McRPGPlayerStat.MANA.getKey(), manaCost);
+        Bukkit.getPluginManager().callEvent(consumeEvent);
+
+        if (consumeEvent.isCancelled()) {
+            return;
+        }
+
+        double effectiveCost = consumeEvent.getEffectiveAmount();
+        if (!manaInstance.consume(effectiveCost)) {
             int currentMana = (int) Math.round(manaInstance.getCurrent());
 
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
@@ -137,7 +147,10 @@ public class OnComboCompleteListener implements Listener {
             return;
         }
 
-        comboAbility.comboActivate(abilityHolder);
+        boolean activated = comboAbility.comboActivate(abilityHolder);
+        if (!activated) {
+            manaInstance.restore(effectiveCost);
+        }
 
         if (comboAbility instanceof CooldownableAbility cooldownableAbility) {
             cooldownableAbility.putHolderOnCooldown(abilityHolder);

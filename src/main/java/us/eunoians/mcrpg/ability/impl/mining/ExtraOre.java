@@ -95,13 +95,15 @@ public final class ExtraOre extends McRPGAbility implements PassiveAbility,
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
         ExtraOreActivateEvent extraOreActivateEvent = new ExtraOreActivateEvent(abilityHolder, 2);
         Bukkit.getPluginManager().callEvent(extraOreActivateEvent);
-        if (!extraOreActivateEvent.isCancelled()) {
-            addMultiplier(blockBreakEvent.getBlock(), extraOreActivateEvent.getDropMultiplier());
+        if (extraOreActivateEvent.isCancelled()) {
+            return false;
         }
+        addMultiplier(blockBreakEvent.getBlock(), extraOreActivateEvent.getDropMultiplier());
+        return true;
     }
 
     @NotNull

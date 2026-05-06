@@ -386,6 +386,8 @@ ability-configuration:
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:ore_scanner_upgrade"
         cooldown: 180
+        # Mana cost formula. Variable: tier (1-based). Reference value — tuned during Phase 4 balance pass.
+        mana-cost: "60-(8*tier)"
       tier-1:
         unlock-level: 1
         range: 10

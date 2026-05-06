@@ -713,6 +713,22 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_REWARD_ABILITY_UPGRADE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "ability-upgrade.format"));
     public static final Route QUEST_REWARD_ABILITY_UPGRADE_NEXT_TIER_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "ability-upgrade-next-tier.format"));
 
+    // Mana feedback — under the existing ability section
+    private static final String MANA_FEEDBACK_HEADER = toRoutePath(ABILITY_HEADER, "mana-feedback");
+    /** Sent when a player attempts to use a {@link us.eunoians.mcrpg.ability.impl.type.ManaAbility} without enough mana. */
+    public static final Route MANA_INSUFFICIENT = Route.fromString(toRoutePath(MANA_FEEDBACK_HEADER, "insufficient"));
+    /** Sent when a player attempts to activate an ability that is on cooldown via the combo system. */
+    public static final Route COOLDOWN_ACTIVE = Route.fromString(toRoutePath(MANA_FEEDBACK_HEADER, "cooldown-active"));
+
+    // Player stat display — convention: stat.<key>.display-name / display-symbol
+    private static final String STAT_HEADER = "stat";
+    private static final String STAT_HEALTH_HEADER = toRoutePath(STAT_HEADER, "health");
+    public static final Route STAT_HEALTH_DISPLAY_NAME = Route.fromString(toRoutePath(STAT_HEALTH_HEADER, "display-name"));
+    public static final Route STAT_HEALTH_DISPLAY_SYMBOL = Route.fromString(toRoutePath(STAT_HEALTH_HEADER, "display-symbol"));
+    private static final String STAT_MANA_HEADER = toRoutePath(STAT_HEADER, "mana");
+    public static final Route STAT_MANA_DISPLAY_NAME = Route.fromString(toRoutePath(STAT_MANA_HEADER, "display-name"));
+    public static final Route STAT_MANA_DISPLAY_SYMBOL = Route.fromString(toRoutePath(STAT_MANA_HEADER, "display-symbol"));
+
     // Statistic commands
     private static final String STATISTIC_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "statistic");
     public static final Route STATISTIC_VIEW_MESSAGE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "view-message"));

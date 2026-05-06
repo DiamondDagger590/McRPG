@@ -85,7 +85,7 @@ public class HeavySwing extends McRPGAbility implements PassiveAbility, Configur
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
         Player player = blockBreakEvent.getPlayer();
         Location origin = blockBreakEvent.getBlock().getLocation();
@@ -112,13 +112,15 @@ public class HeavySwing extends McRPGAbility implements PassiveAbility, Configur
 
         HeavySwingActivateEvent heavySwingActivateEvent = new HeavySwingActivateEvent(abilityHolder, toBreakLocations);
         Bukkit.getPluginManager().callEvent(heavySwingActivateEvent);
-        if (!heavySwingActivateEvent.isCancelled()) {
-            ItemStack heldItem = player.getInventory().getItemInMainHand();
-            for (Location possibleBlockLocation : toBreakLocations) {
-                Block possibleBlock = possibleBlockLocation.getBlock();
-                possibleBlock.breakNaturally(heldItem);
-            }
+        if (heavySwingActivateEvent.isCancelled()) {
+            return false;
         }
+        ItemStack heldItem = player.getInventory().getItemInMainHand();
+        for (Location possibleBlockLocation : toBreakLocations) {
+            Block possibleBlock = possibleBlockLocation.getBlock();
+            possibleBlock.breakNaturally(heldItem);
+        }
+        return true;
     }
 
     @NotNull

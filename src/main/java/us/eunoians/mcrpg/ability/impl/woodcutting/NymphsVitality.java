@@ -93,25 +93,28 @@ public class NymphsVitality extends McRPGAbility implements PassiveAbility, Conf
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         if (event instanceof FoodLevelChangeEvent foodLevelChangeEvent) {
             NymphsVitalityActivateEvent nymphsVitalityActivateEvent = new NymphsVitalityActivateEvent(abilityHolder);
             Bukkit.getPluginManager().callEvent(nymphsVitalityActivateEvent);
-            if (!nymphsVitalityActivateEvent.isCancelled()) {
-                foodLevelChangeEvent.setCancelled(true);
+            if (nymphsVitalityActivateEvent.isCancelled()) {
+                return false;
             }
+            foodLevelChangeEvent.setCancelled(true);
         } else if (event instanceof PlayerMoveEvent playerMoveEvent) {
             NymphsVitalityActivateEvent nymphsVitalityActivateEvent = new NymphsVitalityActivateEvent(abilityHolder);
             Bukkit.getPluginManager().callEvent(nymphsVitalityActivateEvent);
-            if (!nymphsVitalityActivateEvent.isCancelled()) {
-                Player player = playerMoveEvent.getPlayer();
-                int minimumHunger = getMinimumHunger(getCurrentAbilityTier(abilityHolder));
-                if (player.getFoodLevel() < minimumHunger) {
-                    // Increase their food level by 1 if their hunger is below the minimum
-                    player.setFoodLevel(player.getFoodLevel() + 1);
-                }
+            if (nymphsVitalityActivateEvent.isCancelled()) {
+                return false;
+            }
+            Player player = playerMoveEvent.getPlayer();
+            int minimumHunger = getMinimumHunger(getCurrentAbilityTier(abilityHolder));
+            if (player.getFoodLevel() < minimumHunger) {
+                // Increase their food level by 1 if their hunger is below the minimum
+                player.setFoodLevel(player.getFoodLevel() + 1);
             }
         }
+        return true;
     }
 
     @NotNull

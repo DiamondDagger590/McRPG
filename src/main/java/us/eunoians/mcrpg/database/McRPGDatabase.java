@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoadoutSelectionDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
+import us.eunoians.mcrpg.database.table.PlayerStatDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.database.table.board.BoardCooldownDAO;
 import us.eunoians.mcrpg.database.table.board.BoardOfferingDAO;
@@ -82,6 +83,8 @@ public class McRPGDatabase extends Database {
             Logger logger = getPlugin().getLogger();
             database.getDatabaseExecutorService().submit(() -> {
                 try (Connection connection = database.getConnection()) {
+                    logger.log(Level.INFO, "Database Creation - Player Stat DAO "
+                            + (PlayerStatDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     logger.log(Level.INFO, "Database Creation - Skill DAO "
                             + (SkillDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     logger.log(Level.INFO, "Database Creation - Loadout Info DAO "
@@ -139,6 +142,7 @@ public class McRPGDatabase extends Database {
             CompletableFuture<Void> completableFuture = new CompletableFuture<>();
             database.getDatabaseExecutorService().submit(() -> {
                 try (Connection connection = database.getConnection()) {
+                    PlayerStatDAO.updateTable(connection, database);
                     SkillDAO.updateTable(connection);
                     LoadoutInfoDAO.updateTable(connection);
                     LoadoutAbilityDAO.updateTable(connection);

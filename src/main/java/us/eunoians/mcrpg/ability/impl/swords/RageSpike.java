@@ -26,7 +26,6 @@ import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
-import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
 import us.eunoians.mcrpg.ability.ready.SwordReadyData;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -101,32 +100,33 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         RageSpikeActivateEvent rageSpikeActivateEvent = new RageSpikeActivateEvent(abilityHolder);
         Bukkit.getPluginManager().callEvent(rageSpikeActivateEvent);
 
-        if (!rageSpikeActivateEvent.isCancelled() && Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
+        if (rageSpikeActivateEvent.isCancelled()) {
+            return false;
+        }
+        if (Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
             abilityHolder.unreadyHolder();
             performRageSpike(abilityHolder, player);
             putHolderOnCooldown(abilityHolder);
         }
+        return true;
     }
 
     @Override
-    public void comboActivate(@NotNull AbilityHolder abilityHolder) {
+    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
         RageSpikeActivateEvent rageSpikeActivateEvent = new RageSpikeActivateEvent(abilityHolder);
         Bukkit.getPluginManager().callEvent(rageSpikeActivateEvent);
 
-        if (!rageSpikeActivateEvent.isCancelled() && Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
+        if (rageSpikeActivateEvent.isCancelled()) {
+            return false;
+        }
+        if (Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
             performRageSpike(abilityHolder, player);
         }
-    }
-
-    @Override
-    public int getManaCost(@NotNull AbilityHolder abilityHolder) {
-        return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
-                .getInt(ComboConfigFile.RAGE_SPIKE_MANA_COST, 25);
+        return true;
     }
 
     /**

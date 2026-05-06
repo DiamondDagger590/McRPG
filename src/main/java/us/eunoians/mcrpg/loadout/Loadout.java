@@ -174,12 +174,16 @@ public final class Loadout {
     }
 
     /**
-     * Gets the maximum number of {@link ActiveAbility ActiveAbilities} allowed in this loadout.
+     * Returns the maximum number of {@link ActiveAbility ActiveAbilities} allowed in this loadout.
+     * <p>
+     * Hardcoded to 3 — the combo system is built around exactly three active-ability slots
+     * (one per combo pattern). A configurable limit created inconsistencies when players
+     * had 1 or 2 actives and combo slots were left empty.
      *
-     * @return The maximum active ability count from config.
+     * @return The maximum active ability count (always 3).
      */
     private int getMaxActiveLoadoutSize() {
-        return McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_ACTIVE_LOADOUT_SIZE, 3);
+        return 3;
     }
 
     /**

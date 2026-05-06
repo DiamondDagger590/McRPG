@@ -25,6 +25,8 @@ import us.eunoians.mcrpg.quest.impl.scope.impl.PermissionQuestScopeProvider;
 import us.eunoians.mcrpg.quest.impl.scope.impl.SinglePlayerQuestScopeProvider;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -82,6 +84,7 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
         distTypeRegistry.register(new ParticipatedDistributionType());
         distTypeRegistry.register(new MembershipDistributionType());
         registryAccess.registry(RegistryKey.MANAGER).register(mock(QuestManager.class));
+        registryAccess.register(new PlayerStatRegistry());
     }
 
     /**

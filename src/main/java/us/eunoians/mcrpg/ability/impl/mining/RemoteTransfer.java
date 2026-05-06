@@ -104,7 +104,7 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BlockDropItemEvent blockDropItemEvent = (BlockDropItemEvent) event;
 
         var abilityDataOptional = abilityHolder.getAbilityData(this);
@@ -118,7 +118,7 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
 
                 // Skip default locations
                 if (location.getWorld() == null) {
-                    return;
+                    return true;
                 }
 
                 Chunk chunk = location.getChunk();
@@ -128,7 +128,7 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
                 RemoteTransferActivateEvent remoteTransferActivateEvent = new RemoteTransferActivateEvent(abilityHolder, location);
                 Bukkit.getPluginManager().callEvent(remoteTransferActivateEvent);
                 if (remoteTransferActivateEvent.isCancelled()) {
-                    return;
+                    return false;
                 }
 
                 // Force the chunk to load if it isn't already
@@ -222,6 +222,7 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
                 chunk.removePluginChunkTicket(getPlugin());
             }
         }
+        return true;
     }
 
     @NotNull

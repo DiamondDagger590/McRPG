@@ -16,12 +16,10 @@ import us.eunoians.mcrpg.ability.impl.mining.ItsATriple;
 import us.eunoians.mcrpg.ability.impl.mining.OreScanner;
 import us.eunoians.mcrpg.ability.impl.mining.RemoteTransfer;
 import us.eunoians.mcrpg.ability.impl.swords.Bleed;
-import us.eunoians.mcrpg.ability.impl.swords.Cleave;
 import us.eunoians.mcrpg.ability.impl.swords.DeeperWound;
 import us.eunoians.mcrpg.ability.impl.swords.EnhancedBleed;
 import us.eunoians.mcrpg.ability.impl.swords.RageSpike;
 import us.eunoians.mcrpg.ability.impl.swords.SerratedStrikes;
-import us.eunoians.mcrpg.ability.impl.swords.Shockwave;
 import us.eunoians.mcrpg.ability.impl.swords.Vampire;
 import us.eunoians.mcrpg.ability.impl.woodcutting.DryadsGift;
 import us.eunoians.mcrpg.ability.impl.woodcutting.ExtraLumber;
@@ -52,6 +50,7 @@ import us.eunoians.mcrpg.quest.board.template.condition.CompoundCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.PermissionCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.RarityCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.VariableCondition;
+import us.eunoians.mcrpg.expansion.content.PlayerStatContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestSourceContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.expansion.content.StatisticContent;
@@ -83,8 +82,15 @@ import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
 import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.stat.impl.ConfigurableResourcePoolPlayerStat;
+import us.eunoians.mcrpg.stat.McRPGPlayerStat;
+import us.eunoians.mcrpg.stat.impl.ResourcePoolPlayerStat;
 import us.eunoians.mcrpg.statistic.McRPGStatistic;
 import us.eunoians.mcrpg.util.McRPGMethods;
+
+import com.diamonddagger590.mccore.configuration.ReloadableContent;
 
 import java.util.List;
 import java.util.Set;
@@ -108,7 +114,7 @@ public final class McRPGExpansion extends ContentExpansion {
     public Set<McRPGContentPack<? extends McRPGContent>> getExpansionContent() {
         List<Skill> skills = createSkills();
         List<Ability> abilities = createAbilities();
-        return Set.of(getSkillContent(skills), getAbilityContent(abilities),
+        return Set.of(getPlayerStatContent(), getSkillContent(skills), getAbilityContent(abilities),
                 getStatisticContent(skills, abilities), getPlayerSettingContent(), getLocalizationContent(),
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
@@ -119,6 +125,46 @@ public final class McRPGExpansion extends ContentExpansion {
     @Override
     public String getExpansionName(@NotNull McRPGPlayer player) {
         return mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessage(player, LocalizationKey.MCRPG_EXPANSION_NAME);
+    }
+
+    /**
+     * Gets the native {@link PlayerStatContentPack} for McRPG, containing the built-in
+     * Health and Mana stats.
+     * <p>
+     * Health is registered as a fixed {@link ResourcePoolPlayerStat} — the HUD reads
+     * vanilla health directly (so no config-backed max is needed). The registry entry
+     * provides the display symbol "❤" and establishes the stat key.
+     * <p>
+     * Mana is registered as a {@link ConfigurableResourcePoolPlayerStat} so that server
+     * owners can tune the pool size and regen rate in {@code config.yml} without restarting.
+     *
+     * @return The native {@link PlayerStatContentPack} for McRPG.
+     */
+    @NotNull
+    private PlayerStatContentPack getPlayerStatContent() {
+        PlayerStatContentPack pack = new PlayerStatContentPack(this);
+        var fileManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
+        var mainConfig = fileManager.getFile(FileType.MAIN_CONFIG);
+
+        pack.addContent(new ResourcePoolPlayerStat(
+                McRPGPlayerStat.HEALTH.getKey(), "Health", "❤", 20, 0
+        ));
+
+        var manaBaseMax = new ReloadableContent<>(
+                mainConfig, MainConfigFile.MANA_BASE_MAX,
+                (doc, route) -> doc.getDouble(route, 220.0)
+        );
+        var manaRegenPerSecond = new ReloadableContent<>(
+                mainConfig, MainConfigFile.MANA_REGEN_PER_SECOND,
+                (doc, route) -> doc.getDouble(route, 5.0)
+        );
+        pack.addContent(new ConfigurableResourcePoolPlayerStat(
+                McRPGPlayerStat.MANA.getKey(), "Mana", "✦",
+                220, 5,
+                manaBaseMax, manaRegenPerSecond
+        ));
+
+        return pack;
     }
 
     /**
@@ -162,7 +208,6 @@ public final class McRPGExpansion extends ContentExpansion {
                 // Swords
                 new Bleed(mcRPG), new DeeperWound(mcRPG), new Vampire(mcRPG),
                 new EnhancedBleed(mcRPG), new RageSpike(mcRPG), new SerratedStrikes(mcRPG),
-                new Shockwave(mcRPG), new Cleave(mcRPG),
                 // Mining
                 new ExtraOre(mcRPG), new ItsATriple(mcRPG), new RemoteTransfer(mcRPG), new OreScanner(mcRPG),
                 // Woodcutting

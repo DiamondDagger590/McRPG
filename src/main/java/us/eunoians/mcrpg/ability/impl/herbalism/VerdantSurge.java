@@ -106,7 +106,7 @@ public final class VerdantSurge extends McRPGAbility implements ConfigurableActi
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
         Player player = playerInteractEvent.getPlayer();
         McRPGPlayer mcRPGPlayer = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId()).orElseThrow(IllegalStateException::new);
@@ -118,7 +118,7 @@ public final class VerdantSurge extends McRPGAbility implements ConfigurableActi
         VerdantSurgeActivateEvent verdantSurgeActivateEvent = new VerdantSurgeActivateEvent(abilityHolder, pulseCount, pulseRadius);
         Bukkit.getPluginManager().callEvent(verdantSurgeActivateEvent);
         if (verdantSurgeActivateEvent.isCancelled()) {
-            return;
+            return false;
         }
         abilityHolder.addActiveAbility(this);
         putHolderOnCooldown(abilityHolder);
@@ -128,6 +128,7 @@ public final class VerdantSurge extends McRPGAbility implements ConfigurableActi
             delay += 1.5;
         }
         abilityHolder.removeActiveAbility(this);
+        return true;
     }
 
     /**

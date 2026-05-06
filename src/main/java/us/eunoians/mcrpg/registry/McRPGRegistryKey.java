@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 import us.eunoians.mcrpg.quest.source.QuestSourceRegistry;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
+import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 
 import static com.diamonddagger590.mccore.registry.RegistryKeyImpl.create;
 
@@ -46,4 +47,5 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
     RegistryKey<RewardDistributionTypeRegistry> REWARD_DISTRIBUTION_TYPE = create(RewardDistributionTypeRegistry.class);
     RegistryKey<ScopedBoardAdapterRegistry> SCOPED_BOARD_ADAPTER = create(ScopedBoardAdapterRegistry.class);
     RegistryKey<TemplateConditionRegistry> TEMPLATE_CONDITION = create(TemplateConditionRegistry.class);
+    RegistryKey<PlayerStatRegistry> PLAYER_STAT = create(PlayerStatRegistry.class);
 }

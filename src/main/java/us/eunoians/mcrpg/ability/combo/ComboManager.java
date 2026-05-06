@@ -13,7 +13,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.display.DisplayManager;
 import us.eunoians.mcrpg.display.hud.ActionBarHudDisplay;
 import us.eunoians.mcrpg.display.hud.CenterContentPriority;
@@ -22,11 +22,15 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.combo.ComboCompleteEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.stream.Collectors;
 
 /**
@@ -46,10 +50,32 @@ import java.util.stream.Collectors;
  * a combo sequence begins (or continues). Each subsequent input is validated against the known
  * {@link ComboPattern}s. When a 3-click pattern is complete, a {@link ComboCompleteEvent}
  * is fired. If no valid continuation exists, the state is reset with feedback.
- * <p>
- * The allowed item list is loaded from {@code combo.allowed-items} in {@code combo_configuration.yml}
- * and reloads automatically when {@code /mcrpg admin reload} is run. An empty hand (AIR) is always
- * permitted regardless of the config list.
+ *
+ * <h2>Allowed-item sources</h2>
+ * The allowed-item check ({@link #isAllowedHeldItem}) merges three sources:
+ * <ol>
+ *   <li><b>Built-in config list</b> — loaded from {@code configuration.gameplay.combo.allowed-items}
+ *       in {@code config.yml}; reloads automatically on {@code /mcrpg admin reload}.</li>
+ *   <li><b>Contributed reloadable sets</b> — third-party plugins register their own
+ *       {@link ReloadableSet} via {@link #registerAllowedItemSet}. The caller owns the
+ *       set's lifecycle and reload registration.</li>
+ *   <li><b>Static entries</b> — individual {@link CustomItemWrapper} values added via
+ *       {@link #addAllowedItem}. Not config-backed; plugins re-register during
+ *       {@code onEnable}.</li>
+ * </ol>
+ * An empty hand (AIR) is always permitted regardless of any list.
+ *
+ * <h2>Third-party extension example</h2>
+ * <pre>{@code
+ * // Option A: Config-backed reloadable set (auto-updates on reload)
+ * ReloadableSet<CustomItemWrapper> myItems = new ReloadableSet<>(
+ *         myConfig, myRoute, strings -> strings.stream()
+ *                 .map(CustomItemWrapper::new).collect(Collectors.toSet()));
+ * comboManager.registerAllowedItemSet(myItems);
+ *
+ * // Option B: Static entry (no config needed)
+ * comboManager.addAllowedItem(new CustomItemWrapper("my_custom_sword"));
+ * }</pre>
  */
 public class ComboManager extends Manager<McRPG> {
 
@@ -58,19 +84,23 @@ public class ComboManager extends Manager<McRPG> {
     private static final String EMPTY_CIRCLE = "\u25CB";
 
     private final ReloadableSet<CustomItemWrapper> allowedItems;
+    /** Third-party reloadable sets registered via {@link #registerAllowedItemSet}. Eviction: {@link #unregisterAllowedItemSet}. */
+    private final List<ReloadableSet<CustomItemWrapper>> contributedItemSets = new CopyOnWriteArrayList<>();
+    /** Individual programmatic entries registered via {@link #addAllowedItem}. Eviction: {@link #removeAllowedItem}. */
+    private final Set<CustomItemWrapper> staticAllowedItems = new CopyOnWriteArraySet<>();
 
     /**
      * @param plugin The McRPG plugin instance.
      */
     public ComboManager(@NotNull McRPG plugin) {
         super(plugin);
-        var comboConfig = plugin.registryAccess()
+        var mainConfig = plugin.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
-                .getFile(FileType.COMBO_CONFIG);
+                .getFile(FileType.MAIN_CONFIG);
         this.allowedItems = new ReloadableSet<>(
-                comboConfig,
-                ComboConfigFile.COMBO_ALLOWED_ITEMS,
+                mainConfig,
+                MainConfigFile.COMBO_ALLOWED_ITEMS,
                 strings -> strings.stream().map(CustomItemWrapper::new).collect(Collectors.toSet())
         );
         plugin.registryAccess()
@@ -153,11 +183,75 @@ public class ComboManager extends Manager<McRPG> {
     }
 
     /**
+     * Registers a third-party {@link ReloadableSet} of allowed items to be checked
+     * alongside the built-in config list. The caller owns the set's lifecycle and is
+     * responsible for registering it with the {@code ReloadableContentManager} if
+     * automatic config-reload behaviour is desired.
+     * <p>
+     * Call {@link #unregisterAllowedItemSet} during your plugin's {@code onDisable}
+     * to clean up.
+     *
+     * @param itemSet The reloadable set to contribute.
+     */
+    public void registerAllowedItemSet(@NotNull ReloadableSet<CustomItemWrapper> itemSet) {
+        contributedItemSets.add(itemSet);
+    }
+
+    /**
+     * Removes a previously registered third-party {@link ReloadableSet}.
+     * No-op if the set was not registered.
+     *
+     * @param itemSet The reloadable set to remove.
+     */
+    public void unregisterAllowedItemSet(@NotNull ReloadableSet<CustomItemWrapper> itemSet) {
+        contributedItemSets.remove(itemSet);
+    }
+
+    /**
+     * Adds a single static {@link CustomItemWrapper} to the allowed-item list.
+     * This entry is not config-backed and will not survive a server restart —
+     * third-party plugins should re-register during {@code onEnable}.
+     *
+     * @param item The item wrapper to allow.
+     */
+    public void addAllowedItem(@NotNull CustomItemWrapper item) {
+        staticAllowedItems.add(item);
+    }
+
+    /**
+     * Removes a single static {@link CustomItemWrapper} from the allowed-item list.
+     * No-op if the item was not previously added via {@link #addAllowedItem}.
+     *
+     * @param item The item wrapper to remove.
+     */
+    public void removeAllowedItem(@NotNull CustomItemWrapper item) {
+        staticAllowedItems.remove(item);
+    }
+
+    /**
+     * Returns a merged, unmodifiable snapshot of all allowed items across all three
+     * sources: the built-in config set, contributed reloadable sets, and static entries.
+     * Useful for debug output or admin commands.
+     *
+     * @return An unmodifiable set of all currently allowed {@link CustomItemWrapper}s.
+     */
+    @NotNull
+    public Set<CustomItemWrapper> getAllowedItems() {
+        Set<CustomItemWrapper> merged = new HashSet<>(allowedItems.getContent());
+        merged.addAll(staticAllowedItems);
+        for (ReloadableSet<CustomItemWrapper> contributed : contributedItemSets) {
+            merged.addAll(contributed.getContent());
+        }
+        return Collections.unmodifiableSet(merged);
+    }
+
+    /**
      * Checks whether the given item stack is permitted to initiate or continue a combo.
      * <p>
      * An empty hand ({@link Material#AIR}) is always allowed. All other items are checked
-     * against the {@code combo.allowed-items} list in {@code combo_configuration.yml},
-     * which reloads automatically on {@code /mcrpg admin reload}.
+     * against the built-in config list, any contributed {@link ReloadableSet}s registered
+     * via {@link #registerAllowedItemSet}, and any static entries added via
+     * {@link #addAllowedItem}.
      *
      * @param item The item currently held in the main hand.
      * @return {@code true} if combo input is allowed with this item.
@@ -166,7 +260,19 @@ public class ComboManager extends Manager<McRPG> {
         if (item.getType() == Material.AIR) {
             return true;
         }
-        return allowedItems.getContent().contains(new CustomItemWrapper(item));
+        CustomItemWrapper wrapper = new CustomItemWrapper(item);
+        if (allowedItems.getContent().contains(wrapper)) {
+            return true;
+        }
+        if (staticAllowedItems.contains(wrapper)) {
+            return true;
+        }
+        for (ReloadableSet<CustomItemWrapper> contributed : contributedItemSets) {
+            if (contributed.getContent().contains(wrapper)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

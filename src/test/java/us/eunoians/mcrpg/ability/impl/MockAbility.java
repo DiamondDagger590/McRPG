@@ -56,8 +56,9 @@ public class MockAbility extends BaseAbility {
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         // No-op for testing
+        return true;
     }
 
     @Override

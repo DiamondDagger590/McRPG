@@ -123,13 +123,15 @@ public final class TooManyPlants extends McRPGAbility implements PassiveAbility,
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
         TooManyPlantsActivateEvent tooManyPlantsActivateEvent = new TooManyPlantsActivateEvent(abilityHolder, 2);
         Bukkit.getPluginManager().callEvent(tooManyPlantsActivateEvent);
-        if (!tooManyPlantsActivateEvent.isCancelled()) {
-            addMultiplier(blockBreakEvent.getBlock(), tooManyPlantsActivateEvent.getDropMultiplier());
+        if (tooManyPlantsActivateEvent.isCancelled()) {
+            return false;
         }
+        addMultiplier(blockBreakEvent.getBlock(), tooManyPlantsActivateEvent.getDropMultiplier());
+        return true;
     }
 
     @NotNull

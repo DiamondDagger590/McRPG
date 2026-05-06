@@ -142,6 +142,8 @@ ability-configuration:
         cooldown: 30-(3.5*tier)
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:mass_harvest_upgrade"
+        # Mana cost formula. Variable: tier (1-based). Reference value — tuned during Phase 4 balance pass.
+        mana-cost: "60-(8*tier)"
       tier-2:
         unlock-level: 2
         upgrade-quest: "mcrpg:mass_harvest_tier2"

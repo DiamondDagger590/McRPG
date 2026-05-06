@@ -115,12 +115,39 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route EXPERIENCE_UPDATE_DISPLAY_DURATION = Route.fromString(toRoutePath(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "display-duration"));
     public static final Route MAX_LOADOUT_AMOUNT = Route.fromString(toRoutePath(LOADOUT_CONFIGURATION_HEADER, "max-loadout-amount"));
     public static final Route MAX_LOADOUT_SIZE = Route.fromString(toRoutePath(LOADOUT_CONFIGURATION_HEADER, "max-loadout-size"));
-    public static final Route MAX_ACTIVE_LOADOUT_SIZE = Route.fromString(toRoutePath(LOADOUT_CONFIGURATION_HEADER, "max-active-loadout-size"));
     public static final Route REQUIRE_EMPTY_OFF_HAND_TO_READY = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "require-empty-off-hand-to-ready"));
     public static final Route ENABLE_LEVEL_UP_PERMISSIONS = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "enable-level-up-permissions"));
     public static final Route MOB_HEALTH_BAR_ENABLED = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "mob-health-bar"));
     public static final Route MOB_HEALTH_BAR_DISPLAY_DURATION = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "health-bar-display-duration"));
     public static final Route MCMMO_CONVERSION_EQUATION = Route.fromString(toRoutePath(MCMMO_CONFIGURATION_HEADER, "conversion-equation"));
+
+    // Stats (player resource pools)
+    private static final String STATS_HEADER = "stats";
+    private static final String STATS_MANA_HEADER = toRoutePath(STATS_HEADER, "mana");
+    /** Maximum mana pool. Combo abilities consume mana on activation. */
+    public static final Route MANA_BASE_MAX = Route.fromString(toRoutePath(STATS_MANA_HEADER, "base-max"));
+    /** Passive mana regeneration rate (mana points restored per second). */
+    public static final Route MANA_REGEN_PER_SECOND = Route.fromString(toRoutePath(STATS_MANA_HEADER, "regen-per-second"));
+    /**
+     * Minimum mana cost enforced for any ability whose formula evaluates below this floor.
+     * Prevents abilities from becoming free at high tiers.
+     */
+    public static final Route MANA_MINIMUM_ABILITY_COST = Route.fromString(toRoutePath(STATS_MANA_HEADER, "minimum-ability-cost"));
+
+    // Combo activation system
+    private static final String COMBO_HEADER = toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "combo");
+    /** Items that are allowed to register combo inputs. An empty hand always counts. */
+    public static final Route COMBO_ALLOWED_ITEMS = Route.fromString(toRoutePath(COMBO_HEADER, "allowed-items"));
+    private static final String COMBO_TIMING_HEADER = toRoutePath(COMBO_HEADER, "timing");
+    /** Server ticks to wait for the next input before resetting the combo sequence. */
+    public static final Route COMBO_TIMING_WINDOW_TICKS = Route.fromString(toRoutePath(COMBO_TIMING_HEADER, "window-ticks"));
+    private static final String COMBO_FAILURE_HEADER = toRoutePath(COMBO_HEADER, "failure-feedback");
+    /** Sound played when a combo fails (insufficient mana or cooldown). */
+    public static final Route COMBO_FAILURE_SOUND = Route.fromString(toRoutePath(COMBO_FAILURE_HEADER, "sound"));
+    /** Volume of the failure sound. */
+    public static final Route COMBO_FAILURE_SOUND_VOLUME = Route.fromString(toRoutePath(COMBO_FAILURE_HEADER, "volume"));
+    /** Pitch of the failure sound. */
+    public static final Route COMBO_FAILURE_SOUND_PITCH = Route.fromString(toRoutePath(COMBO_FAILURE_HEADER, "pitch"));
 
     // Statistics
     private static final String STATISTICS_HEADER = toRoutePath(CONFIGURATION_HEADER, "statistics");

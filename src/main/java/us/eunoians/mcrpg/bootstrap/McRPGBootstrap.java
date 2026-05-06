@@ -48,7 +48,8 @@ import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
-import us.eunoians.mcrpg.stat.StatManager;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 import us.eunoians.mcrpg.world.WorldManager;
 
 import java.sql.Connection;
@@ -90,12 +91,12 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new RewardDistributionTypeRegistry());
         registryAccess.register(new ScopedBoardAdapterRegistry());
         registryAccess.register(new TemplateConditionRegistry());
+        registryAccess.register(new PlayerStatRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
         new McRPGExpansionRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadQuestDefinitions();
         registryAccess.registry(RegistryKey.MANAGER).register(new GlowingManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new EntityManager(mcRPG));
-        registryAccess.registry(RegistryKey.MANAGER).register(new StatManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new McRPGPlayerManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new DisplayManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestBoardManager(mcRPG));

@@ -87,7 +87,6 @@ public class LoadoutTest extends McRPGBaseTest {
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(entityManager);
         AbilityAttributeRegistry abilityAttributeRegistry = new AbilityAttributeRegistry();
         RegistryAccess.registryAccess().register(abilityAttributeRegistry);
-        when(mainConfig.getInt(MainConfigFile.MAX_ACTIVE_LOADOUT_SIZE, 3)).thenReturn(3);
         when(mainConfig.getStringList(MainConfigFile.DISABLED_WORLDS)).thenReturn(List.of(""));
         WorldManager worldManager = spy(new WorldManager(mcRPG));
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(worldManager);

@@ -56,7 +56,7 @@ public final class EnhancedBleed extends McRPGAbility implements ConfigurableTie
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BleedActivateEvent bleedActivateEvent = (BleedActivateEvent) event;
         int currentTier = getCurrentAbilityTier(abilityHolder);
         int baseDamageIncrease = getBaseBleedDamageIncrease(currentTier);
@@ -67,9 +67,11 @@ public final class EnhancedBleed extends McRPGAbility implements ConfigurableTie
         EnhancedBleedActivateEvent enhancedBleedActivateEvent = new EnhancedBleedActivateEvent(abilityHolder, bleedActivateEvent.getBleedingEntity(), totalDamage);
         Bukkit.getPluginManager().callEvent(enhancedBleedActivateEvent);
 
-        if (!enhancedBleedActivateEvent.isCancelled()) {
-            bleedActivateEvent.setBleedDamage(bleedActivateEvent.getBleedDamage() + enhancedBleedActivateEvent.getAdditionalBleedDamage());
+        if (enhancedBleedActivateEvent.isCancelled()) {
+            return false;
         }
+        bleedActivateEvent.setBleedDamage(bleedActivateEvent.getBleedDamage() + enhancedBleedActivateEvent.getAdditionalBleedDamage());
+        return true;
     }
 
     @NotNull

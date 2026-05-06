@@ -98,12 +98,16 @@ public interface Ability extends McRPGContent {
     /**
      * Activates this ability for the given {@link AbilityHolder} with the provided {@link Event} being the trigger.
      * <p>
-     * This method should not be used to determine if an ability activates or not. Instead, ensure that {@link us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent}s are used.
+     * This method should not be used to determine if an ability activates or not. Instead, ensure that
+     * {@link us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent}s are used.
      *
-     * @param abilityHolder The {@link AbilityHolder} that is activating the ability
+     * @param abilityHolder The {@link AbilityHolder} that is activating the ability.
      * @param event         The {@link Event} that triggered this ability.
+     * @return {@code true} if the activation completed (or was never cancellable),
+     *         {@code false} if the ability's internal Bukkit event was cancelled — the caller
+     *         should refund mana when this returns {@code false}.
      */
-    void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event);
+    boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event);
 
     /**
      * Checks to see if this ability is enabled.

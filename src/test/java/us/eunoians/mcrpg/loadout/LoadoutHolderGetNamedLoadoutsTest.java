@@ -53,7 +53,6 @@ public class LoadoutHolderGetNamedLoadoutsTest extends McRPGBaseTest {
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mainConfig);
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(MAX_SLOTS);
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_ACTIVE_LOADOUT_SIZE, 3)).thenReturn(3);
         when(mainConfig.getStringList(MainConfigFile.DISABLED_WORLDS)).thenReturn(List.of(""));
 
         AbilityRegistry abilityRegistry = new AbilityRegistry(mcRPG);

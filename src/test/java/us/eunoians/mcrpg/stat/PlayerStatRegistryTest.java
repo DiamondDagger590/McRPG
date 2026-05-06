@@ -5,24 +5,25 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.stat.impl.ResourcePoolPlayerStat;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class CombatStatRegistryTest extends McRPGBaseTest {
+class PlayerStatRegistryTest extends McRPGBaseTest {
 
-    private CombatStatRegistry registry;
+    private PlayerStatRegistry registry;
 
     @BeforeEach
     void setUp() {
-        registry = new CombatStatRegistry();
+        registry = new PlayerStatRegistry();
     }
 
     @DisplayName("Register and retrieve a stat by key")
     @Test
     void registerAndRetrieve() {
-        CombatStat stat = new ResourcePoolCombatStat(
+        PlayerStat stat = new ResourcePoolPlayerStat(
                 new NamespacedKey("test", "hp"), "HP", "❤", 200, 0
         );
         registry.register(stat);
@@ -35,7 +36,7 @@ class CombatStatRegistryTest extends McRPGBaseTest {
     @DisplayName("Duplicate registration throws")
     @Test
     void duplicateThrows() {
-        CombatStat stat = new ResourcePoolCombatStat(
+        PlayerStat stat = new ResourcePoolPlayerStat(
                 new NamespacedKey("test", "hp"), "HP", "❤", 200, 0
         );
         registry.register(stat);
@@ -51,10 +52,10 @@ class CombatStatRegistryTest extends McRPGBaseTest {
     @DisplayName("allStats returns all registered stats")
     @Test
     void allStatsReturnsAll() {
-        registry.register(new ResourcePoolCombatStat(
+        registry.register(new ResourcePoolPlayerStat(
                 new NamespacedKey("test", "hp"), "HP", "❤", 200, 0
         ));
-        registry.register(new ResourcePoolCombatStat(
+        registry.register(new ResourcePoolPlayerStat(
                 new NamespacedKey("test", "mana"), "Mana", "✦", 100, 5
         ));
         assertEquals(2, registry.allStats().size());

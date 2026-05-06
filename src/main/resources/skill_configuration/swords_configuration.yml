@@ -338,6 +338,8 @@ ability-configuration:
         upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:rage_spike_upgrade"
+        # Mana cost formula. Variable: tier (1-based). Reference value — tuned during Phase 4 balance pass.
+        mana-cost: "50-(7*tier)"
       tier-1:
         unlock-level: 1
         cooldown: 10

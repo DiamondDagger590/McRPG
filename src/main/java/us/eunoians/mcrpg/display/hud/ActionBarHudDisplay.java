@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.display.hud;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -13,9 +12,9 @@ import us.eunoians.mcrpg.display.impl.TickablePlayerDisplay;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.display.ActionBarSlotClearEvent;
 import us.eunoians.mcrpg.event.display.ActionBarSlotSetEvent;
-import us.eunoians.mcrpg.stat.CombatStatInstance;
-import us.eunoians.mcrpg.stat.McRPGCombatStat;
-import us.eunoians.mcrpg.stat.PlayerCombatData;
+import us.eunoians.mcrpg.stat.McRPGPlayerStat;
+import us.eunoians.mcrpg.stat.instance.PlayerStatData;
+import us.eunoians.mcrpg.stat.instance.PlayerStatInstance;
 
 import java.util.Collections;
 import java.util.Comparator;
@@ -158,21 +157,26 @@ public class ActionBarHudDisplay extends PlayerDisplay implements TickablePlayer
             return;
         }
         Player player = playerOpt.get();
-        PlayerCombatData combatData = mcRPGPlayer.getPlayerCombatData();
-        combatData.tickRegen(secondsElapsed);
+        PlayerStatData statData = mcRPGPlayer.getPlayerStatData();
+        statData.tickRegen(secondsElapsed);
 
         ActionBarCenterContent winner = drainToWinner(currentTick);
         Component center = (winner != null) ? winner.render(currentTick).orElse(null) : null;
 
         if (renderer.isPersistentPoolDisplayEnabled()) {
-            int healthMax = getStatMax(combatData, McRPGCombatStat.HEALTH_KEY);
-            int healthCurrent = computeScaledHealth(player, healthMax);
-            int manaCurrent = getStatCurrent(combatData, McRPGCombatStat.MANA_KEY);
-            int manaMax = getStatMax(combatData, McRPGCombatStat.MANA_KEY);
+            int healthCurrent = (int) Math.round(player.getHealth());
+            int healthMax = (int) Math.round(
+                    player.getAttribute(Attribute.MAX_HEALTH) != null
+                            ? player.getAttribute(Attribute.MAX_HEALTH).getValue()
+                            : 20);
+            String healthSymbol = getDisplaySymbol(statData, McRPGPlayerStat.HEALTH, "❤");
+            int manaCurrent = getStatCurrent(statData, McRPGPlayerStat.MANA);
+            int manaMax = getStatMax(statData, McRPGPlayerStat.MANA);
+            String manaSymbol = getDisplaySymbol(statData, McRPGPlayerStat.MANA, "✦");
             int centerWidth = (winner != null) ? winner.getPixelWidth(renderer.getFontWidthTable(), currentTick) : 0;
             Component hud = renderer.buildFull(
-                    healthCurrent, healthMax, McRPGCombatStat.HEALTH.getDisplaySymbol(),
-                    manaCurrent, manaMax, McRPGCombatStat.MANA.getDisplaySymbol(),
+                    healthCurrent, healthMax, healthSymbol,
+                    manaCurrent, manaMax, manaSymbol,
                     center, centerWidth
             );
             send(player, hud);
@@ -197,24 +201,49 @@ public class ActionBarHudDisplay extends PlayerDisplay implements TickablePlayer
         audience.sendActionBar(component);
     }
 
-    private int computeScaledHealth(@NotNull Player player, int customMax) {
-        double vanillaHealth = player.getHealth();
-        var maxAttribute = player.getAttribute(Attribute.MAX_HEALTH);
-        double vanillaMax = maxAttribute != null ? maxAttribute.getValue() : 0;
-        double healthPercent = (vanillaMax > 0) ? (vanillaHealth / vanillaMax) : 0;
-        return (int) Math.round(healthPercent * customMax);
+    /**
+     * Returns the display symbol from the stat's registered definition using the
+     * player's locale, falling back to {@code fallback} if the stat is not present
+     * in the player's stat data.
+     *
+     * @param statData The player stat data container.
+     * @param stat     The built-in stat enum entry to look up.
+     * @param fallback The fallback symbol if the stat is absent.
+     * @return The display symbol.
+     */
+    @NotNull
+    private String getDisplaySymbol(@NotNull PlayerStatData statData,
+                                     @NotNull McRPGPlayerStat stat,
+                                     @NotNull String fallback) {
+        return statData.getInstance(stat.getKey())
+                .map(instance -> instance.getDefinition().getDisplaySymbol(getMcRPGPlayer()))
+                .orElse(fallback);
     }
 
-    private int getStatMax(@NotNull PlayerCombatData combatData, @NotNull NamespacedKey key) {
-        return combatData.getInstance(key)
-                .map(CombatStatInstance::getEffectiveMax)
+    /**
+     * Returns the effective maximum for the given resource-pool stat, rounded to int.
+     *
+     * @param statData The player stat data container.
+     * @param stat     The built-in stat enum entry to look up.
+     * @return The rounded effective max, or 0 if absent.
+     */
+    private int getStatMax(@NotNull PlayerStatData statData, @NotNull McRPGPlayerStat stat) {
+        return statData.getInstance(stat.getKey())
+                .map(PlayerStatInstance::getEffectiveMax)
                 .map(d -> (int) Math.round(d))
                 .orElse(0);
     }
 
-    private int getStatCurrent(@NotNull PlayerCombatData combatData, @NotNull NamespacedKey key) {
-        return combatData.getInstance(key)
-                .map(CombatStatInstance::getCurrent)
+    /**
+     * Returns the current value for the given resource-pool stat, rounded to int.
+     *
+     * @param statData The player stat data container.
+     * @param stat     The built-in stat enum entry to look up.
+     * @return The rounded current value, or 0 if absent.
+     */
+    private int getStatCurrent(@NotNull PlayerStatData statData, @NotNull McRPGPlayerStat stat) {
+        return statData.getInstance(stat.getKey())
+                .map(PlayerStatInstance::getCurrent)
                 .map(d -> (int) Math.round(d))
                 .orElse(0);
     }

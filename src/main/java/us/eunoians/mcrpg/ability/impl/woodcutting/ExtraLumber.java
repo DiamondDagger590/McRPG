@@ -97,13 +97,15 @@ public class ExtraLumber extends McRPGAbility implements PassiveAbility,
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
         ExtraLumberActivateEvent extraLumberActivateEvent = new ExtraLumberActivateEvent(abilityHolder, 2);
         Bukkit.getPluginManager().callEvent(extraLumberActivateEvent);
-        if (!extraLumberActivateEvent.isCancelled()) {
-            addMultiplier(blockBreakEvent.getBlock(), extraLumberActivateEvent.getDropMultiplier());
+        if (extraLumberActivateEvent.isCancelled()) {
+            return false;
         }
+        addMultiplier(blockBreakEvent.getBlock(), extraLumberActivateEvent.getDropMultiplier());
+        return true;
     }
 
     @NotNull

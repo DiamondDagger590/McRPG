@@ -8,6 +8,14 @@ locale: en
 config-version: 1
 # Configure ability placeholders, display items and other text/items.
 ability:
+  # Mana feedback messages sent to the player when an ability cannot be activated.
+  mana-feedback:
+    # Sent when the player does not have enough mana to activate an ability.
+    # Placeholders: <ability> (ability name), <cost> (required mana), <current> (current mana)
+    insufficient: "<red>Not enough mana to use <ability>! <gray>(need <cost>, have <current>)"
+    # Sent when the player attempts to activate an ability that is on cooldown.
+    # Placeholders: <ability> (ability name), <remaining> (seconds remaining)
+    cooldown-active: "<red><ability> is on cooldown! <gray>(<remaining>s remaining)"
   # Configure messages relating to abilities that can be on cooldown
   cooldown:
     # The message to send to the player when they try to use an ability still on cooldown

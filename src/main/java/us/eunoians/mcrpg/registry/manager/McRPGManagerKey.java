@@ -16,7 +16,6 @@ import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.board.QuestBoardManager;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
-import us.eunoians.mcrpg.stat.StatManager;
 import us.eunoians.mcrpg.statistic.McRPGStatisticCacheManager;
 import us.eunoians.mcrpg.world.WorldManager;
 
@@ -46,7 +45,6 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
     ManagerKey<GlowingManager> GLOWING = create(GlowingManager.class);
     ManagerKey<QuestBoardManager> QUEST_BOARD = create(QuestBoardManager.class);
     ManagerKey<ComboManager> COMBO = create(ComboManager.class);
-    ManagerKey<StatManager> STAT = create(StatManager.class);
     /** Retrieves the {@link McRPGStatisticCacheManager} used to cache offline player statistic lookups. */
     ManagerKey<McRPGStatisticCacheManager> STATISTIC_CACHE = create(McRPGStatisticCacheManager.class);
 }

@@ -1,0 +1,8 @@
+locale: en
+stat:
+  health:
+    display-name: "Health"
+    display-symbol: "❤"
+  mana:
+    display-name: "Mana"
+    display-symbol: "✦"

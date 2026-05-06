@@ -79,14 +79,14 @@ public final class InstantIrrigation extends McRPGAbility implements PassiveAbil
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
         blockBreakEvent.setCancelled(true);
         Block block = blockBreakEvent.getBlock();
         InstantIrrigationActivateEvent instantIrrigationActivateEvent = new InstantIrrigationActivateEvent(abilityHolder, block);
         Bukkit.getPluginManager().callEvent(instantIrrigationActivateEvent);
         if (instantIrrigationActivateEvent.isCancelled()) {
-            return;
+            return false;
         }
         block.setType(Material.WATER);
         block.getWorld().playSound(block.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.5f, 1);
@@ -98,6 +98,7 @@ public final class InstantIrrigation extends McRPGAbility implements PassiveAbil
             Player player = mcRPGPlayer.getAsBukkitPlayer().orElseThrow(IllegalStateException::new);
             player.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.INSTANT_IRRIGATION_ACTIVATION_NOTIFICATION, Map.of("cooldown", Long.toString(cooldown))));
         });
+        return true;
     }
 
     @Override

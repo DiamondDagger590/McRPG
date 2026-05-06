@@ -80,13 +80,15 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event;
         Location locationToDrop = blockBreakEvent.getBlock().getLocation();
         DryadsGiftActivateEvent dryadsGiftActivateEvent = new DryadsGiftActivateEvent(abilityHolder, getExperienceToDrop(getCurrentAbilityTier(abilityHolder)));
-        if (!dryadsGiftActivateEvent.isCancelled()) {
-            (locationToDrop.getWorld().spawn(locationToDrop, ExperienceOrb.class)).setExperience(dryadsGiftActivateEvent.getExperienceToDrop());
+        if (dryadsGiftActivateEvent.isCancelled()) {
+            return false;
         }
+        (locationToDrop.getWorld().spawn(locationToDrop, ExperienceOrb.class)).setExperience(dryadsGiftActivateEvent.getExperienceToDrop());
+        return true;
     }
 
     @NotNull

@@ -54,14 +54,16 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         BleedActivateEvent bleedActivateEvent = (BleedActivateEvent) event;
         DeeperWoundActivateEvent deeperWoundActivateEvent = new DeeperWoundActivateEvent(abilityHolder, bleedActivateEvent.getBleedingEntity(), getAdditionalBleedCycles(getCurrentAbilityTier(abilityHolder)));
         Bukkit.getPluginManager().callEvent(deeperWoundActivateEvent);
 
-        if (!deeperWoundActivateEvent.isCancelled()) {
-            bleedActivateEvent.setBleedCycles(bleedActivateEvent.getBleedCycles() + deeperWoundActivateEvent.getAdditionalBleedCycles());
+        if (deeperWoundActivateEvent.isCancelled()) {
+            return false;
         }
+        bleedActivateEvent.setBleedCycles(bleedActivateEvent.getBleedCycles() + deeperWoundActivateEvent.getAdditionalBleedCycles());
+        return true;
     }
 
     @Override

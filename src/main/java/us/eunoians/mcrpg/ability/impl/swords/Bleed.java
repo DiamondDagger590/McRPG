@@ -68,7 +68,7 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         //This is the only event that can activate this ability, so this should be a safe cast
         EntityDamageByEntityEvent entityDamageByEntityEvent = (EntityDamageByEntityEvent) event;
         LivingEntity livingEntity = (LivingEntity) entityDamageByEntityEvent.getEntity();
@@ -76,9 +76,11 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
         BleedActivateEvent bleedActivateEvent = new BleedActivateEvent(abilityHolder, livingEntity, swordsConfig.getInt(SwordsConfigFile.BLEED_BASE_CYCLES), swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_DAMAGE));
         Bukkit.getPluginManager().callEvent(bleedActivateEvent);
 
-        if(!bleedActivateEvent.isCancelled()) {
-            getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.BLEED).startBleeding(abilityHolder, livingEntity, bleedActivateEvent.getBleedCycles(), bleedActivateEvent.getBleedDamage());
+        if (bleedActivateEvent.isCancelled()) {
+            return false;
         }
+        getPlugin().registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.BLEED).startBleeding(abilityHolder, livingEntity, bleedActivateEvent.getBleedCycles(), bleedActivateEvent.getBleedDamage());
+        return true;
     }
 
     @NotNull

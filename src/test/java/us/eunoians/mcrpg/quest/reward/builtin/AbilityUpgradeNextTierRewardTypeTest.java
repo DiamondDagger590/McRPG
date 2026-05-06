@@ -287,7 +287,8 @@ public class AbilityUpgradeNextTierRewardTypeTest extends McRPGBaseTest {
         }
 
         @Override
-        public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+            return true;
         }
 
         @Override

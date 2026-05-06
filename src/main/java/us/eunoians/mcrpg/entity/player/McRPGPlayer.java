@@ -26,6 +26,7 @@ import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoadoutSelectionDAO;
 import us.eunoians.mcrpg.database.table.PlayerLoginTimeDAO;
+import us.eunoians.mcrpg.database.table.PlayerStatDAO;
 import us.eunoians.mcrpg.database.table.SkillDAO;
 import us.eunoians.mcrpg.entity.holder.QuestHolder;
 import us.eunoians.mcrpg.quest.QuestManager;
@@ -34,19 +35,24 @@ import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.event.entity.player.PlayerSafeZoneStateChangeEvent;
 import us.eunoians.mcrpg.external.common.SafeZonePluginHook;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.stat.PlayerStat;
+import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;
-import us.eunoians.mcrpg.stat.PlayerCombatData;
+import us.eunoians.mcrpg.stat.instance.PlayerStatData;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 /**
@@ -60,7 +66,7 @@ public class McRPGPlayer extends CorePlayer {
     private final SkillHolder skillHolder;
     private final QuestHolder questHolder;
     private final PlayerExperienceExtras playerExperienceExtras;
-    private final PlayerCombatData playerCombatData;
+    private final PlayerStatData playerStatData;
     private final PlayerComboState comboState = new PlayerComboState();
     private final Map<Class<? extends PlayerDisplay>, PlayerDisplay> displays = new HashMap<>();
     private boolean standingInSafeZone;
@@ -70,7 +76,7 @@ public class McRPGPlayer extends CorePlayer {
         this.skillHolder = new SkillHolder(mcRPG, getUUID());
         this.questHolder = new QuestHolder(getUUID());
         this.playerExperienceExtras = new PlayerExperienceExtras();
-        this.playerCombatData = initCombatData(mcRPG);
+        this.playerStatData = new PlayerStatData();
         this.standingInSafeZone = false;
     }
 
@@ -79,28 +85,8 @@ public class McRPGPlayer extends CorePlayer {
         this.skillHolder = new SkillHolder(mcRPG, getUUID());
         this.questHolder = new QuestHolder(getUUID());
         this.playerExperienceExtras = new PlayerExperienceExtras();
-        this.playerCombatData = initCombatData(mcRPG);
+        this.playerStatData = new PlayerStatData();
         this.standingInSafeZone = false;
-    }
-
-    /**
-     * Builds the initial {@link PlayerCombatData} for this player by looking up
-     * the {@link us.eunoians.mcrpg.stat.StatManager} via the manager registry and
-     * applying config-driven base stat overrides. Returns an empty container if
-     * either the stat manager or the combo config is not registered yet
-     * (primarily a defensive path for non-PROD startup profiles).
-     *
-     * @param mcRPG The McRPG plugin instance.
-     * @return A fully initialized {@link PlayerCombatData} for this player.
-     */
-    @NotNull
-    private PlayerCombatData initCombatData(@NotNull McRPG mcRPG) {
-        var managerRegistry = mcRPG.registryAccess().registry(RegistryKey.MANAGER);
-        if (!managerRegistry.registered(McRPGManagerKey.STAT) || !managerRegistry.registered(McRPGManagerKey.FILE)) {
-            return new PlayerCombatData();
-        }
-        var comboConfig = managerRegistry.manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG);
-        return managerRegistry.manager(McRPGManagerKey.STAT).createPlayerCombatData(comboConfig);
     }
 
     @Override
@@ -213,14 +199,14 @@ public class McRPGPlayer extends CorePlayer {
     }
 
     /**
-     * Gets the {@link PlayerCombatData} for this player, containing all combat stat
+     * Gets the {@link PlayerStatData} for this player, containing all player stat
      * instances (HP, Mana, etc.).
      *
-     * @return The {@link PlayerCombatData} for this player.
+     * @return The {@link PlayerStatData} for this player.
      */
     @NotNull
-    public PlayerCombatData getPlayerCombatData() {
-        return playerCombatData;
+    public PlayerStatData getPlayerStatData() {
+        return playerStatData;
     }
 
     /**
@@ -408,6 +394,26 @@ public class McRPGPlayer extends CorePlayer {
             statisticTransaction.addAll(PlayerStatisticDAO.savePlayerStatistics(connection, getUUID(), modifiedEntries));
             statisticTransaction.executeTransaction();
             getStatisticData().markClean(modifiedEntries.keySet());
+        }
+
+        // Save resource pool stats (mana, etc.) — only persist pools that have a regen component
+        // since flat stats don't have a meaningful current/persisted value.
+        PlayerStatRegistry statRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.PLAYER_STAT);
+        Map<org.bukkit.NamespacedKey, Double> statsToSave = new LinkedHashMap<>();
+        for (PlayerStat stat : statRegistry.allStats()) {
+            if (stat.isResourcePool()) {
+                playerStatData.getInstance(stat.getKey())
+                        .ifPresent(instance -> statsToSave.put(stat.getKey(), instance.getCurrent()));
+            }
+        }
+        if (!statsToSave.isEmpty()) {
+            try {
+                FailSafeTransaction statTransaction = new FailSafeTransaction(connection);
+                statTransaction.addAll(PlayerStatDAO.saveStats(connection, getUUID(), statsToSave));
+                statTransaction.executeTransaction();
+            } catch (SQLException e) {
+                getPlugin().getLogger().log(Level.SEVERE, "Failed to save player stats for " + getUUID(), e);
+            }
         }
     }
 

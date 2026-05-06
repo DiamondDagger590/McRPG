@@ -21,7 +21,7 @@ public enum BundledLocale {
     /**
      * The English locale files bundled with McRPG.
      */
-    ENGLISH("english", "en.yml", "en_commands.yml", "en_gui.yml", "en_abilities.yml", "en_skills.yml", "en_quest.yml"),
+    ENGLISH("english", "en.yml", "en_commands.yml", "en_gui.yml", "en_abilities.yml", "en_skills.yml", "en_quest.yml", "en_stats.yml"),
     ;
 
     private final String folderName;

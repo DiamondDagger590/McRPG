@@ -23,7 +23,6 @@ import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
-import us.eunoians.mcrpg.configuration.file.combo.ComboConfigFile;
 import us.eunoians.mcrpg.ability.ready.HerbalismReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -123,28 +122,26 @@ public final class MassHarvest extends McRPGAbility implements ConfigurableActiv
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
         Player player = playerInteractEvent.getPlayer();
         McRPGPlayer mcRPGPlayer = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId()).orElseThrow(IllegalStateException::new);
         abilityHolder.unreadyHolder();
-        if (performHarvest(abilityHolder, mcRPGPlayer)) {
+        boolean activated = performHarvest(abilityHolder, mcRPGPlayer);
+        if (activated) {
             putHolderOnCooldown(abilityHolder);
         }
+        return activated;
     }
 
     @Override
-    public void comboActivate(@NotNull AbilityHolder abilityHolder) {
-        RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER)
-                .getPlayer(abilityHolder.getUUID())
-                .ifPresent(mcRPGPlayer -> performHarvest(abilityHolder, mcRPGPlayer));
-    }
-
-    @Override
-    public int getManaCost(@NotNull AbilityHolder abilityHolder) {
-        return getPlugin().registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBO_CONFIG)
-                .getInt(ComboConfigFile.MASS_HARVEST_MANA_COST, 40);
+    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
+        var playerOpt = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER)
+                .getPlayer(abilityHolder.getUUID());
+        if (playerOpt.isPresent()) {
+            return performHarvest(abilityHolder, playerOpt.get());
+        }
+        return true;
     }
 
     /**

@@ -60,13 +60,15 @@ public final class ItsATriple extends McRPGAbility implements PassiveAbility, Co
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         ExtraOreActivateEvent extraOreActivateEvent = (ExtraOreActivateEvent) event;
         ItsATripleActivateEvent itsATripleActivateEvent = new ItsATripleActivateEvent(abilityHolder);
         Bukkit.getPluginManager().callEvent(itsATripleActivateEvent);
-        if (!itsATripleActivateEvent.isCancelled()) {
-            extraOreActivateEvent.setDropMultiplier(3);
+        if (itsATripleActivateEvent.isCancelled()) {
+            return false;
         }
+        extraOreActivateEvent.setDropMultiplier(3);
+        return true;
     }
 
     @NotNull

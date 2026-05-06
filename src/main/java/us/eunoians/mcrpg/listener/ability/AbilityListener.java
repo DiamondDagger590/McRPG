@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.listener.ability;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -8,19 +9,26 @@ import org.bukkit.event.Event;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
+import us.eunoians.mcrpg.ability.impl.type.ManaAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.entity.EntityManager;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.stat.PlayerStatConsumeEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.RequireEmptyOffhandSetting;
+import us.eunoians.mcrpg.stat.McRPGPlayerStat;
+import us.eunoians.mcrpg.stat.instance.PlayerStatInstance;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -35,9 +43,12 @@ import java.util.UUID;
 public interface AbilityListener extends Listener {
 
     /**
-     * Goes through a list of all valid {@link Ability Abilities}
-     * for an {@link us.eunoians.mcrpg.entity.holder.AbilityHolder} that maps to the provided {@link UUID} while
+     * Goes through a list of all valid {@link us.eunoians.mcrpg.ability.Ability Abilities}
+     * for an {@link AbilityHolder} that maps to the provided {@link UUID} while
      * checking for activation logic and finally activating said abilities.
+     * <p>
+     * For {@link ManaAbility} instances the method gates activation on available mana,
+     * refunding it if the ability's internal event was cancelled.
      *
      * @param uuid  The {@link UUID} of the user involved in this event
      * @param event The {@link Event} to activate from
@@ -48,7 +59,6 @@ public interface AbilityListener extends Listener {
         AbilityRegistry abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
 
         entityManager.getAbilityHolder(uuid).ifPresent(abilityHolder -> {
-            // Validate that the holder currently can use McRPG
             if (!mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isMcRPGEnabledForHolder(abilityHolder)) {
                 return;
             }
@@ -62,19 +72,57 @@ public interface AbilityListener extends Listener {
              */
             Set<NamespacedKey> allAbilities = abilityHolder instanceof LoadoutHolder loadoutHolder ?
                     loadoutHolder.getAvailableAbilitiesToUse() : abilityHolder.getAvailableAbilities();
-            //We can do this safely because we assume that the only abilities in the loadout are registered ones.
-            allAbilities.stream()
-                    .map(ability -> (BaseAbility) abilityRegistry.getRegisteredAbility(ability))
-                    .filter(ability -> ability.canEventActivateAbility(event))
-                    .filter(ability -> ability.checkIfComponentFailsActivation(abilityHolder, event).isEmpty())
-                    .filter(ability -> !(ability instanceof CooldownableAbility cooldownableAbility) || !cooldownableAbility.isAbilityOnCooldown(abilityHolder))
-                    .forEach(ability -> ability.activateAbility(abilityHolder, event));
+
+            List<BaseAbility> eligible = new ArrayList<>();
+            for (NamespacedKey key : allAbilities) {
+                BaseAbility ability = (BaseAbility) abilityRegistry.getRegisteredAbility(key);
+                if (!ability.canEventActivateAbility(event)) {
+                    continue;
+                }
+                if (!ability.checkIfComponentFailsActivation(abilityHolder, event).isEmpty()) {
+                    continue;
+                }
+                if (ability instanceof CooldownableAbility cooldownable && cooldownable.isAbilityOnCooldown(abilityHolder)) {
+                    continue;
+                }
+                eligible.add(ability);
+            }
+
+            for (BaseAbility ability : eligible) {
+                if (ability instanceof ManaAbility manaAbility) {
+                    int cost = manaAbility.getManaCost(abilityHolder);
+                    Optional<PlayerStatInstance> manaInstanceOpt = getManaInstance(abilityHolder);
+                    if (manaInstanceOpt.isEmpty()) {
+                        continue;
+                    }
+                    PlayerStatInstance manaInstance = manaInstanceOpt.get();
+                    if (manaInstance.getCurrent() < cost) {
+                        continue;
+                    }
+                    PlayerStatConsumeEvent consumeEvent = new PlayerStatConsumeEvent(
+                            abilityHolder, McRPGPlayerStat.MANA.getKey(), cost);
+                    Bukkit.getPluginManager().callEvent(consumeEvent);
+                    if (consumeEvent.isCancelled()) {
+                        continue;
+                    }
+                    double effectiveCost = consumeEvent.getEffectiveAmount();
+                    if (!manaInstance.consume(effectiveCost)) {
+                        continue;
+                    }
+                    boolean activated = ability.activateAbility(abilityHolder, event);
+                    if (!activated) {
+                        manaInstance.restore(effectiveCost);
+                    }
+                } else {
+                    ability.activateAbility(abilityHolder, event);
+                }
+            }
         });
     }
 
     /**
-     * Goes through a list of all valid {@link Ability Abilities}
-     * for an {@link us.eunoians.mcrpg.entity.holder.AbilityHolder} that maps to the provided {@link UUID} while
+     * Goes through a list of all valid {@link us.eunoians.mcrpg.ability.Ability Abilities}
+     * for an {@link AbilityHolder} that maps to the provided {@link UUID} while
      * checking for ready logic and finally readying said abilities.
      *
      * @param uuid  The {@link UUID} of the user involved in this event
@@ -86,7 +134,6 @@ public interface AbilityListener extends Listener {
         AbilityRegistry abilityRegistry = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
 
         entityManager.getAbilityHolder(uuid).ifPresent(abilityHolder -> {
-            // Validate that the holder currently can use McRPG
             if (!mcRPG.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.WORLD).isMcRPGEnabledForHolder(abilityHolder)) {
                 return;
             }
@@ -131,5 +178,24 @@ public interface AbilityListener extends Listener {
                     .map(ability -> (ReadyAbility) ability)
                     .forEach(abilityHolder::readyAbility);
         });
+    }
+
+    /**
+     * Retrieves the mana {@link PlayerStatInstance} for the given holder, if present.
+     * Looks up the corresponding {@link McRPGPlayer} via the player manager since
+     * {@link AbilityHolder} is a collaborator object, not a supertype of {@link McRPGPlayer}.
+     *
+     * @param abilityHolder The {@link AbilityHolder} to look up.
+     * @return An {@link Optional} containing the mana instance, or empty if the holder has no stat data.
+     */
+    @NotNull
+    private static Optional<PlayerStatInstance> getManaInstance(@NotNull AbilityHolder abilityHolder) {
+        return McRPG.getInstance()
+                .registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER)
+                .getPlayer(abilityHolder.getUUID())
+                .map(mcRPGPlayer -> mcRPGPlayer.getPlayerStatData().getInstance(McRPGPlayerStat.MANA.getKey()))
+                .flatMap(opt -> opt);
     }
 }
