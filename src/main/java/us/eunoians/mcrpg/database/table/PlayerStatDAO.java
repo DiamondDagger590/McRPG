@@ -14,8 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import us.eunoians.mcrpg.McRPG;
+
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * DAO for persisting per-player resource pool stat values (e.g. mana, health).
@@ -63,7 +64,7 @@ public final class PlayerStatDAO {
             statement.executeUpdate();
             return true;
         } catch (SQLException e) {
-            Logger.getLogger(PlayerStatDAO.class.getName()).log(Level.SEVERE, "Failed to create table " + TABLE_NAME, e);
+            McRPG.getInstance().getLogger().log(Level.SEVERE, "Failed to create table " + TABLE_NAME, e);
             return false;
         }
     }
@@ -147,7 +148,7 @@ public final class PlayerStatDAO {
                 }
             }
         } catch (SQLException e) {
-            Logger.getLogger(PlayerStatDAO.class.getName()).log(Level.SEVERE, "Failed to load stat " + statKey + " for " + playerUUID, e);
+            McRPG.getInstance().getLogger().log(Level.SEVERE, "Failed to load stat " + statKey + " for " + playerUUID, e);
         }
         return Optional.empty();
     }
@@ -176,7 +177,7 @@ public final class PlayerStatDAO {
                 }
             }
         } catch (SQLException e) {
-            Logger.getLogger(PlayerStatDAO.class.getName()).log(Level.SEVERE, "Failed to load stats for " + playerUUID, e);
+            McRPG.getInstance().getLogger().log(Level.SEVERE, "Failed to load stats for " + playerUUID, e);
         }
         return result;
     }

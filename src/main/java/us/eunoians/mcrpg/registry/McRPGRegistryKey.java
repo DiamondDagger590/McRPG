@@ -47,5 +47,18 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
     RegistryKey<RewardDistributionTypeRegistry> REWARD_DISTRIBUTION_TYPE = create(RewardDistributionTypeRegistry.class);
     RegistryKey<ScopedBoardAdapterRegistry> SCOPED_BOARD_ADAPTER = create(ScopedBoardAdapterRegistry.class);
     RegistryKey<TemplateConditionRegistry> TEMPLATE_CONDITION = create(TemplateConditionRegistry.class);
+    /**
+     * Retrieves the {@link PlayerStatRegistry} containing all registered
+     * {@link us.eunoians.mcrpg.stat.PlayerStat} definitions.
+     * <p>
+     * Safe operations: {@link PlayerStatRegistry#register(us.eunoians.mcrpg.stat.PlayerStat)},
+     * {@link PlayerStatRegistry#getStat(org.bukkit.NamespacedKey)}, {@link PlayerStatRegistry#allStats()}.
+     * <p>
+     * Stats must be registered during expansion processing (via
+     * {@link us.eunoians.mcrpg.expansion.content.PlayerStatContentPack}), before any
+     * {@link us.eunoians.mcrpg.stat.instance.PlayerStatData} instances are created (i.e.,
+     * before any player joins). Registering stats after a player has already joined will not
+     * retroactively create a {@link us.eunoians.mcrpg.stat.instance.PlayerStatInstance} for that player.
+     */
     RegistryKey<PlayerStatRegistry> PLAYER_STAT = create(PlayerStatRegistry.class);
 }

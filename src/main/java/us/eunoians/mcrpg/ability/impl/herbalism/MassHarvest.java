@@ -141,7 +141,7 @@ public final class MassHarvest extends McRPGAbility implements ConfigurableActiv
         if (playerOpt.isPresent()) {
             return performHarvest(abilityHolder, playerOpt.get());
         }
-        return true;
+        return false;
     }
 
     /**

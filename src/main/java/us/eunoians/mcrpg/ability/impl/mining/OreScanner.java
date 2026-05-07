@@ -117,7 +117,7 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
         if (Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
             return performScan(abilityHolder, player);
         }
-        return true;
+        return false;
     }
 
     /**

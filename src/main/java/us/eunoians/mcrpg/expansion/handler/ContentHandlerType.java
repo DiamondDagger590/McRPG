@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.expansion.handler;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.statistic.StatisticRegistry;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
@@ -217,7 +218,7 @@ public enum ContentHandlerType {
                 registry.register(stat);
                 stat.getReloadableContent().forEach(reloadable ->
                         mcRPG.registryAccess().registry(RegistryKey.MANAGER)
-                                .manager(com.diamonddagger590.mccore.registry.manager.ManagerKey.RELOADABLE_CONTENT)
+                                .manager(ManagerKey.RELOADABLE_CONTENT)
                                 .trackReloadableContent(reloadable));
             });
             return true;

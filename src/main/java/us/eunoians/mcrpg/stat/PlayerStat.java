@@ -6,6 +6,7 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -13,6 +14,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Level;
 
 /**
  * Defines a player stat type that can be registered in {@link PlayerStatRegistry}.
@@ -243,6 +245,7 @@ public abstract class PlayerStat implements McRPGContent {
                     .getLocalizedMessage(route);
             return resolved != null ? resolved : fallback;
         } catch (Exception e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING, "Failed to resolve localization for route: " + route, e);
             return fallback;
         }
     }
@@ -266,6 +269,7 @@ public abstract class PlayerStat implements McRPGContent {
                     .getLocalizedMessage(player, route);
             return resolved != null ? resolved : fallback;
         } catch (Exception e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING, "Failed to resolve localization for route: " + route, e);
             return fallback;
         }
     }

@@ -118,7 +118,10 @@ public class OnComboCompleteListener implements Listener {
         }
 
         PlayerStatData statData = mcRPGPlayer.getPlayerStatData();
-        PlayerStatInstance manaInstance = statData.getInstance(McRPGPlayerStat.MANA.getKey()).orElseThrow();
+        PlayerStatInstance manaInstance = statData.getInstance(McRPGPlayerStat.MANA.getKey())
+                .orElseThrow(() -> new IllegalStateException(
+                        "Stat " + McRPGPlayerStat.MANA.getKey() + " not registered in PlayerStatData for UUID: "
+                                + mcRPGPlayer.getUUID()));
 
         int manaCost = comboAbility.getManaCost(abilityHolder);
 

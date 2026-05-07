@@ -143,4 +143,60 @@ class PlayerStatInstanceTest extends McRPGBaseTest {
         poolInstance.setCurrent(200);
         assertEquals(100, poolInstance.getCurrent());
     }
+
+    @DisplayName("tickModifiers removes expired modifier after one tick")
+    @Test
+    void tickModifiersRemovesExpiredModifier() {
+        NamespacedKey buffKey = new NamespacedKey("test", "timed_buff");
+        PlayerStatModifier expiring = new PlayerStatModifier(buffKey, 50, 0) {
+            private boolean expired = false;
+
+            @Override
+            public void tick(double secondsElapsed) {
+                expired = true;
+            }
+
+            @Override
+            public boolean isExpired() {
+                return expired;
+            }
+        };
+
+        poolInstance.addModifier(expiring);
+        assertEquals(150, poolInstance.getEffectiveMax());
+
+        poolInstance.tickRegen(1.0);
+
+        assertTrue(poolInstance.getModifiers().isEmpty());
+        assertEquals(100, poolInstance.getEffectiveMax());
+    }
+
+    @DisplayName("tickModifiers clamps current down when enlarging modifier expires")
+    @Test
+    void tickModifiersClampsCurrent() {
+        NamespacedKey buffKey = new NamespacedKey("test", "timed_buff");
+        PlayerStatModifier expiring = new PlayerStatModifier(buffKey, 100, 0) {
+            private boolean expired = false;
+
+            @Override
+            public void tick(double secondsElapsed) {
+                expired = true;
+            }
+
+            @Override
+            public boolean isExpired() {
+                return expired;
+            }
+        };
+
+        poolInstance.addModifier(expiring);
+        poolInstance.restore(200);
+        assertEquals(200, poolInstance.getCurrent());
+        assertEquals(200, poolInstance.getEffectiveMax());
+
+        poolInstance.tickRegen(1.0);
+
+        assertEquals(100, poolInstance.getEffectiveMax());
+        assertEquals(100, poolInstance.getCurrent());
+    }
 }

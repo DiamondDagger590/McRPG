@@ -89,8 +89,12 @@ public class PlayerStatConsumeEvent extends Event implements Cancellable {
      * Set to {@code 0} for a free cast; set higher than the requested amount for a mana-drain effect.
      *
      * @param effectiveAmount The adjusted consumption amount (must be non-negative).
+     * @throws IllegalArgumentException If {@code effectiveAmount} is negative.
      */
     public void setEffectiveAmount(double effectiveAmount) {
+        if (effectiveAmount < 0) {
+            throw new IllegalArgumentException("effectiveAmount must be >= 0, got: " + effectiveAmount);
+        }
         this.effectiveAmount = effectiveAmount;
     }
 

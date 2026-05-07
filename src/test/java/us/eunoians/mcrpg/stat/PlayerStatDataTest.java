@@ -2,9 +2,11 @@ package us.eunoians.mcrpg.stat;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import org.bukkit.NamespacedKey;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.stat.impl.ResourcePoolPlayerStat;
@@ -17,10 +19,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 /**
  * Verifies {@link PlayerStatData} initialization and regen delegation.
  * <p>
- * Each test populates the {@link PlayerStatRegistry} (registered as an empty registry
- * by {@link us.eunoians.mcrpg.TestBootstrap}) with the stats it needs before
- * constructing a {@link PlayerStatData} instance.
+ * Uses {@link TestInstance.Lifecycle#PER_CLASS} so the {@link us.eunoians.mcrpg.TestBootstrap}
+ * runs exactly once for the whole class. Stat definitions (which are immutable singletons) are
+ * registered in {@link #registerStats()} ({@code @BeforeAll}), matching production semantics where
+ * stats are registered once at plugin startup and never again.
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PlayerStatDataTest extends McRPGBaseTest {
 
     private static final NamespacedKey MANA_KEY = new NamespacedKey("test", "mana");
@@ -28,13 +32,16 @@ class PlayerStatDataTest extends McRPGBaseTest {
 
     private PlayerStatData data;
 
-    @BeforeEach
-    void setUp() {
+    @BeforeAll
+    void registerStats() {
         PlayerStatRegistry registry = RegistryAccess.registryAccess()
                 .registry(McRPGRegistryKey.PLAYER_STAT);
         registry.register(new ResourcePoolPlayerStat(HP_KEY, "HP", "❤", 200, 0));
         registry.register(new ResourcePoolPlayerStat(MANA_KEY, "Mana", "✦", 100, 10));
+    }
 
+    @BeforeEach
+    void setUp() {
         data = new PlayerStatData();
     }
 
