@@ -1,7 +1,7 @@
 # Mana & Ability Activation System
 
 > **Last Updated:** 2026-05-06
-> **Status:** Phase 1 implemented; Phases 2-4 proposed
+> **Status:** Phases 1–2 implemented; Phases 3–4 proposed
 > **Scope:** Mana as universal activation resource, combo-only activation for all active abilities, ready-state removal, config consolidation, Parser-based formula scaling, balance framework
 
 ---
@@ -276,30 +276,27 @@ The renderer's `buildFull()` method accepts `hpCurrent`/`hpMax` as parameters, s
 
 ### 7. Ready-State Removal
 
-The legacy ready-state activation model is fully removed. This affects:
+**Completed in Phase 2.** The legacy ready-state activation model has been fully removed.
 
-**Interfaces and data classes to delete:**
-- `ReadyAbility` -- the interface declaring `getReadyData()`
-- `ReadyData` -- base class for ready state data
-- `SwordReadyData` -- Swords-specific ready data
+**Deleted:**
+- `ReadyAbility`, `ReadyData`, `SwordReadyData`, `MiningReadyData`, `HerbalismReadyData`, `WoodcuttingReadyData` — all ReadyData subclasses deleted alongside the base class
+- All `EventReadyableComponent` infrastructure: `EventReadyableComponent`, `EventReadyableComponentAttribute`, `RightClickReadyComponent`
+- `AbilityHolderReadyEvent`, `AbilityHolderUnreadyEvent` and their listeners
+- Ready-state exception classes
+- `AbilityListener#readyAbilities()` and all call sites
+- Ready-state fields and methods from `AbilityHolder` and `BaseAbility`
+- `RequireEmptyOffhandSetting` deprecated (`forRemoval = true`); removed from settings GUI registration
 
-**Components to delete:**
-- All `EventReadyableComponent` implementations registered on abilities (e.g., `SwordsComponents.SWORDS_READY_COMPONENT`)
-- The `addReadyingComponent()` registration path on `BaseAbility`
-
-**Listeners to modify:**
-- `AbilityListener#readyAbilities()` -- delete entirely (no abilities use readying)
-- Per-skill listeners that call `readyAbilities()` -- remove those calls
-
-**Config to remove:**
+**Config removed:**
 - `configuration.gameplay.require-empty-off-hand-to-ready` from `config.yml`
+- All ready/unready localization keys from `LocalizationKey.java` and `en_abilities.yml`
 
-**Abilities to migrate:**
-- `SerratedStrikes` -- remove `ReadyAbility`, readying components, add `ComboActivatable`
-- `RageSpike` -- already dual-path; remove ready path, keep combo path
-- `OreScanner` -- remove `ReadyAbility`, readying components, add `ComboActivatable`
-- `MassHarvest` -- remove `ReadyAbility`, readying components, add `ComboActivatable`
-- `VerdantSurge` -- remove `ReadyAbility`, readying components, add `ComboActivatable`
+**Abilities migrated:**
+- `SerratedStrikes` — `ReadyAbility` removed, `ComboActivatable` added, `comboActivate()` implemented
+- `RageSpike` — ready path removed, combo path kept, `unreadyHolder()` call removed
+- `OreScanner` — ready path removed, combo path retained from Phase 1
+- `MassHarvest` — ready path removed, combo path retained from Phase 1
+- `VerdantSurge` — ready path removed; **temporarily unactivatable** until Phase 3 adds `ComboActivatable`
 
 ---
 
@@ -307,32 +304,28 @@ The legacy ready-state activation model is fully removed. This affects:
 
 The following was shipped as PoC quality code and needs formalization:
 
-### Combo Abilities (3 remaining after spike cleanup)
+### Active Abilities (post-Phase 2 state)
 
-Shockwave and Cleave were spike-only PoC abilities with no tiers, no localization, and hardcoded names. They are **deleted** as part of this effort -- their concepts may be revisited as properly designed abilities in the future, but the spike implementations do not warrant migration.
+Shockwave and Cleave were spike-only PoC abilities deleted in Phase 1. The remaining active abilities after Phase 2:
 
-| Ability | Skill | Activation Path | Mana Source | Quality |
-|---------|-------|-----------------|-------------|---------|
-| RageSpike | Swords | Dual (ready + combo) | `ComboConfigFile` flat | Hybrid -- has tiers via `ConfigurableActiveAbility`, but combo path reads flat cost |
-| OreScanner | Mining | Dual (ready + combo) | `ComboConfigFile` flat | Hybrid -- has tiers, ready components still active |
-| MassHarvest | Herbalism | Dual (ready + combo) | `ComboConfigFile` flat | Hybrid -- has tiers, ready components still active |
-
-### Ready-State-Only Abilities (2 remaining)
-
-| Ability | Skill | Notes |
-|---------|-------|-------|
-| SerratedStrikes | Swords | `ConfigurableActiveAbility` + `ReadyAbility`; no combo support yet |
-| VerdantSurge | Herbalism | `ConfigurableActiveAbility` + `ReadyAbility`; no combo support yet |
+| Ability | Skill | Activation Path | Mana Source | Notes |
+|---------|-------|-----------------|-------------|-------|
+| RageSpike | Swords | Combo-only | Per-tier formula in `swords_configuration.yml` | Ready path removed in Phase 2 |
+| SerratedStrikes | Swords | Combo-only | Per-tier formula in `swords_configuration.yml` | Migrated from ready-only in Phase 2 |
+| OreScanner | Mining | Combo-only | Per-tier formula in `mining_configuration.yml` | Ready components removed in Phase 2 |
+| MassHarvest | Herbalism | Combo-only | Per-tier formula in `herbalism_configuration.yml` | Ready components removed in Phase 2 |
+| VerdantSurge | Herbalism | **Temporarily unactivatable** | — | Ready path removed; `ComboActivatable` pending Phase 3 |
 
 ### Config Debt
 
-- `combo_configuration.yml` holds both system settings (timing, items) and per-ability params (mana costs, radius, damage) that should live in skill config files
-- `ComboConfigFile.java` and `FileType.COMBO_CONFIG` exist as spike-only wrappers
-- Per-ability mana costs are flat values, not per-tier
-- `ComboManager` timeout is hardcoded to 14 ticks despite `TIMING_WINDOW_TICKS` route existing in config
+- ~~`combo_configuration.yml` holds both system settings (timing, items) and per-ability params~~ — **resolved in Phase 1:** migrated to `config.yml` and skill config files; `ComboConfigFile.java` and `FileType.COMBO_CONFIG` deleted
+- ~~Per-ability mana costs are flat values, not per-tier~~ — **resolved in Phase 1:** all costs read via `getString()` + Parser with `tier` variable
+- `ComboManager` timeout is hardcoded to 14 ticks despite `TIMING_WINDOW_TICKS` route existing in config — **Phase 1 leftover; still pending**
 - ~~`McRPGCombatStat.HEALTH` defaults to 200 max~~ — **resolved in Phase 1:** Health base value is vanilla 20
 - ~~Combo ability names (`getName()`, `getDisplayName()`) are hardcoded strings~~ — **resolved in Phase 1:** stat display routed through localization
-- Shockwave and Cleave are spike-only PoC classes with no tiers, no localization, and no production value -- to be deleted
+- ~~Shockwave and Cleave are spike-only PoC classes~~ — **deleted in Phase 1**
+- ~~`require-empty-off-hand-to-ready` config key~~ — **removed in Phase 2**
+- ~~Ready/unready localization keys and YAML entries~~ — **removed in Phase 2**
 
 ### Infrastructure (production quality)
 
@@ -416,15 +409,15 @@ New player stats are added via `PlayerStatContentPack` in a `ContentExpansion`. 
 
 ## Ability Inventory (Migration Reference)
 
-### All Active Abilities (5 total -- require combo migration)
+### All Active Abilities (5 total)
 
-| Ability | Skill | Current State | Migration Work |
-|---------|-------|---------------|----------------|
-| **RageSpike** | Swords | Dual path (ready + combo) | Remove ready path, add per-tier mana costs |
-| **SerratedStrikes** | Swords | Ready-state only | Add `ComboActivatable`, `comboActivate()`, per-tier mana costs |
-| **OreScanner** | Mining | Dual path (ready + combo) | Remove ready path, add per-tier mana costs |
-| **MassHarvest** | Herbalism | Dual path (ready + combo) | Remove ready path, add per-tier mana costs |
-| **VerdantSurge** | Herbalism | Ready-state only | Add `ComboActivatable`, `comboActivate()`, per-tier mana costs |
+| Ability | Skill | State (post-Phase 2) | Remaining Work |
+|---------|-------|----------------------|----------------|
+| **RageSpike** | Swords | Combo-only ✓ | — |
+| **SerratedStrikes** | Swords | Combo-only ✓ | — |
+| **OreScanner** | Mining | Combo-only ✓ | Balance pass (Phase 4) |
+| **MassHarvest** | Herbalism | Combo-only ✓ | Balance pass (Phase 4) |
+| **VerdantSurge** | Herbalism | Temporarily unactivatable | Add `ComboActivatable` + `comboActivate()` + per-tier mana costs (Phase 3) |
 
 **Deleted spike abilities:** Shockwave and Cleave were PoC-only combo abilities with no tiers, no localization, and hardcoded names. They are deleted as part of Phase 1 cleanup rather than promoted to production.
 
@@ -533,14 +526,15 @@ Each phase gets its own LLD when implementation begins.
 - Add mana persistence: `CombatStatDAO` (or column on existing player table) to store `current_mana`; write on logout/full save, restore on login
 - Hardcode active loadout slot count to 3; remove `max-active-loadout-size` config key
 
-### Phase 2: Ready-State Removal & Swords Migration
+### Phase 2: Ready-State Removal & Swords Migration ✓ (Implemented)
 
-- Delete `ReadyAbility`, `ReadyData`, `SwordReadyData`, all readying components
-- Remove `AbilityListener#readyAbilities()` and all calls to it
-- Remove `require-empty-off-hand-to-ready` config
-- Port SerratedStrikes to `ComboActivatable` with per-tier mana costs + moderate cooldown
-- Clean up RageSpike: remove ready path, keep combo path, add per-tier mana costs
-- Verify passive Swords abilities (Bleed, EnhancedBleed, DeeperWound, Vampire) work correctly with the mana-check pipeline when cost is 0
+- ~~Delete `ReadyAbility`, `ReadyData`, `SwordReadyData`, all readying components~~ — done; all `ReadyData` subclasses deleted in this phase (not retained as dead code)
+- ~~Remove `AbilityListener#readyAbilities()` and all calls to it~~ — done
+- ~~Remove `require-empty-off-hand-to-ready` config~~ — done; localization keys and YAML entries also removed
+- ~~Port SerratedStrikes to `ComboActivatable` with per-tier mana costs + moderate cooldown~~ — done; `LivingEntity` removed from `SerratedStrikesActivateEvent`
+- ~~Clean up RageSpike: remove ready path, keep combo path, add per-tier mana costs~~ — done; `RageSpikeComponents.java` deleted
+- ~~Verify passive Swords abilities work correctly~~ — verified; Bleed/EnhancedBleed/DeeperWound/Vampire do not implement `ManaAbility`
+- **Note:** VerdantSurge is temporarily unactivatable after this phase (ready path removed; `ComboActivatable` pending Phase 3)
 
 ### Phase 3: Mining & Herbalism Migration
 

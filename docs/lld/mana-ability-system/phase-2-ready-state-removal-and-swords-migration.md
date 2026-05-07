@@ -2,7 +2,7 @@
 
 > **HLD Reference:** [docs/hld/mana/mana-ability-system.md](../../hld/mana/mana-ability-system.md)
 > **Phase 1 Reference:** [phase-1-infrastructure-and-config-cleanup.md](phase-1-infrastructure-and-config-cleanup.md)
-> **Status:** Proposed
+> **Status:** Implemented
 
 ## Scope
 
@@ -24,7 +24,7 @@ Phase 2 removes the entire ready-state activation pipeline and migrates Swords a
 - Port `SerratedStrikes` to `ComboActivatable` with `comboActivate()`, per-tier mana costs
 - Clean up `RageSpike`: remove `ReadyAbility`, readying components, `unreadyHolder()` call in `activateAbility()`
 - Backport remaining `getInt()`/`getDouble()` tier-config reads on `SerratedStrikes` and `RageSpike` to `getString()` + Parser (completing the Phase 1 parser backport for Swords)
-- Modify `SerratedStrikesActivateEvent` to accept `@Nullable LivingEntity` for combo-path activation
+- Remove `LivingEntity` field, constructor parameter, and getter from `SerratedStrikesActivateEvent` entirely (combo activation has no target entity; no third-party integrations to preserve)
 - Verify passive Swords abilities (Bleed, EnhancedBleed, DeeperWound, Vampire) work correctly — these do not implement `ManaAbility` and bypass the mana pipeline entirely
 - Unit tests
 
@@ -902,23 +902,15 @@ The `mana-cost` is placed in `all-tiers` using a formula. Server owners can over
 | `src/main/java/us/eunoians/mcrpg/exception/ready/HolderAlreadyReadyException.java` | Ready-path exception |
 | `src/main/java/us/eunoians/mcrpg/ability/impl/swords/RageSpikeComponents.java` | Only contained ready-path sneak activation component |
 
-### 2.2 Files Retained as Dead Code (Phase 3/4 Cleanup)
+### 2.2 Files Deleted (Previously Proposed as Dead Code)
 
-| File | Reason for Retention | Cleanup Phase |
-|------|---------------------|---------------|
-| `src/main/java/us/eunoians/mcrpg/ability/ready/MiningReadyData.java` | No Mining abilities migrated yet | Phase 3 |
-| `src/main/java/us/eunoians/mcrpg/ability/ready/HerbalismReadyData.java` | No Herbalism abilities migrated yet | Phase 3 |
-| `src/main/java/us/eunoians/mcrpg/ability/ready/WoodcuttingReadyData.java` | No Woodcutting abilities migrated yet | Phase 4 |
-
-**Note:** `ReadyData` base class IS deleted despite these subclasses remaining. The subclasses will fail to compile — they must either be deleted in this phase too or temporarily made standalone. **Decision: delete all ReadyData subclasses in this phase** since the base class and entire ready infrastructure are gone. The "retained as dead code" applies only to the ready *message strings* which are already captured in `en_abilities.yml` and can be re-added in Phase 3/4 if needed for migration commit history. Update the HLD to note that all ReadyData subclasses are deleted in Phase 2 rather than Phase 3/4.
-
-**Revised: additional files to delete:**
+All `ReadyData` subclasses were deleted in this phase alongside the `ReadyData` base class. Retaining them as dead code was not viable because the base class deletion would leave them uncompilable. The localized ready/unready message strings (preserved in git history via `en_abilities.yml`) can be recovered if a future phase needs them.
 
 | File | Reason |
 |------|--------|
-| `src/main/java/us/eunoians/mcrpg/ability/ready/MiningReadyData.java` | ReadyData base class deleted; orphaned |
-| `src/main/java/us/eunoians/mcrpg/ability/ready/HerbalismReadyData.java` | ReadyData base class deleted; orphaned |
-| `src/main/java/us/eunoians/mcrpg/ability/ready/WoodcuttingReadyData.java` | ReadyData base class deleted; orphaned |
+| `src/main/java/us/eunoians/mcrpg/ability/ready/MiningReadyData.java` | ReadyData base class deleted; orphaned subclass |
+| `src/main/java/us/eunoians/mcrpg/ability/ready/HerbalismReadyData.java` | ReadyData base class deleted; orphaned subclass |
+| `src/main/java/us/eunoians/mcrpg/ability/ready/WoodcuttingReadyData.java` | ReadyData base class deleted; orphaned subclass |
 
 ### 2.3 Localization Keys Deleted
 
@@ -1112,83 +1104,56 @@ Ordered to minimize compilation errors at each step. The implementor (Sonnet) sh
 
 31. **Write unit tests** (see section 7).
 
-32. **Final `./gradlew verifiedShadowJar`** — verify all tests pass including new ones.
+32. **Apply test naming convention** — ensure all test methods follow `action_outcome_whenCondition`, `@Test` before `@DisplayName`, and Given/When/Then display strings. Remove any tests that validate the absence of deleted code rather than behavioral correctness.
+
+33. **Final `./gradlew verifiedShadowJar`** — verify all tests pass including new ones.
 
 ---
 
 ## 7. Unit Tests
 
+Test method naming convention: `action_outcome_whenCondition`. `@Test` is listed before `@DisplayName`. `@DisplayName` uses a Given/When/Then sentence. The `_whenCondition` suffix is optional when context is obvious from action and outcome alone.
+
+Tests that verify the *absence* of deleted code (reflection checks for non-existent classes or methods, classpath membership assertions) were written as part of the initial spec but removed before merge. Such tests encode implementation history rather than behavior, add maintenance burden with no safety value, and fail the "what can go wrong in production?" test. Only tests with lasting behavioral value were retained.
+
 ### 7.1 `SerratedStrikesComboActivateTest`
-- `comboActivate()` returns `true` when `SerratedStrikesActivateEvent` is not cancelled
-- `comboActivate()` returns `false` when `SerratedStrikesActivateEvent` is cancelled
-- `comboActivate()` fires `SerratedStrikesActivateEvent` (no `LivingEntity` parameter)
-- `comboActivate()` adds active ability with correct duration from tier config
-- `comboActivate()` does NOT call `putHolderOnCooldown()` (combo listener handles this)
-- After `comboActivate()`, `abilityHolder.isAbilityActive(serratedStrikes)` returns `true`
+
+- `comboActivate_returnsTrue_whenEventIsNotCancelled` — `comboActivate()` returns `true` when no listener cancels `SerratedStrikesActivateEvent`
+- `comboActivate_returnsFalse_whenEventIsCancelled` — `comboActivate()` returns `false` when a listener cancels `SerratedStrikesActivateEvent`
+- `comboActivate_firesSerratedStrikesActivateEvent` — `SerratedStrikesActivateEvent` is fired on activation
+- `comboActivate_addsActiveAbility_withTierDerivedDuration` — holder has the ability registered as active after `comboActivate()`
+- `comboActivate_doesNotApplyCooldown` — no cooldown is on the holder after `comboActivate()` (the combo listener is responsible)
 
 ### 7.2 `SerratedStrikesActivateEventTest`
-- Event constructor no longer accepts `LivingEntity` parameter
-- `SerratedStrikesActivateEvent` has no `getLivingEntity()` method (reflective check)
-- Duration is clamped to at least 0
-- Event is cancellable
 
-### 7.3 `RageSpikeReadyRemovalTest`
-- `RageSpike` does not implement `ReadyAbility`
-- `RageSpike` constructor registers no readying components (verify `canEventReadyAbility()` is gone — test that the ability has no event registrations for `PlayerInteractEvent`)
-- `RageSpike.comboActivate()` still works correctly (existing behavior preserved)
-- `RageSpike.activateAbility()` does not call `unreadyHolder()` — verify by checking holder state or via mock
+- `getDuration_returnsZero_whenConstructedWithNegativeDuration` — duration is clamped to 0 on negative constructor argument
+- `setDuration_clampsToZero_whenGivenNegativeValue` — `setDuration(-n)` clamps to 0
+- `getDuration_returnsPositiveValue_whenConstructedWithPositiveDuration` — positive duration is preserved
+- `isCancelled_returnsFalse_byDefault` — event is not cancelled when first created
+- `setCancelled_makesEventCancelled_whenSetToTrue` — event respects the `Cancellable` contract
 
-### 7.4 `ReadyStateRemovalCompileTest`
-- `BaseAbility` has no `addReadyingComponent` method (reflective check or compile-time verification)
-- `AbilityHolder` has no `getReadiedAbility` method (reflective check)
-- `AbilityHolder` has no `unreadyHolder` method (reflective check)
-- `AbilityHolder` has no `readyAbility` method (reflective check)
-- `AbilityListener` interface has no `readyAbilities` method (reflective check)
+### 7.3 `SerratedStrikesTest`
 
-### 7.5 `SwordsComponentsCleanupTest`
-- `SwordsComponents` has `HOLDING_SWORD_ACTIVATE_COMPONENT` field (still exists)
-- `SwordsComponents` does NOT have `SWORDS_READY_COMPONENT` field
-- `SwordsComponents` does NOT have `SWORDS_ACTIVATE_ON_READY_COMPONENT` field
+Parser backport coverage for `SerratedStrikes` tier-config reads.
 
-### 7.6 `ParserBackportSwordsTest`
-- `SerratedStrikes.getDuration(tier)` uses Parser with `tier` variable — formula strings evaluate correctly for tiers 1-5
-- `SerratedStrikes.getBoostToBleedActivation(tier)` uses Parser with `tier` variable
-- `RageSpike.getDamage(tier)` uses Parser with `tier` variable
-- `RageSpike.getVelocity(tier)` uses Parser with `tier` variable
-- Integer values in YAML (e.g., `240`) still work when read as strings through Parser
+- `getDuration_evaluatesFormulaWithTier` — formula strings (e.g., `"tier+2"`) are evaluated correctly
+- `getDuration_returnsLiteralValue_whenGivenPlainInteger` — plain integer strings (e.g., `"240"`) still parse correctly
+- `getDuration_usesTierSpecificRoute_whenPresent` — tier-specific route overrides the `all-tiers` route
+- `getBoostToBleedActivation_evaluatesFormulaWithTier` — formula strings are evaluated correctly
 
-### 7.7 `SerratedStrikesManaCostTest`
-- `SerratedStrikes.getManaCost()` resolves formula from `all-tiers.mana-cost` with tier variable
-- Missing `mana-cost` key returns 0 (default from `ConfigurableActiveAbility`)
-- Minimum floor clamps result to configured minimum
+### 7.4 `SerratedStrikesManaCostTest`
 
-### 7.8 `PassiveSwordsAbilitiesUnaffectedTest`
-- `Bleed` does NOT implement `ManaAbility` — mana pipeline is never entered
-- `EnhancedBleed` does NOT implement `ManaAbility`
-- `DeeperWound` does NOT implement `ManaAbility`
-- `Vampire` does NOT implement `ManaAbility`
-- `Bleed.activateAbility()` returns `true` when `BleedActivateEvent` is not cancelled
-- `Bleed.activateAbility()` returns `false` when `BleedActivateEvent` is cancelled
+- `getManaCost_evaluatesFormulaWithTier` — `mana-cost` formula is evaluated with `tier` variable at tier 1
+- `getManaCost_returnsGlobalMinimum_whenManaCostKeyMissing` — absent key evaluates to 0, then clamps to global minimum
+- `getManaCost_returnsGlobalMinimum_whenComputedValueIsBelow` — formula producing a negative value is clamped to global minimum
 
-### 7.9 `AbilityListenerNoReadyTest`
-- `OnAttackAbilityListener` does not call any method named `readyAbilities`
-- `OnInteractAbilityListener` does not call any method named `readyAbilities`
-- `OnSneakAbilityListener` does not call any method named `readyAbilities`
-- `OnBlockBreakListener` does not call any method named `readyAbilities`
+### 7.5 `RageSpikeTest`
 
-### 7.10 `RequireEmptyOffhandDeprecationTest`
-- `RequireEmptyOffhandSetting` class is annotated `@Deprecated(forRemoval = true)`
-- `RequireEmptyOffhandSettingSlot` class is annotated `@Deprecated(forRemoval = true)`
-- `RequireEmptyOffhandSetting` is NOT registered in the expansion's settings content pack
+Parser backport coverage for `RageSpike` tier-config reads.
 
-### 7.11 Deletion Validation
-- `ReadyAbility` class does not exist on the classpath
-- `ReadyData` class does not exist on the classpath
-- `SwordReadyData` class does not exist on the classpath
-- `EventReadyableComponent` class does not exist on the classpath
-- `AbilityHolderReadyEvent` class does not exist on the classpath
-- `AbilityHolderUnreadyEvent` class does not exist on the classpath
-- `RageSpikeComponents` class does not exist on the classpath
+- `getDamage_evaluatesFormulaWithTier` — formula strings are evaluated correctly
+- `getDamage_returnsLiteralValue_whenGivenPlainInteger` — plain integer strings still parse correctly
+- `getVelocity_evaluatesFormulaWithTier` — formula strings are evaluated correctly
 
 ---
 
