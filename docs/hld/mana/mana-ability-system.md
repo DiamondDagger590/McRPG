@@ -1,7 +1,7 @@
 # Mana & Ability Activation System
 
-> **Last Updated:** 2026-05-06
-> **Status:** Phases 1–2 implemented; Phases 3–4 proposed
+> **Last Updated:** 2026-05-07
+> **Status:** Phases 1–3 implemented; Phase 4 proposed
 > **Scope:** Mana as universal activation resource, combo-only activation for all active abilities, ready-state removal, config consolidation, Parser-based formula scaling, balance framework
 
 ---
@@ -296,7 +296,7 @@ The renderer's `buildFull()` method accepts `hpCurrent`/`hpMax` as parameters, s
 - `RageSpike` — ready path removed, combo path kept, `unreadyHolder()` call removed
 - `OreScanner` — ready path removed, combo path retained from Phase 1
 - `MassHarvest` — ready path removed, combo path retained from Phase 1
-- `VerdantSurge` — ready path removed; **temporarily unactivatable** until Phase 3 adds `ComboActivatable`
+- `VerdantSurge` — ready path removed; `ComboActivatable` added in Phase 3 with per-tier mana costs
 
 ---
 
@@ -304,17 +304,17 @@ The renderer's `buildFull()` method accepts `hpCurrent`/`hpMax` as parameters, s
 
 The following was shipped as PoC quality code and needs formalization:
 
-### Active Abilities (post-Phase 2 state)
+### Active Abilities (post-Phase 3 state)
 
-Shockwave and Cleave were spike-only PoC abilities deleted in Phase 1. The remaining active abilities after Phase 2:
+Shockwave and Cleave were spike-only PoC abilities deleted in Phase 1. The remaining active abilities after Phase 3:
 
 | Ability | Skill | Activation Path | Mana Source | Notes |
 |---------|-------|-----------------|-------------|-------|
-| RageSpike | Swords | Combo-only | Per-tier formula in `swords_configuration.yml` | Ready path removed in Phase 2 |
-| SerratedStrikes | Swords | Combo-only | Per-tier formula in `swords_configuration.yml` | Migrated from ready-only in Phase 2 |
-| OreScanner | Mining | Combo-only | Per-tier formula in `mining_configuration.yml` | Ready components removed in Phase 2 |
-| MassHarvest | Herbalism | Combo-only | Per-tier formula in `herbalism_configuration.yml` | Ready components removed in Phase 2 |
-| VerdantSurge | Herbalism | **Temporarily unactivatable** | — | Ready path removed; `ComboActivatable` pending Phase 3 |
+| RageSpike | Swords | Combo-only | Per-tier formula in `swords_configuration.yml` | Ready path removed in Phase 2; `MANA_COST` placeholder added in Phase 3 |
+| SerratedStrikes | Swords | Combo-only | Per-tier formula in `swords_configuration.yml` | Migrated from ready-only in Phase 2; `MANA_COST` placeholder added in Phase 3 |
+| OreScanner | Mining | Combo-only | Per-tier formula in `mining_configuration.yml` | Parser backport for `getRange()`, scan message localized in Phase 3 |
+| MassHarvest | Herbalism | Combo-only | Per-tier formula in `herbalism_configuration.yml` | `MANA_COST` placeholder added in Phase 3 |
+| VerdantSurge | Herbalism | Combo-only | Per-tier formula `"42-(5.5*tier)"` in `herbalism_configuration.yml` | `ComboActivatable` added in Phase 3 |
 
 ### Config Debt
 
@@ -332,7 +332,7 @@ Shockwave and Cleave were spike-only PoC abilities deleted in Phase 1. The remai
 - `PlayerStat` (abstract base, `stat/`), `ResourcePoolPlayerStat` / `FlatPlayerStat` / `ConfigurableResourcePoolPlayerStat` (`stat/impl/`), `PlayerStatInstance` / `PlayerStatData` / `PlayerStatModifier` (`stat/instance/`) — renamed from `CombatStat*`, reorganized into subpackages, fully tested. `StatManager` merged into `PlayerStatRegistry`. Modifiers are `NamespacedKey`-keyed classes with virtual methods supporting future stacking/timed subclasses.
 - `ComboManager`, `ComboPattern`, `PlayerComboState`, `ComboInput` -- clean, tested. `ComboManager` supports third-party combo item registration via `registerAllowedItemSet()` and `addAllowedItem()`.
 - `ActionBarHudDisplay`, `ActionBarHudRenderer`, `DisplayManager`, `FontWidthTable` -- production quality, fully tested, documented in [Action Bar HUD LLD](../lld/combat-rework/action-bar-hud.md). HUD uses player-aware localized stat display symbols.
-- `OnComboInputListener`, `OnComboCompleteListener` -- functional but need updates for ready-state removal
+- `OnComboInputListener`, `OnComboCompleteListener` -- production quality; cooldown-on-cancel bug fixed in Phase 3
 
 ---
 
@@ -411,13 +411,13 @@ New player stats are added via `PlayerStatContentPack` in a `ContentExpansion`. 
 
 ### All Active Abilities (5 total)
 
-| Ability | Skill | State (post-Phase 2) | Remaining Work |
+| Ability | Skill | State (post-Phase 3) | Remaining Work |
 |---------|-------|----------------------|----------------|
-| **RageSpike** | Swords | Combo-only ✓ | — |
-| **SerratedStrikes** | Swords | Combo-only ✓ | — |
+| **RageSpike** | Swords | Combo-only ✓ | Balance pass (Phase 4) |
+| **SerratedStrikes** | Swords | Combo-only ✓ | Balance pass (Phase 4) |
 | **OreScanner** | Mining | Combo-only ✓ | Balance pass (Phase 4) |
 | **MassHarvest** | Herbalism | Combo-only ✓ | Balance pass (Phase 4) |
-| **VerdantSurge** | Herbalism | Temporarily unactivatable | Add `ComboActivatable` + `comboActivate()` + per-tier mana costs (Phase 3) |
+| **VerdantSurge** | Herbalism | Combo-only ✓ | Balance pass (Phase 4) |
 
 **Deleted spike abilities:** Shockwave and Cleave were PoC-only combo abilities with no tiers, no localization, and hardcoded names. They are deleted as part of Phase 1 cleanup rather than promoted to production.
 
@@ -534,15 +534,17 @@ Each phase gets its own LLD when implementation begins.
 - ~~Port SerratedStrikes to `ComboActivatable` with per-tier mana costs + moderate cooldown~~ — done; `LivingEntity` removed from `SerratedStrikesActivateEvent`
 - ~~Clean up RageSpike: remove ready path, keep combo path, add per-tier mana costs~~ — done; `RageSpikeComponents.java` deleted
 - ~~Verify passive Swords abilities work correctly~~ — verified; Bleed/EnhancedBleed/DeeperWound/Vampire do not implement `ManaAbility`
-- **Note:** VerdantSurge is temporarily unactivatable after this phase (ready path removed; `ComboActivatable` pending Phase 3)
+- **Note:** VerdantSurge was temporarily unactivatable after this phase (ready path removed; `ComboActivatable` added in Phase 3)
 
-### Phase 3: Mining & Herbalism Migration
+### Phase 3: Mining & Herbalism Migration ✓ (Implemented)
 
-- Port OreScanner: remove ready path, keep combo, add per-tier mana costs in mining config
-- Port MassHarvest: remove ready path, keep combo, add per-tier mana costs in herbalism config
-- Port VerdantSurge: add `ComboActivatable`, `comboActivate()`, per-tier mana costs in herbalism config
-- InstantIrrigation (passive with cooldown) -- no changes needed
-- Add localization keys for all migrated abilities
+- ~~Port OreScanner: remove ready path, keep combo, add per-tier mana costs in mining config~~ — done (Phase 1/2); parser backport for `getRange()` and scan message localization done in Phase 3
+- ~~Port MassHarvest: remove ready path, keep combo, add per-tier mana costs in herbalism config~~ — done (Phase 1/2); `MANA_COST` placeholder added in Phase 3
+- ~~Port VerdantSurge: add `ComboActivatable`, `comboActivate()`, per-tier mana costs in herbalism config~~ — done; formula `"42-(5.5*tier)"`
+- ~~InstantIrrigation (passive with cooldown) -- no changes needed~~ — verified unaffected
+- ~~Add localization keys for all migrated abilities~~ — done; `ORE_SCANNER_BLOCK_DETECTED` key added
+- ~~Add `MANA_COST` to `AbilityItemPlaceholderKeys` and wire into all 5 combo abilities~~ — done
+- ~~Fix `OnComboCompleteListener` cooldown-on-cancel bug~~ — done; early return after mana refund when `!activated`
 
 ### Phase 4: Woodcutting & Balance Pass
 

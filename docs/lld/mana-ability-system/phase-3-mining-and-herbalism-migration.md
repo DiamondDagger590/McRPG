@@ -3,7 +3,7 @@
 > **HLD Reference:** [docs/hld/mana/mana-ability-system.md](../../hld/mana/mana-ability-system.md)
 > **Phase 1 Reference:** [phase-1-infrastructure-and-config-cleanup.md](phase-1-infrastructure-and-config-cleanup.md)
 > **Phase 2 Reference:** [phase-2-ready-state-removal-and-swords-migration.md](phase-2-ready-state-removal-and-swords-migration.md)
-> **Status:** Proposed
+> **Status:** Implemented
 
 ## Scope
 
@@ -910,12 +910,9 @@ Tests for the VerdantSurge activate event (verify existing behavior still works 
 - `getItemBuilderPlaceholders_includesRadius` — existing placeholder still present
 - `getItemBuilderPlaceholders_includesCooldown` — existing placeholder still present
 
-### 7.12 `InstantIrrigationUnaffectedTest`
+### 7.12 `InstantIrrigationUnaffectedTest` — Removed
 
-Verify that InstantIrrigation is not broken by Phase 3 changes.
-
-- `activateAbility_doesNotCheckMana` — InstantIrrigation does not implement `ManaAbility`, so activation through `activateAbilities()` skips the mana gate
-- `activateAbility_appliesCooldownInternally` — `putHolderOnCooldown()` is called inside `activateAbility()`, confirming it manages its own cooldown (not via `OnComboCompleteListener`)
+This test was removed post-implementation as brittle. Structural `instanceof` assertions encode a "nothing changed" constraint that breaks as soon as the code legitimately evolves. The verification that InstantIrrigation is unaffected is covered by the existing test suite passing — no dedicated negative-assertion test is needed.
 
 ---
 
