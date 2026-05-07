@@ -125,9 +125,9 @@ class OnComboCompleteListenerManaTest extends McRPGBaseTest {
         server.getPluginManager().registerEvents(new OnComboCompleteListener(), mcRPG);
     }
 
-    @DisplayName("Sufficient mana + comboActivate returns true: mana consumed and not refunded")
     @Test
-    void activationSucceeds_manaPermanentlyConsumed() {
+    @DisplayName("Given sufficient mana and a successful comboActivate, when the combo completes, then mana is permanently consumed")
+    void onComboComplete_consumesMana_whenComboActivateSucceeds() {
         stubAbility.comboReturn = true;
         PlayerStatInstance mana = getMana();
         assertEquals(MANA_BASE, mana.getCurrent());
@@ -137,9 +137,9 @@ class OnComboCompleteListenerManaTest extends McRPGBaseTest {
         assertEquals(MANA_BASE - MANA_COST, mana.getCurrent());
     }
 
-    @DisplayName("Sufficient mana + comboActivate returns false: mana refunded")
     @Test
-    void activationReturnsFalse_manaRefunded() {
+    @DisplayName("Given comboActivate returning false, when the combo completes, then mana is refunded")
+    void onComboComplete_refundsMana_whenComboActivateReturnsFalse() {
         stubAbility.comboReturn = false;
         PlayerStatInstance mana = getMana();
         double manaBefore = mana.getCurrent();
@@ -150,9 +150,9 @@ class OnComboCompleteListenerManaTest extends McRPGBaseTest {
         assertEquals(manaBefore, mana.getCurrent(), 1e-9);
     }
 
-    @DisplayName("PlayerStatConsumeEvent cancelled: early return, mana unchanged")
     @Test
-    void consumeEventCancelled_manaUnchanged() {
+    @DisplayName("Given a listener that cancels the consume event, when the combo completes, then mana is unchanged")
+    void onComboComplete_doesNotConsumeMana_whenConsumeEventIsCancelled() {
         PlayerStatInstance mana = getMana();
         double manaBefore = mana.getCurrent();
 

@@ -7,8 +7,7 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import java.util.UUID;
 
 /**
- * This listener allows for readying or activating abilities from
- * {@link EntityDamageByEntityEvent}.
+ * This listener allows for activating abilities from {@link EntityDamageByEntityEvent}.
  */
 public class OnAttackAbilityListener implements AbilityListener {
 
@@ -16,6 +15,5 @@ public class OnAttackAbilityListener implements AbilityListener {
     public void handleOnAttackAbilities(EntityDamageByEntityEvent entityDamageByEntityEvent) {
         UUID uuid = entityDamageByEntityEvent.getDamager().getUniqueId();
         activateAbilities(uuid, entityDamageByEntityEvent);
-        readyAbilities(uuid, entityDamageByEntityEvent);
     }
 }

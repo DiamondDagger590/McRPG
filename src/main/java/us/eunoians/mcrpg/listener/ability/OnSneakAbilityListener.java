@@ -7,7 +7,7 @@ import org.bukkit.event.player.PlayerToggleSneakEvent;
 import java.util.UUID;
 
 /**
- * This listener handles activating/readying abilities from {@link PlayerToggleSneakEvent}s
+ * This listener handles activating abilities from {@link PlayerToggleSneakEvent}s.
  */
 public class OnSneakAbilityListener implements AbilityListener {
 
@@ -15,6 +15,5 @@ public class OnSneakAbilityListener implements AbilityListener {
     public void onSneak(PlayerToggleSneakEvent playerToggleSneakEvent) {
         UUID uuid = playerToggleSneakEvent.getPlayer().getUniqueId();
         activateAbilities(uuid, playerToggleSneakEvent);
-        readyAbilities(uuid, playerToggleSneakEvent);
     }
 }

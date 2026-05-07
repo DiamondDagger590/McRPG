@@ -115,7 +115,6 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route EXPERIENCE_UPDATE_DISPLAY_DURATION = Route.fromString(toRoutePath(DISPLAY_EXPERIENCE_CONFIGURATION_HEADER, "display-duration"));
     public static final Route MAX_LOADOUT_AMOUNT = Route.fromString(toRoutePath(LOADOUT_CONFIGURATION_HEADER, "max-loadout-amount"));
     public static final Route MAX_LOADOUT_SIZE = Route.fromString(toRoutePath(LOADOUT_CONFIGURATION_HEADER, "max-loadout-size"));
-    public static final Route REQUIRE_EMPTY_OFF_HAND_TO_READY = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "require-empty-off-hand-to-ready"));
     public static final Route ENABLE_LEVEL_UP_PERMISSIONS = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "enable-level-up-permissions"));
     public static final Route MOB_HEALTH_BAR_ENABLED = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "mob-health-bar"));
     public static final Route MOB_HEALTH_BAR_DISPLAY_DURATION = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "health-bar-display-duration"));

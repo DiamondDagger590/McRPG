@@ -77,7 +77,6 @@ import us.eunoians.mcrpg.setting.impl.KeepHandEmptySetting;
 import us.eunoians.mcrpg.setting.impl.KeepHotbarSlotEmptySetting;
 import us.eunoians.mcrpg.setting.impl.LocaleSetting;
 import us.eunoians.mcrpg.setting.impl.QuestProgressNotificationSetting;
-import us.eunoians.mcrpg.setting.impl.RequireEmptyOffhandSetting;
 import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
@@ -280,7 +279,6 @@ public final class McRPGExpansion extends ContentExpansion {
         playerSettingContent.addContent(ExperienceDisplaySetting.values()[0]);
         playerSettingContent.addContent(KeepHandEmptySetting.values()[0]);
         playerSettingContent.addContent(KeepHotbarSlotEmptySetting.values()[0]);
-        playerSettingContent.addContent(RequireEmptyOffhandSetting.values()[0]);
         playerSettingContent.addContent(DisableBonusExperienceConsumptionSetting.values()[0]);
         playerSettingContent.addContent(LocaleSetting.values()[0]);
         playerSettingContent.addContent(QuestProgressNotificationSetting.values()[0]);

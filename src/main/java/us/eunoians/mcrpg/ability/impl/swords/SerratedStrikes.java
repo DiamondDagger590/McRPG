@@ -1,22 +1,18 @@
 package us.eunoians.mcrpg.ability.impl.swords;
 
+import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.Event;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
-import us.eunoians.mcrpg.ability.ready.SwordReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
@@ -36,20 +32,15 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
 
 /**
- * This ability activates by attacking an enemy after readying the user's sword. The ability
- * increases the activation rate of {@link Bleed} while active.
+ * Serrated Strikes is an active ability activated via a click-combo sequence that increases
+ * the activation rate of {@link Bleed} while active.
  */
-public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ReadyAbility {
+public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable {
 
     public static final NamespacedKey SERRATED_STRIKES_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "serrated_strikes");
 
     public SerratedStrikes(@NotNull McRPG plugin) {
         super(plugin, SERRATED_STRIKES_KEY);
-        addReadyingComponent(SwordsComponents.SWORDS_READY_COMPONENT, PlayerInteractEvent.class, 0);
-        addReadyingComponent(SwordsComponents.SWORDS_READY_COMPONENT, PlayerInteractEntityEvent.class, 0);
-
-        addActivatableComponent(SwordsComponents.HOLDING_SWORD_ACTIVATE_COMPONENT, EntityDamageByEntityEvent.class, 0);
-        addActivatableComponent(SwordsComponents.SWORDS_ACTIVATE_ON_READY_COMPONENT, EntityDamageByEntityEvent.class, 1);
     }
 
     @NotNull
@@ -87,31 +78,47 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
         return "serrated_strikes";
     }
 
+    /**
+     * Activates Serrated Strikes via the combo system. Fires
+     * {@link SerratedStrikesActivateEvent} and, if not cancelled,
+     * marks the ability as active for its tier-dependent duration.
+     *
+     * @param abilityHolder The holder activating this ability.
+     * @return {@code true} if the ability executed, {@code false} if the
+     *         event was cancelled by a third-party listener.
+     */
     @Override
-    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        EntityDamageByEntityEvent damageEvent = (EntityDamageByEntityEvent) event;
-        LivingEntity entity = (LivingEntity) damageEvent.getEntity();
-        SerratedStrikesActivateEvent serratedStrikesActivateEvent = new SerratedStrikesActivateEvent(abilityHolder, entity, getDuration(getCurrentAbilityTier(abilityHolder)));
+    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
+        int duration = getDuration(getCurrentAbilityTier(abilityHolder));
+        SerratedStrikesActivateEvent serratedStrikesActivateEvent =
+                new SerratedStrikesActivateEvent(abilityHolder, duration);
         Bukkit.getPluginManager().callEvent(serratedStrikesActivateEvent);
 
         if (serratedStrikesActivateEvent.isCancelled()) {
             return false;
         }
         abilityHolder.addActiveAbility(this, serratedStrikesActivateEvent.getDuration());
-        putHolderOnCooldown(abilityHolder);
         return true;
+    }
+
+    /**
+     * Delegates to {@link #comboActivate(AbilityHolder)}. This ability has no activation
+     * components registered, so this method is never called via the event-listener path;
+     * it remains implemented to satisfy the {@link us.eunoians.mcrpg.ability.Ability} interface.
+     *
+     * @param abilityHolder The holder activating this ability.
+     * @param event         The triggering event (unused).
+     * @return The result of {@link #comboActivate(AbilityHolder)}.
+     */
+    @Override
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        return comboActivate(abilityHolder);
     }
 
     @NotNull
     @Override
     public Route getAbilityEnabledRoute() {
         return SwordsConfigFile.SERRATED_STRIKES_ENABLED;
-    }
-
-    @NotNull
-    @Override
-    public SwordReadyData getReadyData() {
-        return new SwordReadyData();
     }
 
     /**
@@ -124,11 +131,14 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "duration");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "duration");
+        Parser parser;
         if (swordsConfig.contains(tierRoute)) {
-            return swordsConfig.getInt(tierRoute);
+            parser = new Parser(swordsConfig.getString(tierRoute));
         } else {
-            return swordsConfig.getInt(allTiersRoute);
+            parser = new Parser(swordsConfig.getString(allTiersRoute));
         }
+        parser.setVariable("tier", tier);
+        return (int) parser.getValue();
     }
 
     /**
@@ -141,11 +151,14 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "bleed-activation-boost");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "bleed-activation-boost");
+        Parser parser;
         if (swordsConfig.contains(tierRoute)) {
-            return swordsConfig.getDouble(tierRoute);
+            parser = new Parser(swordsConfig.getString(tierRoute));
         } else {
-            return swordsConfig.getDouble(allTiersRoute);
+            parser = new Parser(swordsConfig.getString(allTiersRoute));
         }
+        parser.setVariable("tier", tier);
+        return parser.getValue();
     }
 
     @NotNull

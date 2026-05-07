@@ -10,20 +10,15 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
-import us.eunoians.mcrpg.ability.ready.HerbalismReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
@@ -49,7 +44,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * This ability allows players to harvest blocks in a radius around them.
  */
 public final class MassHarvest extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility,
-        ReloadableContentAbility, ReadyAbility, ComboActivatable {
+        ReloadableContentAbility, ComboActivatable {
 
     public static final NamespacedKey MASS_HARVEST_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "mass_harvest");
     private final ReloadableSet<CustomBlockWrapper> VALID_BLOCK_TYPES;
@@ -58,23 +53,12 @@ public final class MassHarvest extends McRPGAbility implements ConfigurableActiv
         super(mcRPG, MASS_HARVEST_KEY);
         this.VALID_BLOCK_TYPES = new ReloadableSet<>(getYamlDocument(), HerbalismConfigFile.MASS_HARVEST_VALID_BLOCKS,
                 strings -> strings.stream().map(CustomBlockWrapper::new).collect(Collectors.toSet()));
-        addReadyingComponent(HerbalismComponents.HERBALISM_READY_COMPONENT, PlayerInteractEvent.class, 0);
-        addReadyingComponent(HerbalismComponents.HERBALISM_READY_COMPONENT, PlayerInteractEntityEvent.class, 0);
-
-        addActivatableComponent(HerbalismComponents.HERBALISM_ACTIVATE_ON_READY_COMPONENT, PlayerInteractEvent.class, 0);
-        addActivatableComponent(HerbalismComponents.HOLDING_HOE_INTERACT_ACTIVATE_COMPONENT, PlayerInteractEvent.class, 1);
     }
 
     @NotNull
     @Override
     public NamespacedKey getSkillKey() {
         return Herbalism.HERBALISM_KEY;
-    }
-
-    @NotNull
-    @Override
-    public HerbalismReadyData getReadyData() {
-        return new HerbalismReadyData();
     }
 
     /**
@@ -123,15 +107,7 @@ public final class MassHarvest extends McRPGAbility implements ConfigurableActiv
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
-        Player player = playerInteractEvent.getPlayer();
-        McRPGPlayer mcRPGPlayer = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId()).orElseThrow(IllegalStateException::new);
-        abilityHolder.unreadyHolder();
-        boolean activated = performHarvest(abilityHolder, mcRPGPlayer);
-        if (activated) {
-            putHolderOnCooldown(abilityHolder);
-        }
-        return activated;
+        return comboActivate(abilityHolder);
     }
 
     @Override
@@ -146,7 +122,6 @@ public final class MassHarvest extends McRPGAbility implements ConfigurableActiv
 
     /**
      * Executes the core MassHarvest effect — firing the activate event and scheduling the pulse task.
-     * Called by both the ready-state path and the combo path.
      *
      * @param abilityHolder The {@link AbilityHolder} activating the ability.
      * @param mcRPGPlayer   The {@link McRPGPlayer} associated with the holder.

@@ -11,8 +11,6 @@ import org.bukkit.inventory.EntityEquipment;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
-import us.eunoians.mcrpg.ability.component.readyable.RightClickReadyComponent;
-import us.eunoians.mcrpg.ability.ready.WoodcuttingReadyData;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.skill.impl.woodcutting.WoodCutting;
 
@@ -23,21 +21,11 @@ import java.util.Set;
  */
 public class WoodcuttingComponents {
 
-    public static final WoodcuttingReadyComponent WOODCUTTING_READY_COMPONENT = new WoodcuttingReadyComponent();
-    public static final WoodcuttingActivateOnReadyComponent WOODCUTTING_ACTIVATE_ON_READY_COMPONENT = new WoodcuttingActivateOnReadyComponent();
     public static final HoldingAxeBreakBlockActivateComponent HOLDING_AXE_BREAK_BLOCK_ACTIVATE_COMPONENT = new HoldingAxeBreakBlockActivateComponent();
     public static final HoldingAxeInteractActivateComponent HOLDING_AXE_INTERACT_ACTIVATE_COMPONENT = new HoldingAxeInteractActivateComponent();
 
     private static final Set<Material> AXES = Set.of(Material.WOODEN_AXE, Material.STONE_AXE, Material.IRON_AXE, Material.COPPER_AXE,
             Material.DIAMOND_AXE, Material.GOLDEN_AXE, Material.NETHERITE_AXE);
-
-    private static class WoodcuttingReadyComponent implements RightClickReadyComponent {
-        @NotNull
-        @Override
-        public Set<Material> getValidMaterialsForActivation() {
-            return AXES;
-        }
-    }
 
     private static class HoldingAxeBreakBlockActivateComponent implements OnBlockBreakComponent {
 
@@ -68,13 +56,6 @@ public class WoodcuttingComponents {
             Player player = playerInteractEvent.getPlayer();
             EntityEquipment entityEquipment = player.getEquipment();
             return AXES.contains(entityEquipment.getItemInMainHand().getType()) && (playerInteractEvent.getAction() == Action.LEFT_CLICK_AIR || playerInteractEvent.getAction() == Action.LEFT_CLICK_BLOCK);
-        }
-    }
-
-    private static class WoodcuttingActivateOnReadyComponent implements EventActivatableComponent {
-        @Override
-        public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-            return abilityHolder.getReadiedAbility().isPresent() && abilityHolder.getReadiedAbility().get() instanceof WoodcuttingReadyData;
         }
     }
 }

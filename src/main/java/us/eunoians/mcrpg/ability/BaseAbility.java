@@ -9,13 +9,8 @@ import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponentAttribute;
 import us.eunoians.mcrpg.ability.component.cancel.EventCancellingComponent;
 import us.eunoians.mcrpg.ability.component.cancel.EventCancellingComponentAttribute;
-import us.eunoians.mcrpg.ability.component.readyable.EventReadyableComponent;
-import us.eunoians.mcrpg.ability.component.readyable.EventReadyableComponentAttribute;
-import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.exception.ability.EventNotRegisteredForActivationException;
-import us.eunoians.mcrpg.exception.ability.EventNotRegisteredForReadyingException;
-import us.eunoians.mcrpg.exception.ready.AbilityNotValidToReadyException;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -38,7 +33,6 @@ public abstract class BaseAbility implements Ability {
     private final NamespacedKey abilityKey;
     private final List<EventCancellingComponentAttribute> cancellingComponents;
     private final Map<Class<? extends Event>, List<EventActivatableComponentAttribute>> activatingAttributes;
-    private final Map<Class<? extends Event>, List<EventReadyableComponentAttribute>> readyAttributes;
     private final Plugin plugin;
 
     public BaseAbility(@NotNull Plugin plugin, @NotNull NamespacedKey abilityKey) {
@@ -46,7 +40,6 @@ public abstract class BaseAbility implements Ability {
         this.abilityKey = abilityKey;
         this.cancellingComponents = new ArrayList<>();
         this.activatingAttributes = new HashMap<>();
-        this.readyAttributes = new HashMap<>();
     }
 
     @NotNull
@@ -103,16 +96,6 @@ public abstract class BaseAbility implements Ability {
     }
 
     /**
-     * Checks to see if the provided {@link Event} is registered for readying this ability.
-     *
-     * @param event The {@link Event} to check.
-     * @return {@code true} if the provided {@link Event} is registered for readying this ability.
-     */
-    public boolean canEventReadyAbility(@NotNull Event event) {
-        return readyAttributes.containsKey(event.getClass());
-    }
-
-    /**
      * Checks to see if the provided {@link Event} has any {@link EventActivatableComponent}s that fail activation.
      * <p>
      * These {@link EventActivatableComponent} are processed in order of priority and the first failure will be returned in the
@@ -143,37 +126,6 @@ public abstract class BaseAbility implements Ability {
     }
 
     /**
-     * Checks to see if the provided {@link Event} has any {@link EventReadyableComponent}s that fail readying.
-     * <p>
-     * These {@link EventReadyableComponent} are processed in order of priority and the first failure will be returned in the
-     * {@link Optional}. If there are no failures, the {@link Optional} returned will be empty.
-     * <p>
-     * Additionally, if {@link #canEventReadyAbility(Event)}returns {@code false}, then a {@link EventNotRegisteredForReadyingException}
-     * will be fired.
-     *
-     * @param abilityHolder The {@link AbilityHolder} to check against.
-     * @param event         The {@link Event} to use for checking readying components.
-     * @return An {@link Optional} containing the first failing {@link EventReadyableComponent} or empty if there are no failures.
-     */
-    @NotNull
-    public Optional<EventReadyableComponent> checkIfComponentFailsReady(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        if (!canEventReadyAbility(event)) {
-            throw new EventNotRegisteredForReadyingException(event, this);
-        } else if (!(this instanceof ReadyAbility)) {
-            throw new AbilityNotValidToReadyException(abilityHolder, this);
-        }
-        EventReadyableComponent returnComponent = null;
-        for (EventReadyableComponentAttribute eventReadyableComponentAttribute : getReadyComponents(event.getClass())) {
-            EventReadyableComponent eventReadyableComponent = eventReadyableComponentAttribute.abilityComponent();
-            if (!isAbilityEnabled() || !eventReadyableComponent.shouldReady(abilityHolder, event)) {
-                returnComponent = eventReadyableComponent;
-                break;
-            }
-        }
-        return Optional.ofNullable(returnComponent);
-    }
-
-    /**
      * Adds the provided {@link EventCancellingComponent} as a component for cancelling events when this ability activates.
      * Components are processed in priority order, with the lowest priority being first.
      *
@@ -191,9 +143,10 @@ public abstract class BaseAbility implements Ability {
      * Adds the provided {@link EventActivatableComponent} as a component for activating this ability from the provided event class. Components
      * are processed in the priority order, with the lowest priority being first. This allows chaining of components and assumptions to be made in
      * later components as the prior components would need to have passed before the later ones are processed.
+     *
      * @param eventActivatableComponent The {@link EventActivatableComponent} to register
-     * @param clazz The class of the {@link Event} that can activate this ability
-     * @param priority The priority of this {@link EventActivatableComponent} for this {@link Event}
+     * @param clazz                     The class of the {@link Event} that can activate this ability
+     * @param priority                  The priority of this {@link EventActivatableComponent} for this {@link Event}
      */
     public void addActivatableComponent(@NotNull EventActivatableComponent eventActivatableComponent, @NotNull Class<? extends Event> clazz,
                                         int priority) {
@@ -204,66 +157,31 @@ public abstract class BaseAbility implements Ability {
     }
 
     /**
-     * Adds the provided {@link EventReadyableComponent} as a component for readying this ability from the provided event class. Components
-     * are processed in the priority order, with the lowest priority being first. This allows chaining of components and assumptions to be made in
-     * later components as the prior components would need to have passed before the later ones are processed.
-     * @param eventReadyableComponent The {@link EventReadyableComponent} to register
-     * @param clazz The class of the {@link Event} that can ready this ability
-     * @param priority The priority of this {@link EventReadyableComponent} for this {@link Event}
-     */
-    public void addReadyingComponent(@NotNull EventReadyableComponent eventReadyableComponent, @NotNull Class<? extends Event> clazz, int priority) {
-        List<EventReadyableComponentAttribute> newAttributes = getReadyComponents(clazz);
-        newAttributes.add(new EventReadyableComponentAttribute(eventReadyableComponent, clazz, priority));
-        readyAttributes.put(clazz, newAttributes);
-        sortReadyComponents();
-    }
-
-    /**
      * Gets a {@link List} of all {@link EventActivatableComponentAttribute}s that are registered for the provided
      * {@link Event} class.
+     *
      * @param clazz The {@link Event} class to get the {@link EventActivatableComponentAttribute} list of
      * @return A {@link List} of all {@link EventActivatableComponentAttribute}s that are registered for the provided
-     * {@link Event} class.
+     *         {@link Event} class.
      */
     private List<EventActivatableComponentAttribute> getActivatingComponents(Class<? extends Event> clazz) {
         return activatingAttributes.getOrDefault(clazz, new ArrayList<>());
     }
 
     /**
-     * Gets a {@link List} of all {@link EventReadyableComponentAttribute}s that are registered for the provided
-     * {@link Event} class.
-     * @param clazz The {@link Event} class to get the {@link EventReadyableComponentAttribute} list of
-     * @return A {@link List} of all {@link EventReadyableComponentAttribute}s that are registered for the provided
-     * {@link Event} class.
-     */
-    private List<EventReadyableComponentAttribute> getReadyComponents(Class<? extends Event> clazz) {
-        return readyAttributes.getOrDefault(clazz, new ArrayList<>());
-    }
-
-    /**
-     * Sorts all cancelling components based on their priority
+     * Sorts all cancelling components based on their priority.
      */
     private void sortCancellingComponents() {
         cancellingComponents.sort(Comparator.comparingInt(EventCancellingComponentAttribute::priority));
     }
 
     /**
-     * Sorts all activating components based on their priority
+     * Sorts all activating components based on their priority.
      */
     private void sortActivatingComponents() {
         for (Class<? extends Event> clazz : activatingAttributes.keySet()) {
             List<EventActivatableComponentAttribute> attributes = getActivatingComponents(clazz);
             attributes.sort(Comparator.comparingInt(EventActivatableComponentAttribute::priority));
-        }
-    }
-
-    /**
-     * Sorts all readying components based on their priority
-     */
-    private void sortReadyComponents() {
-        for (Class<? extends Event> clazz : readyAttributes.keySet()) {
-            List<EventReadyableComponentAttribute> attributes = getReadyComponents(clazz);
-            attributes.sort(Comparator.comparingInt(EventReadyableComponentAttribute::priority));
         }
     }
 }

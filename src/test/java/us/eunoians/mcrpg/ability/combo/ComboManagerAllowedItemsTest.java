@@ -53,9 +53,9 @@ class ComboManagerAllowedItemsTest extends McRPGBaseTest {
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(comboManager);
     }
 
-    @DisplayName("addAllowedItem makes item allowed; removeAllowedItem reverts it")
     @Test
-    void addAndRemoveStaticItem() {
+    @DisplayName("Given an item added via addAllowedItem, when isAllowedHeldItem is checked, then it returns true; after removeAllowedItem it returns false")
+    void addAllowedItem_makesItemAllowed_andRemoveReverts() {
         CustomItemWrapper sword = new CustomItemWrapper(new ItemStack(Material.DIAMOND_SWORD));
 
         assertFalse(comboManager.isAllowedHeldItem(new ItemStack(Material.DIAMOND_SWORD)));
@@ -67,10 +67,10 @@ class ComboManagerAllowedItemsTest extends McRPGBaseTest {
         assertFalse(comboManager.isAllowedHeldItem(new ItemStack(Material.DIAMOND_SWORD)));
     }
 
-    @DisplayName("registerAllowedItemSet contributes its items to isAllowedHeldItem")
     @Test
+    @DisplayName("Given a registered item set, when isAllowedHeldItem is checked for a set item, then it returns true")
     @SuppressWarnings("unchecked")
-    void registerAllowedItemSet_contributesItems() {
+    void registerAllowedItemSet_contributesItemsToAllowedCheck() {
         ItemStack axe = new ItemStack(Material.DIAMOND_AXE);
         CustomItemWrapper axeWrapper = new CustomItemWrapper(axe);
         ReloadableSet<CustomItemWrapper> contributed = mock(ReloadableSet.class);
@@ -82,10 +82,10 @@ class ComboManagerAllowedItemsTest extends McRPGBaseTest {
         assertTrue(comboManager.isAllowedHeldItem(axe));
     }
 
-    @DisplayName("unregisterAllowedItemSet removes contributed items from isAllowedHeldItem")
     @Test
+    @DisplayName("Given a registered then unregistered item set, when isAllowedHeldItem is checked for a set item, then it returns false")
     @SuppressWarnings("unchecked")
-    void unregisterAllowedItemSet_removesItems() {
+    void unregisterAllowedItemSet_removesItemsFromAllowedCheck() {
         ItemStack axe = new ItemStack(Material.DIAMOND_AXE);
         CustomItemWrapper axeWrapper = new CustomItemWrapper(axe);
         ReloadableSet<CustomItemWrapper> contributed = mock(ReloadableSet.class);
@@ -98,10 +98,10 @@ class ComboManagerAllowedItemsTest extends McRPGBaseTest {
         assertFalse(comboManager.isAllowedHeldItem(axe));
     }
 
-    @DisplayName("getAllowedItems returns merged snapshot including static and contributed items")
     @Test
+    @DisplayName("Given static and contributed items, when getAllowedItems is called, then it returns a merged snapshot of both")
     @SuppressWarnings("unchecked")
-    void getAllowedItems_returnsMergedSnapshot() {
+    void getAllowedItems_returnsMergedView_ofStaticAndContributedItems() {
         CustomItemWrapper sword = new CustomItemWrapper(new ItemStack(Material.DIAMOND_SWORD));
         CustomItemWrapper axe = new CustomItemWrapper(new ItemStack(Material.DIAMOND_AXE));
 
@@ -116,9 +116,9 @@ class ComboManagerAllowedItemsTest extends McRPGBaseTest {
         assertTrue(all.contains(axe));
     }
 
-    @DisplayName("AIR is always allowed regardless of item lists")
     @Test
-    void airIsAlwaysAllowed() {
+    @DisplayName("When isAllowedHeldItem is called with AIR, then it always returns true")
+    void isAllowedHeldItem_returnsTrue_forAir() {
         assertTrue(comboManager.isAllowedHeldItem(new ItemStack(Material.AIR)));
     }
 }

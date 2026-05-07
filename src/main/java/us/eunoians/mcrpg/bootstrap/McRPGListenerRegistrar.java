@@ -28,8 +28,6 @@ import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnPlayerMoveAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnSneakAbilityListener;
 import us.eunoians.mcrpg.listener.entity.EntitySpawnListener;
-import us.eunoians.mcrpg.listener.entity.holder.OnAbilityHolderReadyListener;
-import us.eunoians.mcrpg.listener.entity.holder.OnAbilityHolderUnreadyListener;
 import us.eunoians.mcrpg.listener.entity.player.CorePlayerLoadListener;
 import us.eunoians.mcrpg.listener.entity.player.CorePlayerUnloadListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerJoinListener;
@@ -111,8 +109,6 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new OnBlockBreakLevelListener(), plugin);
 
         // Ability listeners
-        Bukkit.getPluginManager().registerEvents(new OnAbilityHolderReadyListener(), plugin);
-        Bukkit.getPluginManager().registerEvents(new OnAbilityHolderUnreadyListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new OnAbilityUnlockListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new OnAbilityCooldownExpireListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new OnAbilityPutOnCooldownListener(), plugin);

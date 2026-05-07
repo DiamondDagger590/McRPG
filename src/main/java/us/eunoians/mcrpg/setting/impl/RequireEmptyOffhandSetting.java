@@ -16,11 +16,13 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * This setting allows players to require an empty offhand in order to ready their abilities.
- * <p>
- * This is useful as that way players don't get spammed with notifications as they try to place torches while holding a sword,
- * while still allowing players to disable the feature if they for example, want to hold food on their offhand while using unarmed.
+ * This setting previously allowed players to require an empty offhand in order to ready their abilities.
+ *
+ * @deprecated The ready-state activation model was removed in the mana ability system Phase 2.
+ *             This setting no longer affects gameplay because abilities are activated exclusively
+ *             via click-combo sequences. Scheduled for removal in a future release.
  */
+@Deprecated(forRemoval = true)
 public enum RequireEmptyOffhandSetting implements McRPGSetting {
 
     /**

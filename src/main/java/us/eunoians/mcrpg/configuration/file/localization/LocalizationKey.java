@@ -578,20 +578,6 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ABILITY_STILL_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_COOLDOWN_HEADER, "ability-still-on-cooldown"));
     public static final Route ABILITY_NO_LONGER_ON_COOLDOWN = Route.fromString(toRoutePath(ABILITY_COOLDOWN_HEADER, "ability-no-longer-on-cooldown"));
 
-    private static final String ABILITY_READY_HEADER = toRoutePath(ABILITY_HEADER, "ready");
-    private static final String HERBALISM_READY_HEADER = toRoutePath(ABILITY_READY_HEADER, "herbalism");
-    public static final Route HERBALISM_READY_MESSAGE = Route.fromString(toRoutePath(HERBALISM_READY_HEADER, "ready-message"));
-    public static final Route HERBALISM_UNREADY_MESSAGE = Route.fromString(toRoutePath(HERBALISM_READY_HEADER, "unready-message"));
-    private static final String MINING_READY_HEADER = toRoutePath(ABILITY_READY_HEADER, "mining");
-    public static final Route MINING_READY_MESSAGE = Route.fromString(toRoutePath(MINING_READY_HEADER, "ready-message"));
-    public static final Route MINING_UNREADY_MESSAGE = Route.fromString(toRoutePath(MINING_READY_HEADER, "unready-message"));
-    private static final String SWORDS_READY_HEADER = toRoutePath(ABILITY_READY_HEADER, "swords");
-    public static final Route SWORDS_READY_MESSAGE = Route.fromString(toRoutePath(SWORDS_READY_HEADER, "ready-message"));
-    public static final Route SWORDS_UNREADY_MESSAGE = Route.fromString(toRoutePath(SWORDS_READY_HEADER, "unready-message"));
-    private static final String WOODCUTTING_READY_HEADER = toRoutePath(ABILITY_READY_HEADER, "woodcutting");
-    public static final Route WOODCUTTING_READY_MESSAGE = Route.fromString(toRoutePath(WOODCUTTING_READY_HEADER, "ready-message"));
-    public static final Route WOODCUTTING_UNREADY_MESSAGE = Route.fromString(toRoutePath(WOODCUTTING_READY_HEADER, "unready-message"));
-
     private static final String ABILITY_UNLOCK_HEADER = toRoutePath(ABILITY_HEADER, "unlock");
     public static final Route ABILITY_UNLOCKED_MESSAGE = Route.fromString(toRoutePath(ABILITY_UNLOCK_HEADER, "ability-unlocked"));
     public static final Route ABILITY_ADDED_TO_LOADOUT_MESSAGE = Route.fromString(toRoutePath(ABILITY_UNLOCK_HEADER, "ability-added-to-loadout"));

@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.entity.holder;
 
-import com.diamonddagger590.mccore.task.core.CoreTask;
 import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -13,11 +12,7 @@ import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
-import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
-import us.eunoians.mcrpg.ability.ready.ReadyData;
 import us.eunoians.mcrpg.event.ability.AbilityCooldownExpireEvent;
-import us.eunoians.mcrpg.event.entity.AbilityHolderReadyEvent;
-import us.eunoians.mcrpg.event.entity.AbilityHolderUnreadyEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.Skill;
 
@@ -50,8 +45,6 @@ public class AbilityHolder {
     private final Map<NamespacedKey, Integer> abilityCooldownExpireTasks;
     private final Set<NamespacedKey> activeAbilities;
     private int upgradePoints;
-    private Optional<ReadyData> readiedAbility;
-    private int readiedAbilityExpireTaskId;
 
     public AbilityHolder(@NotNull McRPG mcRPG, @NotNull UUID uuid) {
         this.plugin = mcRPG;
@@ -61,7 +54,6 @@ public class AbilityHolder {
         this.abilityCooldownExpireTasks = new HashMap<>();
         this.activeAbilities = new HashSet<>();
         this.upgradePoints = 0;
-        this.readiedAbility = Optional.empty();
     }
 
     @NotNull
@@ -447,107 +439,6 @@ public class AbilityHolder {
     }
 
     /**
-     * Gets an {@link Optional} containing {@link ReadyData} representing the holder's
-     * ready state. The {@link Optional} will be empty if the holder is not currently ready.
-     * <p>
-     * The {@link ReadyData} is not tied to a specific ability, instead represents a possibly shared
-     * ready state. An example would be two skills that use an axe as the ready tool, WoodCutting and Axes.
-     * <p>
-     * Since both use an axe to ready, they both need to share the same type of {@link ReadyData}. It is then up
-     * to specific implementation (breaking a log or attacking an entity) to determine what ability is going to 'consume'
-     * the ready status.
-     *
-     * @return An {@link Optional} containing {@link ReadyData} representing the holder's
-     * ready state. The {@link Optional} will be empty if the holder is not currently ready.
-     */
-    @NotNull
-    public Optional<ReadyData> getReadiedAbility() {
-        return readiedAbility;
-    }
-
-    /**
-     * Manually marks this holder as no longer ready
-     */
-    public void unreadyHolder() {
-        unreadyHolder(false);
-    }
-
-    /**
-     * Manually marks this holder as no longer ready.
-     *
-     * @param autoExpired {@code true} if the holder is no longer ready due to the ready status
-     *                    auto expiring.
-     */
-    private void unreadyHolder(boolean autoExpired) {
-        if (readiedAbility.isPresent()) {
-            AbilityHolderUnreadyEvent abilityHolderUnreadyEvent = new AbilityHolderUnreadyEvent(this, readiedAbility.get(), autoExpired);
-            Bukkit.getPluginManager().callEvent(abilityHolderUnreadyEvent);
-            readiedAbility = Optional.empty();
-            Bukkit.getServer().getScheduler().cancelTask(readiedAbilityExpireTaskId);
-            readiedAbilityExpireTaskId = -1;
-        }
-    }
-
-    /**
-     * Marks the holder as ready using the provided {@link ReadyData}.
-     * <p>
-     * The {@link ReadyData} is not tied to a specific ability, instead represents a possibly shared
-     * ready state. An example would be two skills that use an axe as the ready tool, WoodCutting and Axes.
-     * <p>
-     * Since both use an axe to ready, they both need to share the same type of {@link ReadyData}. It is then up
-     * to specific implementation (breaking a log or attacking an entity) to determine what ability is going to 'consume'
-     * the ready status.
-     *
-     * @param readyData The {@link ReadyData} to mark the holder as ready with.
-     */
-    public void readyHolder(@NotNull ReadyData readyData) {
-        readiedAbility = Optional.of(readyData);
-        AbilityHolderReadyEvent abilityHolderReadyEvent = new AbilityHolderReadyEvent(this, readiedAbility.get());
-        Bukkit.getPluginManager().callEvent(abilityHolderReadyEvent);
-        CoreTask autoExpireTask = new DelayableCoreTask(McRPG.getInstance(), 2) {
-            @Override
-            public void run() {
-                // If the ability isn't already unreadied
-                if (readiedAbility.isPresent()) {
-                    unreadyHolder(true);
-                }
-            }
-        };
-        autoExpireTask.runTask();
-        readiedAbilityExpireTaskId = autoExpireTask.getBukkitTaskId();
-    }
-
-    /**
-     * Uses the {@link ReadyData} from the provided {@link ReadyAbility} to ready this holder.
-     * <p>
-     * The {@link ReadyData} is not tied to a specific ability, instead represents a possibly shared
-     * ready state. An example would be two skills that use an axe as the ready tool, WoodCutting and Axes.
-     * <p>
-     * Since both use an axe to ready, they both need to share the same type of {@link ReadyData}. It is then up
-     * to specific implementation (breaking a log or attacking an entity) to determine what ability is going to 'consume'
-     * the ready status.
-     *
-     * @param ability The {@link Ability} to use to ready this holder.
-     */
-    public void readyAbility(@NotNull ReadyAbility ability) {
-        readiedAbility = Optional.of(ability.getReadyData());
-        AbilityHolderReadyEvent abilityHolderReadyEvent = new AbilityHolderReadyEvent(this, readiedAbility.get());
-        Bukkit.getPluginManager().callEvent(abilityHolderReadyEvent);
-        // TODO https://github.com/DiamondDagger590/McRPG/issues/187
-        CoreTask autoExpireTask = new DelayableCoreTask(McRPG.getInstance(), 3) {
-            @Override
-            public void run() {
-                // If the ability isn't already unreadied
-                if (readiedAbility.isPresent()) {
-                    unreadyHolder(true);
-                }
-            }
-        };
-        autoExpireTask.runTask();
-        readiedAbilityExpireTaskId = autoExpireTask.getBukkitTaskId();
-    }
-
-    /**
      * Starts a timer that will fire a {@link AbilityCooldownExpireEvent} after the cooldown has expired for the provided
      * {@link Ability}.
      *
@@ -623,14 +514,12 @@ public class AbilityHolder {
     }
 
     /**
-     * Cleans up this holder from any ongoing tasks and resets it
-     * to a "base" state.
+     * Cleans up this holder from any ongoing tasks and resets it to a "base" state.
      */
     public void cleanupHolder() {
         for (int taskId : abilityCooldownExpireTasks.values()) {
             Bukkit.getScheduler().cancelTask(taskId);
         }
-        Bukkit.getScheduler().cancelTask(readiedAbilityExpireTaskId);
         activeAbilities.clear();
     }
 

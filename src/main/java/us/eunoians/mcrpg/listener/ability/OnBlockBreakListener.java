@@ -12,6 +12,5 @@ public class OnBlockBreakListener implements AbilityListener {
     public void onBlockBreak(BlockBreakEvent blockBreakEvent) {
         UUID uuid = blockBreakEvent.getPlayer().getUniqueId();
         activateAbilities(uuid, blockBreakEvent);
-        readyAbilities(uuid, blockBreakEvent);
     }
 }

@@ -7,17 +7,12 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
-import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
-import us.eunoians.mcrpg.ability.ready.HerbalismReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
@@ -45,23 +40,12 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * growing any crops along the way.
  */
 public final class VerdantSurge extends McRPGAbility implements ConfigurableActiveAbility,
-        ConfigurableSkillAbility, ReadyAbility {
+        ConfigurableSkillAbility {
 
     public static final NamespacedKey VERDANT_SURGE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "verdant_surge");
 
     public VerdantSurge(@NotNull McRPG mcRPG) {
         super(mcRPG, VERDANT_SURGE_KEY);
-        addReadyingComponent(HerbalismComponents.HERBALISM_READY_COMPONENT, PlayerInteractEvent.class, 0);
-        addReadyingComponent(HerbalismComponents.HERBALISM_READY_COMPONENT, PlayerInteractEntityEvent.class, 0);
-
-        addActivatableComponent(HerbalismComponents.HERBALISM_ACTIVATE_ON_READY_COMPONENT, PlayerInteractEvent.class, 0);
-        addActivatableComponent(HerbalismComponents.HOLDING_HOE_INTERACT_ACTIVATE_COMPONENT, PlayerInteractEvent.class, 1);
-    }
-
-    @NotNull
-    @Override
-    public HerbalismReadyData getReadyData() {
-        return new HerbalismReadyData();
     }
 
     @NotNull
@@ -107,13 +91,12 @@ public final class VerdantSurge extends McRPGAbility implements ConfigurableActi
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
-        Player player = playerInteractEvent.getPlayer();
-        McRPGPlayer mcRPGPlayer = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId()).orElseThrow(IllegalStateException::new);
+        McRPGPlayer mcRPGPlayer = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER).getPlayer(abilityHolder.getUUID())
+                .orElseThrow(IllegalStateException::new);
         int pulseCount = getPulseCount(getCurrentAbilityTier(abilityHolder));
         double pulseRadius = getRadius(getCurrentAbilityTier(abilityHolder));
         double delay = 0;
-        abilityHolder.unreadyHolder();
 
         VerdantSurgeActivateEvent verdantSurgeActivateEvent = new VerdantSurgeActivateEvent(abilityHolder, pulseCount, pulseRadius);
         Bukkit.getPluginManager().callEvent(verdantSurgeActivateEvent);

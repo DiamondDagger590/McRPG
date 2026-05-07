@@ -11,19 +11,15 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
-import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.OreScannerBlockType;
 import us.eunoians.mcrpg.ability.impl.mining.orescanner.ReloadableOreScannerBlocks;
-import us.eunoians.mcrpg.ability.impl.type.ReadyAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
-import us.eunoians.mcrpg.ability.ready.MiningReadyData;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
@@ -51,18 +47,13 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * all the different kinds of blocks around them while pointing them to the nearest, most valuable block.
  */
 public final class OreScanner extends McRPGAbility implements ConfigurableActiveAbility,
-        ReloadableContentAbility, ConfigurableSkillAbility, ReadyAbility, ComboActivatable {
+        ReloadableContentAbility, ConfigurableSkillAbility, ComboActivatable {
 
     public static final NamespacedKey ORE_SCANNER_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "ore_scanner");
     private final ReloadableOreScannerBlocks ORE_SCANNER_BLOCK_TYPES = new ReloadableOreScannerBlocks(getYamlDocument(), MiningConfigFile.ORE_SCANNER_BLOCK_TYPES);
 
     public OreScanner(@NotNull McRPG plugin) {
         super(plugin, ORE_SCANNER_KEY);
-        addReadyingComponent(MiningComponents.MINING_READY_COMPONENT, PlayerInteractEvent.class, 0);
-        addReadyingComponent(MiningComponents.MINING_READY_COMPONENT, PlayerInteractEntityEvent.class, 0);
-
-        addActivatableComponent(MiningComponents.MINING_ACTIVATE_ON_READY_COMPONENT, PlayerInteractEvent.class, 0);
-        addActivatableComponent(MiningComponents.HOLDING_PICKAXE_INTERACT_ACTIVATE_COMPONENT, PlayerInteractEvent.class, 1);
     }
 
     @NotNull
@@ -102,14 +93,7 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        PlayerInteractEvent playerInteractEvent = (PlayerInteractEvent) event;
-        Player player = playerInteractEvent.getPlayer();
-        abilityHolder.unreadyHolder();
-        boolean activated = performScan(abilityHolder, player);
-        if (activated) {
-            putHolderOnCooldown(abilityHolder);
-        }
-        return activated;
+        return comboActivate(abilityHolder);
     }
 
     @Override
@@ -229,12 +213,6 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
     @NotNull
     public Optional<OreScannerBlockType> getHighestWeightedScanType(@NotNull Set<OreScannerBlockType> scannerTypes) {
         return scannerTypes.stream().max(Comparator.comparingInt(OreScannerBlockType::weight));
-    }
-
-    @NotNull
-    @Override
-    public MiningReadyData getReadyData() {
-        return new MiningReadyData();
     }
 
     @Override

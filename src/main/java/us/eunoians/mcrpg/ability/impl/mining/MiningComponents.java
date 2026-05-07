@@ -11,8 +11,6 @@ import org.bukkit.inventory.EntityEquipment;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
-import us.eunoians.mcrpg.ability.component.readyable.RightClickReadyComponent;
-import us.eunoians.mcrpg.ability.ready.MiningReadyData;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
 import java.util.Set;
@@ -22,21 +20,11 @@ import java.util.Set;
  */
 public class MiningComponents {
 
-    public static final MiningReadyComponent MINING_READY_COMPONENT = new MiningReadyComponent();
-    public static final MiningActivateOnReadyComponent MINING_ACTIVATE_ON_READY_COMPONENT = new MiningActivateOnReadyComponent();
     public static final HoldingPickaxeBreakBlockActivateComponent HOLDING_PICKAXE_BREAK_BLOCK_ACTIVATE_COMPONENT = new HoldingPickaxeBreakBlockActivateComponent();
     public static final HoldingPickaxeInteractActivateComponent HOLDING_PICKAXE_INTERACT_ACTIVATE_COMPONENT = new HoldingPickaxeInteractActivateComponent();
 
     private static final Set<Material> PICKAXES = Set.of(Material.WOODEN_PICKAXE, Material.STONE_PICKAXE, Material.IRON_PICKAXE, Material.COPPER_PICKAXE,
             Material.DIAMOND_PICKAXE, Material.GOLDEN_PICKAXE, Material.NETHERITE_PICKAXE);
-
-    private static class MiningReadyComponent implements RightClickReadyComponent {
-        @NotNull
-        @Override
-        public Set<Material> getValidMaterialsForActivation() {
-            return PICKAXES;
-        }
-    }
 
     private static class HoldingPickaxeBreakBlockActivateComponent implements OnBlockBreakComponent {
 
@@ -67,13 +55,6 @@ public class MiningComponents {
             Player player = playerInteractEvent.getPlayer();
             EntityEquipment entityEquipment = player.getEquipment();
             return PICKAXES.contains(entityEquipment.getItemInMainHand().getType()) && (playerInteractEvent.getAction() == Action.LEFT_CLICK_AIR || playerInteractEvent.getAction() == Action.LEFT_CLICK_BLOCK);
-        }
-    }
-
-    private static class MiningActivateOnReadyComponent implements EventActivatableComponent {
-        @Override
-        public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-            return abilityHolder.getReadiedAbility().isPresent() && abilityHolder.getReadiedAbility().get() instanceof MiningReadyData;
         }
     }
 }

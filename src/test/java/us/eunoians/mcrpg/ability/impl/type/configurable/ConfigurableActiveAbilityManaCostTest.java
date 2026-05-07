@@ -63,9 +63,9 @@ class ConfigurableActiveAbilityManaCostTest extends McRPGBaseTest {
                 .thenReturn(GLOBAL_MINIMUM);
     }
 
-    @DisplayName("Formula with tier variable evaluates correctly — tier 1 yields 43")
     @Test
-    void formulaEvaluatesWithTierVariable() {
+    @DisplayName("Given a mana-cost formula, when getManaCost is called at tier 1, then the formula is evaluated correctly")
+    void getManaCost_evaluatesFormulaWithTier() {
         ability.tier = 1;
         Route tier1ManaRoute = Route.addTo(Route.addTo(TIER_CONFIG_ROUTE, "tier-1"), "mana-cost");
         Route allTiersManaRoute = Route.addTo(Route.addTo(TIER_CONFIG_ROUTE, "all-tiers"), "mana-cost");
@@ -79,9 +79,9 @@ class ConfigurableActiveAbilityManaCostTest extends McRPGBaseTest {
         assertEquals(43, cost);
     }
 
-    @DisplayName("Computed value below globalMinimum is floored to globalMinimum")
     @Test
-    void computedValueBelowMinimumIsFloored() {
+    @DisplayName("Given a formula that evaluates below the global minimum, when getManaCost is called, then it returns the global minimum")
+    void getManaCost_returnsGlobalMinimum_whenComputedValueIsBelow() {
         ability.tier = 10;
         Route tier10ManaRoute = Route.addTo(Route.addTo(TIER_CONFIG_ROUTE, "tier-10"), "mana-cost");
         Route allTiersManaRoute = Route.addTo(Route.addTo(TIER_CONFIG_ROUTE, "all-tiers"), "mana-cost");
@@ -95,9 +95,9 @@ class ConfigurableActiveAbilityManaCostTest extends McRPGBaseTest {
         assertEquals(GLOBAL_MINIMUM, cost);
     }
 
-    @DisplayName("Tier-specific mana-cost route takes precedence over all-tiers route")
     @Test
-    void tierSpecificRouteHasPrecedence() {
+    @DisplayName("Given both a tier-specific and an all-tiers route, when getManaCost is called, then the tier-specific route takes precedence")
+    void getManaCost_usesTierSpecificRoute_whenPresent() {
         ability.tier = 2;
         Route tier2ManaRoute = Route.addTo(Route.addTo(TIER_CONFIG_ROUTE, "tier-2"), "mana-cost");
         Route allTiersManaRoute = Route.addTo(Route.addTo(TIER_CONFIG_ROUTE, "all-tiers"), "mana-cost");

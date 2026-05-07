@@ -127,9 +127,9 @@ class AbilityListenerManaTest extends McRPGBaseTest {
         listener = new AbilityListener() {};
     }
 
-    @DisplayName("Sufficient mana: ability activates and mana is consumed")
     @Test
-    void sufficientMana_activatesAndConsumes() {
+    @DisplayName("Given sufficient mana, when activateAbilities is called, then the ability activates and mana is consumed")
+    void activateAbilities_consumesMana_whenAbilityActivates() {
         stubAbility.activateReturn = true;
         PlayerStatInstance mana = getMana();
         assertEquals(MANA_BASE, mana.getCurrent());
@@ -139,9 +139,9 @@ class AbilityListenerManaTest extends McRPGBaseTest {
         assertEquals(MANA_BASE - MANA_COST, mana.getCurrent());
     }
 
-    @DisplayName("Insufficient mana: ability is skipped and mana is unchanged")
     @Test
-    void insufficientMana_skipsActivation() {
+    @DisplayName("Given insufficient mana, when activateAbilities is called, then the ability is skipped and mana is unchanged")
+    void activateAbilities_skipsAbility_whenManaInsufficient() {
         PlayerStatInstance mana = getMana();
         mana.consume(MANA_BASE - (MANA_COST - 1)); // leave MANA_COST - 1 remaining
         double manaBefore = mana.getCurrent();
@@ -151,9 +151,9 @@ class AbilityListenerManaTest extends McRPGBaseTest {
         assertEquals(manaBefore, mana.getCurrent(), 1e-9);
     }
 
-    @DisplayName("PlayerStatConsumeEvent cancelled: activation skipped, no consumption")
     @Test
-    void consumeEventCancelled_skipsActivationAndConsumption() {
+    @DisplayName("Given a listener that cancels the consume event, when activateAbilities is called, then activation is skipped and mana is unchanged")
+    void activateAbilities_skipsActivation_whenConsumeEventIsCancelled() {
         PlayerStatInstance mana = getMana();
         double manaBefore = mana.getCurrent();
 
@@ -166,9 +166,9 @@ class AbilityListenerManaTest extends McRPGBaseTest {
         assertEquals(manaBefore, mana.getCurrent(), 1e-9);
     }
 
-    @DisplayName("activateAbility returns false: mana is refunded")
     @Test
-    void activationReturnsFalse_refundsMana() {
+    @DisplayName("Given an ability that returns false from activateAbility, when activateAbilities is called, then mana is refunded")
+    void activateAbilities_refundsMana_whenActivationReturnsFalse() {
         stubAbility.activateReturn = false;
         PlayerStatInstance mana = getMana();
         double manaBefore = mana.getCurrent();

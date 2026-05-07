@@ -24,24 +24,6 @@ ability:
     # The message to send to the player whenever an ability is no longer on cooldown
     # Supports <ability> as a placeholder for the ability that was on cooldown.
     ability-no-longer-on-cooldown: "<gold><ability> <gray>is now off cooldown!"
-  # Configure messages for when abilities are readied or unreadied.
-  ready:
-    # Messages for the Herbalism skill
-    herbalism:
-      ready-message: "<gray>You raise your hoe."
-      unready-message: "<gray>You lower your hoe."
-    # Messages for the Mining skill
-    mining:
-      ready-message: "<gray>You ready your pickaxe."
-      unready-message: "<gray>You lower your pickaxe."
-    # Messages for the Swords skill
-    swords:
-      ready-message: "<gray>You raise your sword."
-      unready-message: "<gray>You lower your sword."
-    # Messages for the Woodcutting skill
-    woodcutting:
-      ready-message: "<gray>You raise your axe."
-      unready-message: "<gray>You lower your axe."
   # Configure messages for when abilities are unlocked
   # Supports <ability> as a placeholder for the ability name
   unlock:
