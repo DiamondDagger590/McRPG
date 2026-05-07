@@ -109,6 +109,8 @@ ability-configuration:
         pulses: 1+(.5*tier)
         pulse-radius: 5+(1.6*tier)
         cooldown: 30-(3.5*tier)
+        # Mana cost formula. Variable: tier (1-based). Reference value — tuned during Phase 4 balance pass.
+        mana-cost: "42-(5.5*tier)"
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:verdant_surge_upgrade"
       tier-2:

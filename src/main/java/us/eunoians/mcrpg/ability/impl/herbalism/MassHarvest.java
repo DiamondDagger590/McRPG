@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.MANA_COST;
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.RADIUS;
 
 /**
@@ -172,6 +173,7 @@ public final class MassHarvest extends McRPGAbility implements ConfigurableActiv
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put(RADIUS.getKey(), Integer.toString(getRadius(getCurrentAbilityTier(player.asSkillHolder()))));
         placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
+        placeholders.put(MANA_COST.getKey(), Integer.toString(getManaCost(player.asSkillHolder())));
         return placeholders;
     }
 

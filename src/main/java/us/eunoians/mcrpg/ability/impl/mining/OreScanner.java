@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
+import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.Methods;
 import dev.dejvokep.boostedyaml.YamlDocument;
@@ -23,9 +24,11 @@ import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.mining.OreScannerActivateEvent;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 import us.eunoians.mcrpg.task.glow.BlockRemoveGlowTask;
@@ -40,6 +43,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.MANA_COST;
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.RANGE;
 
 /**
@@ -152,13 +156,24 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
             player.teleport(Methods.lookAt(playerLocation, toPoint));
         });
 
+        McRPGPlayerManager mcRPGPlayerManager = getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
+        var mcRPGPlayerOpt = mcRPGPlayerManager.getPlayer(player.getUniqueId());
+        McRPGLocalizationManager localizationManager = getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+
         instancesOfBlocks.keySet().forEach(oreScannerBlockType -> {
             Set<Location> locations = instancesOfBlocks.get(oreScannerBlockType);
             BlockStartGlowTask blockStartGlowTask = new BlockStartGlowTask(player, oreScannerBlockType, locations);
             blockStartGlowTask.runTask();
             BlockRemoveGlowTask blockRemoveGlowTask = new BlockRemoveGlowTask(player, locations);
             blockRemoveGlowTask.runTask();
-            player.sendMessage(getPlugin().getMiniMessage().deserialize("<gray>You've detected <gold>" + locations.size() + " " + oreScannerBlockType.typeName() + "</gold> near you."));
+            mcRPGPlayerOpt.ifPresent(mcRPGPlayer ->
+                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
+                        mcRPGPlayer, LocalizationKey.ORE_SCANNER_BLOCK_DETECTED,
+                        Map.of("count", String.valueOf(locations.size()),
+                               "block_type", oreScannerBlockType.typeName())))
+            );
         });
         return true;
     }
@@ -179,11 +194,14 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
         YamlDocument miningConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "range");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "range");
+        Parser parser;
         if (miningConfig.contains(tierRoute)) {
-            return miningConfig.getInt(tierRoute);
+            parser = new Parser(miningConfig.getString(tierRoute));
         } else {
-            return miningConfig.getInt(allTiersRoute);
+            parser = new Parser(miningConfig.getString(allTiersRoute));
         }
+        parser.setVariable("tier", tier);
+        return (int) parser.getValue();
     }
 
     /**
@@ -232,6 +250,7 @@ public final class OreScanner extends McRPGAbility implements ConfigurableActive
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put(RANGE.getKey(), Integer.toString(getRange(getCurrentAbilityTier(player.asSkillHolder()))));
         placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
+        placeholders.put(MANA_COST.getKey(), Integer.toString(getManaCost(player.asSkillHolder())));
         return placeholders;
     }
 }

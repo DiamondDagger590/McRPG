@@ -30,6 +30,7 @@ import java.util.Set;
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.ABILITY_DURATION;
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.ACTIVATION_CHANCE_INCREASE;
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.MANA_COST;
 
 /**
  * Serrated Strikes is an active ability activated via a click-combo sequence that increases
@@ -175,6 +176,7 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
         placeholders.put(ABILITY_DURATION.getKey(), Integer.toString(getDuration(tier)));
         placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
         placeholders.put(ACTIVATION_CHANCE_INCREASE.getKey(), McRPGMethods.getChanceNumberFormat().format(getBoostToBleedActivation(tier)));
+        placeholders.put(MANA_COST.getKey(), Integer.toString(getManaCost(player.asSkillHolder())));
         return placeholders;
     }
 }

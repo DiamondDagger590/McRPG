@@ -153,6 +153,7 @@ public class OnComboCompleteListener implements Listener {
         boolean activated = comboAbility.comboActivate(abilityHolder);
         if (!activated) {
             manaInstance.restore(effectiveCost);
+            return;
         }
 
         if (comboAbility instanceof CooldownableAbility cooldownableAbility) {

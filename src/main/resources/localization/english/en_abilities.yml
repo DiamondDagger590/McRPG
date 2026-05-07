@@ -179,6 +179,7 @@ ability:
           - '<gray>Tier: <gold><tier>'
           - '<gray>Range: <gold><range>'
           - '<gray>Cooldown: <gold><cooldown>'
+      block-detected: "<gray>You've detected <gold><count> <block_type></gold> near you."
     remote-transfer:
       display-item:
         name: "<red><ability></red>"

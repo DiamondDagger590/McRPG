@@ -10,6 +10,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
@@ -30,6 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.MANA_COST;
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.PULSE_COUNT;
 import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.RADIUS;
 
@@ -40,7 +42,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * growing any crops along the way.
  */
 public final class VerdantSurge extends McRPGAbility implements ConfigurableActiveAbility,
-        ConfigurableSkillAbility {
+        ConfigurableSkillAbility, ComboActivatable {
 
     public static final NamespacedKey VERDANT_SURGE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "verdant_surge");
 
@@ -89,14 +91,50 @@ public final class VerdantSurge extends McRPGAbility implements ConfigurableActi
         return "verdant_surge";
     }
 
+    /**
+     * Delegates to {@link #comboActivate(AbilityHolder)}. This ability has no activation
+     * components registered, so this method is never called via the event-listener path;
+     * it remains implemented to satisfy the {@link us.eunoians.mcrpg.ability.Ability} interface.
+     *
+     * @param abilityHolder The holder activating this ability.
+     * @param event         The triggering event (unused).
+     * @return The result of {@link #comboActivate(AbilityHolder)}.
+     */
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        McRPGPlayer mcRPGPlayer = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
-                .manager(McRPGManagerKey.PLAYER).getPlayer(abilityHolder.getUUID())
-                .orElseThrow(IllegalStateException::new);
+        return comboActivate(abilityHolder);
+    }
+
+    /**
+     * Activates Verdant Surge via the combo system. Resolves the
+     * {@link McRPGPlayer}, fires {@link VerdantSurgeActivateEvent},
+     * and schedules pulse tasks if the event is not cancelled.
+     *
+     * @param abilityHolder The holder activating this ability.
+     * @return {@code true} if the ability executed, {@code false} if the
+     *         player could not be resolved or the event was cancelled.
+     */
+    @Override
+    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
+        var playerOpt = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER).getPlayer(abilityHolder.getUUID());
+        if (playerOpt.isEmpty()) {
+            return false;
+        }
+        return performVerdantSurge(abilityHolder, playerOpt.get());
+    }
+
+    /**
+     * Executes the core Verdant Surge effect — firing the activate event
+     * and scheduling pulse tasks.
+     *
+     * @param abilityHolder The {@link AbilityHolder} activating the ability.
+     * @param mcRPGPlayer   The {@link McRPGPlayer} associated with the holder.
+     * @return {@code true} if the surge was started successfully (event not cancelled).
+     */
+    private boolean performVerdantSurge(@NotNull AbilityHolder abilityHolder, @NotNull McRPGPlayer mcRPGPlayer) {
         int pulseCount = getPulseCount(getCurrentAbilityTier(abilityHolder));
         double pulseRadius = getRadius(getCurrentAbilityTier(abilityHolder));
-        double delay = 0;
 
         VerdantSurgeActivateEvent verdantSurgeActivateEvent = new VerdantSurgeActivateEvent(abilityHolder, pulseCount, pulseRadius);
         Bukkit.getPluginManager().callEvent(verdantSurgeActivateEvent);
@@ -104,7 +142,7 @@ public final class VerdantSurge extends McRPGAbility implements ConfigurableActi
             return false;
         }
         abilityHolder.addActiveAbility(this);
-        putHolderOnCooldown(abilityHolder);
+        double delay = 0;
         for (int i = 0; i < verdantSurgeActivateEvent.getPulseCount(); i++) {
             VerdantSurgePulseTask verdantSurgePulseTask = new VerdantSurgePulseTask(this.getPlugin(), mcRPGPlayer, delay, verdantSurgeActivateEvent.getMaxPulseRadius());
             verdantSurgePulseTask.runTask();
@@ -161,6 +199,7 @@ public final class VerdantSurge extends McRPGAbility implements ConfigurableActi
         placeholders.put(RADIUS.getKey(), Double.toString(getRadius(getCurrentAbilityTier(player.asSkillHolder()))));
         placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
         placeholders.put(PULSE_COUNT.getKey(), Long.toString(getPulseCount(getCurrentAbilityTier(player.asSkillHolder()))));
+        placeholders.put(MANA_COST.getKey(), Integer.toString(getManaCost(player.asSkillHolder())));
         return placeholders;
     }
 

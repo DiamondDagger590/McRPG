@@ -246,6 +246,8 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
                 Double.toString(getDamage(getCurrentAbilityTier(player.asSkillHolder()))));
         placeholders.put(AbilityItemPlaceholderKeys.COOLDOWN.getKey(),
                 Long.toString(getCooldown(player.asSkillHolder())));
+        placeholders.put(AbilityItemPlaceholderKeys.MANA_COST.getKey(),
+                Integer.toString(getManaCost(player.asSkillHolder())));
         return placeholders;
     }
 

@@ -27,6 +27,7 @@ public enum AbilityItemPlaceholderKeys {
     EXPERIENCE_DROPPED("experience-dropped"),
     MINIMUM_HUNGER("minimum-hunger"),
     PULSE_COUNT("pulse-count"),
+    MANA_COST("mana-cost"),
 
     ;
 

@@ -612,6 +612,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ITS_A_TRIPLE_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(ITS_A_TRIPLE_HEADER, "display-item"));
     private static final String ORE_SCANNER_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "ore-scanner");
     public static final Route ORE_SCANNER_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(ORE_SCANNER_HEADER, "display-item"));
+    public static final Route ORE_SCANNER_BLOCK_DETECTED = Route.fromString(toRoutePath(ORE_SCANNER_HEADER, "block-detected"));
     private static final String REMOTE_TRANSFER_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "remote-transfer");
     public static final Route REMOTE_TRANSFER_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(REMOTE_TRANSFER_HEADER, "display-item"));
     private static final String DRYADS_GIFT_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "dryads-gift");
