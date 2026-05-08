@@ -289,37 +289,27 @@ ability-configuration:
         upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:serrated_strikes_upgrade"
-        # Mana cost formula. Variable: tier (1-based). Reference values: T1=48.5, T3=35.5, T5=22.5. Reference value — tuned during Phase 4 balance pass.
-        mana-cost: "55-(6.5*tier)"
+        # Balance: Medium bucket (combat buff). T1=47 (2 casts from full), T5=29 (3 casts from full).
+        mana-cost: "52-(4.5*tier)"
+        cooldown: "20-(1.5*tier)"
+        duration: "1+(1.8*tier)"
+        bleed-activation-boost: "2.5+(2.5*tier)"
       tier-1:
         unlock-level: 1
-        cooldown: 240
-        duration: 2
-        bleed-activation-boost: 5.0
       tier-2:
         unlock-level: 2
         upgrade-quest: "mcrpg:serrated_strikes_tier2"
-        cooldown: 220
-        duration: 3
-        bleed-activation-boost: 7.5
       tier-3:
         unlock-level: 3
         upgrade-quest: "mcrpg:serrated_strikes_tier3"
-        cooldown: 200
-        duration: 5
-        bleed-activation-boost: 10.0
       tier-4:
         upgrade-point-cost: 2
         unlock-level: 700
         upgrade-quest: "mcrpg:serrated_strikes_tier4"
-        cooldown: 160
-        duration: 7
       tier-5:
         upgrade-point-cost: 2
         unlock-level: 850
         upgrade-quest: "mcrpg:serrated_strikes_tier5"
-        cooldown: 120
-        duration: 10
   rage-spike:
     enabled: true
     amount-of-tiers: 5
@@ -340,26 +330,22 @@ ability-configuration:
         upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:rage_spike_upgrade"
-        # Mana cost formula. Variable: tier (1-based). Reference value — tuned during Phase 4 balance pass.
-        mana-cost: "50-(7*tier)"
+        # Balance: Light bucket (combat/mobility). T1=30 (3 casts from full), T5=16 (6 casts from full).
+        mana-cost: "34-(3.5*tier)"
+        cooldown: 1
       tier-1:
         unlock-level: 1
-        cooldown: 10
       tier-2:
         unlock-level: 2
         upgrade-quest: "mcrpg:rage_spike_tier2"
-        cooldown: 10
       tier-3:
         unlock-level: 3
         upgrade-quest: "mcrpg:rage_spike_tier3"
-        cooldown: 10
       tier-4:
         upgrade-point-cost: 2
         unlock-level: 700
         upgrade-quest: "mcrpg:rage_spike_tier4"
-        cooldown: 10
       tier-5:
         upgrade-point-cost: 2
         unlock-level: 850
         upgrade-quest: "mcrpg:rage_spike_tier5"
-        cooldown: 10

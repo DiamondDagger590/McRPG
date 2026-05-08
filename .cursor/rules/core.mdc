@@ -38,9 +38,15 @@ Players always implement all three. Non-player entities use `AbilityHolder` dire
 | SkillHolder | AbilityHolder that also has levelable skills |
 | McRPGPlayer | Concrete player — implements SkillHolder, LoadoutHolder, and CorePlayer |
 | Tier | Enhancement level of an ability; higher tiers change mechanics, not just stats |
-| Ready State | "Charged" intermediate state before activation; shared per tool, auto-expires ~3s |
+| Mana | Per-player resource pool consumed on active ability activation. Tracked via `PlayerStatInstance` keyed by `McRPGPlayerStat.MANA`. Regenerates passively at a flat rate |
+| Combo Activation | Click-combo sequences (RRR, RRL, RLR) that trigger active abilities. All active abilities activate exclusively via combos gated by mana. Managed by `ComboManager` |
+| ComboActivatable | Interface marking an active ability as combo-eligible. Extends `ManaAbility`. Provides `comboActivate(AbilityHolder)` returning boolean |
+| ManaAbility | Interface declaring `getManaCost(AbilityHolder)`. Implemented by `ComboActivatable` and `ConfigurableActiveAbility` |
+| PlayerStat | Abstract base for per-player tracked stats (mana, health). Registered in `PlayerStatRegistry`. Instance state in `PlayerStatData`/`PlayerStatInstance` |
+| PlayerStatModifier | Extensible class keyed by `NamespacedKey` for flat/percent bonuses to a stat's effective max |
+| PlayerStatConsumeEvent | Cancellable event fired before every `PlayerStatInstance.consume()` call. Allows third-party cost modification or cancellation |
 | Cooldown | Time lock applied to an ability after it activates |
-| Component | Modular activation/cancel/ready logic registered on an ability (priority-ordered) |
+| Component | Modular activation/cancel logic registered on an ability (priority-ordered) |
 | Attribute | `AbilityAttribute<T>` in `AbilityData` — per-holder ability state, no reflection |
 | ContentExpansion | Module bundling skills, abilities, statistics, settings, and localization for registration |
 | StatisticContent | Wrapper pairing a McCore `Statistic` with an expansion key for content-pack registration |
@@ -83,7 +89,7 @@ YamlDocument config = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manag
 |------|-----------|---------|
 | Abstract base | `Base` prefix | `BaseAbility`, `BaseSkill` |
 | McRPG native impl | `McRPG` prefix | `McRPGAbility`, `McRPGPlayer` |
-| DTOs | `Data` suffix | `AbilityData`, `ReadyData` |
+| DTOs | `Data` suffix | `AbilityData`, `SkillHolderData` |
 | DAOs | `DAO` suffix | `SkillDAO`, `LoadoutAbilityDAO` |
 | Registries | `Registry` suffix | `AbilityRegistry`, `SkillRegistry` |
 | Custom events | `Event` suffix | `BleedActivateEvent` |
@@ -128,6 +134,8 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - **No blocking `.get()` / `.join()` on a `CompletableFuture` from the main thread** — deadlocks when the future's completion path needs the main-thread scheduler
 - **No entity or player object references in long-lived collections** — store `UUID` instead; holding `Entity`/`Player` objects prevents GC of unloaded entities
 - **No unbounded `Map` or `Set` fields without a documented eviction strategy** — insert-only caches are memory leaks; document the cleanup lifecycle event in a Javadoc comment
+- **No `putHolderOnCooldown()` inside `comboActivate()`** — the combo listener (`OnComboCompleteListener`) manages cooldown application for combo-activated abilities. Calling it inside the ability causes double-cooldown
+- **No void-return `comboActivate()` or `activateAbility()`** — both return `boolean` (`true` = executed, `false` = internally cancelled). The boolean enables mana refund and conditional cooldown in callers
 
 ## Mana Balance Framework
 

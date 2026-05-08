@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
+import com.diamonddagger590.mccore.parser.Parser;
 import org.bukkit.NamespacedKey;
 import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.LivingEntity;
@@ -112,11 +113,14 @@ public final class Vampire extends McRPGAbility implements ConfigurableTierableA
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "vampire-activation-chance");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "vampire-activation-chance");
+        Parser parser;
         if (swordsConfig.contains(tierRoute)) {
-            return swordsConfig.getDouble(tierRoute);
+            parser = new Parser(swordsConfig.getString(tierRoute));
         } else {
-            return swordsConfig.getDouble(allTiersRoute);
+            parser = new Parser(swordsConfig.getString(allTiersRoute));
         }
+        parser.setVariable("tier", tier);
+        return parser.getValue();
     }
 
     /**
@@ -129,11 +133,14 @@ public final class Vampire extends McRPGAbility implements ConfigurableTierableA
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "amount-to-heal");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "amount-to-heal");
+        Parser parser;
         if (swordsConfig.contains(tierRoute)) {
-            return swordsConfig.getInt(tierRoute);
+            parser = new Parser(swordsConfig.getString(tierRoute));
         } else {
-            return swordsConfig.getInt(allTiersRoute);
+            parser = new Parser(swordsConfig.getString(allTiersRoute));
         }
+        parser.setVariable("tier", tier);
+        return (int) parser.getValue();
     }
 
     @NotNull

@@ -108,9 +108,10 @@ ability-configuration:
         unlock-level: 1*tier
         pulses: 1+(.5*tier)
         pulse-radius: 5+(1.6*tier)
-        cooldown: 30-(3.5*tier)
-        # Mana cost formula. Variable: tier (1-based). Reference value — tuned during Phase 4 balance pass.
-        mana-cost: "42-(5.5*tier)"
+        # Balance: Medium bucket (utility sustain). T1=43 (2 casts from full), T5=27 (3 casts from full).
+        # Tandem partner: MassHarvest. Combined T1=118 (exceeds pool), combined T5=82 (fits with 18 remaining).
+        cooldown: "14-(1*tier)"
+        mana-cost: "47-(4*tier)"
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:verdant_surge_upgrade"
       tier-2:
@@ -141,11 +142,12 @@ ability-configuration:
         upgrade-point-cost: 1
         unlock-level: 1*tier
         pulse-radius: 5+(1.6*tier)
-        cooldown: 30-(3.5*tier)
+        # Balance: Heavy bucket (powerful utility). T1=75 (1 cast from full), T5=55 (still 55% of pool).
+        # Tandem partner: VerdantSurge. Combined T1=118 (exceeds pool), combined T5=82 (fits with 18 remaining).
+        cooldown: "18-(1*tier)"
+        mana-cost: "80-(5*tier)"
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:mass_harvest_upgrade"
-        # Mana cost formula. Variable: tier (1-based). Reference value — tuned during Phase 4 balance pass.
-        mana-cost: "60-(8*tier)"
       tier-2:
         unlock-level: 2
         upgrade-quest: "mcrpg:mass_harvest_tier2"

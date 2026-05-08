@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
+import com.diamonddagger590.mccore.parser.Parser;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
@@ -107,11 +108,14 @@ public final class EnhancedBleed extends McRPGAbility implements ConfigurableTie
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "enhanced-bleed-base-damage-increase");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "enhanced-bleed-base-damage-increase");
+        Parser parser;
         if (swordsConfig.contains(tierRoute)) {
-            return swordsConfig.getInt(tierRoute);
+            parser = new Parser(swordsConfig.getString(tierRoute));
         } else {
-            return swordsConfig.getInt(allTiersRoute);
+            parser = new Parser(swordsConfig.getString(allTiersRoute));
         }
+        parser.setVariable("tier", tier);
+        return (int) parser.getValue();
     }
 
     /**
@@ -124,11 +128,14 @@ public final class EnhancedBleed extends McRPGAbility implements ConfigurableTie
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "enhanced-bleed-activation-chance");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "enhanced-bleed-activation-chance");
+        Parser parser;
         if (swordsConfig.contains(tierRoute)) {
-            return swordsConfig.getDouble(tierRoute);
+            parser = new Parser(swordsConfig.getString(tierRoute));
         } else {
-            return swordsConfig.getDouble(allTiersRoute);
+            parser = new Parser(swordsConfig.getString(allTiersRoute));
         }
+        parser.setVariable("tier", tier);
+        return parser.getValue();
     }
 
     /**
@@ -141,11 +148,14 @@ public final class EnhancedBleed extends McRPGAbility implements ConfigurableTie
         YamlDocument swordsConfig = getYamlDocument();
         Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "enhanced-bleed-damage-boost");
         Route tierRoute = Route.addTo(getRouteForTier(tier), "enhanced-bleed-damage-boost");
+        Parser parser;
         if (swordsConfig.contains(tierRoute)) {
-            return swordsConfig.getInt(tierRoute);
+            parser = new Parser(swordsConfig.getString(tierRoute));
         } else {
-            return swordsConfig.getInt(allTiersRoute);
+            parser = new Parser(swordsConfig.getString(allTiersRoute));
         }
+        parser.setVariable("tier", tier);
+        return (int) parser.getValue();
     }
 
     @NotNull

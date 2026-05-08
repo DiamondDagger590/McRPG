@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.ability.impl.mining;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
+import com.diamonddagger590.mccore.parser.Parser;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
@@ -101,7 +102,17 @@ public final class ItsATriple extends McRPGAbility implements PassiveAbility, Co
     }
 
     public double getActivationChance(int tier) {
-        return getYamlDocument().getDouble(Route.addTo(getRouteForTier(tier), "activation-chance"));
+        YamlDocument config = getYamlDocument();
+        Route tierRoute = Route.addTo(getRouteForTier(tier), "activation-chance");
+        Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "activation-chance");
+        Parser parser;
+        if (config.contains(tierRoute)) {
+            parser = new Parser(config.getString(tierRoute));
+        } else {
+            parser = new Parser(config.getString(allTiersRoute));
+        }
+        parser.setVariable("tier", tier);
+        return parser.getValue();
     }
 
     @NotNull

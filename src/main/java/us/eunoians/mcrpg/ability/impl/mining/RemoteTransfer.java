@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.ability.impl.mining;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
+import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import dev.dejvokep.boostedyaml.YamlDocument;
@@ -277,7 +278,17 @@ public final class RemoteTransfer extends McRPGAbility implements PassiveAbility
      * @return The range for this ability for the given tier.
      */
     public int getRange(int tier) {
-        return getYamlDocument().getInt(Route.addTo(getRouteForTier(tier), "range"));
+        YamlDocument config = getYamlDocument();
+        Route tierRoute = Route.addTo(getRouteForTier(tier), "range");
+        Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "range");
+        Parser parser;
+        if (config.contains(tierRoute)) {
+            parser = new Parser(config.getString(tierRoute));
+        } else {
+            parser = new Parser(config.getString(allTiersRoute));
+        }
+        parser.setVariable("tier", tier);
+        return (int) parser.getValue();
     }
 
     @NotNull

@@ -385,25 +385,21 @@ ability-configuration:
         upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:ore_scanner_upgrade"
-        cooldown: 180
-        # Mana cost formula. Variable: tier (1-based). Reference value — tuned during Phase 4 balance pass.
-        mana-cost: "60-(8*tier)"
+        # Balance: Heavy bucket (powerful utility). T1=77 (1 cast from full, 38.5s recovery), T5=57 (still 57% of pool).
+        cooldown: "22-(1.5*tier)"
+        range: "4+(2*tier)"
+        mana-cost: "82-(5*tier)"
       tier-1:
         unlock-level: 1
-        range: 10
       tier-2:
         unlock-level: 2
         upgrade-quest: "mcrpg:ore_scanner_tier2"
-        range: 10
       tier-3:
         unlock-level: 3
         upgrade-quest: "mcrpg:ore_scanner_tier3"
-        range: 10
       tier-4:
         unlock-level: 4
         upgrade-quest: "mcrpg:ore_scanner_tier4"
-        range: 10
       tier-5:
         unlock-level: 5
         upgrade-quest: "mcrpg:ore_scanner_tier5"
-        range: 10

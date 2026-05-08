@@ -7,12 +7,14 @@ config-version: 2
 stats:
   mana:
     # Maximum mana pool. Combo abilities consume mana on activation.
-    base-max: 220
+    # Design target: Light abilities ~3 casts/full pool at T1, ~6 at T5. Heavy utility ~1 cast — always felt.
+    base-max: 100
     # Passive mana regeneration rate (mana points restored per second).
-    regen-per-second: 5
+    # Design target: 50s from empty to full. Utility costs (70-80) linger across a full gameplay loop.
+    regen-per-second: 2
     # Minimum mana cost enforced for any ability whose formula evaluates below this floor.
-    # Prevents abilities from becoming effectively free at high tiers.
-    minimum-ability-cost: 5
+    # Set to 1 to prevent free casts without allowing truly zero-cost abilities.
+    minimum-ability-cost: 1
 
 configuration:
   database:

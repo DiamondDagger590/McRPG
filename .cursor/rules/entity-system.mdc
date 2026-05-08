@@ -79,8 +79,6 @@ mcRPGPlayer.ifPresent(p -> {
 
 - Stores `AbilityData` per `NamespacedKey` (available abilities and their data)
 - Manages cooldown expiry tasks (via `DelayableCoreTask`)
-- Controls the **ready state** — `readyHolder()` / `unreadyHolder()` / `isHolderReadied()`
-- Fires `AbilityHolderReadyEvent` and `AbilityHolderUnreadyEvent` on state change
 - Tracks active abilities: `addActiveAbility(ability, durationSeconds)` auto-cleans up
 
 ## SkillHolder — Key Responsibilities

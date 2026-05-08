@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.ability.impl.woodcutting;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.configuration.collection.ReloadableSet;
+import com.diamonddagger590.mccore.parser.Parser;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
@@ -127,7 +128,17 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
      * @return The chance of this ability activating for the given tier.
      */
     public double getActivationChance(int tier) {
-        return getYamlDocument().getDouble(Route.addTo(getRouteForTier(tier), "activation-chance"));
+        YamlDocument config = getYamlDocument();
+        Route tierRoute = Route.addTo(getRouteForTier(tier), "activation-chance");
+        Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "activation-chance");
+        Parser parser;
+        if (config.contains(tierRoute)) {
+            parser = new Parser(config.getString(tierRoute));
+        } else {
+            parser = new Parser(config.getString(allTiersRoute));
+        }
+        parser.setVariable("tier", tier);
+        return parser.getValue();
     }
 
     /**
@@ -139,8 +150,17 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
      * for the given tier.
      */
     public int getExperienceToDrop(int tier) {
-        return getYamlDocument().getInt(Route.addTo(getRouteForTier(tier), "experience-to-drop"));
-
+        YamlDocument config = getYamlDocument();
+        Route tierRoute = Route.addTo(getRouteForTier(tier), "experience-to-drop");
+        Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "experience-to-drop");
+        Parser parser;
+        if (config.contains(tierRoute)) {
+            parser = new Parser(config.getString(tierRoute));
+        } else {
+            parser = new Parser(config.getString(allTiersRoute));
+        }
+        parser.setVariable("tier", tier);
+        return (int) parser.getValue();
     }
 
     @NotNull

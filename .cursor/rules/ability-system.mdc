@@ -35,15 +35,16 @@ public final class MyAbility extends McRPGAbility implements PassiveAbility, Con
     }
 
     @Override
-    public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
         EntityDamageByEntityEvent dmgEvent = (EntityDamageByEntityEvent) event; // safe: only registered for this event
         YamlDocument config = getYamlDocument();
 
         MyAbilityActivateEvent activateEvent = new MyAbilityActivateEvent(abilityHolder, ...);
         Bukkit.getPluginManager().callEvent(activateEvent);
-        if (activateEvent.isCancelled()) return;
+        if (activateEvent.isCancelled()) return false;
 
         // Apply effect here
+        return true;
     }
 
     @NotNull @Override public NamespacedKey getSkillKey() { return Swords.SWORDS_KEY; }
@@ -56,38 +57,77 @@ public final class MyAbility extends McRPGAbility implements PassiveAbility, Con
 }
 ```
 
-## Ability with Ready State
+## Active Ability (Combo-Based)
 
-Some abilities require two interactions: first the player "readies" them, then a second event "activates" them.
+All active abilities activate via click-combo sequences (RRR/RRL/RLR) gated by mana. Implement `ComboActivatable` (extends `ManaAbility`):
 
 ```java
-public MyReadyAbility(@NotNull McRPG mcRPG) {
-    super(mcRPG, MY_READY_ABILITY_KEY);
-    // Right-click to ready
-    addReadyingComponent(MyComponents.READY_COMPONENT, PlayerInteractEvent.class, 0);
-    // Specific action to activate (after readied)
-    addActivatableComponent(MyComponents.IS_READIED_COMPONENT, BlockBreakEvent.class, 0);
-    addActivatableComponent(MyComponents.ACTIVATE_COMPONENT, BlockBreakEvent.class, 1);
-}
+public final class MyActiveAbility extends McRPGAbility implements ConfigurableActiveAbility,
+        ConfigurableSkillAbility, ComboActivatable {
 
-@Override
-public void activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-    abilityHolder.unreadyHolder(); // Always clear ready state first
-    // Fire event, check cancel, apply effect, put on cooldown
-    putHolderOnCooldown(abilityHolder);
+    public static final NamespacedKey MY_ABILITY_KEY =
+        new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "my_ability");
+
+    public MyActiveAbility(@NotNull McRPG mcRPG) {
+        super(mcRPG, MY_ABILITY_KEY);
+        // No activation components needed — combo system handles input
+    }
+
+    @Override
+    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
+        var playerOpt = RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER).getPlayer(abilityHolder.getUUID());
+        if (playerOpt.isEmpty()) {
+            return false;
+        }
+        McRPGPlayer player = playerOpt.get();
+
+        MyActivateEvent event = new MyActivateEvent(abilityHolder);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return false;   // Mana is refunded by the combo listener
+        }
+        // Apply effect
+        return true;        // Mana stays consumed, cooldown applied by combo listener
+    }
+
+    @Override
+    public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        return comboActivate(abilityHolder);  // Delegate — activateAbility is never event-triggered
+    }
+
+    // ... standard overrides (getSkillKey, getDatabaseName, getYamlDocument, etc.)
 }
 ```
 
-Ready state auto-expires after ~3 seconds. `ReadyData` is shared across abilities using the same tool.
+**Key rules for combo-activated abilities:**
+- Never call `putHolderOnCooldown()` inside `comboActivate()` — the combo listener handles it
+- Always return `boolean` — `false` means internally cancelled (mana refunded, no cooldown)
+- `activateAbility()` should delegate to `comboActivate()` (the ability is never event-triggered)
+- Mana costs are configured in YAML via `tier-configuration.all-tiers.mana-cost` as a Parser formula
+
+## Mana Cost & Cooldown Configuration
+
+Both mana costs and cooldowns use the `getString()` + `Parser.setVariable("tier", tier)` pattern:
+
+```yaml
+tier-configuration:
+  all-tiers:
+    mana-cost: "50-(5.5*tier)"
+    cooldown: "20-(1.5*tier)"
+  tier-3:
+    mana-cost: 25          # Explicit override for specific tier
+```
+
+`ConfigurableActiveAbility` provides default implementations of `getManaCost()` and `getCooldown()` that resolve these. A global minimum floor is applied to mana costs after evaluation.
 
 ## Component Types
 
-Three component interfaces, all registered in the constructor:
+Two component interfaces used by passive abilities, all registered in the constructor:
 
 | Method | Interface | Checked via | Purpose |
 |--------|-----------|-------------|---------|
 | `addActivatableComponent(...)` | `EventActivatableComponent` | `shouldActivate(holder, event)` | Gate activation |
-| `addReadyingComponent(...)` | `EventReadyableComponent` | `shouldReady(holder, event)` | Gate readying |
 | `addCancellingComponent(...)` | `EventCancellingComponent` | `shouldCancel(holder, event)` | Cancel Bukkit event on activation |
 
 Components within a priority chain are sorted lowest-first. The first failure (returns `false` / returns `true` for cancel) short-circuits the chain.
@@ -108,9 +148,10 @@ public final class SwordsComponents {
 Implement `CooldownableAbility` (included via `ConfigurableActiveAbility` and related interfaces):
 
 ```java
-// Inside activateAbility(), after firing the event and checking cancellation:
+// For PASSIVE abilities with cooldowns, inside activateAbility():
 putHolderOnCooldown(abilityHolder); // reads cooldown from config automatically
 
+// For ACTIVE (combo) abilities: do NOT call putHolderOnCooldown() — the combo listener handles it
 // The AbilityListener interface already checks cooldowns before calling activateAbility()
 ```
 
@@ -155,7 +196,7 @@ public class OnSwordAttackAbilityListener implements AbilityListener {
 }
 ```
 
-`activateAbilities()` and `readyAbilities()` handle: holder lookup, world restriction checks, loadout filtering, component validation, cooldown checks, and dispatching to `activateAbility()`.
+`activateAbilities()` handles: holder lookup, world restriction checks, loadout filtering, component validation, cooldown checks, optional mana checks (for passives implementing `ManaAbility`), and dispatching to `activateAbility()`.
 
 ## Registering in McRPGExpansion
 
