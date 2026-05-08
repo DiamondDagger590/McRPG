@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -34,6 +35,7 @@ import java.util.Set;
  * This ability is an unlockable ability for {@link Swords} that
  * can increase the damage per tick for the {@link Bleed} ability
  */
+@ParserConfigKeys({"enhanced-bleed-base-damage-increase", "enhanced-bleed-activation-chance", "enhanced-bleed-damage-boost"})
 public final class EnhancedBleed extends McRPGAbility implements ConfigurableTierableAbility, PassiveAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey ENHANCED_BLEED_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "enhanced_bleed");

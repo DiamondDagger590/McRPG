@@ -22,6 +22,7 @@ import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
  * Heavy Swing is an ability that has a chance to activate when a player breaks wood using an axe. This ability will
  * break wood in an area around the broken block.
  */
+@ParserConfigKeys({"activation-chance", "radius"})
 public class HeavySwing extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
         ReloadableContentAbility, ConfigurableSkillAbility {
 

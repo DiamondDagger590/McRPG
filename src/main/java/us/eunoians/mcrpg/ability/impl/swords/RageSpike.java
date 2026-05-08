@@ -23,6 +23,7 @@ import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -47,6 +48,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Rage Spike is an active ability that activates via a click-combo sequence,
  * blasting the player forward and knocking back enemies while dealing damage.
  */
+@ParserConfigKeys({"cooldown", "mana-cost", "damage", "velocity"})
 public final class RageSpike extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable {
 
     public static final NamespacedKey RAGE_SPIKE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "rage_spike");

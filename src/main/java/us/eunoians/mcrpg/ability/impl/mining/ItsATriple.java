@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -33,6 +34,7 @@ import java.util.Set;
  * This is a passive ability that has a chance to activate when {@link ExtraOre} activates,
  * turning the double drop into a triple drop.
  */
+@ParserConfigKeys({"activation-chance"})
 public final class ItsATriple extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey ITS_A_TRIPLE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "its_a_triple");

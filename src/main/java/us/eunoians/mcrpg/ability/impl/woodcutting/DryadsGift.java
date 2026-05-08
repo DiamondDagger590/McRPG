@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -40,6 +41,7 @@ import java.util.stream.Collectors;
  * Dryads Gift is a {@link WoodCutting} ability that activates whenever a player breaks
  * wood. Whenever the ability activates, vanilla experience is dropped.
  */
+@ParserConfigKeys({"activation-chance", "experience-to-drop"})
 public class DryadsGift extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
         ReloadableContentAbility, ConfigurableSkillAbility {
 

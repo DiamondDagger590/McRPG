@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.ability.impl.mining.orescanner.ReloadableOreScannerBloc
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
@@ -50,6 +51,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * Ore Scanner is an active ability that will scan the blocks around the player, informing the player of
  * all the different kinds of blocks around them while pointing them to the nearest, most valuable block.
  */
+@ParserConfigKeys({"cooldown", "mana-cost", "range"})
 public final class OreScanner extends McRPGAbility implements ConfigurableActiveAbility,
         ReloadableContentAbility, ConfigurableSkillAbility, ComboActivatable {
 

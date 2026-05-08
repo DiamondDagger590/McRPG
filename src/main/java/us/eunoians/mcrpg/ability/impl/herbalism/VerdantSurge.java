@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
@@ -41,6 +42,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * It functions by creating multiple {@link VerdantSurgePulseTask}s that emit waves of growth that spread away from the player,
  * growing any crops along the way.
  */
+@ParserConfigKeys({"cooldown", "mana-cost", "pulse-radius", "pulses"})
 public final class VerdantSurge extends McRPGAbility implements ConfigurableActiveAbility,
         ConfigurableSkillAbility, ComboActivatable {
 

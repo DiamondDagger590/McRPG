@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.ReloadableContentAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
  * Nymphs Vitality is an ability that prevents players from losing hunger in a wooded biome
  * and lets players regain hunger up to a certain point as they move in a wooded biome.
  */
+@ParserConfigKeys({"minimum-hunger"})
 public class NymphsVitality extends McRPGAbility implements PassiveAbility, ConfigurableTierableAbility,
         ReloadableContentAbility, ConfigurableSkillAbility {
 

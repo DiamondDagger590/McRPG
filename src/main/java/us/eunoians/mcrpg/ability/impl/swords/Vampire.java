@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableTierableAbility;
+import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -37,6 +38,7 @@ import java.util.Set;
  * can heal the user of the {@link Bleed} ability each time a bleeding
  * entity takes a tick of bleed damage
  */
+@ParserConfigKeys({"vampire-activation-chance", "amount-to-heal"})
 public final class Vampire extends McRPGAbility implements ConfigurableTierableAbility, PassiveAbility, ConfigurableSkillAbility {
 
     public static final NamespacedKey VAMPIRE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "vampire");

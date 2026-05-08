@@ -105,6 +105,7 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - `@NotNull` (IntelliJ v12) on all non-null return types and parameters
 - `@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)` on listeners
 - `@Override` on all overridden methods
+- `@ParserConfigKeys` on all concrete `ConfigurableTierableAbility` implementations — declares the Parser-backed tier-config YAML keys the ability reads at runtime (use `@ParserConfigKeys({})` if none beyond generic `unlock-level`/`upgrade-point-cost`)
 
 ## Code Style
 
@@ -136,6 +137,7 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - **No unbounded `Map` or `Set` fields without a documented eviction strategy** — insert-only caches are memory leaks; document the cleanup lifecycle event in a Javadoc comment
 - **No `putHolderOnCooldown()` inside `comboActivate()`** — the combo listener (`OnComboCompleteListener`) manages cooldown application for combo-activated abilities. Calling it inside the ability causes double-cooldown
 - **No void-return `comboActivate()` or `activateAbility()`** — both return `boolean` (`true` = executed, `false` = internally cancelled). The boolean enables mana refund and conditional cooldown in callers
+- **No `ConfigurableTierableAbility` without `@ParserConfigKeys`** — every concrete implementation must declare its Parser-backed YAML keys via the annotation. The `ParserConfigKeysPresenceTest` enforces this at CI time
 
 ## Mana Balance Framework
 

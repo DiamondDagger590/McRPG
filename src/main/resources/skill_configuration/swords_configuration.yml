@@ -325,11 +325,15 @@ ability-configuration:
       # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest definition key (e.g. "mcrpg:rage_spike_t2")
+      # - damage: damage dealt to enemies hit by the dash
+      # - velocity: dash velocity applied to the player
       all-tiers:
         # Ignored for tier 1
         upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:rage_spike_upgrade"
+        damage: "0.5+(0.5*tier)"
+        velocity: 5
         # Balance: Light bucket (combat/mobility). T1=30 (3 casts from full), T5=16 (6 casts from full).
         mana-cost: "34-(3.5*tier)"
         cooldown: 1

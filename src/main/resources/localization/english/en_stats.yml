@@ -1,4 +1,5 @@
 locale: en
+config-version: 1
 stat:
   health:
     display-name: "Health"

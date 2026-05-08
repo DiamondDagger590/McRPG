@@ -304,9 +304,10 @@ ability-configuration:
         unlock-level: 1*tier
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:remote_transfer_upgrade"
+        # Max horizontal distance (blocks) from player to linked chest for remote transfer; `tier` is available to the Parser.
+        range: "45+(5*tier)"
       tier-1:
         unlock-level: 1
-        maximum-distance: 50
       tier-2:
         unlock-level: 2
         upgrade-quest: "mcrpg:remote_transfer_tier2"

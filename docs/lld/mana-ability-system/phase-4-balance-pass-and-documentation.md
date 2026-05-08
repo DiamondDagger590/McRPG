@@ -4,7 +4,7 @@
 > **Phase 1 Reference:** [phase-1-infrastructure-and-config-cleanup.md](phase-1-infrastructure-and-config-cleanup.md)
 > **Phase 2 Reference:** [phase-2-ready-state-removal-and-swords-migration.md](phase-2-ready-state-removal-and-swords-migration.md)
 > **Phase 3 Reference:** [phase-3-mining-and-herbalism-migration.md](phase-3-mining-and-herbalism-migration.md)
-> **Status:** Proposed
+> **Status:** Implemented
 
 ## Scope
 
@@ -13,14 +13,14 @@ Phase 4 completes the mana ability system by performing a full balance pass (upd
 **Balance philosophy:** "Slow Regen, High Stakes" — 2/sec passive regen, 100 max pool, 50s full recovery. Three cost buckets (Light/Medium/Heavy) gate abilities by mana, not cooldowns. See `.cursor/rules/mana-balance-philosophy.mdc` for the full framework.
 
 **In scope:**
-- Balance pass: update `config.yml` mana pool settings (base-max 220→100, regen 5→2, minimum-cost 5→1)
-- Balance pass: update all per-ability mana cost formulas to produce values aligned with HLD reference table
-- Balance pass: update cooldowns to HLD-reference ranges (anti-spam for cheap abilities, moderate CDs for powerful abilities)
-- Parser backport: migrate all remaining passive ability tier-config reads from `getInt()`/`getDouble()` to `getString()` + `Parser.setVariable("tier", tier)` pattern
-- Documentation: full update of `CLAUDE.md` — remove ready-state references, add mana/combo system documentation
-- Documentation: full update of `.cursor/rules/ability-system.mdc` — remove ready-state section, add combo activation and mana patterns
-- Unit tests for all parser-backported methods
-- Final `./gradlew verifiedShadowJar` with zero failures
+- ~~Balance pass: update `config.yml` mana pool settings (base-max 220→100, regen 5→2, minimum-cost 5→1)~~ — done
+- ~~Balance pass: update all per-ability mana cost formulas to produce values aligned with HLD reference table~~ — done
+- ~~Balance pass: update cooldowns to HLD-reference ranges (anti-spam for cheap abilities, moderate CDs for powerful abilities)~~ — done
+- ~~Parser backport: migrate all remaining passive ability tier-config reads from `getInt()`/`getDouble()` to `getString()` + `Parser.setVariable("tier", tier)` pattern~~ — done (8 abilities: DeeperWound, EnhancedBleed, Vampire, ItsATriple, RemoteTransfer, HeavySwing, DryadsGift, NymphsVitality)
+- ~~Documentation: full update of `CLAUDE.md` — remove ready-state references, add mana/combo system documentation~~ — done
+- ~~Documentation: full update of `.cursor/rules/ability-system.mdc` — remove ready-state section, add combo activation and mana patterns~~ — done; also updated `core.mdc` and `entity-system.mdc` for consistency
+- ~~Unit tests for all parser-backported methods~~ — **intentionally omitted:** parser backport tests and per-ability balance tests were rejected during implementation review as brittle change-detector tests. The existing `ConfigurableActiveAbilityManaCostTest` and `SerratedStrikesManaCostTest` already cover the formula evaluation contract. Balance values are config-driven and should not be cemented in tests.
+- ~~Final `./gradlew verifiedShadowJar` with zero failures~~ — done
 
 **Out of scope:**
 - New Woodcutting active abilities (no current implementation; future design work)
@@ -1190,6 +1190,10 @@ Tests that verify the "Slow Regen, High Stakes" design constraints hold with the
 6. **ComboManager timeout is by-design, not a bug:** The `DEFAULT_TIMEOUT_TICKS = 14L` is the intentional inter-input timeout between individual clicks in a combo. It is distinct from `MainConfigFile.COMBO_TIMING_WINDOW_TICKS` (30 ticks) which controls the overall combo window for UI display. These are separate concerns and the hardcoded value is not a Phase 1 leftover.
 
 7. **Documentation updates are full diffs:** The steering doc sections (3.1 and 3.2) provide exact before/after content for every modification. This eliminates ambiguity for the implementing model and ensures the docs accurately reflect the finalized system state.
+
+8. **Parser backport and balance tests intentionally omitted:** The LLD specified per-ability parser backport tests (Sections 5.1-5.8) and balance constraint tests (Sections 5.9-5.14). During implementation review these were rejected as brittle change-detector tests. Parser backport tests verify an implementation detail (whether a method uses `Parser` vs `getDouble()`) rather than a meaningful contract. Balance tests cement specific config-driven values that are designed to be tunable — any rebalance pass would break them with no safety benefit. The existing `ConfigurableActiveAbilityManaCostTest` and ability-specific mana cost tests (e.g., `SerratedStrikesManaCostTest`) already verify the formula evaluation contract (Parser + tier variable + global minimum floor), which is the real invariant.
+
+9. **`core.mdc` and `entity-system.mdc` also updated:** The LLD specified updates to `CLAUDE.md` and `ability-system.mdc` only. During implementation, `core.mdc` and `entity-system.mdc` were also updated to remove stale `Ready State` terminology, add Mana/Combo domain terms, and sync anti-pattern lists — keeping all steering docs consistent.
 
 ---
 
