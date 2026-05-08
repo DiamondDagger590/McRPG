@@ -156,6 +156,11 @@ public final class AbilityLoreAppender {
                 } else {
                     lore.add("");
                     lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.ABILITY_LOCKED_LORE));
+                    placeholders.put("ability-unlock-level", Integer.toString(tierableAbility.getUnlockLevel()));
+                    if (tierableAbility instanceof SkillAbility skillAbility) {
+                        Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
+                        placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer));
+                    }
                 }
             }
             if (ability.getExpansionKey().isPresent()) {

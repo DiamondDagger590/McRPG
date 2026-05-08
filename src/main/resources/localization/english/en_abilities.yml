@@ -41,21 +41,25 @@ ability:
     quest:
       # The lore to add when an ability can be upgraded via upgrade quest but the player lacks enough ability points
       not-enough-ability-points:
-        - '<gray>You need <gold><next-tier-ability-points> ability points<gray> to start the upgrade quest.'
+        - '<gray>You need <gold><next-tier-ability-points></gold> ability points to start'
+        - '<gray>the upgrade quest.'
       #  The lore to add to prompt a player to click when an ability can be upgraded via upgrade quest
       click-to-start:
-        - '<green>Click to spend <gold><next-tier-upgrade-points> upgrade points</gold> to start upgrade quest.'
+        - '<green>Click to spend <gold><next-tier-upgrade-points></gold> upgrade points to'
+        - '<green>start the upgrade quest.'
       # The lore to add when an ability has an active upgrade quest
       quest-progress:
         - '<gray>Upgrade Quest Progress: <upgrade-quest-progress>'
     # The lore to add when the player isn't high enough level to upgrade the ability.
-    # The following placeholders are supported: <upgrade-points>, <next-tier-level>
+    # The following placeholders are supported: <next-tier-level>, <skill>
     upgrade-locked-behind-levelup:
-      - '<gray>You can upgrade this ability once you reach <gold>Lv <next-tier-level><gray> in <gold>>skill><gray>.'
+      - '<gray>Upgrade this ability once you reach <gold>Lv <next-tier-level></gold>'
+      - '<gray>in <gold><skill></gold><gray>.'
     # The lore to add to show how many upgrade points the player has.
     # The following placeholders are supported: <ability-point-count>
     ability-point-count:
-      - '<gray>You currently have <gold><ability-point-count></gold> upgrade points.'
+      - '<gray>You have <gold><ability-point-count></gold> upgrade'
+      - '<gray>points available.'
     ability-locked:
       - '<gray>Unlock this ability when your <gold><skill></gold> skill'
       - '<gray>reaches level <gold><ability-unlock-level></gold>.'
@@ -74,8 +78,8 @@ ability:
         material: REDSTONE
         # Supports the following placeholders: <skill>, <activation-chance>
         lore:
-          - '<gray>Inflicts the <red>Bleed</red> status on an enemy when attacking'
-          - '<gray>with sword, dealing damage over time.'
+          - '<gray>Inflicts <red>Bleed</red> when you strike an enemy'
+          - '<gray>with a sword, dealing damage over time.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Activation Chance: <gold><activation-chance>'
@@ -100,7 +104,8 @@ ability:
         ability-name: "Enhanced Bleed"
         material: SPIDER_EYE
         lore:
-          - '<gray>Enhances Bleed ability to do more damage each tick, with a chance to deal bonus damage.'
+          - '<gray>Enhances Bleed to deal more damage each tick.'
+          - '<gray>Has a chance to deal bonus damage on top.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
@@ -113,7 +118,8 @@ ability:
         ability-name: "Rage Spike"
         material: IRON_SWORD
         lore:
-          - '<gray>Ready your sword, then crouch to blast forward, damaging and knocking back foes.'
+          - '<gray>Ready your sword, then crouch to blast forward,'
+          - '<gray>damaging and knocking back foes in your path.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
@@ -125,12 +131,13 @@ ability:
         ability-name: "Serrated Strikes"
         material: STONE_SWORD
         lore:
-          - '<gray>Ready your sword and attack an enemy to increase Bleed activation chance.'
+          - '<gray>Ready your sword and strike an enemy to temporarily'
+          - '<gray>increase how often Bleed can activate.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
           - '<gray>Duration: <gold><ability-duration>'
-          - '<gray>Activation Chance Increase: <gold><activation-chance-increase>'
+          - '<gray>Bleed Chance Bonus: <gold><activation-chance-increase>'
           - '<gray>Cooldown: <gold><cooldown>'
     vampire:
       display-item:
@@ -138,7 +145,8 @@ ability:
         ability-name: "Vampire"
         material: GHAST_TEAR
         lore:
-          - '<gray>Enhances Bleed to have a chance to heal you each time Bleed causes damage.'
+          - '<gray>Each time Bleed deals damage, you have a chance'
+          - '<gray>to heal.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
@@ -151,7 +159,8 @@ ability:
         material: DIAMOND
         amount: 2
         lore:
-          - '<gray>Will occasionally double drops while mining.'
+          - '<gray>Occasionally doubles block drops'
+          - '<gray>while mining.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Activation Chance: <gold><activation-chance>'
@@ -162,7 +171,8 @@ ability:
         material: DIAMOND
         amount: 3
         lore:
-          - '<gray>Has a chance to change doubled drops from Extra Ore to triple drops'
+          - '<gray>Can turn Extra Ore''s doubled drops into'
+          - '<gray>triple drops instead.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
@@ -186,9 +196,9 @@ ability:
         ability-name: "Remote Transfer"
         material: CHEST
         lore:
-          - '<gray>Allows for linking of a chest to teleport mined blocks into.'
-          - '<gray>Use <gold>/mcrpg link</gold> to link a chest.'
-          - '<gray>Use <gold>/mcrpg unlink</gold> to unlink a chest.'
+          - '<gray>Link a chest so mined blocks teleport into it.'
+          - '<gray>Use <gold>/mcrpg link</gold> to link.'
+          - '<gray>Use <gold>/mcrpg unlink</gold> to unlink.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
@@ -199,7 +209,8 @@ ability:
         ability-name: "Dryad's Gift"
         material: EXPERIENCE_BOTTLE
         lore:
-          - '<gray>Has a chance to drop experience when breaking wood'
+          - '<gray>Sometimes drops experience when you'
+          - '<gray>break wood blocks.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
@@ -212,7 +223,8 @@ ability:
         material: OAK_LOG
         amount: 2
         lore:
-          - '<gray>Will occasionally double drops while cutting wood.'
+          - '<gray>Occasionally doubles drops while you'
+          - '<gray>cut wood.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Activation Chance: <gold><activation-chance>'
@@ -222,7 +234,8 @@ ability:
         ability-name: "Nymph's Vitality"
         material: OAK_SAPLING
         lore:
-          - '<gray>Will prevent your hunger from dropping past a certain point when in wooded biomes.'
+          - '<gray>In wooded biomes, stops hunger from falling'
+          - '<gray>below a minimum level.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
@@ -233,7 +246,8 @@ ability:
         ability-name: "Heavy Swing"
         material: NETHERITE_AXE
         lore:
-          - '<gray>Will occasionally break wood in an AOE as you mine..'
+          - '<gray>Sometimes breaks nearby wood in an area'
+          - '<gray>as you chop trees.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
@@ -259,8 +273,8 @@ ability:
         ability-name: "Mass Harvest"
         material: IRON_HOE
         lore:
-          - '<gray>Sends out a fierce pulse that harvests all crops'
-          - '<gray>and replants them as it goes.'
+          - '<gray>Sends out a pulse that harvests crops'
+          - '<gray>and replants them as it travels.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Tier: <gold><tier>'
@@ -273,7 +287,8 @@ ability:
         material: CARROT
         amount: 2
         lore:
-          - '<gray>Gives a chance to double the drops of crops harvested.'
+          - '<gray>Chance to double crop drops'
+          - '<gray>when you harvest.'
           - ''
           - '<gray>Skill: <gold><skill>'
           - '<gray>Activation Chance: <gold><activation-chance>'
