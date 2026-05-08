@@ -1802,7 +1802,7 @@ player.sendMessage(message);
 
 3. **VerdantSurge and SerratedStrikes combo migration**: These abilities currently lack `ComboActivatable`. They gain it in Phase 2 (Swords) and Phase 3 (Herbalism). Phase 1 only establishes the infrastructure they will use (mana-cost resolution, `PlayerStatConsumeEvent`, Parser backport, boolean return on `activateAbility()`).
 
-4. **`PlayerStatRegistry` McCore extraction**: `PlayerStatRegistry` is a strong McCore candidate since the stat/modifier/instance pattern is generic. Deferred until the API stabilizes after Phase 4.
+4. **`PlayerStatRegistry` stays in McRPG**: The stat system is McRPG-specific (resource pools, mana regen, modifier system) and will not be extracted to McCore. The abstractions do not generalize to other downstream plugins.
 
 5. **Stat persistence write frequency**: Phase 1 writes only on logout and periodic server saves. If the save interval is very long (e.g., 30 minutes) and the server crashes, players could lose up to 30 minutes of mana state. This is an accepted trade-off per the HLD -- the pool refills in ~33 seconds from empty. If PvP server owners report this as a problem, a configurable stat-save-interval could be added.
 

@@ -84,12 +84,12 @@ Mana is a per-player resource pool tracked via `PlayerStatInstance` keyed by `Mc
 
 | Property | Value | Notes |
 |----------|-------|-------|
-| Base max mana | 100 | Lower than the spike's 220; tighter resource feel |
-| Regen rate | 3/sec | Flat passive, always active |
+| Base max mana | 100 | Clean round number; percentages map 1:1 to costs |
+| Regen rate | 2/sec | Slow enough that utility costs (70-80) linger across a full gameplay loop |
 | Regen driver | HUD tick | `ActionBarHudDisplay.tick()` calls `PlayerStatData.tickRegen()` |
 | Persistence | Logout/save only | Restored on login; see Resolved Design Decisions |
 
-**Design target:** A player should be able to cast 2-3 abilities in quick succession, then wait ~10-15 seconds to refill for another burst. With 100 max mana and 3/sec regen, a player who spends 60 mana on a burst needs ~20 seconds for a full refill or ~7 seconds to afford a 20-cost ability again.
+**Design target ("Slow Regen, High Stakes"):** Scarcity creates meaning. With 2/sec regen and 50s full recovery, every mana spend is a deliberate decision. Light combat abilities (cost 28-32 at T1) give ~3 casts from a full pool — scarce at T1, fluid at T5 (cost 12-16, ~6 casts). Heavy utility abilities (cost 70-80 at T1) cost more than a 35-second gameplay loop recovers (35s × 2/sec = 70 mana), so the spend is always felt. Mana is the primary gate; cooldowns are anti-spam only. See `.cursor/rules/mana-balance-philosophy.mdc` for the full framework.
 
 **Modifier system:** `PlayerStatModifier` is an extensible class (not a record) keyed by `NamespacedKey` for third-party collision safety. The base class provides fixed flat/percent bonuses. Subclasses can override virtual methods for dynamic scaling (e.g., stacking modifiers) and time-based expiration:
 
@@ -112,7 +112,7 @@ This is implemented in `PlayerStatInstance.getEffectiveMax()`, which calls the v
 stats:
   mana:
     base-max: 100
-    regen-per-second: 3
+    regen-per-second: 2
     minimum-ability-cost: 1
 ```
 
@@ -236,7 +236,7 @@ Resolution order: tier-specific value wins if present; otherwise the `all-tiers`
 stats:
   mana:
     base-max: 100
-    regen-per-second: 3
+    regen-per-second: 2
     minimum-ability-cost: 1
 ```
 
@@ -320,7 +320,7 @@ Shockwave and Cleave were spike-only PoC abilities deleted in Phase 1. The remai
 
 - ~~`combo_configuration.yml` holds both system settings (timing, items) and per-ability params~~ — **resolved in Phase 1:** migrated to `config.yml` and skill config files; `ComboConfigFile.java` and `FileType.COMBO_CONFIG` deleted
 - ~~Per-ability mana costs are flat values, not per-tier~~ — **resolved in Phase 1:** all costs read via `getString()` + Parser with `tier` variable
-- `ComboManager` timeout is hardcoded to 14 ticks despite `TIMING_WINDOW_TICKS` route existing in config — **Phase 1 leftover; still pending**
+- ~~`ComboManager` timeout is hardcoded to 14 ticks despite `TIMING_WINDOW_TICKS` route existing in config~~ — **by design:** `DEFAULT_TIMEOUT_TICKS = 14L` is the intentional inter-input timeout (time allowed between individual clicks in a combo sequence); `MainConfigFile.COMBO_TIMING_WINDOW_TICKS` (30 ticks) is the overall combo window displayed to the player and used for UI timing — these are separate concerns
 - ~~`McRPGCombatStat.HEALTH` defaults to 200 max~~ — **resolved in Phase 1:** Health base value is vanilla 20
 - ~~Combo ability names (`getName()`, `getDisplayName()`) are hardcoded strings~~ — **resolved in Phase 1:** stat display routed through localization
 - ~~Shockwave and Cleave are spike-only PoC classes~~ — **deleted in Phase 1**
@@ -447,34 +447,37 @@ All passives retain their current event-driven activation. The mana infrastructu
 
 ### Design Constraints
 
-1. **Burst window:** 2-3 abilities before mana runs dry on a full pool
-2. **Recovery cadence:** ~10-15 seconds from empty to usable; ~33 seconds for full refill
-3. **Tier reward:** Higher tiers are meaningfully cheaper, making progression feel like mastery
-4. **Gathering parity:** Non-combat abilities (OreScanner, MassHarvest) have comparable costs to combat abilities -- mana is a universal resource, not a "combat currency"
+1. **Light abilities scarce at T1, fluid at T5:** ~3 casts from full at T1; ~6 casts at T5. Tier progression is the fluidity reward.
+2. **Single utility casts are always felt:** Heavy utility costs 70-80 at T1. A 35s gameplay loop recovers only 70 mana (35 × 2/sec), so the spend lingers.
+3. **Tier reward:** Higher tiers are meaningfully cheaper — combat becomes rhythmic, utility becomes accessible.
+4. **Mana is the primary gate, not cooldowns:** Cooldowns are anti-spam (Light) or effect-overlap prevention (Medium/Heavy). Cooldown-heavy designs incentivize loadout swapping (only 3 active slots). See `.cursor/rules/mana-balance-philosophy.mdc` for the full framework.
+5. **Tandem utility design:** Abilities explicitly designed for tandem use (VerdantSurge + MassHarvest) must have combined T1 cost > 100 (forces sequencing) and combined T5 cost ~85 (the tandem tier reward).
 
 ### Reference Balance Table
 
-| Ability | Category | T1 Cost | T3 Cost | T5 Cost | Cooldown |
-|---------|----------|---------|---------|---------|----------|
-| RageSpike | Standard offensive | 35 | 25 | 15 | 1s anti-spam |
-| SerratedStrikes | Powerful buff | 50 | 35 | 22 | 15s (buff duration) |
-| OreScanner | Powerful utility | 45 | 30 | 20 | 20s (scan CD) |
-| MassHarvest | Powerful utility | 45 | 30 | 20 | 15s (harvest CD) |
-| VerdantSurge | Standard utility | 35 | 25 | 15 | 10s (regen CD) |
+Phase 4 finalized values:
 
-These are reference values for the HLD. Final tuning happens during the Phase 4 balance pass, with actual values set in per-skill config files.
+| Ability | Bucket | T1 Cost | T3 Cost | T5 Cost | T1 CD | T5 CD |
+|---------|--------|---------|---------|---------|-------|-------|
+| RageSpike | Light | 30 | 23 | 16 | 1s | 1s |
+| SerratedStrikes | Medium | 47 | 38 | 29 | 18s | 12s |
+| OreScanner | Heavy | 77 | 67 | 57 | 20s | 14s |
+| MassHarvest | Heavy | 75 | 65 | 55 | 17s | 13s |
+| VerdantSurge | Medium | 43 | 35 | 27 | 13s | 9s |
+
+For the full cookie-cutter framework used to derive these values, see `.cursor/rules/mana-balance-philosophy.mdc`.
 
 ### Regen Model
 
-Flat 3/sec passive regen, always active regardless of combat state.
+Flat 2/sec passive regen, always active regardless of combat state.
 
-**Future consideration:** In-combat vs. out-of-combat regen rates (e.g., 1/sec in combat, 5/sec out) would create more interesting mana management decisions. This requires a combat state tracker (not currently implemented) and is deferred. When built, the config would extend:
+**Future consideration:** In-combat vs. out-of-combat regen rates (e.g., 1/sec in combat, 3/sec out) would make utility recovery faster (out-of-combat) while keeping combat scarce (in-combat). This requires a combat state tracker (not currently implemented) and is deferred. When built, the config would extend:
 
 ```yaml
 stats:
   mana:
     base-max: 100
-    regen-per-second: 5          # out-of-combat rate
+    regen-per-second: 3          # out-of-combat rate
     combat-regen-per-second: 1   # in-combat rate
     combat-timeout-seconds: 8    # seconds since last damage to leave combat
 ```
@@ -546,14 +549,14 @@ Each phase gets its own LLD when implementation begins.
 - ~~Add `MANA_COST` to `AbilityItemPlaceholderKeys` and wire into all 5 combo abilities~~ — done
 - ~~Fix `OnComboCompleteListener` cooldown-on-cancel bug~~ — done; early return after mana refund when `!activated`
 
-### Phase 4: Woodcutting & Balance Pass
+### Phase 4: Balance Pass & Documentation
 
-- Port Woodcutting actives (currently no active abilities in code; design doc lists Timber Rush, Log Javelin -- implementation if ready, otherwise skip)
-- Full balance pass on mana costs across all skills
+- Full balance pass on mana costs across all skills (update base-max, regen, and per-ability formulas to HLD reference targets)
 - Validate 100 base mana + 3/sec regen supports intended cast frequency through playtesting
 - Tune anti-spam cooldowns (0.5-1s default; longer for strong abilities)
+- Parser backport for all remaining passive ability tier-config reads (`getInt()`/`getDouble()` → `getString()` + Parser)
 - Document final balance reference table
-- Update steering docs and skill system documentation (`CLAUDE.md`, `.cursor/rules/*.mdc`, ability-system spike doc) to incorporate the mana system as a core concept: mana cost as an activation gate, formula-based tier scaling, `CombatStatConsumeEvent`, `CombatStatContentPack`, and the removal of the ready-state model. This is done in Phase 4 so the documentation reflects the finalized balance paradigm rather than interim values
+- Update steering docs and skill system documentation (`CLAUDE.md`, `.cursor/rules/*.mdc`, ability-system spike doc) to incorporate the mana system as a core concept: mana cost as an activation gate, formula-based tier scaling, `PlayerStatConsumeEvent`, `PlayerStatContentPack`, combo-only activation, and the removal of the ready-state model. This is done in Phase 4 so the documentation reflects the finalized balance paradigm rather than interim values
 
 ---
 

@@ -1,0 +1,202 @@
+---
+description: Mana balance philosophy and cost framework for ability design — cookie-cutter buckets, formula patterns, and validation constraints. Agents must present balance options to the user rather than choosing values autonomously.
+globs: ["src/**/ability/**/*.java", "src/**/listener/ability/**/*.java", "src/main/resources/skill_configuration/**"]
+alwaysApply: false
+---
+
+# McRPG Mana Balance Philosophy
+
+## Philosophy: "Slow Regen, High Stakes"
+
+**Scarcity creates meaning.** The passive regen rate is intentionally slow (2/sec), so every mana expenditure is felt. Combat abilities are deliberately scarce at T1 and become fluid at T5 — tier progression is the fluidity reward, not a system-level guarantee. Utility abilities are always a significant investment, even at max tier.
+
+**Mana is the primary gate, not cooldowns.** Cooldown-heavy designs incentivize loadout swapping (players only have 3 active ability slots). Mana is swap-proof — the pool is shared regardless of which abilities are in the loadout. Cooldowns exist only to prevent accidental double-casts (Light) or overlapping buffs/effects (Medium/Heavy); they are never the reason a player can't use an ability.
+
+## Pool Parameters
+
+| Parameter | Value | Rationale |
+|-----------|-------|-----------|
+| Max pool | 100 | Clean round number; percentages map 1:1 to costs |
+| Passive regen | 2/sec | Slow enough that utility costs linger across gameplay loops |
+| Full recovery (empty → full) | 50 seconds | Meaningful but not agonizing |
+| Minimum cost floor | 1 | Prevents overtier formulas from producing free or negative-cost casts |
+
+The regen rate of 2/sec is the load-bearing constraint. With a 30-45 second natural gameplay loop (walking to ores, mining them, returning), only costs above ~60-90 mana "survive" the loop — anything cheaper is passively recovered before the next use opportunity. This is why Heavy utility costs 70-80 at T1.
+
+## The Three Cost Buckets
+
+Every active ability belongs to exactly one bucket.
+
+| Bucket | T1 Cost | T5 Cost | Pool % at T1 | Pool % at T5 | Cooldown Range | When to Use |
+|--------|---------|---------|--------------|--------------|----------------|-------------|
+| **Light** | 28-32 | 12-16 | 28-32% | 12-16% | 1-2s (anti-spam only) | Combat, mobility, quick single-use effects |
+| **Medium** | 42-50 | 25-33 | 42-50% | 25-33% | 8-15s | Buffs, sustain, moderate utility, multi-hit effects |
+| **Heavy** | 70-80 | 55-60 | 70-80% | 55-60% | 12-20s | Powerful utility, resource generation, AoE gathering |
+
+**Burst expectations by bucket:**
+
+| Bucket | T1 casts from full | T5 casts from full |
+|--------|-------------------|-------------------|
+| Light | ~3 | ~6 |
+| Medium | ~2 | ~3 |
+| Heavy | ~1 | ~1-2 |
+
+## Formula Pattern
+
+All mana costs and cooldowns use the `getString()` + Parser pattern with `tier` as a variable (consistent with all other tier-config reads):
+
+```yaml
+mana-cost: "baseCost - (scaleFactor * tier)"
+cooldown: "baseCooldown - (cdScale * tier)"
+```
+
+**Per-bucket formula ranges:**
+
+| Bucket | baseCost Range | scaleFactor Range | T1 (example) | T3 (example) | T5 (example) |
+|--------|---------------|-------------------|--------------|--------------|--------------|
+| Light | 32-36 | 3-4 | 30 | 23 | 16 |
+| Medium | 48-55 | 4-5 | 47 | 38 | 29 |
+| Heavy | 78-86 | 4.5-5.5 | 77 | 67 | 57 |
+
+**Per-bucket cooldown patterns:**
+
+| Bucket | Pattern | Typical Output |
+|--------|---------|----------------|
+| Light | Flat `1` or `2` | Anti-spam only; mana is the real gate |
+| Medium | `"baseCd - (1 * tier)"` | T1: 12-14s, T5: 8-10s |
+| Heavy | `"baseCd - (1-1.5 * tier)"` | T1: 17-20s, T5: 12-15s |
+
+## Bucket Classification Decision Tree
+
+```
+Is this ability primarily combat-oriented?
+(deals damage, applies combat debuffs, repositions for combat advantage)
+  → YES:
+      Is it spammable? (quick, single-use effect, low impact per cast)
+        → YES: Light bucket
+        → NO (buff, sustained effect, multi-hit, high impact): Medium bucket
+  → NO (utility, gathering, resource generation, non-combat support):
+      Does it generate resources/wealth or provide powerful non-combat utility?
+        → YES: Heavy bucket
+        → NO (minor sustain, non-combat buff, low-power utility): Medium bucket
+```
+
+**Edge case — abilities designed for tandem use:** If two abilities are explicitly designed to be used together (e.g., VerdantSurge + MassHarvest), their combined T1 cost must exceed 100 (forces sequencing) and their combined T5 cost should be 85-95 (the tandem tier reward — mastery lets you chain both without going completely empty).
+
+## Validation Checklist
+
+Before finalizing any ability's mana cost formula, verify these constraints hold:
+
+- [ ] T1 burst from full: Light → ~3 casts, Medium → ~2 casts, Heavy → ~1 cast
+- [ ] T5 burst from full: Light → ~6 casts, Medium → ~3 casts, Heavy → ~1-2 casts
+- [ ] Heavy utility T1: time to recover to next cast > 25s (felt across the gameplay loop)
+- [ ] Heavy utility T5: time to recover to next cast > 20s (still a real commitment)
+- [ ] If ability has a designed tandem partner: combined T1 cost > 100
+- [ ] If ability has a designed tandem partner: combined T5 cost ≈ 85-95
+- [ ] No formula produces a value below the minimum cost floor (1) at tier 5
+
+**Recovery math shortcut:** `recoveryTime = cost / 2` (2/sec regen). E.g., cost 77 → 38.5s recovery.
+
+**Burst count shortcut:** `bursts = floor(100 / cost)`. E.g., cost 30 → 3 casts.
+
+## Current Ability Reference Values
+
+| Ability | Bucket | Formula | T1 | T3 | T5 | Cooldown Formula |
+|---------|--------|---------|-----|-----|-----|-----------------|
+| RageSpike | Light | `"34 - (3.5 * tier)"` | 30 | 23 | 16 | `1` (flat) |
+| SerratedStrikes | Medium | `"52 - (4.5 * tier)"` | 47 | 38 | 29 | `"20 - (1.5 * tier)"` |
+| OreScanner | Heavy | `"82 - (5 * tier)"` | 77 | 67 | 57 | `"22 - (1.5 * tier)"` |
+| MassHarvest | Heavy | `"80 - (5 * tier)"` | 75 | 65 | 55 | `"18 - (1 * tier)"` |
+| VerdantSurge | Medium | `"47 - (4 * tier)"` | 43 | 35 | 27 | `"14 - (1 * tier)"` |
+
+**Tandem validation (VerdantSurge + MassHarvest):**
+
+| Tier | Combined Cost | Exceeds Pool? | Gameplay |
+|------|--------------|---------------|----------|
+| T1 | 118 | Yes (+18) | Must sequence: cast VS, wait ~9s, then MH. Empties pool. |
+| T3 | 100 | Exactly | Barely fits from full. Empties pool. |
+| T5 | 82 | No | Fits with 18 remaining (~1 emergency RageSpike). |
+
+## YAML Documentation Convention
+
+Add a comment block above `mana-cost` in every ability's tier-configuration:
+
+```yaml
+# Balance: Light bucket (combat/mobility)
+# Design target: T1=30 (3 casts from full), T5=16 (6 casts from full)
+mana-cost: "34 - (3.5 * tier)"
+```
+
+---
+
+## Agent Workflow: When Helping Design a New Ability's Balance
+
+**Do NOT autonomously pick mana cost or cooldown values.** Balance numbers encode gameplay feel decisions that only the designer can make. The agent's job is to surface the options with their gameplay implications so the designer can choose with full information.
+
+### Step 1 — Classify the Ability
+
+Read the ability's design intent from the user and apply the decision tree above to identify the bucket. State your reasoning: "This is a Heavy bucket ability because it generates ore drops at range — it's powerful non-combat utility with meaningful resource generation."
+
+If the classification is ambiguous (e.g., a defensive ability that works in combat but isn't offensive), flag it: "This could be Light or Medium depending on how impactful each cast is. I'll present both options."
+
+### Step 2 — Compute 2-3 Concrete Options
+
+For each option, pick a point within the bucket's baseCost/scaleFactor range and compute the full implications:
+
+```
+Option A — "Aggressive" (higher cost, top of bucket range)
+  Formula: "84 - (5.5 * tier)"
+  T1=78, T3=67, T5=57
+  → T1: 1 cast from full. Recovery: 39s. Mine loop (35s): not quite recovered.
+  → T5: 1-2 casts from full. Recovery: 28.5s. Felt but comfortable.
+  → After casting at T1, player has 22 mana — cannot afford RageSpike (30).
+
+Option B — "Standard" (middle of bucket range)
+  Formula: "82 - (5 * tier)"
+  T1=77, T3=67, T5=57
+  → T1: 1 cast from full. Recovery: 38.5s. Mine loop: 23 + 70 = 93 (still short of 77).
+  → T5: 1-2 casts. Recovery: 28.5s.
+
+Option C — "Accessible" (lower cost, bottom of bucket range)
+  Formula: "79 - (4.5 * tier)"
+  T1=74, T3=61, T5=57 [NOTE: overlaps Medium at T5 — consider if that's intended]
+```
+
+### Step 3 — Present Options to the User
+
+Use `AskQuestion` to present the options. Frame each option in plain gameplay language, not math. Example prompt text:
+
+> "OreScanner is a Heavy utility ability. Here are three cost options — each changes how punishing the cast feels:"
+>
+> - **Option A (Aggressive):** T1 costs 78 mana (78% of your pool). After casting, you have 22 left — not enough for even a single combat ability. Takes ~39s to recover to full; longer than a typical mine loop, so you'll start the next loop below full.
+> - **Option B (Standard):** T1 costs 77 mana. Functionally identical to A — the numbers are very close. This is the reference value used in balance calculations.
+> - **Option C (Accessible):** T1 costs 74 mana. Slightly more forgiving, but still 74% of pool. T5 drops to 57 — touching the top of Medium territory.
+
+### Step 4 — Derive the Formula
+
+Once the user selects a target (or provides their own number), derive the formula:
+- `baseCost = targetT1 + scaleFactor * 1`
+- Choose scaleFactor to hit the desired T5 value: `scaleFactor = (targetT1 - targetT5) / 4`
+- Round to a clean decimal (0.5 increments preferred)
+
+Example: T1=77, T5=57 → scaleFactor = (77-57)/4 = 5. Formula: `"82 - (5 * tier)"`.
+
+### Step 5 — Validate Before Finalizing
+
+Run the validation checklist above against the chosen formula. If any constraint fails, explain the failure and ask the user how they want to resolve it. Never silently adjust a number after the user has chosen.
+
+---
+
+## Known Trade-offs
+
+| Trade-off | Severity | Mitigation |
+|-----------|----------|------------|
+| T1 combat feels sluggish (3 casts then wait) | Moderate | Future innate ability providing mana-on-hit as player-earned content |
+| 50s full recovery from empty is long | Low-Moderate | Only after extreme spend (tandem). Normal play doesn't hit zero. |
+| T1 heavy utility (75+) is harsh for new gatherers | Moderate | Tier 1→2 upgrade is cheap. The ability is powerful. Players adapt. |
+| 2/sec regen is sensitive to modifier buffs | Low (currently) | No regen modifiers exist yet. When designed: +1/sec = 50% increase, treat as rare/expensive |
+| Negative formula outputs at extreme overtier | None | Minimum cost floor (1) enforced after Parser evaluation |
+
+---
+
+> **Maintenance:** If the base pool parameters (max mana, regen rate) or bucket ranges change, update this file alongside `CLAUDE.md` and `core.mdc`. Stale balance documentation produces incorrect agent-generated options.

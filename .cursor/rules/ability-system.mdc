@@ -8,6 +8,8 @@ alwaysApply: false
 
 ## Checklist: Creating a New Ability
 
+> **Balance:** For mana cost and cooldown values on active abilities, load `.cursor/rules/mana-balance-philosophy.mdc`. Do not pick values autonomously — classify the ability into a bucket (Light/Medium/Heavy), compute options with their gameplay implications, and present them to the user before finalizing.
+
 1. Create class in `src/main/java/us/eunoians/mcrpg/ability/impl/<skill>/`
 2. Extend `McRPGAbility`, implement relevant type interfaces (`PassiveAbility`, `ActiveAbility`, `ConfigurableSkillAbility`, etc.)
 3. Declare a `static final NamespacedKey` on the class

@@ -129,6 +129,20 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - **No entity or player object references in long-lived collections** — store `UUID` instead; holding `Entity`/`Player` objects prevents GC of unloaded entities
 - **No unbounded `Map` or `Set` fields without a documented eviction strategy** — insert-only caches are memory leaks; document the cleanup lifecycle event in a Javadoc comment
 
+## Mana Balance Framework
+
+Active abilities are balanced using a **"Slow Regen, High Stakes"** philosophy. Key parameters: 100 max pool, 2/sec passive regen (50s full recovery), three cost buckets:
+
+| Bucket | T1 Cost | T5 Cost | When to Use |
+|--------|---------|---------|-------------|
+| Light | 28-32 | 12-16 | Combat, mobility, quick single-use effects |
+| Medium | 42-50 | 25-33 | Buffs, sustain, moderate utility |
+| Heavy | 70-80 | 55-60 | Powerful utility, resource generation, AoE gathering |
+
+Mana is the primary gate — cooldowns are anti-spam only for Light abilities and buffer-overlap prevention for Medium/Heavy. **Do not balance abilities using cooldowns as the main gate** — this incentivizes loadout swapping.
+
+When designing or rebalancing abilities, load `.cursor/rules/mana-balance-philosophy.mdc` for the full cookie-cutter process, formula patterns, validation constraints, and agent workflow instructions.
+
 ---
 
 > **Maintenance:** If you introduce a new pattern, naming convention, or anti-pattern not described here, update this file and `CLAUDE.md` in the same PR.

@@ -353,6 +353,26 @@ public final class MyAbility extends McRPGAbility implements PassiveAbility, Rel
 VALID_BLOCK_TYPES.getContent().contains(block);
 ```
 
+### Mana Balance Philosophy
+
+Active abilities follow a **"Slow Regen, High Stakes"** balance framework. All mana costs and cooldowns are tuned against these parameters:
+
+- **Pool:** 100 max mana, 2/sec passive regen, 50s full recovery from empty
+- **Minimum cost floor:** 1 (enforced after Parser formula evaluation)
+- **Three cost buckets:**
+
+| Bucket | T1 Cost | T5 Cost | Cooldown | When to Use |
+|--------|---------|---------|----------|-------------|
+| Light | 28-32 | 12-16 | 1-2s anti-spam | Combat, mobility, quick single-use effects |
+| Medium | 42-50 | 25-33 | 8-15s | Buffs, sustain, moderate utility |
+| Heavy | 70-80 | 55-60 | 12-20s | Powerful utility, resource generation, AoE gathering |
+
+**Design principle:** Mana is the primary gate, not cooldowns. A player with 3 active ability slots would be incentivized to swap loadouts if cooldowns are the real bottleneck — mana is shared across the pool regardless of loadout, so it is the swap-proof gate. Tandem utility pairs (e.g., VerdantSurge + MassHarvest) are designed so their combined T1 cost exceeds 100 (forces sequencing) and combined T5 cost is ~85-95 (the tandem tier reward).
+
+**Formula pattern:** All costs/cooldowns use `getString()` + Parser with `tier` variable: `"baseCost - (scaleFactor * tier)"`.
+
+**Full framework:** See `.cursor/rules/mana-balance-philosophy.mdc` for the cookie-cutter classification decision tree, per-bucket formula ranges, validation checklist, and agent workflow instructions (agents must present balance options to the user rather than choosing values autonomously).
+
 ### Registering New Content
 
 Add to `McRPGExpansion`:
@@ -671,5 +691,6 @@ After any commit or PR that introduces one of the following, **update `CLAUDE.md
 | New concurrency anti-pattern found (thread boundary, race, future handling) | `persona-concurrency.mdc` + `.claude/commands/review-concurrency.md` + `core.mdc` |
 | CI review file-pattern for a new domain | `.github/workflows/pr-review.yml` detect-changes step |
 | Quest board system changed (new condition, distribution type, template feature) | `CLAUDE.md` Quest Board System section + `quest-board-system.mdc` |
+| Mana balance parameters changed (pool size, regen rate, bucket ranges) | `CLAUDE.md` Mana Balance Philosophy section + `mana-balance-philosophy.mdc` + `core.mdc` |
 
 These files are the project's living technical contract — stale steering files produce stale AI output.
