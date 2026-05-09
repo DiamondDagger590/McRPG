@@ -640,11 +640,20 @@ String serverMsg = plugin.registryAccess()
     .getLocalizedMessage(LocalizationKey.MY_NEW_KEY);
 ```
 
+### Player-facing numbers
+
+Numeric values shown in localized strings, GUI placeholders, ability lore, PAPI output, and similar surfaces should use `McRPGDisplayDecimalFormatter.formatDisplayDecimal(...)` (overloads for `McRPGPlayer`, `Audience`, or an explicit `Locale`, plus `float` variants) **instead of** `Float.toString` / `Double.toString`, which ignore locale conventions and often expose unwanted floating-point precision. Obtain the formatter via `localizationManager.getDisplayDecimalFormatter()`.
+
+**Translations vs numeric typography:** Resolving a message key walks the **full** [Locale Chain](#locale-chain) until a translation is found. `NumberFormat` is independent of that walk: overloads that take a `McRPGPlayer` use **only the first locale in that player's chain** as the format locale (grouping and decimal separators). `formatDisplayDecimal(Audience, ...)` uses the chain head of a **loaded** `McRPGPlayer` when the audience is that `Player`; otherwise it uses the **first locale of the server default chain** (console and non-player audiences). Overloads that take `Locale` use that locale directly. Locale resolution is internal to `McRPGDisplayDecimalFormatter`; it reads the locale chain head via `McRPGLocalizationManager.getLocaleChain(McRPGPlayer)` and falls back to the server default locale for non-player audiences.
+
+**Caching and thread-safety:** `McRPGDisplayDecimalFormatter` stores **one** `NumberFormat` instance per `Locale` in a concurrent map. `NumberFormat` is mutable and not thread-safe, so each call **sets** minimum and maximum fraction digits on that shared instance and invokes `format` **while synchronized on that same instance** — there is **no** separate cache entry per digit tuple. Overloads without digit parameters use 1 minimum and 2 maximum fraction digits; overloads with two `int` parameters set custom bounds (non-negative, minimum ≤ maximum).
+
 ### Key Files
 
 | File | Purpose |
 |------|---------|
-| `McRPGLocalizationManager.java` | Manager implementation; locale chain logic |
+| `McRPGLocalizationManager.java` | Manager implementation; locale chain logic; exposes `getDisplayDecimalFormatter()` |
+| `McRPGDisplayDecimalFormatter.java` | Locale-aware `NumberFormat` cache and all `formatDisplayDecimal` overloads (`Locale`, `McRPGPlayer`, `Audience`, `float`/`double`) |
 | `McRPGLocalization.java` | Interface for a locale source (implement to add a new locale) |
 | `BundledLocale.java` | Enum of JAR-bundled locales (folder name + file list) |
 | `DynamicLocale.java` | Runtime-discovered locale from the data folder |

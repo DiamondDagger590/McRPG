@@ -10,6 +10,8 @@ import dev.dejvokep.boostedyaml.route.Route;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.gui.McRPGGuiManager;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.localization.McRPGDisplayDecimalFormatter;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry;
@@ -35,6 +37,8 @@ import java.time.ZonedDateTime;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.lenient;
@@ -92,6 +96,9 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
      * stub {@link Section} that always yields each argument's declared default value. This prevents
      * {@link com.diamonddagger590.mccore.builder.item.impl.ItemBuilder#from(Section)} from NPE-ing
      * when GUI slots are painted during tests that open inventories.
+     * <p>
+     * Also stubs {@link McRPGLocalizationManager#getDisplayDecimalFormatter()} to return a mock
+     * {@link McRPGDisplayDecimalFormatter} that converts values with {@link String#valueOf}.
      */
     @NotNull
     private McRPGLocalizationManager buildLocalizationManagerMock() {
@@ -100,8 +107,15 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
         lenient().when(mockSection.getBoolean(anyString(), anyBoolean())).thenAnswer(inv -> inv.getArgument(1));
         lenient().when(mockSection.getInt(anyString(), anyInt())).thenAnswer(inv -> inv.getArgument(1));
 
+        McRPGDisplayDecimalFormatter mockFormatter = mock(McRPGDisplayDecimalFormatter.class);
+        lenient().when(mockFormatter.formatDisplayDecimal(any(McRPGPlayer.class), anyDouble()))
+                .thenAnswer(inv -> String.valueOf(inv.getArgument(1, Double.class)));
+        lenient().when(mockFormatter.formatDisplayDecimal(any(McRPGPlayer.class), anyFloat()))
+                .thenAnswer(inv -> String.valueOf(inv.getArgument(1, Float.class)));
+
         McRPGLocalizationManager mockLocalization = mock(McRPGLocalizationManager.class);
         lenient().when(mockLocalization.getLocalizedSection(any(), any(Route.class))).thenReturn(mockSection);
+        lenient().when(mockLocalization.getDisplayDecimalFormatter()).thenReturn(mockFormatter);
         return mockLocalization;
     }
 

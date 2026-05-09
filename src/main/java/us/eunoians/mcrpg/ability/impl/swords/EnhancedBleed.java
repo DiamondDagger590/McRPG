@@ -174,7 +174,9 @@ public final class EnhancedBleed extends McRPGAbility implements ConfigurableTie
         placeholders.put(AbilityItemPlaceholderKeys.BASE_DAMAGE_BOOST.getKey(),
                 Integer.toString(getBaseBleedDamageIncrease(tier)));
         placeholders.put(AbilityItemPlaceholderKeys.BONUS_DAMAGE_CHANCE.getKey(),
-                McRPGMethods.getChanceNumberFormat().format(getActivationChance(tier)));
+                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getActivationChance(tier)));
         placeholders.put(AbilityItemPlaceholderKeys.BONUS_DAMAGE.getKey(),
                 Integer.toString(getAdditionalBleedDamageBoost(tier)));
         return placeholders;

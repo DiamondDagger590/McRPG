@@ -158,7 +158,9 @@ public final class Vampire extends McRPGAbility implements ConfigurableTierableA
         placeholders.put(AbilityItemPlaceholderKeys.HEALING_AMOUNT.getKey(),
                 Integer.toString(getAmountToHeal(getCurrentAbilityTier(player.asSkillHolder()))));
         placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
-                McRPGMethods.getChanceNumberFormat().format(getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
+                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
         return placeholders;
     }
 }

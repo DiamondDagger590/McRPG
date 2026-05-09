@@ -198,7 +198,9 @@ public final class VerdantSurge extends McRPGAbility implements ConfigurableActi
     @Override
     public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put(RADIUS.getKey(), Double.toString(getRadius(getCurrentAbilityTier(player.asSkillHolder()))));
+        placeholders.put(RADIUS.getKey(), getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getDisplayDecimalFormatter().formatDisplayDecimal(player, getRadius(getCurrentAbilityTier(player.asSkillHolder()))));
         placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
         placeholders.put(PULSE_COUNT.getKey(), Long.toString(getPulseCount(getCurrentAbilityTier(player.asSkillHolder()))));
         placeholders.put(MANA_COST.getKey(), Integer.toString(getManaCost(player.asSkillHolder())));

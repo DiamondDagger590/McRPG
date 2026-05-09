@@ -12,8 +12,6 @@ import us.eunoians.mcrpg.ability.component.cancel.EventCancellingComponentAttrib
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.exception.ability.EventNotRegisteredForActivationException;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -27,8 +25,6 @@ import java.util.Set;
  * tied to it.
  */
 public abstract class BaseAbility implements Ability {
-
-    protected static final NumberFormat FORMAT = new DecimalFormat("#0.00");
 
     private final NamespacedKey abilityKey;
     private final List<EventCancellingComponentAttribute> cancellingComponents;

@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
 import us.eunoians.mcrpg.gui.experiencebank.ExperienceBankGui;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.gui.home.HomeGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -52,9 +53,11 @@ public class HomeExperienceBankSlot implements McRPGSlot {
     private Map<String, String> getPlaceholders(@NotNull McRPGPlayer mcRPGPlayer) {
         Map<String, String> placeholders = new HashMap<>();
         PlayerExperienceExtras experienceExtras = mcRPGPlayer.getExperienceExtras();
+        McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
         placeholders.put("redeemable-experience", Integer.toString(experienceExtras.getRedeemableExperience()));
         placeholders.put("redeemable-levels", Integer.toString(experienceExtras.getRedeemableLevels()));
-        placeholders.put("rested-experience", Float.toString(experienceExtras.getRestedExperience()));
+        placeholders.put("rested-experience", localizationManager.getDisplayDecimalFormatter().formatDisplayDecimal(mcRPGPlayer, experienceExtras.getRestedExperience()));
         placeholders.put("boosted-experience",  Integer.toString(experienceExtras.getBoostedExperience()));
         return placeholders;
     }

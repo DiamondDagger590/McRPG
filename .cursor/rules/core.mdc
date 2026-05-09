@@ -83,6 +83,10 @@ AbilityRegistry ar = mcRPG.registryAccess().registry(McRPGRegistryKey.ABILITY);
 YamlDocument config = mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.SWORDS_CONFIG);
 ```
 
+## Localization & player-facing numbers
+
+All player-facing text goes through `McRPGLocalizationManager` (`McRPGManagerKey.LOCALIZATION`) so the **locale chain** applies when **resolving translation keys**. That is separate from **numbers**: for decimals in localized strings, GUIs, ability lore, PAPI, and similar surfaces, obtain the formatter via `localizationManager.getDisplayDecimalFormatter()`, then call `formatDisplayDecimal(McRPGPlayer, …)`, `formatDisplayDecimal(Audience, …)`, or `formatDisplayDecimal(Locale, …)` (`float` overloads exist). Do **not** use `Float.toString` / `Double.toString` — no locale rules and full precision leak into UI. `NumberFormat` uses the **chain head only** for `McRPGPlayer` overloads (the full chain is still used for message lookup elsewhere). `Audience` overloads use a loaded `McRPGPlayer`’s chain head when the audience is that `Player`, otherwise the server default chain’s head (e.g. console). Explicit `Locale` overloads use that locale. Locale resolution is internal to the formatter; it reads the locale chain head via `getLocaleChain(McRPGPlayer)` and falls back to the server default for non-player audiences. `McRPGDisplayDecimalFormatter` keeps **one** `NumberFormat` per `Locale`; each call **mutates** min/max fraction digits on that instance and formats **inside** `synchronized` on it (not thread-safe otherwise; no per-digit-tuple cache). Omit the two `int` parameters for default 1–2 fraction digits; pass them to customize (non-negative, min ≤ max).
+
 ## Naming Conventions
 
 | Type | Convention | Example |

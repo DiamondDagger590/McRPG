@@ -150,7 +150,9 @@ public final class DeeperWound extends McRPGAbility implements ConfigurableTiera
         Map<String, String> placeholders = new HashMap<>();
         int tier = getCurrentAbilityTier(player.asSkillHolder());
         placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
-                McRPGMethods.getChanceNumberFormat().format(getActivationChance(tier)));
+                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getActivationChance(tier)));
         placeholders.put(AbilityItemPlaceholderKeys.ADDITIONAL_BLEED_CYCLES.getKey(),
                 Integer.toString(getAdditionalBleedCycles(tier)));
         return placeholders;

@@ -115,7 +115,7 @@ public class RestedExperienceManager extends Manager<McRPG> {
         float accumulatedExperience = finalExperienceCount - playerExperienceExtras.getRestedExperience();
         if (notifyPlayerOfOfflineGain && accumulatedExperience > 0) {
             audience.sendMessage(localizationManager.getLocalizedMessageAsComponent(audience, LocalizationKey.OFFLINE_RESTED_EXPERIENCE_AWARDED_MESSAGE,
-                    Map.of("rested-experience-gained", Float.toString(accumulatedExperience))));
+                    Map.of("rested-experience-gained", localizationManager.getDisplayDecimalFormatter().formatDisplayDecimal(mcRPGPlayer, accumulatedExperience))));
         }
         playerExperienceExtras.setRestedExperience(finalExperienceCount);
     }

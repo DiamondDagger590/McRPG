@@ -193,7 +193,9 @@ public class DryadsGift extends McRPGAbility implements PassiveAbility, Configur
         placeholders.put(AbilityItemPlaceholderKeys.EXPERIENCE_DROPPED.getKey(),
                 Integer.toString(getExperienceToDrop(getCurrentAbilityTier(player.asSkillHolder()))));
         placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
-                McRPGMethods.getChanceNumberFormat().format(getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
+                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
         return placeholders;
     }
 }

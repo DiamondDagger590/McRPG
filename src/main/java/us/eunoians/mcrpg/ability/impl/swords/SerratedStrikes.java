@@ -177,7 +177,9 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
         int tier = getCurrentAbilityTier(player.asSkillHolder());
         placeholders.put(ABILITY_DURATION.getKey(), Integer.toString(getDuration(tier)));
         placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
-        placeholders.put(ACTIVATION_CHANCE_INCREASE.getKey(), McRPGMethods.getChanceNumberFormat().format(getBoostToBleedActivation(tier)));
+        placeholders.put(ACTIVATION_CHANCE_INCREASE.getKey(), getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION)
+                .getDisplayDecimalFormatter().formatDisplayDecimal(player, getBoostToBleedActivation(tier)));
         placeholders.put(MANA_COST.getKey(), Integer.toString(getManaCost(player.asSkillHolder())));
         return placeholders;
     }

@@ -57,8 +57,8 @@ public class RestedExperienceModifyCommand extends AdminBankCommandBase {
 
                     Audience senderAudience = commandContext.sender().getSender();
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
-                    Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, expAmount);
-                    Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, expAmount);
+                    Map<String, String> senderPlaceholders = getPlaceholders(localizationManager, senderAudience, senderAudience, player, expAmount);
+                    Map<String, String> receiverPlaceholders = getPlaceholders(localizationManager, player, senderAudience, player, expAmount);
                     if (playerOptional.isPresent()) {
                         McRPGPlayer mcRPGPlayer = playerOptional.get();
                         giveRestedExperience(mcRPGPlayer, expAmount, receiverPlaceholders);
@@ -90,8 +90,8 @@ public class RestedExperienceModifyCommand extends AdminBankCommandBase {
 
                     Audience senderAudience = commandContext.sender().getSender();
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
-                    Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, expAmount);
-                    Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, expAmount);
+                    Map<String, String> senderPlaceholders = getPlaceholders(localizationManager, senderAudience, senderAudience, player, expAmount);
+                    Map<String, String> receiverPlaceholders = getPlaceholders(localizationManager, player, senderAudience, player, expAmount);
                     if (playerOptional.isPresent()) {
                         McRPGPlayer mcRPGPlayer = playerOptional.get();
                         removeRestedExperience(mcRPGPlayer, expAmount, receiverPlaceholders);
@@ -120,8 +120,8 @@ public class RestedExperienceModifyCommand extends AdminBankCommandBase {
 
                     Audience senderAudience = commandContext.sender().getSender();
                     Optional<McRPGPlayer> playerOptional = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
-                    Map<String, String> senderPlaceholders = getPlaceholders(senderAudience, senderAudience, player, 0);
-                    Map<String, String> receiverPlaceholders = getPlaceholders(player, senderAudience, player, 0);
+                    Map<String, String> senderPlaceholders = getPlaceholders(localizationManager, senderAudience, senderAudience, player, 0);
+                    Map<String, String> receiverPlaceholders = getPlaceholders(localizationManager, player, senderAudience, player, 0);
                     if (playerOptional.isPresent()) {
                         McRPGPlayer mcRPGPlayer = playerOptional.get();
                         resetRestedExperience(mcRPGPlayer, receiverPlaceholders);
@@ -179,9 +179,9 @@ public class RestedExperienceModifyCommand extends AdminBankCommandBase {
     }
 
     @NotNull
-    private static Map<String, String> getPlaceholders(@NotNull Audience messageAudience, @NotNull Audience senderAudience, @NotNull Audience receiverAudience, float experience) {
+    private static Map<String, String> getPlaceholders(@NotNull McRPGLocalizationManager localizationManager, @NotNull Audience messageAudience, @NotNull Audience senderAudience, @NotNull Audience receiverAudience, float experience) {
         Map<String, String> placeholders = new HashMap<>(McRPGCommandBase.getPlaceholders(messageAudience, senderAudience, receiverAudience));
-        placeholders.put(RESTED_EXPERIENCE.getPlaceholder(), Float.toString(experience));
+        placeholders.put(RESTED_EXPERIENCE.getPlaceholder(), localizationManager.getDisplayDecimalFormatter().formatDisplayDecimal(messageAudience, experience));
         return placeholders;
     }
 }

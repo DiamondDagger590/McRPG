@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.event.entity.player.PlayerAwardedRestedExperienceEvent;
+import us.eunoians.mcrpg.localization.McRPGDisplayDecimalFormatter;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -30,8 +31,11 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockbukkit.mockbukkit.matcher.plugin.PluginManagerFiredEventClassMatcher.hasFiredEventInstance;
 import static org.mockbukkit.mockbukkit.matcher.plugin.PluginManagerFiredEventClassMatcher.hasNotFiredEventInstance;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyDouble;
+import static org.mockito.ArgumentMatchers.anyFloat;
 import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -56,6 +60,14 @@ public class RestedExperienceManagerTest extends McRPGBaseTest {
         RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).register(reloadableContentManager);
         restedExperienceManager = spy(new RestedExperienceManager(mcRPG));
         RegistryAccess.registryAccess().registry(McRPGRegistryKey.MANAGER).register(restedExperienceManager);
+        McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+        McRPGDisplayDecimalFormatter mockFormatter = mock(McRPGDisplayDecimalFormatter.class);
+        lenient().when(localizationManager.getDisplayDecimalFormatter()).thenReturn(mockFormatter);
+        lenient().when(mockFormatter.formatDisplayDecimal(any(McRPGPlayer.class), anyDouble()))
+                .thenAnswer(invocation -> String.valueOf(invocation.getArgument(1, Double.class)));
+        lenient().when(mockFormatter.formatDisplayDecimal(any(McRPGPlayer.class), anyFloat()))
+                .thenAnswer(invocation -> String.valueOf(invocation.getArgument(1, Float.class)));
     }
 
     @DisplayName("Given ONLINE accumulation and time=10, when computing rested experience, then it returns 1.0")

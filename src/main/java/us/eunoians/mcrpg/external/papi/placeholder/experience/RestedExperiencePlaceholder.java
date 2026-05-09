@@ -7,8 +7,8 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.entity.player.PlayerExperienceExtras;
 import us.eunoians.mcrpg.external.papi.placeholder.McRPGPlaceholder;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 /**
@@ -31,8 +31,9 @@ public class RestedExperiencePlaceholder extends McRPGPlaceholder {
         var playerOptional = playerManager.getPlayer(offlinePlayer.getUniqueId());
         if (playerOptional.isPresent()) {
             McRPGPlayer mcRPGPlayer = playerOptional.get();
-            PlayerExperienceExtras experienceExtras = mcRPGPlayer.getExperienceExtras();
-            return Float.toString(experienceExtras.getRestedExperience());
+            McRPGLocalizationManager localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION);
+            return localizationManager.getDisplayDecimalFormatter().formatDisplayDecimal(mcRPGPlayer, mcRPGPlayer.getExperienceExtras().getRestedExperience());
         }
         return null;
     }

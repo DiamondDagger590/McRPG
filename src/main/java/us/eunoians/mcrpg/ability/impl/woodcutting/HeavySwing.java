@@ -221,7 +221,9 @@ public class HeavySwing extends McRPGAbility implements PassiveAbility, Configur
     public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
-                McRPGMethods.getChanceNumberFormat().format(getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
+                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getActivationChance(getCurrentAbilityTier(player.asSkillHolder()))));
         placeholders.put(AbilityItemPlaceholderKeys.RADIUS.getKey(),
                 Integer.toString(getRadius(getCurrentAbilityTier(player.asSkillHolder()))));
         return placeholders;

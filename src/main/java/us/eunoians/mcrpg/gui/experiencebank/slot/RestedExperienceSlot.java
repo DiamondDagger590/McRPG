@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.experiencebank.ExperienceBankGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashMap;
@@ -50,15 +51,16 @@ public class RestedExperienceSlot implements McRPGSlot {
         YamlDocument configFile = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG);
         double boostedExperienceUsageRate = configFile.getDouble(MainConfigFile.RESTED_EXPERIENCE_USAGE_RATE);
-        int baseExampleExperience = Integer.parseInt(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION)
+        McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+        int baseExampleExperience = Integer.parseInt(localizationManager
                 .getLocalizedMessage(mcRPGPlayer, LocalizationKey.EXPERIENCE_BANK_GUI_RESTED_EXPERIENCE_SLOT_EXAMPLE_BASE_AMOUNT));
         int boostedExperienceAmount = (int) (boostedExperienceUsageRate * baseExampleExperience);
         placeholders.put("example-base-amount", Integer.toString(baseExampleExperience));
         placeholders.put("example-boosted-amount", Integer.toString(boostedExperienceAmount));
         placeholders.put("example-consumed-amount", Integer.toString(boostedExperienceAmount - baseExampleExperience));
-        placeholders.put("rested-experience-usage-rate", Double.toString(boostedExperienceUsageRate));
-        placeholders.put("rested-experience", Float.toString(mcRPGPlayer.getExperienceExtras().getRestedExperience()));
+        placeholders.put("rested-experience-usage-rate", localizationManager.getDisplayDecimalFormatter().formatDisplayDecimal(mcRPGPlayer, boostedExperienceUsageRate));
+        placeholders.put("rested-experience", localizationManager.getDisplayDecimalFormatter().formatDisplayDecimal(mcRPGPlayer, mcRPGPlayer.getExperienceExtras().getRestedExperience()));
         return placeholders;
     }
 }

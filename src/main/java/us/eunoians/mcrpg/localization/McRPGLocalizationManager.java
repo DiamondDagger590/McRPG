@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.localization.LocalizationManager;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
 import com.diamonddagger590.mccore.util.LinkedNode;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -35,11 +36,41 @@ import java.util.Set;
  * translation, then {@link NoLocalizationContainsMessageException} will be thrown.
  * <p>
  * Third party plugins can add their own configuration files to be included for localization by using {@link #registerLanguageFile(com.diamonddagger590.mccore.localization.Localization)}.
+ * <p>
+ * Player-facing decimal formatting uses {@link #getDisplayDecimalFormatter()}, which is constructed by this manager
+ * and reads {@link #getLocaleChain(McRPGPlayer)} / {@link #getServerDefaultLocale()} for locale resolution.
  */
 public final class McRPGLocalizationManager extends LocalizationManager<McRPG, McRPGPlayer> {
 
+    private final McRPGDisplayDecimalFormatter displayDecimalFormatter;
+
     public McRPGLocalizationManager(McRPG mcRPG) {
         super(mcRPG);
+        this.displayDecimalFormatter = new McRPGDisplayDecimalFormatter(this);
+    }
+
+    /**
+     * Returns the shared formatter for locale-aware player-facing decimals. The manager constructs this instance;
+     * the formatter resolves locales by calling {@link #getLocaleChain(McRPGPlayer)} and
+     * {@link #getServerDefaultLocale()} internally.
+     *
+     * @return the display decimal formatter
+     */
+    @NotNull
+    public McRPGDisplayDecimalFormatter getDisplayDecimalFormatter() {
+        return displayDecimalFormatter;
+    }
+
+    /**
+     * Returns the server's configured default {@link Locale} (the head of the server default locale chain).
+     * Package-private so {@link McRPGDisplayDecimalFormatter} can use it as the fallback when formatting for
+     * non-player audiences.
+     *
+     * @return the server default locale
+     */
+    @NotNull
+    Locale getServerDefaultLocale() {
+        return localeChain.getContent().getNodeValue();
     }
 
     /**

@@ -139,7 +139,9 @@ public final class TooManyPlants extends McRPGAbility implements PassiveAbility,
     public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
-                McRPGMethods.getChanceNumberFormat().format(getActivationChance(player.asSkillHolder())));
+                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getActivationChance(player.asSkillHolder())));
         return placeholders;
     }
 }

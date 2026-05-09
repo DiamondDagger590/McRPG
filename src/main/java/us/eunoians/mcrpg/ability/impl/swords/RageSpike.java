@@ -245,7 +245,9 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
     public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put(AbilityItemPlaceholderKeys.DAMAGE.getKey(),
-                Double.toString(getDamage(getCurrentAbilityTier(player.asSkillHolder()))));
+                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getDamage(getCurrentAbilityTier(player.asSkillHolder()))));
         placeholders.put(AbilityItemPlaceholderKeys.COOLDOWN.getKey(),
                 Long.toString(getCooldown(player.asSkillHolder())));
         placeholders.put(AbilityItemPlaceholderKeys.MANA_COST.getKey(),
