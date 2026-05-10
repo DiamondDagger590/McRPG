@@ -92,7 +92,6 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String DEBUG_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "debug");
     public static final Route DEBUG_COMMAND_HEADER_MESSAGE = Route.fromString(toRoutePath(DEBUG_COMMAND_HEADER, "header-message"));
-    public static final Route DEBUG_COMMAND_UPGRADE_POINTS_MESSAGE = Route.fromString(toRoutePath(DEBUG_COMMAND_HEADER, "upgrade-points-message"));
     public static final Route DEBUG_COMMAND_SKILL_INFO_MESSAGE = Route.fromString(toRoutePath(DEBUG_COMMAND_HEADER, "skill-info-message"));
 
     private static final String QUEST_REGISTRY_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "quest-registry");
@@ -482,6 +481,22 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route LOADOUT_GUI_ABILITY_SLOT_ADDITIONAL_LORE = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "ability-slot.additional-lore"));
     public static final Route LOADOUT_GUI_FREE_ABILITY_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "free-ability-slot.display-item"));
     public static final Route LOADOUT_GUI_OPEN_LOADOUT_DISPLAY_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "loadout-display-open-slot.display-item"));
+    // Combo zone: info slot that explains the combo system to new players
+    public static final Route LOADOUT_GUI_COMBO_INFO_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "combo-info-slot.display-item"));
+    // Combo zone: filler item for the light-blue border rows
+    public static final Route LOADOUT_GUI_COMBO_ZONE_FILLER_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "combo-zone-filler.display-item"));
+    private static final String LOADOUT_GUI_ACTIVE_COMBO_SLOT_HEADER = toRoutePath(LOADOUT_GUI_HEADER, "active-combo-slot");
+    // Combo zone: lore appended to occupied active combo slots. Supported placeholders: <combo-pattern>
+    public static final Route LOADOUT_GUI_ACTIVE_COMBO_SLOT_OCCUPIED_ADDITIONAL_LORE = Route.fromString(toRoutePath(LOADOUT_GUI_ACTIVE_COMBO_SLOT_HEADER, "occupied.additional-lore"));
+    // Combo zone: lore appended to occupied slots that have an active upgrade quest. Supported placeholders: <upgrade-quest-progress>
+    public static final Route LOADOUT_GUI_ACTIVE_COMBO_SLOT_UPGRADE_QUEST_PROGRESS_LORE = Route.fromString(toRoutePath(LOADOUT_GUI_ACTIVE_COMBO_SLOT_HEADER, "occupied.upgrade-quest-progress-lore"));
+    // Combo zone: display item for empty active combo slots. Supported placeholders: <combo-pattern>
+    public static final Route LOADOUT_GUI_ACTIVE_COMBO_SLOT_EMPTY_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_ACTIVE_COMBO_SLOT_HEADER, "empty.display-item"));
+    private static final String LOADOUT_GUI_ACTIVE_COMBO_SLOT_PATTERN_HEADER = toRoutePath(LOADOUT_GUI_ACTIVE_COMBO_SLOT_HEADER, "pattern");
+    // Localizable display strings for each combo pattern. Colors and arrows are fully configurable.
+    public static final Route LOADOUT_GUI_ACTIVE_COMBO_SLOT_PATTERN_SLOT_1 = Route.fromString(toRoutePath(LOADOUT_GUI_ACTIVE_COMBO_SLOT_PATTERN_HEADER, "slot-1"));
+    public static final Route LOADOUT_GUI_ACTIVE_COMBO_SLOT_PATTERN_SLOT_2 = Route.fromString(toRoutePath(LOADOUT_GUI_ACTIVE_COMBO_SLOT_PATTERN_HEADER, "slot-2"));
+    public static final Route LOADOUT_GUI_ACTIVE_COMBO_SLOT_PATTERN_SLOT_3 = Route.fromString(toRoutePath(LOADOUT_GUI_ACTIVE_COMBO_SLOT_PATTERN_HEADER, "slot-3"));
 
     private static final String LOADOUT_SELECTION_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-selection-gui");
     public static final Route LOADOUT_SELECTION_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_HEADER, "title"));
@@ -492,6 +507,8 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route LOADOUT_SELECTION_GUI_INACTIVE_LOADOUT_SELECTION_SLOT_GEYSER_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_SELECTION_SLOT_GEYSER_HEADER, "inactive-loadout"));
     public static final Route LOADOUT_SELECTION_GUI_ACTIVE_LOADOUT_SELECTION_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_SELECTION_SLOT_HEADER, "active-loadout"));
     public static final Route LOADOUT_SELECTION_GUI_INACTIVE_LOADOUT_SELECTION_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_SELECTION_SLOT_HEADER, "inactive-loadout"));
+    // Preview line appended to loadout selection slots listing the active combo abilities. Supported placeholder: <active-abilities>
+    public static final Route LOADOUT_SELECTION_GUI_ACTIVE_ABILITIES_PREVIEW = Route.fromString(toRoutePath(LOADOUT_SELECTION_GUI_HEADER, "active-abilities-preview"));
 
     private static final String LOADOUT_DISPLAY_HOME_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-display-home-gui");
     public static final Route LOADOUT_DISPLAY_HOME_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_HEADER, "title"));
@@ -585,11 +602,8 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String ABILITY_LORE_HEADER = toRoutePath(ABILITY_HEADER, "lore");
     private static final String ABILITY_QUEST_LORE_HEADER = toRoutePath(ABILITY_LORE_HEADER, "quest");
-    public static final Route NOT_ENOUGH_ABILITY_POINTS_TO_START_QUEST_LORE = Route.fromString(toRoutePath(ABILITY_QUEST_LORE_HEADER, "not-enough-ability-points"));
-    public static final Route CLICK_TO_START_UPGRADE_QUEST_LORE = Route.fromString(toRoutePath(ABILITY_QUEST_LORE_HEADER, "click-to-start"));
     public static final Route QUEST_PROGRESS_LORE = Route.fromString(toRoutePath(ABILITY_QUEST_LORE_HEADER, "quest-progress"));
     public static final Route UPGRADE_LOCKED_BEHIND_LEVELUP_LORE = Route.fromString(toRoutePath(ABILITY_LORE_HEADER, "upgrade-locked-behind-levelup"));
-    public static final Route ABILITY_POINT_COUNT_LORE = Route.fromString(toRoutePath(ABILITY_LORE_HEADER, "ability-point-count"));
     public static final Route ABILITY_LOCKED_LORE = Route.fromString(toRoutePath(ABILITY_LORE_HEADER, "ability-locked"));
     public static final Route EXPANSION_PACK_LORE = Route.fromString(toRoutePath(ABILITY_LORE_HEADER, "expansion-pack"));
 

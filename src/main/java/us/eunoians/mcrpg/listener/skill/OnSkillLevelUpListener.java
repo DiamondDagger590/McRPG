@@ -50,13 +50,9 @@ import java.util.UUID;
 import java.util.logging.Level;
 
 /**
- * This listener is in charge of handling ability unlocks and ability point distributions
+ * This listener is in charge of handling ability unlocks on skill level-up.
  */
 public class OnSkillLevelUpListener implements Listener {
-
-    /** @deprecated Upgrade points are deprecated in favor of quest-based ability upgrades. */
-    @Deprecated
-    private static final int UPGRADE_POINT_AWARD_THRESHOLD = 1;
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void handleLevelUp(SkillGainLevelEvent skillGainLevelEvent) {
@@ -85,12 +81,6 @@ public class OnSkillLevelUpListener implements Listener {
         Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(postSkillGainLevelEvent.getSkillKey());
         var skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
         if (skillHolderDataOptional.isPresent()) {
-
-            /** @deprecated Upgrade points are deprecated in favor of quest-based upgrades. */
-            if (postSkillGainLevelEvent.getBeforeLevel()/UPGRADE_POINT_AWARD_THRESHOLD != postSkillGainLevelEvent.getAfterLevel()/UPGRADE_POINT_AWARD_THRESHOLD) {
-                skillHolder.giveUpgradePoints(1);
-            }
-
             var skillHolderData = skillHolderDataOptional.get();
             AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
             for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skill)) {

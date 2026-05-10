@@ -145,7 +145,6 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest
       # - enhanced-bleed-base-damage-increase: integer
@@ -155,7 +154,6 @@ ability-configuration:
         #How much should the damage of Bleed increase by before adding possible additional damage
         enhanced-bleed-base-damage-increase: 1
         # Ignored for tier 1
-        upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:enhanced_bleed_upgrade"
       tier-1:
@@ -175,13 +173,11 @@ ability-configuration:
         enhanced-bleed-activation-chance: 35.0
         enhanced-bleed-damage-boost: 2
       tier-4:
-        upgrade-point-cost: 2
         unlock-level: 375
         upgrade-quest: "mcrpg:enhanced_bleed_tier4"
         enhanced-bleed-activation-chance: 55.0
         enhanced-bleed-damage-boost: 2
       tier-5:
-        upgrade-point-cost: 2
         unlock-level: 500
         upgrade-quest: "mcrpg:enhanced_bleed_tier5"
         enhanced-bleed-base-damage-increase: 2
@@ -193,14 +189,12 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest
       # - deeper-wound-activation-chance: decimal from 0.0-100.0
       # - deeper-wound-cycle-increase: integer
       all-tiers:
         # Ignored for tier 1
-        upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:deeper_wound_upgrade"
       tier-1:
@@ -220,13 +214,11 @@ ability-configuration:
         deeper-wound-activation-chance: 40.0
         deeper-wound-cycle-increase: 3
       tier-4:
-        upgrade-point-cost: 2
         unlock-level: 575
         upgrade-quest: "mcrpg:deeper_wound_tier4"
         deeper-wound-activation-chance: 50.0
         deeper-wound-cycle-increase: 6
       tier-5:
-        upgrade-point-cost: 2
         unlock-level: 700
         upgrade-quest: "mcrpg:deeper_wound_tier5"
         deeper-wound-activation-chance: 60.0
@@ -237,14 +229,12 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest
       # - vampire-activation-chance: decimal from 0.0-100.0
       # - amount-to-heal: integer
       all-tiers:
         # Ignored for tier 1
-        upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:vampire_upgrade"
       tier-1:
@@ -264,13 +254,11 @@ ability-configuration:
         vampire-activation-chance: 50.0
         amount-to-heal: 1
       tier-4:
-        upgrade-point-cost: 2
         unlock-level: 700
         upgrade-quest: "mcrpg:vampire_tier4"
         vampire-activation-chance: 80.0
         amount-to-heal: 1
       tier-5:
-        upgrade-point-cost: 2
         unlock-level: 850
         upgrade-quest: "mcrpg:vampire_tier5"
         vampire-activation-chance: 100.0
@@ -281,12 +269,10 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest definition key (e.g. "mcrpg:serrated_strikes_t2")
       all-tiers:
         # Ignored for tier 1
-        upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:serrated_strikes_upgrade"
         # Balance: Medium bucket (combat buff). T1=47 (2 casts from full), T5=29 (3 casts from full).
@@ -303,11 +289,9 @@ ability-configuration:
         unlock-level: 3
         upgrade-quest: "mcrpg:serrated_strikes_tier3"
       tier-4:
-        upgrade-point-cost: 2
         unlock-level: 700
         upgrade-quest: "mcrpg:serrated_strikes_tier4"
       tier-5:
-        upgrade-point-cost: 2
         unlock-level: 850
         upgrade-quest: "mcrpg:serrated_strikes_tier5"
   rage-spike:
@@ -322,14 +306,12 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest definition key (e.g. "mcrpg:rage_spike_t2")
       # - damage: damage dealt to enemies hit by the dash
       # - velocity: dash velocity applied to the player
       all-tiers:
         # Ignored for tier 1
-        upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:rage_spike_upgrade"
         damage: "0.5+(0.5*tier)"
@@ -346,10 +328,8 @@ ability-configuration:
         unlock-level: 3
         upgrade-quest: "mcrpg:rage_spike_tier3"
       tier-4:
-        upgrade-point-cost: 2
         unlock-level: 700
         upgrade-quest: "mcrpg:rage_spike_tier4"
       tier-5:
-        upgrade-point-cost: 2
         unlock-level: 850
         upgrade-quest: "mcrpg:rage_spike_tier5"

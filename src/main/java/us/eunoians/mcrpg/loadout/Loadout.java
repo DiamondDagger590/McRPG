@@ -6,6 +6,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
@@ -295,6 +296,62 @@ public final class Loadout {
      */
     public boolean shouldSaveDisplay() {
         return !loadoutDisplay.equals(getDefaultDisplayItem());
+    }
+
+    /**
+     * Gets the active (combo) abilities in this loadout in their stored slot order.
+     * <p>
+     * Returns only {@link ComboActivatable} abilities, preserving the same encounter order
+     * as {@link #getOrderedAbilities()}. The Nth entry maps to combo slot N in the
+     * {@link us.eunoians.mcrpg.ability.combo.ComboPattern} enumeration.
+     *
+     * @return An ordered, unmodifiable {@link List} of {@link NamespacedKey}s for all
+     *         {@link ComboActivatable} abilities in this loadout.
+     */
+    @NotNull
+    public List<NamespacedKey> getOrderedActiveAbilities() {
+        var abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
+        return abilities.stream()
+                .filter(key -> abilityRegistry.getRegisteredAbility(key) instanceof ComboActivatable)
+                .toList();
+    }
+
+    /**
+     * Swaps the loadout positions of two active ({@link ComboActivatable}) abilities.
+     * <p>
+     * {@code fromComboSlot} and {@code toComboSlot} are 1-indexed positions into the ordered
+     * active ability list (i.e., the Nth {@link ComboActivatable} in {@link #getOrderedAbilities()}).
+     * If both slots refer to the same position, or if either index is out of range, this method
+     * is a no-op.
+     * <p>
+     * After the swap the ability previously in {@code fromComboSlot} will activate via the
+     * combo pattern for {@code toComboSlot} and vice versa, since
+     * {@link us.eunoians.mcrpg.listener.ability.OnComboCompleteListener} resolves abilities
+     * by their ordinal position in this list.
+     *
+     * @param fromComboSlot The 1-indexed combo slot of the ability to move (source).
+     * @param toComboSlot   The 1-indexed combo slot to move the ability into (target).
+     */
+    public void swapActivePositions(int fromComboSlot, int toComboSlot) {
+        if (fromComboSlot == toComboSlot) {
+            return;
+        }
+        var abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
+        List<Integer> activeIndices = new ArrayList<>();
+        for (int i = 0; i < abilities.size(); i++) {
+            if (abilityRegistry.getRegisteredAbility(abilities.get(i)) instanceof ComboActivatable) {
+                activeIndices.add(i);
+            }
+        }
+        if (fromComboSlot < 1 || fromComboSlot > activeIndices.size()
+                || toComboSlot < 1 || toComboSlot > activeIndices.size()) {
+            return;
+        }
+        int fromListIndex = activeIndices.get(fromComboSlot - 1);
+        int toListIndex = activeIndices.get(toComboSlot - 1);
+        NamespacedKey temp = abilities.get(fromListIndex);
+        abilities.set(fromListIndex, abilities.get(toListIndex));
+        abilities.set(toListIndex, temp);
     }
 
     /**

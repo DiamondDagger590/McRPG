@@ -159,12 +159,10 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest
       all-tiers:
         # Ignored for tier 1
-        upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:its_a_triple_upgrade"
       tier-1:
@@ -295,12 +293,10 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest
       all-tiers:
         # Ignored for tier 1
-        upgrade-point-cost: 1
         unlock-level: 1*tier
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:remote_transfer_upgrade"
@@ -378,12 +374,10 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest
       all-tiers:
         # Ignored for tier 1
-        upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:ore_scanner_upgrade"
         # Balance: Heavy bucket (powerful utility). T1=77 (1 cast from full, 38.5s recovery), T5=57 (still 57% of pool).

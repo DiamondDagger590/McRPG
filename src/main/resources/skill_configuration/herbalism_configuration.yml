@@ -104,7 +104,6 @@ ability-configuration:
     amount-of-tiers: 5
     tier-configuration:
       all-tiers:
-        upgrade-point-cost: 1
         unlock-level: 1*tier
         pulses: 1+(.5*tier)
         pulse-radius: 5+(1.6*tier)
@@ -139,7 +138,6 @@ ability-configuration:
       - MELON
     tier-configuration:
       all-tiers:
-        upgrade-point-cost: 1
         unlock-level: 1*tier
         pulse-radius: 5+(1.6*tier)
         # Balance: Heavy bucket (powerful utility). T1=75 (1 cast from full), T5=55 (still 55% of pool).

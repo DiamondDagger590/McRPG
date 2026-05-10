@@ -123,12 +123,10 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest
       all-tiers:
         # Ignored for tier 1
-        upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:heavy_swing_upgrade"
       tier-1:
@@ -186,12 +184,10 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest
       all-tiers:
         # Ignored for tier 1
-        upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:dryads_gift_upgrade"
       tier-1:
@@ -248,12 +244,10 @@ ability-configuration:
     tier-configuration:
       #Any value provided here will be default for each tier unless overridden by a tier
       #Accepted keys are as follows:
-      # - upgrade-point-cost: integer
       # - unlock-level: integer
       # - upgrade-quest: quest
       all-tiers:
         # Ignored for tier 1
-        upgrade-point-cost: 1
         # References a generic, repeatable upgrade quest definition in quests/upgrades/generic_ability_upgrades.yml
         upgrade-quest: "mcrpg:nymphs_vitality_upgrade"
       tier-1:

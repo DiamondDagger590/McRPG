@@ -12,12 +12,14 @@ import us.eunoians.mcrpg.event.quest.QuestStartEvent;
 import us.eunoians.mcrpg.quest.QuestTestHelper;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
+import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestPhaseDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestRepeatMode;
 import us.eunoians.mcrpg.quest.definition.QuestStageDefinition;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScope;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageState;
+import us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource;
 
 import java.time.Duration;
 import java.util.List;
@@ -239,5 +241,208 @@ public class QuestInstanceTest extends McRPGBaseTest {
         );
         QuestInstance instance = QuestTestHelper.newQuestInstance(expiringDef);
         assertTrue(instance.getExpirationTime().isPresent());
+    }
+
+    @DisplayName("Given an instance, when adding a stage via append overload, then it appears at the end of the stage list")
+    @Test
+    public void addQuestStage_append_addsStageToEnd() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+        int sizeBefore = instance.getQuestStageInstances().size();
+        QuestStageInstance extra = new QuestStageInstance(new NamespacedKey("mcrpg", "extra_stage"), 0, instance);
+
+        instance.addQuestStage(extra);
+
+        assertEquals(sizeBefore + 1, instance.getQuestStageInstances().size());
+        assertEquals(extra.getStageKey(), instance.getQuestStageInstances().get(sizeBefore).getStageKey());
+    }
+
+    @DisplayName("Given an instance, when adding a stage at index 0, then it appears at the front")
+    @Test
+    public void addQuestStage_atIndex_insertsAtCorrectPosition() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+        QuestStageInstance front = new QuestStageInstance(new NamespacedKey("mcrpg", "front_stage"), 0, instance);
+
+        instance.addQuestStage(front, 0);
+
+        assertEquals(front.getStageKey(), instance.getQuestStageInstances().get(0).getStageKey());
+    }
+
+    @DisplayName("Given an instance, when adding a collection of stages, then all appear in the stage list")
+    @Test
+    public void addQuestStageInstances_addsAllStages() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+        int sizeBefore = instance.getQuestStageInstances().size();
+        QuestStageInstance a = new QuestStageInstance(new NamespacedKey("mcrpg", "bulk_a"), 0, instance);
+        QuestStageInstance b = new QuestStageInstance(new NamespacedKey("mcrpg", "bulk_b"), 0, instance);
+
+        instance.addQuestStageInstances(List.of(a, b));
+
+        assertEquals(sizeBefore + 2, instance.getQuestStageInstances().size());
+    }
+
+    @DisplayName("Given a NOT_STARTED instance, when getting active stage, then it is empty")
+    @Test
+    public void getActiveQuestStage_isEmpty_whenNotStarted() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+
+        assertTrue(instance.getActiveQuestStage().isEmpty());
+    }
+
+    @DisplayName("Given a started instance, when getting active stage, then it returns the first IN_PROGRESS stage")
+    @Test
+    public void getActiveQuestStage_returnsFirstInProgressStage_whenStarted() {
+        QuestInstance instance = QuestTestHelper.startedQuestInstance(definition);
+
+        assertTrue(instance.getActiveQuestStage().isPresent());
+        assertEquals(QuestStageState.IN_PROGRESS, instance.getActiveQuestStage().get().getQuestStageState());
+    }
+
+    @DisplayName("Given an instance, then getQuestKey returns the definition key")
+    @Test
+    public void getQuestKey_returnsDefinitionKey() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+
+        assertEquals(definition.getQuestKey(), instance.getQuestKey());
+    }
+
+    @DisplayName("Given an instance, then getScopeType returns the definition scope type")
+    @Test
+    public void getScopeType_returnsDefinitionScopeType() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+
+        assertEquals(definition.getScopeType(), instance.getScopeType());
+    }
+
+    @DisplayName("Given an instance constructed with a ManualQuestSource, then getQuestSource returns that source")
+    @Test
+    public void getQuestSource_returnsSourcePassedAtConstruction() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+
+        assertNotNull(instance.getQuestSource());
+        assertTrue(instance.getQuestSource() instanceof ManualQuestSource);
+    }
+
+    @DisplayName("Given an instance with no scope display name, then getScopeDisplayName is empty")
+    @Test
+    public void getScopeDisplayName_isEmpty_whenNotProvided() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+
+        assertTrue(instance.getScopeDisplayName().isEmpty());
+    }
+
+    @DisplayName("Given a fresh instance, then getBoardRarityKey is empty")
+    @Test
+    public void getBoardRarityKey_isEmpty_byDefault() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+
+        assertTrue(instance.getBoardRarityKey().isEmpty());
+    }
+
+    @DisplayName("Given an instance, when setting a board rarity key, then getBoardRarityKey returns it")
+    @Test
+    public void setBoardRarityKey_isReflectedByGetter() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+        NamespacedKey rarityKey = new NamespacedKey("mcrpg", "rare");
+
+        instance.setBoardRarityKey(rarityKey);
+
+        assertTrue(instance.getBoardRarityKey().isPresent());
+        assertEquals(rarityKey, instance.getBoardRarityKey().get());
+    }
+
+    @DisplayName("Given a NOT_STARTED instance, when expiring, then it transitions to CANCELLED")
+    @Test
+    public void expire_cancelsList_whenNotStarted() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+
+        instance.expire();
+
+        assertEquals(QuestState.CANCELLED, instance.getQuestState());
+        assertThat(server.getPluginManager(), hasFiredEventInstance(QuestExpireEvent.class));
+        assertThat(server.getPluginManager(), hasFiredEventInstance(QuestCancelEvent.class));
+    }
+
+    @DisplayName("Given a NOT_STARTED instance, when cancelling, then it transitions to CANCELLED")
+    @Test
+    public void cancel_transitionsToCancelled_whenNotStarted() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+
+        instance.cancel();
+
+        assertEquals(QuestState.CANCELLED, instance.getQuestState());
+        assertThat(server.getPluginManager(), hasFiredEventInstance(QuestCancelEvent.class));
+    }
+
+    @DisplayName("Given a fresh instance with no current progression, then overall progress is 0.0")
+    @Test
+    public void getOverallProgress_returnsZero_whenNothingCompleted() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+
+        assertEquals(0.0, instance.getOverallProgress(), 0.0001);
+    }
+
+    @DisplayName("Given an instance with all objectives fully completed, then overall progress is 1.0")
+    @Test
+    public void getOverallProgress_returnsOne_whenFullyCompleted() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+        instance.getQuestStageInstances().forEach(stage ->
+                stage.getQuestObjectives().forEach(obj ->
+                        obj.setCurrentProgression(obj.getRequiredProgression())));
+
+        assertEquals(1.0, instance.getOverallProgress(), 0.0001);
+    }
+
+    @DisplayName("Given an instance with half of all objectives' progression met, then overall progress is 0.5")
+    @Test
+    public void getOverallProgress_returnsHalf_whenHalfwayDone() {
+        QuestObjectiveDefinition obj1 = QuestTestHelper.singleObjectiveDef("half_obj1", 10);
+        QuestObjectiveDefinition obj2 = QuestTestHelper.singleObjectiveDef("half_obj2", 10);
+        QuestStageDefinition stage = QuestTestHelper.stageDef("half_stage", List.of(obj1, obj2), List.of());
+        QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
+        QuestDefinition twoObjDef = QuestTestHelper.multiPhaseQuest("progress_half", phase);
+        QuestInstance instance = QuestTestHelper.newQuestInstance(twoObjDef);
+        instance.getQuestStageInstances().get(0).getQuestObjectives().get(0).setCurrentProgression(10);
+
+        assertEquals(0.5, instance.getOverallProgress(), 0.0001);
+    }
+
+    @DisplayName("Given a multi-stage instance, then overall progress aggregates across all stages")
+    @Test
+    public void getOverallProgress_aggregatesAcrossMultipleStages() {
+        QuestObjectiveDefinition obj1 = QuestTestHelper.singleObjectiveDef("ms_obj1", 20);
+        QuestObjectiveDefinition obj2 = QuestTestHelper.singleObjectiveDef("ms_obj2", 80);
+        QuestStageDefinition stage1 = QuestTestHelper.stageDef("ms_stage1", List.of(obj1), List.of());
+        QuestStageDefinition stage2 = QuestTestHelper.stageDef("ms_stage2", List.of(obj2), List.of());
+        QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage1, stage2);
+        QuestDefinition multiStageDef = QuestTestHelper.multiPhaseQuest("progress_multi", phase);
+        QuestInstance instance = QuestTestHelper.newQuestInstance(multiStageDef);
+        instance.getQuestStageInstances().get(0).getQuestObjectives().get(0).setCurrentProgression(20);
+
+        assertEquals(0.2, instance.getOverallProgress(), 0.0001);
+    }
+
+    @DisplayName("Given a fresh instance, then getOverallProgressBar returns a non-null non-empty string")
+    @Test
+    public void getOverallProgressBar_returnsNonNullString() {
+        QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
+
+        String bar = instance.getOverallProgressBar(20);
+
+        assertNotNull(bar);
+        assertFalse(bar.isEmpty());
+    }
+
+    @DisplayName("Given different progress values, then getOverallProgressBar produces different outputs")
+    @Test
+    public void getOverallProgressBar_differsBetweenProgressValues() {
+        QuestObjectiveDefinition obj = QuestTestHelper.singleObjectiveDef("bar_diff_obj", 100);
+        QuestStageDefinition stage = QuestTestHelper.stageDef("bar_diff_stage", List.of(obj), List.of());
+        QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
+        QuestDefinition barDef = QuestTestHelper.multiPhaseQuest("bar_diff", phase);
+        QuestInstance emptyInstance = QuestTestHelper.newQuestInstance(barDef);
+        QuestInstance fullInstance = QuestTestHelper.newQuestInstance(barDef);
+        fullInstance.getQuestStageInstances().get(0).getQuestObjectives().get(0).setCurrentProgression(100);
+
+        assertFalse(emptyInstance.getOverallProgressBar(20).equals(fullInstance.getOverallProgressBar(20)));
     }
 }

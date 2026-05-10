@@ -33,17 +33,6 @@ public interface TierableAbility extends UnlockableAbility {
     int getUnlockLevelForTier(int tier);
 
     /**
-     * Gets the ability point cost for this ability to be upgraded to the provided tier.
-     *
-     * @param tier The tier to get the ability point cost of
-     * @return The ability point cost for this ability to be upgraded to the provided tier.
-     * @deprecated Upgrade points are being deprecated in favor of quest-based upgrades.
-     *             Use {@link #getUpgradeQuestKey(int)} instead.
-     */
-    @Deprecated
-    int getUpgradeCostForTier(int tier);
-
-    /**
      * Gets the {@link NamespacedKey} of the quest definition that must be completed to
      * upgrade this ability to the given tier. Returns empty if no upgrade quest is
      * configured for this tier (e.g., tier 1 typically has no quest).

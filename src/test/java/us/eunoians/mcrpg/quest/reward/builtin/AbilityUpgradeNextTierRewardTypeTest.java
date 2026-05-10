@@ -232,11 +232,6 @@ public class AbilityUpgradeNextTierRewardTypeTest extends McRPGBaseTest {
         }
 
         @Override
-        public int getUpgradeCostForTier(int tier) {
-            return 0;
-        }
-
-        @Override
         public int getCurrentAbilityTier(@NotNull AbilityHolder abilityHolder) {
             return currentTier;
         }

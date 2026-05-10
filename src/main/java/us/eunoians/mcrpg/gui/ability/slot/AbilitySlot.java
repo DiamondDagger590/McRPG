@@ -2,8 +2,10 @@ package us.eunoians.mcrpg.gui.ability.slot;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityToggledOffAttribute;
@@ -92,8 +94,16 @@ public class AbilitySlot implements McRPGSlot {
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         var itemBuilder = ability.getDisplayItemBuilder(mcRPGPlayer);
         var loreAppender = AbilityLoreAppender.getAppendLore(mcRPGPlayer, ability);
-        itemBuilder.addDisplayLore(loreAppender.getLeft());
-        itemBuilder.addPlaceholders(loreAppender.getRight());
+        var placeholders = loreAppender.getRight();
+        itemBuilder.addPlaceholders(placeholders);
+        var miniMessage = McRPG.getInstance().getMiniMessage();
+        for (String line : loreAppender.getLeft()) {
+            String resolved = line;
+            for (var entry : placeholders.entrySet()) {
+                resolved = resolved.replace("<" + entry.getKey() + ">", entry.getValue());
+            }
+            itemBuilder.addDisplayLoreComponent(miniMessage.deserialize(resolved).decoration(TextDecoration.ITALIC, false));
+        }
         SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
         skillHolder.getAbilityData(ability).flatMap(abilityData -> abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY))
                 .ifPresent(abilityToggledOffAttribute -> {

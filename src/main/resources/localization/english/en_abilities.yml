@@ -39,14 +39,6 @@ ability:
     # Configure ability upgrade quest lore
     # The following placeholders are supported: <ability-points>, <next-tier-ability-points>, <upgrade-quest-progress>
     quest:
-      # The lore to add when an ability can be upgraded via upgrade quest but the player lacks enough ability points
-      not-enough-ability-points:
-        - '<gray>You need <gold><next-tier-ability-points></gold> ability points to start'
-        - '<gray>the upgrade quest.'
-      #  The lore to add to prompt a player to click when an ability can be upgraded via upgrade quest
-      click-to-start:
-        - '<green>Click to spend <gold><next-tier-upgrade-points></gold> upgrade points to'
-        - '<green>start the upgrade quest.'
       # The lore to add when an ability has an active upgrade quest
       quest-progress:
         - '<gray>Upgrade Quest Progress: <upgrade-quest-progress>'
@@ -55,11 +47,6 @@ ability:
     upgrade-locked-behind-levelup:
       - '<gray>Upgrade this ability once you reach <gold>Lv <next-tier-level></gold>'
       - '<gray>in <gold><skill></gold><gray>.'
-    # The lore to add to show how many upgrade points the player has.
-    # The following placeholders are supported: <ability-point-count>
-    ability-point-count:
-      - '<gray>You have <gold><ability-point-count></gold> upgrade'
-      - '<gray>points available.'
     ability-locked:
       - '<gray>Unlock this ability when your <gold><skill></gold> skill'
       - '<gray>reaches level <gold><ability-unlock-level></gold>.'

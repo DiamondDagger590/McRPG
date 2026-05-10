@@ -21,7 +21,6 @@ public enum CommandPlaceholders {
     ABILITY("ability"),
     LOADOUT_SLOT("loadout-slot"),
     LOADOUT_MATCHES("loadout-matches"),
-    UPGRADE_POINTS("upgrade-points"),
     REGISTRY_TYPE("registry_type"),
     COUNT("count"),
     REGISTRY_KEY("registry_key"),

@@ -629,6 +629,72 @@ gui:
         name: '<gold>Edit Loadout Display'
         lore:
           - '<gold>Click <gray>to change how this loadout is displayed.'
+    # Configure the combo info slot shown at the top-center of the combo zone.
+    # This is a static informational item — it cannot be clicked.
+    combo-info-slot:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        name: '<gold>Combo Abilities'
+        lore:
+          - '<gray>Active abilities are triggered'
+          - '<gray>by performing click combos.'
+          - ''
+          - '<yellow>R <dark_gray>= <gray>Right Click'
+          - '<aqua>L <dark_gray>= <gray>Left Click'
+          - ''
+          - '<gray>Slot 1: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <yellow>R'
+          - '<gray>Slot 2: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <aqua>L'
+          - '<gray>Slot 3: <yellow>R<dark_gray> → <aqua>L<dark_gray> → <yellow>R'
+    # Configure the light-blue filler item used in the combo row.
+    # These panes double as the combo info legend — hovering any filler explains the system.
+    combo-zone-filler:
+      display-item:
+        material: LIGHT_BLUE_STAINED_GLASS_PANE
+        name: '<gold>Combo Abilities'
+        lore:
+          - '<gray>Active abilities are triggered'
+          - '<gray>by performing click combos.'
+          - ''
+          - '<yellow>R <dark_gray>= <gray>Right Click'
+          - '<aqua>L <dark_gray>= <gray>Left Click'
+          - ''
+          - '<gray>Slot 1: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <yellow>R'
+          - '<gray>Slot 2: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <aqua>L'
+          - '<gray>Slot 3: <yellow>R<dark_gray> → <aqua>L<dark_gray> → <yellow>R'
+    # Configure the active ability combo slots in the combo zone.
+    active-combo-slot:
+      # Additional lore appended to occupied active combo slots.
+      # Supported placeholders: <combo-pattern> (e.g. "R → R → R")
+      occupied:
+        additional-lore:
+          - ''
+          - '<gray>Combo: <combo-pattern>'
+          - '<dark_gray>Press <white>1<dark_gray>/<white>2<dark_gray>/<white>3 <dark_gray>to move to that slot'
+          - '<gray>Click to change ability'
+        # Appended after additional-lore only when the ability has an active upgrade quest.
+        # Supported placeholders: <upgrade-quest-progress>
+        upgrade-quest-progress-lore:
+          - ''
+          - '<gray>Upgrade Quest: <upgrade-quest-progress>'
+      # Display item for empty active combo slots.
+      # Supported placeholders: <combo-pattern> (e.g. "R → R → R")
+      empty:
+        display-item:
+          material: ARMOR_STAND
+          name: '<gray>Empty Combo Slot'
+          lore:
+            - '<gray>Combo: <combo-pattern>'
+            - ''
+            - '<gray>Assign an active ability to'
+            - '<gray>this slot to use this combo.'
+            - ''
+            - '<gray>Click to assign'
+      # Localizable display strings for each combo pattern.
+      # Colors, arrows, and characters are fully configurable.
+      pattern:
+        slot-1: '<yellow>R<dark_gray> → <yellow>R<dark_gray> → <yellow>R'
+        slot-2: '<yellow>R<dark_gray> → <yellow>R<dark_gray> → <aqua>L'
+        slot-3: '<yellow>R<dark_gray> → <aqua>L<dark_gray> → <yellow>R'
     # Configure the slot players can click to go from the loadout gui back to the loadout select gui.
     previous-gui-button:
       display-item:
@@ -685,6 +751,10 @@ gui:
         lore:
           - '<gray>Left click to edit this loadout.'
           - '<gray>Right click to set this loadout as active.'
+    # A line appended to every loadout selection slot showing which active (combo) abilities are
+    # currently in that loadout. Supported placeholder: <active-abilities>
+    # This line is only added when at least one active ability is assigned.
+    active-abilities-preview: '<gray>Actives: <active-abilities>'
   # This GUI allows for selecting different editing options for a given loadout
   loadout-display-home-gui:
     # The title of the GUI

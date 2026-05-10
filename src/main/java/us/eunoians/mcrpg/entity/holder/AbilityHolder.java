@@ -44,7 +44,6 @@ public class AbilityHolder {
     private final Map<NamespacedKey, AbilityData> abilityDataMap;
     private final Map<NamespacedKey, Integer> abilityCooldownExpireTasks;
     private final Set<NamespacedKey> activeAbilities;
-    private int upgradePoints;
 
     public AbilityHolder(@NotNull McRPG mcRPG, @NotNull UUID uuid) {
         this.plugin = mcRPG;
@@ -53,7 +52,6 @@ public class AbilityHolder {
         this.abilityDataMap = new HashMap<>();
         this.abilityCooldownExpireTasks = new HashMap<>();
         this.activeAbilities = new HashSet<>();
-        this.upgradePoints = 0;
     }
 
     @NotNull
@@ -391,51 +389,6 @@ public class AbilityHolder {
      */
     public void removeActiveAbility(@NotNull NamespacedKey abilityKey) {
         activeAbilities.remove(abilityKey);
-    }
-
-    /**
-     * Gets the amount of upgrade points that this holder currently has.
-     *
-     * @return The amount of upgrade points that this holder currently has.
-     * @deprecated Upgrade points are deprecated in favor of quest-based ability upgrades.
-     *             See {@link us.eunoians.mcrpg.ability.impl.type.TierableAbility#getUpgradeQuestKey(int)}.
-     */
-    @Deprecated
-    public int getUpgradePoints() {
-        return upgradePoints;
-    }
-
-    /**
-     * Gives the provided amount of upgrade points.
-     *
-     * @param upgradePoints The amount of upgrade points to give.
-     * @deprecated Upgrade points are deprecated in favor of quest-based ability upgrades.
-     */
-    @Deprecated
-    public void giveUpgradePoints(int upgradePoints) {
-        this.upgradePoints += Math.max(0, upgradePoints);
-    }
-
-    /**
-     * Removes the provided amount of upgrade points.
-     *
-     * @param upgradePoints The amount of upgrade points to remove.
-     * @deprecated Upgrade points are deprecated in favor of quest-based ability upgrades.
-     */
-    @Deprecated
-    public void removeUpgradePoints(int upgradePoints) {
-        this.upgradePoints -= Math.max(0, Math.min(this.upgradePoints, upgradePoints));
-    }
-
-    /**
-     * Sets the amount of upgrade points for this holder.
-     *
-     * @param upgradePoints The amount of upgrade points to set.
-     * @deprecated Upgrade points are deprecated in favor of quest-based ability upgrades.
-     */
-    @Deprecated
-    public void setUpgradePoints(int upgradePoints) {
-        this.upgradePoints = Math.max(0, upgradePoints);
     }
 
     /**

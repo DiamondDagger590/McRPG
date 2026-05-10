@@ -143,26 +143,18 @@ public class McRPGPlayer extends CorePlayer {
         var abilityDataOptional = skillHolder.getAbilityData(tierableAbility);
         if (abilityDataOptional.isPresent()) {
             var tierAttributeOptional = abilityDataOptional.get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY);
-            // Validate they don't have an ongoing upgrade quest
             if (skillHolder.hasActiveUpgradeQuest(tierableAbility.getAbilityKey())) {
                 return false;
             }
             if (tierAttributeOptional.isPresent() && tierAttributeOptional.get() instanceof AbilityTierAttribute attribute) {
                 int currentTier = attribute.getContent();
                 int nextTier = currentTier + 1;
-                int upgradeCost = tierableAbility.getUpgradeCostForTier(nextTier);
-                // If the next tier is below or at the tier cap
                 if (tierableAbility.getMaxTier() >= nextTier) {
-                    // If the ability has a skill tied to it
                     if (tierableAbility instanceof SkillAbility skillAbility) {
                         var skillData = skillHolder.getSkillHolderData(skillAbility.getSkillKey());
-                        // Check if the current skill level is enough to unlock and ensure player has enough upgrade points
-                        return skillData.isPresent() && skillData.get().getCurrentLevel() >= tierableAbility.getUnlockLevelForTier(nextTier) && skillHolder.getUpgradePoints() >= upgradeCost;
+                        return skillData.isPresent() && skillData.get().getCurrentLevel() >= tierableAbility.getUnlockLevelForTier(nextTier);
                     }
-                    // If the ability doesn't have a skill, then check if they have enough upgrade points
-                    else {
-                        return skillHolder.getUpgradePoints() >= upgradeCost;
-                    }
+                    return true;
                 }
             }
         }

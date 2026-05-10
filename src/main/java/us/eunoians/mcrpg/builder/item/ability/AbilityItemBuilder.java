@@ -71,8 +71,6 @@ public class AbilityItemBuilder extends ItemBuilder {
                 }
             }
         }
-        // Ability point placeholder
-        addPlaceholder(AbilityItemPlaceholderKeys.ABILITY_POINT_COUNT.getKey(), Integer.toString(skillHolder.getUpgradePoints()));
         var abilityExpansionOptional = ability.getExpansionKey();
         abilityExpansionOptional.flatMap(namespacedKey -> plugin.registryAccess().registry(McRPGRegistryKey.MANAGER)
                 .manager(McRPGManagerKey.CONTENT_EXPANSION)

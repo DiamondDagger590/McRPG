@@ -4,9 +4,7 @@ import com.diamonddagger590.mccore.pair.ImmutablePair;
 import com.diamonddagger590.mccore.pair.Pair;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.util.Methods;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
@@ -18,11 +16,10 @@ import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
-import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveInstance;
-import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
@@ -64,7 +61,6 @@ public final class AbilityLoreAppender {
         if (abilityDataOptional.isPresent()) {
             AbilityData abilityData = abilityDataOptional.get();
             if (ability instanceof TierableAbility tierableAbility) {
-                // Check if it's unlocked
                 if (abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE)
                         .map(value -> value instanceof AbilityUnlockedAttribute attribute && attribute.getContent()).orElse(true)) {
                     var abilityQuestOptional = abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE);
@@ -77,77 +73,25 @@ public final class AbilityLoreAppender {
                                 .orElse(null);
                     }
                     if (activeUpgradeQuest != null) {
-                        long totalRequired = 0;
-                        long totalCurrent = 0;
-                        for (QuestStageInstance stage : activeUpgradeQuest.getQuestStageInstances()) {
-                            for (QuestObjectiveInstance obj : stage.getQuestObjectives()) {
-                                totalRequired += obj.getRequiredProgression();
-                                totalCurrent += obj.getCurrentProgression();
-                            }
-                        }
-                        double progress = totalRequired > 0 ? (double) totalCurrent / totalRequired : 0;
                         lore.add("");
                         lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.QUEST_PROGRESS_LORE));
-                        placeholders.put("quest-progress", Methods.getProgressBarAsString(progress, 20));
+                        placeholders.put("upgrade-quest-progress", activeUpgradeQuest.getOverallProgressBar(20));
                     } else {
                         abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).ifPresent(abilityAttribute -> {
                             if (abilityAttribute instanceof AbilityTierAttribute abilityTierAttribute) {
                                 int tier = abilityTierAttribute.getContent();
                                 int nextTier = tier + 1;
-                                int upgradeCost = tierableAbility.getUpgradeCostForTier(nextTier);
-                                // If the ability isn't the max tier
-                                if (tierableAbility.getMaxTier() > tier) {
-                                    // If the ability has a skill it belongs to
-                                    if (tierableAbility instanceof SkillAbility skillAbility) {
-                                        var skillDataOptional = skillHolder.getSkillHolderData(skillAbility.getSkillKey());
-                                        if (skillDataOptional.isPresent()) {
-                                            Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
-                                            int currentLevel = skillDataOptional.get().getCurrentLevel();
-                                            // If the current skill level is above the unlock level
-                                            if (currentLevel >= tierableAbility.getUnlockLevelForTier(nextTier)) {
-                                                // If they have enough upgrade points, tell them they can click
-                                                if (skillHolder.getUpgradePoints() >= upgradeCost) {
-                                                    lore.add("");
-                                                    lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.CLICK_TO_START_UPGRADE_QUEST_LORE));
-                                                    placeholders.put("next-tier-ability-points", Integer.toString(upgradeCost));
-                                                }
-                                                // If they don't have enough, tell them how many they need
-                                                else {
-                                                    lore.add("");
-                                                    lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.NOT_ENOUGH_ABILITY_POINTS_TO_START_QUEST_LORE));
-                                                    placeholders.put("next-tier-ability-points", Integer.toString(upgradeCost));
-                                                }
-                                                lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.ABILITY_POINT_COUNT_LORE));
-                                                placeholders.put(AbilityItemPlaceholderKeys.ABILITY_POINT_COUNT.getKey(), Integer.toString(skillHolder.getUpgradePoints()));
-                                                placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer));
-
-                                            }
-                                            // Otherwise, tell the player the level they need to reach
-                                            else {
-                                                lore.add("");
-                                                lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.UPGRADE_LOCKED_BEHIND_LEVELUP_LORE));
-                                                placeholders.put("next-tier-level", Integer.toString(tierableAbility.getUnlockLevelForTier(nextTier)));
-                                                placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer));
-
-                                            }
-                                        }
-                                    }
-                                    // If the ability doesn't have a skill, we only care about upgrade cost
-                                    else {
-                                        // If they have enough upgrade points, tell them they can click
-                                        if (skillHolder.getUpgradePoints() >= upgradeCost) {
+                                if (tierableAbility.getMaxTier() > tier && tierableAbility instanceof SkillAbility skillAbility) {
+                                    var skillDataOptional = skillHolder.getSkillHolderData(skillAbility.getSkillKey());
+                                    if (skillDataOptional.isPresent()) {
+                                        Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
+                                        int currentLevel = skillDataOptional.get().getCurrentLevel();
+                                        if (currentLevel < tierableAbility.getUnlockLevelForTier(nextTier)) {
                                             lore.add("");
-                                            lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.CLICK_TO_START_UPGRADE_QUEST_LORE));
-                                            placeholders.put("next-tier-ability-points", Integer.toString(upgradeCost));
+                                            lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.UPGRADE_LOCKED_BEHIND_LEVELUP_LORE));
+                                            placeholders.put("next-tier-level", Integer.toString(tierableAbility.getUnlockLevelForTier(nextTier)));
+                                            placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer));
                                         }
-                                        // If they don't have enough, tell them how many they need
-                                        else {
-                                            lore.add("");
-                                            lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.NOT_ENOUGH_ABILITY_POINTS_TO_START_QUEST_LORE));
-                                            placeholders.put("next-tier-ability-points", Integer.toString(upgradeCost));
-                                        }
-                                        lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.ABILITY_POINT_COUNT_LORE));
-                                        placeholders.put(AbilityItemPlaceholderKeys.ABILITY_POINT_COUNT.getKey(), Integer.toString(skillHolder.getUpgradePoints()));
                                     }
                                 }
                             }
@@ -163,10 +107,11 @@ public final class AbilityLoreAppender {
                     }
                 }
             }
-            if (ability.getExpansionKey().isPresent()) {
+            var expansionKeyOptional = ability.getExpansionKey();
+            if (expansionKeyOptional.isPresent() && !expansionKeyOptional.get().equals(McRPGExpansion.EXPANSION_KEY)) {
                 var expansionOptional = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                         .manager(McRPGManagerKey.CONTENT_EXPANSION)
-                        .getContentExpansion(ability.getExpansionKey().get());
+                        .getContentExpansion(expansionKeyOptional.get());
                 if (expansionOptional.isPresent()) {
                     lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.EXPANSION_PACK_LORE));
                     placeholders.put(AbilityItemPlaceholderKeys.EXPANSION_PACK.getKey(), expansionOptional.get().getExpansionName(mcRPGPlayer));

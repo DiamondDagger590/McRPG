@@ -71,22 +71,6 @@ public interface ConfigurableTierableAbility extends ConfigurableAbility, Tierab
         return (int) parser.getValue();
     }
 
-    @Deprecated
-    @Override
-    default int getUpgradeCostForTier(int tier) {
-        YamlDocument yamlDocument = getYamlDocument();
-        Route tierRoute = Route.addTo(getRouteForTier(tier), "upgrade-point-cost");
-        Route allTiersRoute = Route.addTo(getRouteForAllTiers(), "upgrade-point-cost");
-        Parser parser;
-        if (yamlDocument.contains(tierRoute)) {
-            parser = new Parser(yamlDocument.getString(tierRoute));
-        } else {
-            parser = new Parser(yamlDocument.getString(allTiersRoute));
-        }
-        parser.setVariable("tier", tier);
-        return (int) parser.getValue();
-    }
-
     /**
      * {@inheritDoc}
      * <p>

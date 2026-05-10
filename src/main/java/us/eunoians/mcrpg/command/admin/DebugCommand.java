@@ -25,7 +25,6 @@ import static us.eunoians.mcrpg.command.CommandPlaceholders.EXPERIENCE;
 import static us.eunoians.mcrpg.command.CommandPlaceholders.LEVEL;
 import static us.eunoians.mcrpg.command.CommandPlaceholders.SKILL;
 import static us.eunoians.mcrpg.command.CommandPlaceholders.TARGET;
-import static us.eunoians.mcrpg.command.CommandPlaceholders.UPGRADE_POINTS;
 
 /**
  * Command used for development, prints various debug information about a player
@@ -50,10 +49,6 @@ public class DebugCommand {
                                 Map<String, String> headerPlaceholders = new HashMap<>();
                                 headerPlaceholders.put(TARGET.getPlaceholder(), player.getName());
                                 player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.DEBUG_COMMAND_HEADER_MESSAGE, headerPlaceholders));
-
-                                Map<String, String> upgradePointsPlaceholders = new HashMap<>();
-                                upgradePointsPlaceholders.put(UPGRADE_POINTS.getPlaceholder(), Integer.toString(skillHolder.getUpgradePoints()));
-                                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.DEBUG_COMMAND_UPGRADE_POINTS_MESSAGE, upgradePointsPlaceholders));
 
                                 for (NamespacedKey skill : skillHolder.getSkills()) {
                                     Optional<SkillHolder.SkillHolderData> skillHolderDataOptional = skillHolder.getSkillHolderData(skill);

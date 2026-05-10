@@ -80,12 +80,6 @@ public class StubTierableAbility implements TierableAbility {
         return 1;
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public int getUpgradeCostForTier(int tier) {
-        return 0;
-    }
-
     @Override
     public int getCurrentAbilityTier(@NotNull AbilityHolder abilityHolder) {
         return currentTier;

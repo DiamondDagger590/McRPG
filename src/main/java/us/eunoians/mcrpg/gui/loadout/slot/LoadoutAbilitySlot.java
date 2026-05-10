@@ -3,9 +3,11 @@ package us.eunoians.mcrpg.gui.loadout.slot;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -15,6 +17,7 @@ import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -45,9 +48,9 @@ public class LoadoutAbilitySlot implements McRPGSlot {
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
             LoadoutAbilitySelectGui loadoutAbilitySelectGui;
             if (ability != null) {
-                loadoutAbilitySelectGui = new LoadoutAbilitySelectGui(mcRPGPlayer, loadout, ability.getAbilityKey());
+                loadoutAbilitySelectGui = new LoadoutAbilitySelectGui(mcRPGPlayer, loadout, ability.getAbilityKey(), LoadoutAbilitySelectGui.SelectionMode.PASSIVE);
             } else {
-                loadoutAbilitySelectGui = new LoadoutAbilitySelectGui(mcRPGPlayer, loadout);
+                loadoutAbilitySelectGui = new LoadoutAbilitySelectGui(mcRPGPlayer, loadout, LoadoutAbilitySelectGui.SelectionMode.PASSIVE);
             }
             mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutAbilitySelectGui);
             player.openInventory(loadoutAbilitySelectGui.getInventory());
@@ -61,9 +64,13 @@ public class LoadoutAbilitySlot implements McRPGSlot {
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         ItemBuilder itemBuilder;
         if (ability != null) {
-            itemBuilder = ability.getDisplayItemBuilder(mcRPGPlayer).addDisplayLore(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION)
-                    .getLocalizedMessages(mcRPGPlayer, LocalizationKey.LOADOUT_GUI_ABILITY_SLOT_ADDITIONAL_LORE));
+            var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+            List<String> additionalLore = localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.LOADOUT_GUI_ABILITY_SLOT_ADDITIONAL_LORE);
+            itemBuilder = ability.getDisplayItemBuilder(mcRPGPlayer);
+            var miniMessage = McRPG.getInstance().getMiniMessage();
+            for (String line : additionalLore) {
+                itemBuilder.addDisplayLoreComponent(miniMessage.deserialize(line).decoration(TextDecoration.ITALIC, false));
+            }
         } else {
             itemBuilder = ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                     .manager(McRPGManagerKey.LOCALIZATION)

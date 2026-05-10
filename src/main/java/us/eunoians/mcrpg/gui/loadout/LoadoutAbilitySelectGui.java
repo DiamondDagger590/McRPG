@@ -24,6 +24,7 @@ import us.eunoians.mcrpg.gui.loadout.slot.LoadoutSelectAbilitySlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.filter.core.McRPGChainPlayerContextFilter;
+import us.eunoians.mcrpg.util.filter.key.AbilityKeyComboActivatableFilter;
 import us.eunoians.mcrpg.util.filter.key.AbilityKeyInLoadoutFilter;
 import us.eunoians.mcrpg.util.filter.key.AbilityKeyUnlockedFilter;
 
@@ -34,11 +35,32 @@ import java.util.Set;
  * This gui is used when a player is trying to select an {@link Ability} to go into
  * their {@link Loadout}.
  * <p>
- * Abilities in this gui are automatically filtered out if the ability can't be added to the selected slot. Since
- * a loadout can only contain one {@link ActiveAbility} per {@link us.eunoians.mcrpg.skill.Skill},
- * if a player is trying to replace an active ability, all other active abilities for that skill are filtered out and not shown as options.
+ * Abilities in this gui are automatically filtered by the {@link SelectionMode}:
+ * <ul>
+ *   <li>{@link SelectionMode#ACTIVE} — shows only {@link us.eunoians.mcrpg.ability.combo.ComboActivatable}
+ *       abilities, used when filling or replacing an active combo slot.</li>
+ *   <li>{@link SelectionMode#PASSIVE} — shows only non-{@link us.eunoians.mcrpg.ability.combo.ComboActivatable}
+ *       abilities, used when filling or replacing a passive slot.</li>
+ * </ul>
+ * Abilities already in the loadout (and not being replaced) are always excluded.
  */
 public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
+
+    /**
+     * Determines which kind of abilities this selection GUI presents.
+     */
+    public enum SelectionMode {
+        /**
+         * Show only {@link us.eunoians.mcrpg.ability.combo.ComboActivatable} abilities.
+         * Used when the player is selecting an ability for a combo slot.
+         */
+        ACTIVE,
+        /**
+         * Show only non-{@link us.eunoians.mcrpg.ability.combo.ComboActivatable} abilities.
+         * Used when the player is selecting an ability for a passive slot.
+         */
+        PASSIVE
+    }
 
     private static final int NAVIGATION_ROW_START_INDEX = 45;
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
@@ -48,20 +70,38 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
     private final Loadout loadout;
     @Nullable
     private final NamespacedKey oldAbilityKey;
+    private final SelectionMode selectionMode;
     private final McRPGChainPlayerContextFilter<NamespacedKey> abilityKeyFilter;
 
-    public LoadoutAbilitySelectGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout) {
+    /**
+     * Constructs a selection GUI for adding a new ability to an empty loadout slot.
+     *
+     * @param mcRPGPlayer   The player editing their loadout.
+     * @param loadout       The loadout being edited.
+     * @param selectionMode Whether to show active or passive abilities.
+     */
+    public LoadoutAbilitySelectGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout, @NotNull SelectionMode selectionMode) {
         super(mcRPGPlayer);
         this.loadout = loadout;
         this.oldAbilityKey = null;
-        this.abilityKeyFilter = new McRPGChainPlayerContextFilter<>(new AbilityKeyUnlockedFilter(), new AbilityKeyInLoadoutFilter(loadout, null));
+        this.selectionMode = selectionMode;
+        this.abilityKeyFilter = buildFilter(loadout, null, selectionMode);
     }
 
-    public LoadoutAbilitySelectGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout, @NotNull NamespacedKey oldAbilityKey) {
+    /**
+     * Constructs a selection GUI for replacing an existing ability in the loadout.
+     *
+     * @param mcRPGPlayer   The player editing their loadout.
+     * @param loadout       The loadout being edited.
+     * @param oldAbilityKey The key of the ability being replaced.
+     * @param selectionMode Whether to show active or passive abilities.
+     */
+    public LoadoutAbilitySelectGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Loadout loadout, @NotNull NamespacedKey oldAbilityKey, @NotNull SelectionMode selectionMode) {
         super(mcRPGPlayer);
         this.loadout = loadout;
         this.oldAbilityKey = oldAbilityKey;
-        this.abilityKeyFilter = new McRPGChainPlayerContextFilter<>(new AbilityKeyUnlockedFilter(), new AbilityKeyInLoadoutFilter(loadout, oldAbilityKey));
+        this.selectionMode = selectionMode;
+        this.abilityKeyFilter = buildFilter(loadout, oldAbilityKey, selectionMode);
     }
 
     @Override
@@ -152,5 +192,29 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
     @Override
     protected @NotNull Set<AbilitySortType> getSkippedSortTypes() {
         return Set.of(AbilitySortType.UPGRADEABLE_ABILITIES, AbilitySortType.INNATE_ABILITIES, AbilitySortType.LOADOUT_ORDER);
+    }
+
+    /**
+     * Builds the filter chain for the given loadout, optional replaced ability, and selection mode.
+     * <p>
+     * The chain always starts with {@link AbilityKeyUnlockedFilter} (only unlockable abilities are
+     * selectable), then applies a {@link AbilityKeyComboActivatableFilter} to restrict to the
+     * correct ability type, and finally applies {@link AbilityKeyInLoadoutFilter} to exclude
+     * abilities already occupying other slots.
+     *
+     * @param loadout       The loadout being edited.
+     * @param oldAbilityKey The ability being replaced, or {@code null} for a fresh add.
+     * @param mode          The selection mode (active or passive).
+     * @return The composed filter chain.
+     */
+    @NotNull
+    private static McRPGChainPlayerContextFilter<NamespacedKey> buildFilter(@NotNull Loadout loadout,
+                                                                             @Nullable NamespacedKey oldAbilityKey,
+                                                                             @NotNull SelectionMode mode) {
+        return new McRPGChainPlayerContextFilter<>(
+                new AbilityKeyUnlockedFilter(),
+                new AbilityKeyComboActivatableFilter(mode == SelectionMode.ACTIVE),
+                new AbilityKeyInLoadoutFilter(loadout, oldAbilityKey)
+        );
     }
 }

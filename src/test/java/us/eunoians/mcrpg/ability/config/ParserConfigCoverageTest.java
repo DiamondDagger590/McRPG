@@ -45,7 +45,7 @@ class ParserConfigCoverageTest {
 
     private static final Path SKILL_CONFIG_ROOT = Path.of("src", "main", "resources", "skill_configuration");
 
-    private static final String[] GENERIC_KEYS = {"unlock-level", "upgrade-point-cost"};
+    private static final String[] GENERIC_KEYS = {"unlock-level"};
 
     @Test
     @DisplayName("All @ParserConfigKeys-declared tier-config keys exist in bundled YAML")

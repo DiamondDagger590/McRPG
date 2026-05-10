@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.quest.impl;
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.util.Methods;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -209,6 +210,37 @@ public class QuestInstance {
         return questStageInstances.stream()
                 .filter(stage -> stage.getQuestStageState() == QuestStageState.IN_PROGRESS)
                 .findFirst();
+    }
+
+    /**
+     * Returns the overall completion fraction of this quest as a value in {@code [0.0, 1.0]},
+     * computed by summing current and required progression across every objective in every stage.
+     * Returns {@code 0.0} when the total required progression is zero.
+     *
+     * @return A {@code double} in the range {@code [0.0, 1.0]}.
+     */
+    public double getOverallProgress() {
+        long totalRequired = 0;
+        long totalCurrent = 0;
+        for (QuestStageInstance stage : questStageInstances) {
+            for (QuestObjectiveInstance obj : stage.getQuestObjectives()) {
+                totalRequired += obj.getRequiredProgression();
+                totalCurrent += obj.getCurrentProgression();
+            }
+        }
+        return totalRequired > 0 ? (double) totalCurrent / totalRequired : 0.0;
+    }
+
+    /**
+     * Returns the overall completion progress of this quest rendered as a MiniMessage-formatted
+     * progress bar string produced by {@link com.diamonddagger590.mccore.util.Methods#getProgressBarAsString}.
+     *
+     * @param barLength The number of characters in the progress bar.
+     * @return A MiniMessage-formatted progress bar string.
+     */
+    @NotNull
+    public String getOverallProgressBar(int barLength) {
+        return Methods.getProgressBarAsString(getOverallProgress(), barLength);
     }
 
     /**

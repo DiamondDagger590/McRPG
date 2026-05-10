@@ -41,11 +41,6 @@ public class AbilityUpgradeFilter implements McRPGPlayerContextFilter<Ability> {
                 .filter(tierableAbility -> skillHolder.getAbilityData(tierableAbility).get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).get() instanceof AbilityTierAttribute abilityTierAttribute
                         && tierableAbility.getMaxTier() > abilityTierAttribute.getContent())
                 .filter(tierableAbility -> {
-                    // Validate they have enough upgrade points for this
-                    int currentTier = (int) skillHolder.getAbilityData(tierableAbility).get().getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).get().getContent();
-                    return skillHolder.getUpgradePoints() >= tierableAbility.getUpgradeCostForTier(currentTier);
-                })
-                .filter(tierableAbility -> {
                     // If the ability has a skill, is it high enough level to upgrade it
                     if (tierableAbility instanceof SkillAbility skillAbility) {
                         var skillData = skillHolder.getSkillHolderData(skillAbility.getSkillKey());

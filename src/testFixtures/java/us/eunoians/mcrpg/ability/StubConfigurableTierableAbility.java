@@ -61,12 +61,6 @@ public class StubConfigurableTierableAbility implements ConfigurableTierableAbil
         return 1;
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public int getUpgradeCostForTier(int tier) {
-        return 0;
-    }
-
     @NotNull
     @Override
     public YamlDocument getYamlDocument() {

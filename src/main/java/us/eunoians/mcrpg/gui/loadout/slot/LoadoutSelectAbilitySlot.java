@@ -3,13 +3,13 @@ package us.eunoians.mcrpg.gui.loadout.slot;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
-import us.eunoians.mcrpg.builder.item.ability.AbilityItemBuilder;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.loadout.LoadoutAbilitySelectGui;
@@ -17,6 +17,8 @@ import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+
+import java.util.List;
 
 import java.util.Set;
 
@@ -63,11 +65,15 @@ public class LoadoutSelectAbilitySlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        AbilityItemBuilder abilityItemBuilder = ability.getDisplayItemBuilder(mcRPGPlayer);
-        abilityItemBuilder.addDisplayLore(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+        var builder = ability.getDisplayItemBuilder(mcRPGPlayer);
+        List<String> additionalLore = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION)
-                .getLocalizedMessages(mcRPGPlayer, LocalizationKey.LOADOUT_ABILITY_SELECT_ABILITY_SELECT_LORE_TO_APPEND));
-        return abilityItemBuilder;
+                .getLocalizedMessages(mcRPGPlayer, LocalizationKey.LOADOUT_ABILITY_SELECT_ABILITY_SELECT_LORE_TO_APPEND);
+        var miniMessage = McRPG.getInstance().getMiniMessage();
+        for (String line : additionalLore) {
+            builder.addDisplayLoreComponent(miniMessage.deserialize(line).decoration(TextDecoration.ITALIC, false));
+        }
+        return builder;
     }
 
     @NotNull
