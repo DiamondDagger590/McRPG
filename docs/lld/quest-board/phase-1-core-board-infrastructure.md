@@ -1,6 +1,6 @@
 # Phase 1 LLD: Core Board Infrastructure
 
-> **HLD Reference:** [docs/hld/quest-board.md](../../hld/quest-board.md)
+> **HLD Reference:** [docs/hld/quest-board.md](../../hld/quest/quest-board.md)
 > **Status:** IMPLEMENTED
 
 ## Scope

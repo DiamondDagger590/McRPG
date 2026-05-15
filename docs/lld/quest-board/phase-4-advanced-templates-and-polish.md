@@ -1,6 +1,6 @@
 # Phase 4 LLD: Advanced Templates and Polish
 
-> **HLD Reference:** [docs/hld/quest-board.md](../../hld/quest-board.md)
+> **HLD Reference:** [docs/hld/quest-board.md](../../hld/quest/quest-board.md)
 > **Phase 1 LLD:** [phase-1-core-board-infrastructure.md](phase-1-core-board-infrastructure.md)
 > **Phase 2 LLD:** [phase-2-per-player-slots-and-templates.md](phase-2-per-player-slots-and-templates.md)
 > **Phase 3 LLD:** [phase-3-land-quests-and-rewards.md](phase-3-land-quests-and-rewards.md)

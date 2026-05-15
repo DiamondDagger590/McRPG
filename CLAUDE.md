@@ -659,6 +659,11 @@ Numeric values shown in localized strings, GUI placeholders, ability lore, PAPI 
 | `DynamicLocale.java` | Runtime-discovered locale from the data folder |
 | `LocalizationKey.java` | All `Route` constants for locale keys — the canonical index |
 | `src/main/resources/localization/english/` | Bundled English locale YAML files |
+| `PALETTE.md` | Canonical color palette — all GUI hex codes, roles, and usage rules |
+
+### GUI Color Palette
+
+All player-facing colors follow the **Warm Fantasy RPG** palette defined in [`PALETTE.md`](PALETTE.md). Colors are **runtime-resolvable placeholders** — locale YAML files use semantic names like `<primary>`, and `McRPGLocalizationManager` replaces them with configured MiniMessage values before parsing. Server owners customize colors in `config.yml`'s `palette` section. The palette defines 10 semantic roles: `<primary>` (titles, nav, values), `<hint>` (click prompts), `<mana>` (mana costs), `<ability-active>`/`<ability-passive>`/`<ability-innate>` (ability type colors), `<body>` (lore text), `<positive>`/`<negative>`/`<warning>` (status). `<gold>` is deprecated — use `<primary>` instead. See `PALETTE.md` for the full specification and `.cursor/rules/core.mdc` for enforcement rules.
 
 ---
 
@@ -769,5 +774,6 @@ After any commit or PR that introduces one of the following, **update `CLAUDE.md
 | CI review file-pattern for a new domain | `.github/workflows/pr-review.yml` detect-changes step |
 | Quest board system changed (new condition, distribution type, template feature) | `CLAUDE.md` Quest Board System section + `quest-board-system.mdc` |
 | Mana balance parameters changed (pool size, regen rate, bucket ranges) | `CLAUDE.md` Mana Balance Philosophy section + `mana-balance-philosophy.mdc` + `core.mdc` |
+| GUI color palette changed (new role, hex value, usage rule) | `PALETTE.md` + `core.mdc` GUI Color Palette section + `docs/hld/gui-ux-system.md` |
 
 These files are the project's living technical contract — stale steering files produce stale AI output.

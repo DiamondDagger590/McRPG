@@ -143,6 +143,25 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - **No void-return `comboActivate()` or `activateAbility()`** — both return `boolean` (`true` = executed, `false` = internally cancelled). The boolean enables mana refund and conditional cooldown in callers
 - **No `ConfigurableTierableAbility` without `@ParserConfigKeys`** — every concrete implementation must declare its Parser-backed YAML keys via the annotation. The `ParserConfigKeysPresenceTest` enforces this at CI time
 
+## GUI Color Palette
+
+All player-facing text uses the **Warm Fantasy RPG** palette defined in [`PALETTE.md`](../../PALETTE.md). Colors are **runtime-resolvable placeholders** — locale YAML files use semantic names like `<primary>`, and `McRPGLocalizationManager` replaces them with configured MiniMessage values before parsing. Server owners customize colors in `config.yml`'s `palette` section. Never introduce a new color without adding it to the palette first.
+
+| Role | Placeholder | Default Value | When to Use |
+|------|-------------|---------------|-------------|
+| **primary** | `<primary>` | `<color:#D4A76A>` | GUI titles, nav item names, stat value highlights, skill names, section headers |
+| **hint** | `<hint>` | `<color:#E8C97A>` | Click hints, calls-to-action, interactive prompts |
+| **mana** | `<mana>` | `<color:#5EA8FF>` | Mana cost values, mana-related lore |
+| **ability-active** | `<ability-active>` | `<color:#FF7B5E>` | Active (ComboActivatable) ability names and type tags |
+| **ability-passive** | `<ability-passive>` | `<color:#7FB87F>` | Passive ability names and type tags |
+| **ability-innate** | `<ability-innate>` | `<color:#9E9E9E>` | Innate ability names, disabled/inactive states |
+| **body** | `<body>` | `<gray>` | Descriptive lore text, labels before values |
+| **positive** | `<positive>` | `<green>` | Enabled, success, accepted |
+| **negative** | `<negative>` | `<red>` | Disabled, error, deny, abandon |
+| **warning** | `<warning>` | `<yellow>` | Caution, expiration, approaching limits |
+
+**Forbidden in new code:** `<gold>` (replaced by `<primary>`), `<red>` for item names (use `<primary>` or type placeholder), `<black>` for titles (use `<primary>`), raw hex codes in locale YAML (use palette placeholders).
+
 ## Mana Balance Framework
 
 Active abilities are balanced using a **"Slow Regen, High Stakes"** philosophy. Key parameters: 100 max pool, 2/sec passive regen (50s full recovery), three cost buckets:

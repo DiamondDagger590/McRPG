@@ -1,6 +1,6 @@
 # Phase 2 LLD: Per-Player Slots and Quest Templates
 
-> **HLD Reference:** [docs/hld/quest-board.md](../../hld/quest-board.md)
+> **HLD Reference:** [docs/hld/quest-board.md](../../hld/quest/quest-board.md)
 > **Phase 1 LLD:** [phase-1-core-board-infrastructure.md](phase-1-core-board-infrastructure.md)
 > **Status:** IMPLEMENTED
 
