@@ -1,7 +1,7 @@
 # GUI/UX System & Color Palette
 
-> **Last Updated:** 2026-05-10
-> **Status:** Phase 0 (documentation) complete; Phases 1–4 pending implementation
+> **Last Updated:** 2026-05-15
+> **Status:** Phase 0 (documentation) complete; Phase 1 LLD written; Phases 2–4 pending implementation
 > **Scope:** Unified GUI color palette, navigation standardization, ability display improvements, upgrade quest slot separation
 
 ---
@@ -253,14 +253,15 @@ All back buttons follow one pattern:
 
 Each phase gets its own LLD when implementation begins.
 
-### Phase 1: GUI Locale Sweep
+### Phase 1: Palette Infrastructure & GUI Locale Sweep
 
-- Update all GUI titles to `primary` color
-- Standardize all back button labels to `"Back to [Parent]"` pattern with `primary` color
-- Update home GUI slot names and sort button names from `<red>` to `primary`
-- Replace `<gold>` with `primary` across en_gui.yml value highlights
-- Fix bugs: broken MiniMessage tag, loadout lore scalar, title typo, naming mismatch
-- Add palette comment header to en_gui.yml
+- **Build palette replacement infrastructure**: `config.yml` palette section, `McRPGLocalizationManager` post-processing hook (via McCore `LocalizationManager.postProcessResolvedString()`), `ItemBuilder.applyTagReplacements()`, `ReloadableContent`-backed palette map
+- **Full `en_gui.yml` sweep**: titles, back buttons, sort buttons, home slots, pagination, value highlights, body text, click hints, status indicators — all replaced with palette placeholders (`<primary>`, `<hint>`, `<body>`, `<positive>`, `<negative>`, `<warning>`)
+- Standardize all back button labels to `"Back to [Parent]"` pattern with `<primary>` color and contextual `<body>` lore
+- Fix bugs: broken MiniMessage tag (`./gray>`), loadout lore YAML scalar, title typo ("Home Gui"), naming mismatch, "action abr" typo, "rested levels" copy-paste error
+- Add palette comment header to `en_gui.yml`
+- Wire all slot classes to apply palette tag replacements via `applyTagReplacements()`
+- **LLD:** [phase-1-palette-infrastructure-and-locale-sweep.md](../lld/gui-ux-system/phase-1-palette-infrastructure-and-locale-sweep.md)
 
 ### Phase 2: Ability Display Overhaul
 
@@ -279,9 +280,15 @@ Each phase gets its own LLD when implementation begins.
 
 ### Phase 4: Remaining Locale Sweep
 
-- Update loadout GUI colors in en_gui.yml
-- Sweep remaining locale files (en.yml, en_skills.yml, en_commands.yml, en_quest.yml, en_stats.yml) for `<gold>` replacement
+- Sweep all remaining locale files for palette placeholder migration:
+  - `en_abilities.yml` — stat value highlights, error/feedback messages (ability names deferred to Phase 2)
+  - `en_skills.yml` — skill display values and descriptions
+  - `en_commands.yml` — command feedback messages
+  - `en_quest.yml` — reward labels, objective descriptions, quest feedback
+  - `en.yml` — general messages
+  - `en_stats.yml` — stat display strings
 - Add palette comment headers to all locale files
+- No Java changes required — palette infrastructure from Phase 1 supports all locale files
 
 ---
 
