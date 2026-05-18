@@ -55,6 +55,7 @@ public class RemoteTransferToggleSlot implements McRPGSlot {
         boolean materialDisabled = isItemDisallowed();
         Route localizationRoute = materialDisabled ? LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_DISABLED_DISPLAY_ITEM : LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_ENABLED_DISPLAY_ITEM;
         ItemBuilder itemBuilder = ItemBuilder.from(mcRPGLocalizationManager.getLocalizedSection(mcRPGPlayer, localizationRoute));
+        itemBuilder.applyTagReplacements(mcRPGLocalizationManager.getPaletteReplacements());
         customItemWrapper.customItem().ifPresentOrElse(itemBuilder::withCustomItem, () -> itemBuilder.withType(Objects.requireNonNull(customItemWrapper.material().get().asItemType())));
         ItemBuilder builder = customItemWrapper.itemBuilder();
         builder.withDisplayLore(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessages(mcRPGPlayer, Route.addTo(localizationRoute, "lore")));

@@ -120,7 +120,10 @@ public enum SkillSortType {
             @NotNull
             @Override
             public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, displayItemRoute));
+                var localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+                ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, displayItemRoute));
+                itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+                return itemBuilder;
             }
         };
     }

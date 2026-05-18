@@ -79,6 +79,7 @@ public class AbilityLocationAttribute extends OptionalSavingAbilityAttribute<Loc
                 McRPGLocalizationManager localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                 if (shouldContentBeSaved()) {
                     ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.LOCATION_ATTRIBUTE_LOCATION_SAVED_DISPLAY_ITEM));
+                    itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
                     itemBuilder.setPlaceholders(Map.of(
                             "location-x", Double.toString(getContent().getBlockX()),
                             "location-y", Double.toString(getContent().getBlockY()),
@@ -88,7 +89,9 @@ public class AbilityLocationAttribute extends OptionalSavingAbilityAttribute<Loc
                     return itemBuilder;
                 }
                 else {
-                    return ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.LOCATION_ATTRIBUTE_NO_LOCATION_SAVED_DISPLAY_ITEM));
+                    ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.LOCATION_ATTRIBUTE_NO_LOCATION_SAVED_DISPLAY_ITEM));
+                    itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+                    return itemBuilder;
                 }
             }
         };

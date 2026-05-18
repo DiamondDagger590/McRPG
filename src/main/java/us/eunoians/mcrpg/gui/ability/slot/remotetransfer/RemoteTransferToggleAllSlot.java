@@ -40,10 +40,12 @@ public class RemoteTransferToggleAllSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION)
-                .getLocalizedSection(mcRPGPlayer, enableAll ? LocalizationKey.REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_ENABLE :
-                        LocalizationKey.REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_DISABLE));
+        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, enableAll
+                ? LocalizationKey.REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_ENABLE
+                : LocalizationKey.REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_DISABLE));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     /**

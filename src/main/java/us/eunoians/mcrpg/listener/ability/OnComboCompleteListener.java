@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.listener.ability;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -14,6 +13,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.display.hud.ActionBarHudDisplay;
 import us.eunoians.mcrpg.display.hud.CenterContentPriority;
 import us.eunoians.mcrpg.display.hud.content.CountdownCooldownCenterContent;
@@ -23,6 +23,7 @@ import us.eunoians.mcrpg.entity.holder.LoadoutHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.combo.ComboCompleteEvent;
 import us.eunoians.mcrpg.event.stat.PlayerStatConsumeEvent;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.stat.McRPGPlayerStat;
@@ -31,6 +32,7 @@ import us.eunoians.mcrpg.stat.instance.PlayerStatInstance;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Handles {@link ComboCompleteEvent} by resolving which ability occupies the completed slot,
@@ -97,23 +99,29 @@ public class OnComboCompleteListener implements Listener {
         }
         McRPGPlayer mcRPGPlayer = mcRPGPlayerOpt.get();
 
+        McRPGLocalizationManager localizationManager = mcRPG.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+
         ComboActivatable comboAbility = comboAbilities.get(slotIndex - 1);
         Ability ability = (Ability) comboAbility;
 
         if (comboAbility instanceof CooldownableAbility cooldownableAbility && cooldownableAbility.isAbilityOnCooldown(abilityHolder)) {
             long expiryMillis = cooldownableAbility.getCooldownForHolder(abilityHolder);
             long remainingSeconds = Math.max(1, (expiryMillis - mcRPG.getTimeProvider().now().toEpochMilli()) / 1000);
+            String remainingStr = String.valueOf(remainingSeconds);
+            String abilityName = ability.getName(mcRPGPlayer);
 
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
 
+            long maxExpiryTick = Bukkit.getCurrentTick() + CENTER_CONTENT_DURATION_TICKS;
             ActionBarHudDisplay hud = getOrCreateHud(mcRPG, mcRPGPlayer);
             hud.setSlot(CenterContentPriority.ABILITY_FEEDBACK,
-                    new CountdownCooldownCenterContent(ability.getName(), expiryMillis, mcRPG.getTimeProvider()));
+                    new CountdownCooldownCenterContent(abilityName, expiryMillis, maxExpiryTick, mcRPG.getTimeProvider()));
 
-            player.sendMessage(
-                    Component.text(ability.getName() + " is on cooldown! ", NamedTextColor.RED)
-                            .append(Component.text("(" + remainingSeconds + "s remaining)", NamedTextColor.GRAY))
-            );
+            Component chatText = localizationManager.getLocalizedMessageAsComponent(
+                    mcRPGPlayer, LocalizationKey.COOLDOWN_ACTIVE,
+                    Map.of("ability", abilityName, "remaining", remainingStr));
+            player.sendMessage(chatText);
             return;
         }
 
@@ -135,18 +143,21 @@ public class OnComboCompleteListener implements Listener {
         double effectiveCost = consumeEvent.getEffectiveAmount();
         if (!manaInstance.consume(effectiveCost)) {
             int currentMana = (int) Math.round(manaInstance.getCurrent());
+            String abilityName = ability.getName(mcRPGPlayer);
 
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
 
-            ActionBarHudDisplay hud = getOrCreateHud(mcRPG, mcRPGPlayer);
+            Component hudText = localizationManager.getLocalizedMessageAsComponent(
+                    mcRPGPlayer, LocalizationKey.MANA_INSUFFICIENT_HUD,
+                    Map.of("ability", abilityName));
             long expiryTick = Bukkit.getCurrentTick() + CENTER_CONTENT_DURATION_TICKS;
-            hud.setSlot(CenterContentPriority.ABILITY_FEEDBACK,
-                    new TimedCenterContent(Component.text("Not Enough Mana", NamedTextColor.RED), expiryTick));
+            ActionBarHudDisplay hud = getOrCreateHud(mcRPG, mcRPGPlayer);
+            hud.setSlot(CenterContentPriority.ABILITY_FEEDBACK, new TimedCenterContent(hudText, expiryTick));
 
-            player.sendMessage(
-                    Component.text("Not enough mana to use " + ability.getName() + "! ", NamedTextColor.RED)
-                            .append(Component.text("(need " + manaCost + ", have " + currentMana + ")", NamedTextColor.GRAY))
-            );
+            Component chatText = localizationManager.getLocalizedMessageAsComponent(
+                    mcRPGPlayer, LocalizationKey.MANA_INSUFFICIENT,
+                    Map.of("ability", abilityName, "cost", String.valueOf(manaCost), "current", String.valueOf(currentMana)));
+            player.sendMessage(chatText);
             return;
         }
 

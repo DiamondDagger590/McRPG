@@ -10,12 +10,18 @@ config-version: 1
 ability:
   # Mana feedback messages sent to the player when an ability cannot be activated.
   mana-feedback:
-    # Sent when the player does not have enough mana to activate an ability.
+    # Sent as a chat message when the player does not have enough mana to activate an ability.
     # Placeholders: <ability> (ability name), <cost> (required mana), <current> (current mana)
-    insufficient: "<red>Not enough mana to use <ability>! <gray>(need <cost>, have <current>)"
-    # Sent when the player attempts to activate an ability that is on cooldown.
+    insufficient: "<negative>Not enough mana to use <ability>! <body>(need <cost>, have <current>)"
+    # Short HUD flash shown on the action bar when the player lacks mana (~3 seconds).
+    # Placeholders: <ability> (ability name)
+    insufficient-hud: "<negative>Not Enough Mana"
+    # Sent as a chat message when the player attempts to activate an ability that is on cooldown.
     # Placeholders: <ability> (ability name), <remaining> (seconds remaining)
-    cooldown-active: "<red><ability> is on cooldown! <gray>(<remaining>s remaining)"
+    cooldown-active: "<negative><ability> is on cooldown! <body>(<remaining>s remaining)"
+    # Short HUD flash shown on the action bar when an ability is on cooldown (~3 seconds).
+    # Placeholders: <ability> (ability name), <remaining> (seconds remaining)
+    cooldown-active-hud: "<negative>On Cooldown <body>(<remaining>s)"
   # Configure messages relating to abilities that can be on cooldown
   cooldown:
     # The message to send to the player when they try to use an ability still on cooldown

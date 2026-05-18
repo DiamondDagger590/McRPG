@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.localization.LocalizationManager;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.setting.PlayerSetting;
 import com.diamonddagger590.mccore.util.LinkedNode;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -18,6 +19,7 @@ import us.eunoians.mcrpg.setting.impl.LocaleSetting;
 import us.eunoians.mcrpg.setting.impl.LocalePlayerSetting;
 import us.eunoians.mcrpg.setting.impl.SpecificLocaleSetting;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
@@ -43,10 +45,107 @@ import java.util.Set;
 public final class McRPGLocalizationManager extends LocalizationManager<McRPG, McRPGPlayer> {
 
     private final McRPGDisplayDecimalFormatter displayDecimalFormatter;
+    private final ReloadableContent<Map<String, String>> paletteReplacements;
 
     public McRPGLocalizationManager(McRPG mcRPG) {
         super(mcRPG);
         this.displayDecimalFormatter = new McRPGDisplayDecimalFormatter(this);
+        this.paletteReplacements = buildPaletteReplacements(mcRPG);
+        mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.RELOADABLE_CONTENT)
+                .trackReloadableContent(paletteReplacements);
+    }
+
+    /**
+     * Builds the palette replacement map from {@code config.yml}. Each palette role
+     * (e.g., {@code "primary"}) maps to its configured MiniMessage value
+     * (e.g., {@code <color:#D4A76A>}). The map keys are the full placeholder strings
+     * including angle brackets (e.g., {@code <primary>}).
+     * <p>
+     * Close tags (e.g., {@code </primary>}) are also mapped. When the configured value
+     * is a MiniMessage color tag like {@code <color:#D4A76A>}, the close tag maps to the
+     * corresponding MiniMessage close form ({@code </color:#D4A76A>}). For named tags like
+     * {@code <gray>}, the close tag maps to {@code </gray>}. This ensures server owners can
+     * use natural MiniMessage notation (e.g., {@code <primary>50%</primary>}) and have it
+     * resolve correctly.
+     *
+     * @param mcRPG The plugin instance.
+     * @return A {@link ReloadableContent} wrapping the palette replacement map.
+     */
+    @NotNull
+    private ReloadableContent<Map<String, String>> buildPaletteReplacements(@NotNull McRPG mcRPG) {
+        YamlDocument config = mcRPG.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE)
+                .getFile(FileType.MAIN_CONFIG);
+        return new ReloadableContent<>(config, MainConfigFile.PALETTE_PRIMARY, (doc, ignored) -> {
+            Map<String, String> map = new LinkedHashMap<>();
+            addPaletteEntry(map, "primary", doc.getString(MainConfigFile.PALETTE_PRIMARY, "<color:#D4A76A>"));
+            addPaletteEntry(map, "hint", doc.getString(MainConfigFile.PALETTE_HINT, "<color:#E8C97A>"));
+            addPaletteEntry(map, "mana", doc.getString(MainConfigFile.PALETTE_MANA, "<color:#5EA8FF>"));
+            addPaletteEntry(map, "ability-active", doc.getString(MainConfigFile.PALETTE_ABILITY_ACTIVE, "<color:#FF7B5E>"));
+            addPaletteEntry(map, "ability-passive", doc.getString(MainConfigFile.PALETTE_ABILITY_PASSIVE, "<color:#7FB87F>"));
+            addPaletteEntry(map, "ability-innate", doc.getString(MainConfigFile.PALETTE_ABILITY_INNATE, "<color:#9E9E9E>"));
+            addPaletteEntry(map, "body", doc.getString(MainConfigFile.PALETTE_BODY, "<gray>"));
+            addPaletteEntry(map, "positive", doc.getString(MainConfigFile.PALETTE_POSITIVE, "<green>"));
+            addPaletteEntry(map, "negative", doc.getString(MainConfigFile.PALETTE_NEGATIVE, "<red>"));
+            addPaletteEntry(map, "warning", doc.getString(MainConfigFile.PALETTE_WARNING, "<yellow>"));
+            return map;
+        });
+    }
+
+    /**
+     * Adds both the open and close tag entries for a palette role to the replacement map.
+     * The close tag value is derived from the open tag value by inserting a {@code /} after
+     * the opening {@code <} (e.g., {@code <gray>} → {@code </gray>}).
+     *
+     * @param map       The replacement map to populate.
+     * @param roleName  The palette role name without angle brackets (e.g., {@code "primary"}).
+     * @param openValue The configured MiniMessage open tag value (e.g., {@code <color:#D4A76A>}).
+     */
+    private void addPaletteEntry(@NotNull Map<String, String> map, @NotNull String roleName, @NotNull String openValue) {
+        map.put("<" + roleName + ">", openValue);
+        String closeValue = openValue.startsWith("<") ? "</" + openValue.substring(1) : openValue;
+        map.put("</" + roleName + ">", closeValue);
+    }
+
+    /**
+     * Returns the current palette replacement map. Used by slot classes when applying
+     * tag replacements to {@link com.diamonddagger590.mccore.builder.item.impl.ItemBuilder}s
+     * built from localized sections.
+     *
+     * @return The palette replacement map (keys are {@code <placeholder>}, values are MiniMessage strings).
+     */
+    @NotNull
+    public Map<String, String> getPaletteReplacements() {
+        return paletteReplacements.getContent();
+    }
+
+    /**
+     * Applies palette color replacement to the given string. Replaces semantic
+     * placeholders ({@code <primary>}, {@code <hint>}, etc.) with their configured
+     * MiniMessage values ({@code <color:#D4A76A>}, etc.).
+     * <p>
+     * This is a public alias for {@link #postProcessResolvedString(String)} that slot
+     * classes can call on dynamically-constructed lore lines that are not resolved
+     * through the locale chain.
+     *
+     * @param raw The raw string potentially containing palette placeholders.
+     * @return The string with palette placeholders resolved to MiniMessage color tags.
+     */
+    @NotNull
+    public String resolvePaletteColors(@NotNull String raw) {
+        return postProcessResolvedString(raw);
+    }
+
+    @NotNull
+    @Override
+    protected String postProcessResolvedString(@NotNull String raw) {
+        String result = raw;
+        for (Map.Entry<String, String> entry : paletteReplacements.getContent().entrySet()) {
+            result = result.replace(entry.getKey(), entry.getValue());
+        }
+        return result;
     }
 
     /**

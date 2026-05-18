@@ -3,6 +3,23 @@
 # English localization for McRPG GUI elements.
 # This file is part of the English (en) locale.
 #
+# ─── Color Palette ───
+# This file uses semantic color placeholders that resolve to MiniMessage values
+# configured in config.yml's palette section. Available placeholders:
+#
+#   <primary>        Warm Amber (#D4A76A)  — titles, nav items, stat values
+#   <hint>           Warm Yellow (#E8C97A) — click hints, calls-to-action
+#   <mana>           Sky Blue (#5EA8FF)    — mana costs
+#   <ability-active> Coral (#FF7B5E)       — active ability names/tags
+#   <ability-passive>Sage Green (#7FB87F)  — passive ability names/tags
+#   <ability-innate> Silver (#9E9E9E)      — innate abilities, disabled states
+#   <body>           Gray                  — body text, labels
+#   <positive>       Green                 — enabled, success
+#   <negative>       Red                   — disabled, error, deny
+#   <warning>        Yellow                — caution, expiration
+#
+# Server owners can customize all colors in config.yml under the 'palette' section.
+#
 #######################################
 locale: en
 config-version: 1
@@ -11,23 +28,23 @@ gui:
   common:
     next-page-button:
       display-item:
-        name: "<gold>Next Page</gold>"
+        name: "<primary>Next Page"
         material: ARROW
         lore:
-          - '<gray>Click this to go to the next page.'
+          - '<body>Click this to go to the next page.'
     previous-page-button:
       display-item:
-        name: "<gold>Previous Page</gold>"
+        name: "<primary>Previous Page"
         material: ARROW
         lore:
-          - '<gray>Click this to go to the previous page.'
+          - '<body>Click this to go to the previous page.'
     # Configure the back button
     previous-gui-button:
       display-item:
-        name: "<red>Return to Previous GUI</red>"
+        name: "<primary>Back to Previous GUI"
         material: BARRIER
         lore:
-          - '<gray>Click to return to previous gui.</gray>'
+          - '<body>Click to return to the previous menu.'
     # Configure the item to be used as a filler for the gui
     filler-item:
       display-item:
@@ -36,87 +53,87 @@ gui:
   # The GUI serves as the "main" McRPG gui and is the main access point
   # for most players into McRPG content.
   home-gui:
-    title: "<gold>Home Gui"
+    title: "<primary>Home GUI"
     # The slot that takes players to the settings gui
     settings-slot:
       display-item:
         material: PLAYER_HEAD
-        name: '<red>Settings'
+        name: '<primary>Settings'
         lore:
-          - '<gray>Click to edit your McRPG settings.'
+          - '<body>Click to edit your McRPG settings.'
     # The slot that takes players to the ability gui
     abilities-slot:
       display-item:
         material: DIAMOND_ORE
-        name: "<red>Abilities"
+        name: "<primary>Abilities"
         lore:
-          - '<gray>Click to view your abilities.'
+          - '<body>Click to view your abilities.'
     # The slot that takes players to the skills gui
     skills-slot:
       display-item:
         material: DIAMOND_SWORD
-        name: "<red>Skills"
+        name: "<primary>Skills"
         lore:
-          - '<gray>Click to view your skills.'
+          - '<body>Click to view your skills.'
     # The slot that takes players to the loadout gui.
     loadouts-slot:
       display-item:
         material: COMPASS
-        name: "<red>Loadouts"
+        name: "<primary>Loadouts"
         lore:
-          - '<gray>Click to edit your loadouts.'
+          - '<body>Click to edit your loadouts.'
     # The slot that takes players to the experience bank gui.
     experience-bank-slot:
       display-item:
         material: EXPERIENCE_BOTTLE
-        name: "<red>Experience Bank"
+        name: "<primary>Experience Bank"
         # Supported placeholders: <redeemable-experience>, <redeemable-levels>,
         # <rested-experience> and <boosted-experience>
         lore:
-          - '<gray>Click to view banked experience and redeem'
-          - '<gray>redeemable experience.'
+          - '<body>Click to view banked experience and redeem'
+          - '<body>redeemable experience.'
           - ''
-          - '<gray>Redeemable Experience: <gold><redeemable-experience>'
-          - '<gray>Redeemable Levels: <gold><redeemable-levels>'
-          - '<gray>Rested Experience: <gold><rested-experience>'
-          - '<gray>Boosted Experience: <gold><boosted-experience>'
+          - '<body>Redeemable Experience: <primary><redeemable-experience>'
+          - '<body>Redeemable Levels: <primary><redeemable-levels>'
+          - '<body>Rested Experience: <primary><rested-experience>'
+          - '<body>Boosted Experience: <primary><boosted-experience>'
     # The slot that takes players to the quest gui.
     quests-slot:
       display-item:
         material: WRITABLE_BOOK
-        name: "<red>Quests"
+        name: "<primary>Quests"
         lore:
-          - '<gray>Click to view your active quests.'
+          - '<body>Click to view your active quests.'
     # Placeholder for the future quest board feature.
     coming-soon-slot:
       display-item:
         material: GRAY_STAINED_GLASS_PANE
-        name: "<gray>Coming Soon"
+        name: "<ability-innate>Coming Soon"
         lore:
-          - '<gray>Quest Board coming in a future update!'
+          - '<body>Quest Board coming in a future update!'
     board-slot:
       display-item:
         material: OAK_SIGN
-        name: "<red>Quest Board"
+        name: "<primary>Quest Board"
         lore:
-          - '<gray>Click to browse and accept'
-          - '<gray>daily and weekly quests.'
+          - '<body>Click to browse and accept'
+          - '<body>daily and weekly quests.'
   # This GUI shows the quest board offerings.
   quest-board:
-    title: '<gold>Quest Board'
+    title: '<primary>Quest Board'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to Home Menu</red>"
+        name: "<primary>Back to Home"
         material: BARRIER
         lore:
-          - '<gray>Click to return to the Home Menu</gray>'
+          - '<body>Click to return to the home menu.'
     offering-lore:
-      - '<gray>Rarity: <gold><rarity>'
-      - '<gray>Category: <gold><category>'
+      - '<body>Rarity: <primary><rarity>'
+      - '<body>Category: <primary><category>'
       - ''
-      - '<yellow>Click to accept'
+      - '<hint>Click to accept'
     # Board offering slot. Placeholders: <quest_name>, <rarity_color>
     offering-slot:
       display-item:
@@ -130,190 +147,190 @@ gui:
     no-offerings-slot:
       display-item:
         material: BARRIER
-        name: '<red>No Offerings'
+        name: '<negative>No Offerings'
         lore:
-          - '<gray>There are no quest offerings available right now.'
-          - '<gray>Check back after the next rotation.'
-    accept: '<green>Quest accepted!'
-    slots-full: '<red>You have no available quest slots.'
-    on-cooldown: '<red>This quest is on cooldown.'
+          - '<body>There are no quest offerings available right now.'
+          - '<body>Check back after the next rotation.'
+    accept: '<positive>Quest accepted!'
+    slots-full: '<negative>You have no available quest slots.'
+    on-cooldown: '<negative>This quest is on cooldown.'
     # Scoped (group) quest entries
     group-tab:
       display-item:
         material: COMPASS
-        name: '<gold>Group Quests'
+        name: '<primary>Group Quests'
         lore:
-          - '<gray>Click to view group quests.'
-    group-selector-title: '<gold>Select a Group'
+          - '<body>Click to view group quests.'
+    group-selector-title: '<primary>Select a Group'
     # Placeholders: <entity_name>, <quest_count>
     group-entity-slot:
       display-item:
         material: SHIELD
-        name: '<gold><entity_name>'
+        name: '<primary><entity_name>'
         lore:
-          - '<gray>Active quests: <gold><quest_count>'
+          - '<body>Active quests: <primary><quest_count>'
           - ''
-          - '<yellow>Click to view offerings'
+          - '<hint>Click to view offerings'
     group-no-offerings:
       display-item:
         material: BARRIER
-        name: '<gray>No Group Quests Available'
+        name: '<ability-innate>No Group Quests Available'
         lore:
-          - '<gray>New offerings are generated at the next rotation.'
-    group-accept: '<green>Group quest accepted!'
-    group-abandon: '<yellow>Group quest abandoned.'
-    group-no-permission: '<red>Ask your group leader to manage quests.'
-    group-slots-full: '<red>This group has no available quest slots.'
+          - '<body>New offerings are generated at the next rotation.'
+    group-accept: '<positive>Group quest accepted!'
+    group-abandon: '<warning>Group quest abandoned.'
+    group-no-permission: '<negative>Ask your group leader to manage quests.'
+    group-slots-full: '<negative>This group has no available quest slots.'
     # Appended to each scoped offering item. Placeholder: <entity_name>
-    group-entity-lore: '<gray>Group: <gold><entity_name>'
+    group-entity-lore: '<body>Group: <primary><entity_name>'
     # Offering item lore lines (Phase 4) — built programmatically in BoardOfferingSlot / ScopedOfferingSlot.
     # Placeholders: <rarity_color>, <rarity>
-    rarity-line: '<gray>Rarity: <rarity_color><rarity>'
+    rarity-line: '<body>Rarity: <rarity_color><rarity>'
     # Placeholder: <duration> (formatted time, e.g. "2h 30m", or "None")
-    duration-line: '<gray>Duration: <gold><duration>'
+    duration-line: '<body>Duration: <primary><duration>'
     # Placeholders: <count_color>, <board_quests>, <max_quests>
-    board-quests-line: '<gray>Board Quests: <count_color><board_quests>/<max_quests>'
-    right-click-preview: '<yellow>Right-click to preview'
+    board-quests-line: '<body>Board Quests: <count_color><board_quests>/<max_quests>'
+    right-click-preview: '<hint>Right-click to preview'
     # Offering lore components (Phase 4). Placeholders: <category>, <type>, <amount>, <time>
-    offering-category: '<gray>Category: <gold><category>'
-    objectives-header: '<gray>Objectives:'
+    offering-category: '<body>Category: <primary><category>'
+    objectives-header: '<body>Objectives:'
     # Placeholders: <type> (objective type key), <amount> (required progress)
-    objective-line: '<white>  • <type>: <gold><amount>'
-    rewards-header: '<gray>Rewards:'
+    objective-line: '<white>  • <type>: <primary><amount>'
+    rewards-header: '<body>Rewards:'
     # Placeholders: <type> (reward type key), <amount> (numeric amount)
-    reward-line: '<white>  • <type>: <gold><amount>'
+    reward-line: '<white>  • <type>: <primary><amount>'
     # Placeholder: <type> (reward type key, no numeric amount available)
     reward-line-no-amount: '<white>  • <type>'
     # Placeholder: <time> (formatted time remaining, e.g. "2h 30m")
-    expires-in: '<gray>Expires in: <yellow><time>'
-    click-to-accept: '<green>Click to accept'
+    expires-in: '<body>Expires in: <warning><time>'
+    click-to-accept: '<positive>Click to accept'
     # Distribution preview components for scoped quests
-    distribution-header: '<gray>Reward Distribution:'
+    distribution-header: '<body>Reward Distribution:'
     # Placeholder: <tier> (tier identifier)
     distribution-tier: '<white>  <tier>:'
-    preview-qualifies: '<green>  ✔ You qualify for this tier'
-    preview-not-qualifies: '<red>  ✘ You do not yet qualify'
+    preview-qualifies: '<positive>  ✔ You qualify for this tier'
+    preview-not-qualifies: '<negative>  ✘ You do not yet qualify'
     # Placeholder: <contribution>, <percent>
-    preview-contribution: '<gray>  Your contribution: <gold><contribution> <gray>(<gold><percent>%<gray>)'
+    preview-contribution: '<body>  Your contribution: <primary><contribution> <body>(<primary><percent>%<body>)'
   # This GUI shows all active quests for the player.
   active-quest-gui:
-    title: '<gold>Active Quests'
+    title: '<primary>Active Quests'
     previous-gui-button:
       display-item:
-        name: "<red>Return to Home Menu</red>"
+        name: "<primary>Back to Home"
         material: BARRIER
         lore:
-          - '<gray>Click to return to the Home Menu</gray>'
+          - '<body>Click to return to the home menu.'
     # Template for each active quest item. Placeholders: <quest_name>
     # Phase, objectives, expiry, and click hint are appended dynamically.
     quest-slot:
       display-item:
         material: WRITABLE_BOOK
-        name: "<gold><quest_name>"
+        name: "<primary><quest_name>"
         lore: []
-      phase-line: '<gray>Phase: <gold><current_phase>/<total_phases>'
-      objective-progress-line: '<gray><objective_description>: <gold><current_progress>/<required_progress>'
-      objective-detail-line: '<gray><objective_description>'
-      expires-line: '<gray>Expires in: <gold><time_remaining>'
+      phase-line: '<body>Phase: <primary><current_phase>/<total_phases>'
+      objective-progress-line: '<body><objective_description>: <primary><current_progress>/<required_progress>'
+      objective-detail-line: '<body><objective_description>'
+      expires-line: '<body>Expires in: <primary><time_remaining>'
       expires-time-format: '<hours>h <minutes>m'
-      expires-expired: '<red>Expired'
-      expires-none: '<gray>None'
-      click-to-view-details: '<yellow>Click to view details'
-      right-click-to-abandon: '<red>Right-click to abandon'
+      expires-expired: '<negative>Expired'
+      expires-none: '<body>None'
+      click-to-view-details: '<hint>Click to view details'
+      right-click-to-abandon: '<negative>Right-click to abandon'
     view-history-button:
       display-item:
         material: BOOKSHELF
-        name: "<gold>Quest History"
+        name: "<primary>Quest History"
         lore:
-          - '<gray>Click to view your completed quests.'
+          - '<body>Click to view your completed quests.'
   # This GUI shows the player's completed quest history.
   quest-history-gui:
-    title: '<gold>Quest History'
+    title: '<primary>Quest History'
     previous-gui-button:
       display-item:
-        name: "<red>Back to Active Quests</red>"
+        name: "<primary>Back to Active Quests"
         material: BARRIER
         lore:
-          - '<gray>Click to return to active quests</gray>'
+          - '<body>Click to return to your active quests.'
     sort-date-desc:
       display-item:
         material: HOPPER
-        name: "<gold>Sort: Newest First"
+        name: "<primary>Sort: Newest First"
         lore:
-          - '<gray>Click to sort by oldest first.'
+          - '<body>Click to sort by oldest first.'
     sort-date-asc:
       display-item:
         material: HOPPER
-        name: "<gold>Sort: Oldest First"
+        name: "<primary>Sort: Oldest First"
         lore:
-          - '<gray>Click to sort by newest first.'
+          - '<body>Click to sort by newest first.'
     # Template for each completed quest. Placeholders: <quest_name>, <completed_date>
     completed-quest-slot:
       display-item:
         material: WRITTEN_BOOK
-        name: "<gold><quest_name>"
+        name: "<primary><quest_name>"
         lore:
-          - '<gray>Completed: <gold><completed_date>'
+          - '<body>Completed: <primary><completed_date>'
           - ''
-          - '<yellow>Click to view details'
+          - '<hint>Click to view details'
     # Fallback when a quest definition no longer exists.
     unknown-quest-slot:
       display-item:
         material: BARRIER
-        name: "<red><quest_name>"
+        name: "<negative><quest_name>"
         lore:
-          - '<gray>Completed: <gold><completed_date>'
-          - '<red>Quest definition no longer exists.'
+          - '<body>Completed: <primary><completed_date>'
+          - '<negative>Quest definition no longer exists.'
   # This GUI shows the detailed breakdown of a quest's phases, stages and objectives.
   quest-detail-gui:
-    title: '<gold>Quest Details'
+    title: '<primary>Quest Details'
     # Context-specific back labels (sub-menu style: full title + sentence lore, like quest-history-gui).
     previous-gui-button:
       from-board:
         display-item:
-          name: "<red>Return to Quest Board</red>"
+          name: "<primary>Back to Quest Board"
           material: BARRIER
           lore:
-            - '<gray>Click to return to the quest board.</gray>'
+            - '<body>Click to return to the quest board.'
       from-history:
         display-item:
-          name: "<red>Back to Quest History</red>"
+          name: "<primary>Back to Quest History"
           material: BARRIER
           lore:
-            - '<gray>Click to return to quest history.</gray>'
+            - '<body>Click to return to quest history.'
       from-active:
         display-item:
-          name: "<red>Back to Active Quests</red>"
+          name: "<primary>Back to Active Quests"
           material: BARRIER
           lore:
-            - '<gray>Click to return to active quests.</gray>'
+            - '<body>Click to return to active quests.'
     # Overview header slot. Placeholders: <quest_name>, <quest_state>, <start_time>,
     # <end_time>, <expiration_time>, <completed_date>, <phase_total>
     overview-slot:
       display-item:
         material: ENCHANTED_BOOK
-        name: "<gold><quest_name>"
+        name: "<primary><quest_name>"
         lore:
-          - '<gray>State: <gold><quest_state>'
-          - '<gray>Phases: <gold><phase_total>'
+          - '<body>State: <primary><quest_state>'
+          - '<body>Phases: <primary><phase_total>'
     # Phase header. Placeholders: <phase_number>, <phase_total>, <completion_mode>
     phase-header:
       display-item:
         material: YELLOW_STAINED_GLASS_PANE
-        name: "<gold>Phase <phase_number>/<phase_total>"
+        name: "<primary>Phase <phase_number>/<phase_total>"
         lore:
-          - '<gray>Completion mode: <gold><completion_mode>'
+          - '<body>Completion mode: <primary><completion_mode>'
     # Stage slot. Placeholders: <stage_number>, <stage_total>, <objective_count>
     # State line is appended dynamically using the stage-state.* keys below.
     stage-slot:
       display-item:
         material: PAPER
-        name: "<gold>Stage <stage_number>/<stage_total>"
+        name: "<primary>Stage <stage_number>/<stage_total>"
         lore:
-          - '<gray>Objectives: <gold><objective_count>'
+          - '<body>Objectives: <primary><objective_count>'
       # State lore line appended below the stage display item lore.
       # Placeholder: <state> = stage state display label (resolved from stage-state.* below)
-      state-line: "<gray>State: <gold><state>"
+      state-line: "<body>State: <primary><state>"
       # QuestStageState display labels used in the <state> placeholder.
       stage-state:
         not-started: "Not Started"
@@ -325,43 +342,43 @@ gui:
     objective-slot:
       display-item:
         material: MAP
-        name: "<gray><objective_description>"
+        name: "<body><objective_description>"
         lore: []
       # Progress lore line appended below the objective description.
       # Placeholders: <progress> = current progress, <required> = goal
-      progress-line: "<gray>Progress: <gold><progress>/<required>"
+      progress-line: "<body>Progress: <primary><progress>/<required>"
       # State lore line appended below the progress line.
       # Placeholder: <state> = objective state display label (resolved from objective-state.* below)
-      state-line: "<gray>State: <gold><state>"
+      state-line: "<body>State: <primary><state>"
       # Continuation line for multi-line objective descriptions (lines after the first).
       # Placeholder: <line>
-      description-continuation-line: "<gray><line>"
+      description-continuation-line: "<body><line>"
     # Reward summary slot shown in board preview. Placeholders: <quest_name>
     # Reward lines are appended dynamically as individual lore entries.
     reward-slot:
       display-item:
         material: GOLD_INGOT
-        name: "<gold>Quest Completion Rewards"
+        name: "<primary>Quest Completion Rewards"
         lore:
-          - '<gray>Rewards earned when the entire quest is'
-          - '<gray>completed. Phase, stage, and objective'
-          - '<gray>rewards are shown on each slot.'
+          - '<body>Rewards earned when the entire quest is'
+          - '<body>completed. Phase, stage, and objective'
+          - '<body>rewards are shown on each slot.'
           - ''
       # Shown as a lore line in the reward slot when the quest has no configured rewards.
-      no-rewards: '<gray>No rewards listed'
+      no-rewards: '<body>No rewards listed'
       # Section header for quest-level completion rewards. No placeholders.
-      completion-header: "<gold><bold>Completion Rewards:"
+      completion-header: "<primary><bold>Completion Rewards:"
       # Section header for per-objective rewards.
       # Placeholders: <phase> = phase number (1-based), <objective> = truncated objective description
-      phase-header: "<gold>Phase <phase> - <objective>:"
+      phase-header: "<primary>Phase <phase> - <objective>:"
       # Individual reward entry. Placeholder: <reward>
-      reward-entry-line: "<gray>  - <white><reward>"
+      reward-entry-line: "<body>  - <white><reward>"
     # Header appended to phase/stage/objective slot lore when that level has rewards.
     # No placeholders.
-    inline-reward-header: "<gold>Rewards:"
+    inline-reward-header: "<primary>Rewards:"
     # Individual reward entry appended below the inline-reward-header.
     # Placeholder: <reward> = the reward's display description
-    inline-reward-line: "<gray>  - <white><reward>"
+    inline-reward-line: "<body>  - <white><reward>"
     # PhaseCompletionMode display labels used in the <completion_mode> placeholder.
     completion-mode:
       # All stages in the phase must be completed.
@@ -379,174 +396,174 @@ gui:
     duration-slot:
       display-item:
         material: CLOCK
-        name: "<gold>Quest Duration"
+        name: "<primary>Quest Duration"
         lore:
-          - '<gray>Expires after: <gold><quest_duration>'
+          - '<body>Expires after: <primary><quest_duration>'
     # Abandon button in the quest detail navigation bar (only shown for active abandonable quests).
     abandon-button:
       display-item:
         material: RED_WOOL
-        name: "<red>Abandon Quest"
+        name: "<negative>Abandon Quest"
         lore:
-          - '<gray>Click to abandon this quest.'
-          - '<gray>This action requires confirmation.'
+          - '<body>Click to abandon this quest.'
+          - '<body>This action requires confirmation.'
     # Label shown as the quest_state placeholder when viewing a quest preview (not yet accepted).
     state-preview: 'Preview'
     # Label shown as the quest_state placeholder when viewing a completed quest's history.
     state-completed: 'Completed'
   # Confirmation GUI shown before abandoning a quest.
   quest-abandon-confirm-gui:
-    title: '<red>Confirm Abandon'
+    title: '<negative>Confirm Abandon'
     # Confirm button. Placeholders: <quest_name>
     confirm-button:
       display-item:
         material: TNT
-        name: "<red>Abandon Quest"
+        name: "<negative>Abandon Quest"
         lore:
-          - '<gray>Click to abandon <gold><quest_name><gray>.'
+          - '<body>Click to abandon <primary><quest_name><body>.'
           - ''
-          - '<red>This cannot be undone!'
+          - '<negative>This cannot be undone!'
     # Cancel button to go back without abandoning.
     cancel-button:
       display-item:
         material: LIME_WOOL
-        name: "<green>Go Back"
+        name: "<positive>Go Back"
         lore:
-          - '<gray>Click to cancel and go back.'
+          - '<body>Click to cancel and go back.'
     # Quest info display in the middle. Placeholders: <quest_name>
     quest-info:
       display-item:
         material: WRITABLE_BOOK
-        name: "<gold><quest_name>"
+        name: "<primary><quest_name>"
         lore:
-          - '<gray>You are about to abandon this quest.'
+          - '<body>You are about to abandon this quest.'
   # This GUI allows players to view and edit their abilities.
   ability-gui:
-    title: '<gold>Viewing Abilities'
+    title: '<primary>Viewing Abilities'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to Home Menu</red>"
+        name: "<primary>Back to Home"
         material: BARRIER
         lore:
-          - '<gray>Click to return to the Home Menu</gray>'
+          - '<body>Click to return to the home menu.'
   # Some GUIs (such as the ability gui) have different ability sort options that are provided.
   # This allows for configuring those options.
   ability-sort-types:
     alphabetical:
       display-item:
-        name: "<red>Alphabetical Sort"
+        name: "<primary>Alphabetical Sort"
         material: BAMBOO_HANGING_SIGN
         lore:
-          - '<gray>Click to change how abilities are sorted.'
+          - '<body>Click to change how abilities are sorted.'
     innate-abilities:
       display-item:
-        name: "<red>Innate Abilities Sort"
+        name: "<primary>Innate Abilities Sort"
         material: REDSTONE
         lore:
-          - '<gray>Click to change how abilities are sorted.'
+          - '<body>Click to change how abilities are sorted.'
     skill:
       display-item:
-        name: "<red>Sort by Skill"
+        name: "<primary>Sort by Skill"
         material: DIAMOND_SWORD
         lore:
-          - '<gray>Click to change how abilities are sorted.'
+          - '<body>Click to change how abilities are sorted.'
     unlocked-abilities:
       display-item:
-        name: "<red>Sort by Unlock Level"
+        name: "<primary>Sort by Unlock Level"
         material: DIAMOND
         lore:
-          - '<gray>Click to change how abilities are sorted.'
+          - '<body>Click to change how abilities are sorted.'
     upgradable-abilities:
       display-item:
-        name: "<red>Sort by Abilities you can upgrade"
+        name: "<primary>Sort by Abilities you can upgrade"
         material: DIAMOND
         lore:
-          - '<gray>Click to change how abilities are sorted.'
+          - '<body>Click to change how abilities are sorted.'
     passive-abilities:
       display-item:
-        name: "<red>Sort by Passive Abilities"
+        name: "<primary>Sort by Passive Abilities"
         material: GHAST_TEAR
         lore:
-          - '<gray>Click to change how abilities are sorted.'
+          - '<body>Click to change how abilities are sorted.'
     active-abilities:
       display-item:
-        name: "<red>Sort by Active Abilities"
+        name: "<primary>Sort by Active Abilities"
         material: STONE_SWORD
         lore:
-          - '<gray>Click to change how abilities are sorted.'
+          - '<body>Click to change how abilities are sorted.'
     loadout-order:
       display-item:
-        name: "<red>Sort by Loadout Order"
+        name: "<primary>Sort by Loadout Order"
         material: PAPER
         lore:
-          - '<gray>Click to change how abilities are sorted.'
+          - '<body>Click to change how abilities are sorted.'
   # This GUI allows players to view and edit their skills.
   skill-gui:
-    title: '<gold>Viewing Skills'
+    title: '<primary>Viewing Skills'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to Home Menu</red>"
+        name: "<primary>Back to Home"
         material: BARRIER
         lore:
-          - '<gray>Click to return to the Home Menu</gray>'
+          - '<body>Click to return to the home menu.'
   # Some GUIs (such as the skills gui) have different skill sort options that are provided.
   # This allows for configuring those options.
   skill-sort-types:
     alphabetical:
       display-item:
-        name: "<red>Alphabetical Sort"
+        name: "<primary>Alphabetical Sort"
         material: BAMBOO_HANGING_SIGN
         lore:
-          - '<gray>Click to change how skills are sorted.'
+          - '<body>Click to change how skills are sorted.'
     skill-level:
       display-item:
-        name: "<red>Skill Level Sort"
+        name: "<primary>Skill Level Sort"
         material: DIAMOND_ORE
         lore:
-          - '<gray>Click to change how skills are sorted.'
+          - '<body>Click to change how skills are sorted.'
     experience-to-level:
       display-item:
-        name: "<red>Skill Remaining Exp To Level Sort"
+        name: "<primary>Skill Remaining Exp To Level Sort"
         material: EXPERIENCE_BOTTLE
         lore:
-          - '<gray>Click to change how skills are sorted.'
+          - '<body>Click to change how skills are sorted.'
   # This GUI allows for editing an ability's attributes. Since these items are shared
   # across multiple GUIs, they are configured under the ability.ability-attribute section.
   ability-edit-gui:
-    title: '<gold>Editing <ability>'
+    title: '<primary>Editing <ability>'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to Ability Selection</red>"
+        name: "<primary>Back to Viewing Abilities"
         material: BARRIER
         lore:
-          - '<gray>Click to return to the Ability Selection</gray>'
+          - '<body>Click to return to the ability list.'
     # Allows configuration of displaying different states of a location attribute (such as Remote Transfer)
     location-attribute:
       # What item should be used if there is no location saved for this attribute?
       no-location-saved:
         display-item:
-          name: "<gold>Bound Location</gold>"
+          name: "<primary>Bound Location"
           material: CHERRY_SIGN
           lore:
-            - "<gray>You currently don't have a bound location for this ability."
+            - "<body>You currently don't have a bound location for this ability."
       # What item should be used if there is a location saved for this attribute?
       location-saved:
         display-item:
-          name: "<gold>Bound Location</gold>"
+          name: "<primary>Bound Location"
           material: CHERRY_SIGN
           # Supports the following placeholders: <location>, <location-x>, <location-y>, <location-z>, <location-world>
           lore:
-            - "<gray>This ability's bound location is:"
-            - "<gray>X: <gold><location-x>"
-            - "<gray>Y: <gold><location-y>"
-            - "<gray>Z: <gold><location-z>"
-            - "<gray>World: <gold><location-world>"
+            - "<body>This ability's bound location is:"
+            - "<body>X: <primary><location-x>"
+            - "<body>Y: <primary><location-y>"
+            - "<body>Z: <primary><location-z>"
+            - "<body>World: <primary><location-world>"
     # Allows configuration of the ability's tier.
     # This may have additional lore appended to it based on things like upgrade eligibility, upgrade cost,
     # upgrade quest progress, etc.
@@ -554,55 +571,55 @@ gui:
     # in ability.lore
     tier-attribute:
       display-item:
-        name: "<gold>Ability Tier Upgrade</gold>"
+        name: "<primary>Ability Tier Upgrade"
         material: IRON_INGOT
         # Supports the following placeholders: <tier>
         lore:
-          - "<gray>Tier: <gold><tier>"
+          - "<body>Tier: <primary><tier>"
     toggled-off-attribute:
       toggled-off:
         display-item:
-          name: "<gold>Ability Toggle Status</gold>"
+          name: "<primary>Ability Toggle Status"
           material: REDSTONE_BLOCK
           lore:
-            - "<gray>Ability is currently <red>DISABLED</red>.</gray>"
-            - "<gray>Click to <green>ENABLE</green> this ability.</gray>"
+            - "<body>Ability is currently <negative>DISABLED</negative>."
+            - "<body>Click to <positive>ENABLE</positive> this ability."
       toggled-on:
         display-item:
-          name: "<gold>Ability Toggle Status</gold>"
+          name: "<primary>Ability Toggle Status"
           material: EMERALD_BLOCK
           lore:
-            - "<gray>Ability is currently <green>ENABLED</green>.</gray>"
-            - "<gray>Click to <red>DISABLE</red> this ability.</gray>"
+            - "<body>Ability is currently <positive>ENABLED</positive>."
+            - "<body>Click to <negative>DISABLE</negative> this ability."
     remote-transfer-block-toggle-attribute:
       display-item:
         material: CHEST
-        name: "<gold>Block Filter"
+        name: "<primary>Block Filter"
         lore:
-          - "<gray><gold>Click</gold> to edit what blocks can"
-          - "<gray>and can't be transferred."
+          - "<body><hint>Click</hint> to edit what blocks can"
+          - "<body>and can't be transferred."
     mass-harvest-pull-items-attribute:
       toggled-off:
         display-item:
-          name: "<gold>Mass Harvest Pull Status</gold>"
+          name: "<primary>Mass Harvest Pull Status"
           material: STONE_HOE
           lore:
-            - "<gray>Mass Harvest <red>will NOT</red> pull</gray>"
-            - "<gray>dropped items towards you.</gray>"
-            - "<gray>Click to <green>ENABLE</green> the pull effect.</gray>"
+            - "<body>Mass Harvest <negative>will NOT</negative> pull"
+            - "<body>dropped items towards you."
+            - "<body>Click to <positive>ENABLE</positive> the pull effect."
       toggled-on:
         display-item:
-          name: "<gold>Mass Harvest Pull Status</gold>"
+          name: "<primary>Mass Harvest Pull Status"
           material: IRON_HOE
           lore:
-            - "<gray>Mass Harvest <green>will currently</green> pull</gray>"
-            - "<gray>dropped items towards you.</gray>"
-            - "<gray>Click to <red>DISABLE</red> the pull effect.</gray>"
+            - "<body>Mass Harvest <positive>will currently</positive> pull"
+            - "<body>dropped items towards you."
+            - "<body>Click to <negative>DISABLE</negative> the pull effect."
   # This GUI allows for players to view the current state of their loadout
   loadout-gui:
     # The title of the gui.
     # Supported placeholders: <loadout-name>
-    title: "<gold>Editing Loadout: <loadout-name>"
+    title: "<primary>Editing Loadout: <loadout-name>"
     # This slot shows a slot that players
     invalid-slot:
       display-item:
@@ -613,54 +630,54 @@ gui:
       # The item displayed is from the ability's display, but this lore is appended to let players know what to do
       additional-lore:
         - ''
-        - '<gray>Click to change what ability is in this slot.'
+        - '<body>Click to change what ability is in this slot.'
     # Configure the slot players can click to add an ability to an empty slot in the loadout.
     free-ability-slot:
       display-item:
         material: CYAN_STAINED_GLASS_PANE
-        name: '<gold>Empty Loadout Slot'
+        name: '<primary>Empty Loadout Slot'
         lore:
           - ''
-          - '<gray>Click to change what ability is in this slot.'
+          - '<body>Click to change what ability is in this slot.'
     # Configure the slot players can click to open the menu to edit their loadout displays
     loadout-display-open-slot:
       display-item:
         material: OAK_HANGING_SIGN
-        name: '<gold>Edit Loadout Display'
+        name: '<primary>Edit Loadout Display'
         lore:
-          - '<gold>Click <gray>to change how this loadout is displayed.'
+          - '<hint>Click <body>to change how this loadout is displayed.'
     # Configure the combo info slot shown at the top-center of the combo zone.
     # This is a static informational item — it cannot be clicked.
     combo-info-slot:
       display-item:
         material: KNOWLEDGE_BOOK
-        name: '<gold>Combo Abilities'
+        name: '<primary>Combo Abilities'
         lore:
-          - '<gray>Active abilities are triggered'
-          - '<gray>by performing click combos.'
+          - '<body>Active abilities are triggered'
+          - '<body>by performing click combos.'
           - ''
-          - '<yellow>R <dark_gray>= <gray>Right Click'
-          - '<aqua>L <dark_gray>= <gray>Left Click'
+          - '<yellow>R <dark_gray>= <body>Right Click'
+          - '<aqua>L <dark_gray>= <body>Left Click'
           - ''
-          - '<gray>Slot 1: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <yellow>R'
-          - '<gray>Slot 2: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <aqua>L'
-          - '<gray>Slot 3: <yellow>R<dark_gray> → <aqua>L<dark_gray> → <yellow>R'
+          - '<body>Slot 1: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <yellow>R'
+          - '<body>Slot 2: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <aqua>L'
+          - '<body>Slot 3: <yellow>R<dark_gray> → <aqua>L<dark_gray> → <yellow>R'
     # Configure the light-blue filler item used in the combo row.
     # These panes double as the combo info legend — hovering any filler explains the system.
     combo-zone-filler:
       display-item:
         material: LIGHT_BLUE_STAINED_GLASS_PANE
-        name: '<gold>Combo Abilities'
+        name: '<primary>Combo Abilities'
         lore:
-          - '<gray>Active abilities are triggered'
-          - '<gray>by performing click combos.'
+          - '<body>Active abilities are triggered'
+          - '<body>by performing click combos.'
           - ''
-          - '<yellow>R <dark_gray>= <gray>Right Click'
-          - '<aqua>L <dark_gray>= <gray>Left Click'
+          - '<yellow>R <dark_gray>= <body>Right Click'
+          - '<aqua>L <dark_gray>= <body>Left Click'
           - ''
-          - '<gray>Slot 1: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <yellow>R'
-          - '<gray>Slot 2: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <aqua>L'
-          - '<gray>Slot 3: <yellow>R<dark_gray> → <aqua>L<dark_gray> → <yellow>R'
+          - '<body>Slot 1: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <yellow>R'
+          - '<body>Slot 2: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <aqua>L'
+          - '<body>Slot 3: <yellow>R<dark_gray> → <aqua>L<dark_gray> → <yellow>R'
     # Configure the active ability combo slots in the combo zone.
     active-combo-slot:
       # Additional lore appended to occupied active combo slots.
@@ -668,27 +685,27 @@ gui:
       occupied:
         additional-lore:
           - ''
-          - '<gray>Combo: <combo-pattern>'
+          - '<body>Combo: <combo-pattern>'
           - '<dark_gray>Press <white>1<dark_gray>/<white>2<dark_gray>/<white>3 <dark_gray>to move to that slot'
-          - '<gray>Click to change ability'
+          - '<body>Click to change ability'
         # Appended after additional-lore only when the ability has an active upgrade quest.
         # Supported placeholders: <upgrade-quest-progress>
         upgrade-quest-progress-lore:
           - ''
-          - '<gray>Upgrade Quest: <upgrade-quest-progress>'
+          - '<body>Upgrade Quest: <upgrade-quest-progress>'
       # Display item for empty active combo slots.
       # Supported placeholders: <combo-pattern> (e.g. "R → R → R")
       empty:
         display-item:
           material: ARMOR_STAND
-          name: '<gray>Empty Combo Slot'
+          name: '<ability-innate>Empty Combo Slot'
           lore:
-            - '<gray>Combo: <combo-pattern>'
+            - '<body>Combo: <combo-pattern>'
             - ''
-            - '<gray>Assign an active ability to'
-            - '<gray>this slot to use this combo.'
+            - '<body>Assign an active ability to'
+            - '<body>this slot to use this combo.'
             - ''
-            - '<gray>Click to assign'
+            - '<body>Click to assign'
       # Localizable display strings for each combo pattern.
       # Colors, arrows, and characters are fully configurable.
       pattern:
@@ -699,103 +716,104 @@ gui:
     previous-gui-button:
       display-item:
         material: BARRIER
-        name: '<red>Return to loadout selection</red>'
-        lore: '<gray>Click to return to the loadout selection screen.</gray>'
+        name: '<primary>Back to Viewing Loadouts'
+        lore:
+          - '<body>Click to return to the loadout list.'
   # This GUI allows for players to choose which loadout they want to set as active or edit
   loadout-selection-gui:
     # The title of the gui
-    title: '<gold>Viewing loadouts'
+    title: '<primary>Viewing Loadouts'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to Home Menu</red>"
+        name: "<primary>Back to Home"
         material: BARRIER
         lore:
-          - '<gray>Click to return to the Home Menu</gray>'
+          - '<body>Click to return to the home menu.'
     # Configure the slot for any bedrock players using geyser
     # Uses the loadout's display item for the slot so the <material> field will do nothing here.
     loadout-selection-slot-geyser:
       # Configure the slot for any bedrock players using geyser when the current loadout is active
       active-loadout:
-        name: '<gold><name>'
+        name: '<primary><name>'
         lore:
-          - '<gray>Click to edit this loadout.'
-          - '<gray>This is your currently selected loadout.'
+          - '<body>Click to edit this loadout.'
+          - '<body>This is your currently selected loadout.'
         enchantments:
           POWER: 1
         item-flags:
           - 'HIDE_ENCHANTS'
       # Configure the slot for any bedrock players using geyser when the current loadout is inactive
       inactive-loadout:
-        name: '<gold><name>'
+        name: '<primary><name>'
         lore:
-          - '<gray>Click to edit this loadout.'
+          - '<body>Click to edit this loadout.'
     # Configure the slot for any players not using geyser
     # Uses the loadout's display item for the slot so the <material> field will do nothing here.
     loadout-selection-slot:
       # Configure the slot for any players not using geyser when the current loadout is active
       active-loadout:
-        name: '<gold><name>'
+        name: '<primary><name>'
         lore:
-          - '<gray>Left click to edit this loadout.'
-          - '<gray>Right click to set this loadout as active.'
-          - '<gray>This is your currently selected loadout.'
+          - '<body>Left click to edit this loadout.'
+          - '<body>Right click to set this loadout as active.'
+          - '<body>This is your currently selected loadout.'
         enchantments:
           POWER: 1
         item-flags:
           - 'HIDE_ENCHANTS'
       # Configure the slot for any players not using geyser when the current loadout is inactive
       inactive-loadout:
-        name: '<gold><name>'
+        name: '<primary><name>'
         lore:
-          - '<gray>Left click to edit this loadout.'
-          - '<gray>Right click to set this loadout as active.'
+          - '<body>Left click to edit this loadout.'
+          - '<body>Right click to set this loadout as active.'
     # A line appended to every loadout selection slot showing which active (combo) abilities are
     # currently in that loadout. Supported placeholder: <active-abilities>
     # This line is only added when at least one active ability is assigned.
-    active-abilities-preview: '<gray>Actives: <active-abilities>'
+    active-abilities-preview: '<body>Actives: <active-abilities>'
   # This GUI allows for selecting different editing options for a given loadout
   loadout-display-home-gui:
     # The title of the GUI
     # Supports the following placeholders: <loadout-name>
-    title: "<gold>Editing Loadout <loadout-name>"
+    title: "<primary>Editing Loadout <loadout-name>"
     # Configure the slot players can click to edit the name of their loadout
     edit-name-slot:
       # What message should be sent to players to prompt them for a new name in chat?
-      name-input-request-prompt: '<gray>Please type in chat the name you want this loadout to be called, or type <gold>cancel</gold> to cancel:'
+      name-input-request-prompt: '<body>Please type in chat the name you want this loadout to be called, or type <primary>cancel</primary> to cancel:'
       # How to display this slot in a GUI?
       display-item:
         material: OAK_HANGING_SIGN
-        name: '<gold>Loadout Display Name'
+        name: '<primary>Loadout Display Name'
         lore:
-          - "<gold>Click <gray>to change what the loadout's name is."
+          - "<hint>Click <body>to change what the loadout's name is."
     # Configure the slot players can click to edit the display item of their loadout
     edit-display-item-slot:
       # This display item doesn't use the `material` key, instead the value is pulled from whatever
       # item is currently being used as the display for the loadout,
       display-item:
-        name: '<gold>Loadout Display Item'
+        name: '<primary>Loadout Display Item'
         lore:
-          - '<gold>Click <gray>to change what item is used to display the loadout.'
+          - '<hint>Click <body>to change what item is used to display the loadout.'
     # Configure the slot players can click to toggle the laodout being active
     toggle-loadout-slot:
       # Configure the slot to be shown to players when the loadout they're viewing is currently active.
       active-display-item:
         material: GREEN_STAINED_GLASS_PANE
-        name: '<gold>Loadout Active State'
+        name: '<primary>Loadout Active State'
         lore:
-          - '<gray>This loadout is currently <green>active</green>.'
+          - '<body>This loadout is currently <positive>active</positive>.'
       # Configure the slot to be shown to players when the loadout they're viewing is currently inactive.
       inactive-display-item:
         material: RED_STAINED_GLASS_PANE
-        name: '<gold>Loadout Active State'
+        name: '<primary>Loadout Active State'
         lore:
-          - '<gray>This loadout is currently <red>inactive</red>.'
-          - '<gray>Click to set this loadout as your active loadout.'
+          - '<body>This loadout is currently <negative>inactive</negative>.'
+          - '<body>Click to set this loadout as your active loadout.'
   # This GUI allows for players to put an item into the GUI to set it as the display item for their GUI
   loadout-display-item-input-gui:
-    title: '<gold>Input Loadout Display Item'
+    title: '<primary>Input Loadout Display Item'
     # Configure the slot that surrounds the input slot
     item-input-highlight-slot:
       display-item:
@@ -805,97 +823,97 @@ gui:
     cancel-item-edit-slot:
       display-item:
         material: BARRIER
-        name: '<gold>Cancel editing loadout display item.'
+        name: '<primary>Cancel editing loadout display item.'
         lore:
-          - '<gold>Click <gray>to cancel editing loadout display item.'
+          - '<hint>Click <body>to cancel editing loadout display item.'
     # Configure the slot players can click to confirm the loadout's new display item
     confirm-item-edit-slot:
       display-item:
         material: GREEN_STAINED_GLASS_PANE
-        name: '<gold>Loadout Display Item'
+        name: '<primary>Loadout Display Item'
         lore:
-          - '<gold>Click <gray>to change what item is used to display the loadout.'
+          - '<hint>Click <body>to change what item is used to display the loadout.'
   # This GUI allows players to select abilities to put into their loadouts.
   loadout-ability-select-gui:
-    title: '<gold>Select ability to use.'
+    title: '<primary>Select ability to use.'
     # Configure the slot players click to go back to the loadout menu.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to editing Loadout</red>"
+        name: "<primary>Back to Editing Loadout"
         material: BARRIER
         lore:
-          - '<gray>Click to return to editing your Loadout</gray>'
+          - '<body>Click to return to your loadout.'
     # Configure the slot players click to add an ability to their loadout.
     ability-select-slot:
       # The item displayed is from the ability's display, but this lore is appended to let players know what to do
       additional-lore:
-        - '<gray>Click to add this ability to your loadout.</gray>'
+        - '<body>Click to add this ability to your loadout.'
   # This GUI allows players to toggle their different settings.
   player-setting-gui:
     # The title of the gui
-    title: '<gold>Editing Settings'
+    title: '<primary>Editing Settings'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to Home Menu</red>"
+        name: "<primary>Back to Home"
         material: BARRIER
         lore:
-          - '<gray>Click to return to the Home Menu</gray>'
+          - '<body>Click to return to the home menu.'
     # Configure the slot representing the experience display setting controlling how players can get experience updates visually.
     experience-display-setting-slot:
       # Configure the setting display for when the setting is set to BOSS_BAR
       boss-bar:
         display-item:
           material: DRAGON_HEAD
-          name: '<gold>Experience Display'
+          name: '<primary>Experience Display'
           lore:
-            - '<gray>Displays gained experience through a boss bar.'
+            - '<body>Displays gained experience through a boss bar.'
             - ''
-            - '<gold>Click <gray>to change this display setting.'
+            - '<hint>Click <body>to change this display setting.'
       # Configure the setting display for when the setting is set to ACTION_BAR
       action-bar:
         display-item:
           material: BLAZE_ROD
-          name: '<gold>Experience Display'
+          name: '<primary>Experience Display'
           lore:
-            - '<gray>Displays gained experience through an action abr.'
+            - '<body>Displays gained experience through an action bar.'
             - ''
-            - '<gold>Click <gray>to change this display setting.'
+            - '<hint>Click <body>to change this display setting.'
     # Configure the slot representing the setting controlling if picked up items will go into a player's empty hand or not.
     keep-hand-empty-setting-slot:
       # Configure the setting display for when the setting is ENABLED
       enabled:
         display-item:
           material: GREEN_STAINED_GLASS_PANE
-          name: '<gold>Keep Hand Empty'
+          name: '<primary>Keep Hand Empty'
           lore:
-            - '<gray>Status: <green>Enabled</green>.'
-            - '<gray>Prevents picked up items from going into your hand if it is empty.'
+            - '<body>Status: <positive>Enabled</positive>.'
+            - '<body>Prevents picked up items from going into your hand if it is empty.'
             - ''
-            - '<gold>Click <gray>to change this setting.'
+            - '<hint>Click <body>to change this setting.'
       # Configure the setting display for when the setting is DISABLED
       disabled:
         display-item:
           material: RED_STAINED_GLASS_PANE
-          name: '<gold>Keep Hand Empty'
+          name: '<primary>Keep Hand Empty'
           lore:
-            - '<gray>Status: <red>Disabled</red>.'
-            - '<gray>Lets picked up items go into your hand.'
+            - '<body>Status: <negative>Disabled</negative>.'
+            - '<body>Lets picked up items go into your hand.'
             - ''
-            - '<gold>Click <gray>to change this setting.'
+            - '<hint>Click <body>to change this setting.'
     # Configure the slot representing the setting controlling if a dedicated hotbar slot will skip having items automatically added to it.
     keep-hotbar-slot-empty-setting-slot:
       # Configure the setting display for when the setting is DISABLED
       disabled:
         display-item:
           material: RED_SHULKER_BOX
-          name: '<gold>Keep Hotbar Slot Empty'
+          name: '<primary>Keep Hotbar Slot Empty'
           lore:
-            - '<gray>Status: <red>Disabled</red>.'
+            - '<body>Status: <negative>Disabled</negative>.'
             - ''
-            - '<gold>Click <gray>to enable this setting.'
+            - '<hint>Click <body>to enable this setting.'
       # Configure the setting display for when the setting is ENABLED for a specific slot
       enabled:
         # The count of the display item will be automatically incremented to indicate what slot is being reserved.
@@ -903,53 +921,53 @@ gui:
         # Supported placeholders: <slot>
         display-item:
           material: GREEN_SHULKER_BOX
-          name: '<gold>Keep Hotbar Slot Empty'
+          name: '<primary>Keep Hotbar Slot Empty'
           lore:
-            - '<gray>Empty Slot: <gold><slot></gold>.'
-            - '<gray>Prevents picked up items going into the designated slot.'
+            - '<body>Empty Slot: <primary><slot>.'
+            - '<body>Prevents picked up items going into the designated slot.'
             - ''
-            - '<gold>Click <gray>to change this setting.'
+            - '<hint>Click <body>to change this setting.'
     # Configure the slot representing the setting controlling the player's McRPG locale
     locale-setting-slot:
       # Configure the setting display for when the setting is set to use the player's client locale.
       client-locale:
         display-item:
           material: DIRT
-          name: '<gold>Client Language'
+          name: '<primary>Client Language'
           lore:
-            - '<gray>Tries to use your client language for McRPG where possible.'
+            - '<body>Tries to use your client language for McRPG where possible.'
             - ''
-            - '<gold>Click <gray>to change this display setting.'
+            - '<hint>Click <body>to change this display setting.'
       # Configure the setting display for when the setting is set to use the server's default locale.
       server-locale:
         display-item:
           material: COMPASS
-          name: '<gold>Server Language'
+          name: '<primary>Server Language'
           lore:
-            - '<gray>Tries to use the server default language for McRPG where possible.'
+            - '<body>Tries to use the server default language for McRPG where possible.'
             - ''
-            - '<gold>Click <gray>to change this display setting.'
+            - '<hint>Click <body>to change this display setting.'
       # Configure the setting display for when no other locale option is used
       fallback-locale:
         display-item:
           material: OAK_HANGING_SIGN
-          name: "<gold><locale>"
+          name: "<primary><locale>"
           lore:
-            - "<gray>Tries to use <locale> for McRPG where possible."
+            - "<body>Tries to use <locale> for McRPG where possible."
             - ''
-            - '<gold>Click <gray>to change this display setting.'
+            - '<hint>Click <body>to change this display setting.'
     # Configure the slot representing the setting if the player needs an empty offhand to activate an ability
     require-empty-offhand-to-active-ability-slot:
       # Configure the setting display for when the setting is DISABLED
       disabled:
         display-item:
           material: RED_STAINED_GLASS_PANE
-          name: '<gold>Require Empty Offhand'
+          name: '<primary>Require Empty Offhand'
           lore:
-            - '<gray>Status: <red>Disabled</red>.'
-            - '<gray>Abilities can not be readied if you have an item in your offhand.'
+            - '<body>Status: <negative>Disabled</negative>.'
+            - '<body>Abilities can not be readied if you have an item in your offhand.'
             - ''
-            - '<gold>Click <gray>to enable this setting.'
+            - '<hint>Click <body>to enable this setting.'
       # Configure the setting display for when the setting is ENABLED for a specific slot
       enabled:
         # The count of the display item will be automatically incremented to indicate what slot is being reserved.
@@ -957,70 +975,70 @@ gui:
         # Supported placeholders: <slot>
         display-item:
           material: GREEN_STAINED_GLASS_PANE
-          name: '<gold>Require Empty Offhand'
+          name: '<primary>Require Empty Offhand'
           lore:
-            - '<gray>Status: <green>Enabled</green>.'
-            - '<gray>Abilities can be readied even with an item in your offhand.'
+            - '<body>Status: <positive>Enabled</positive>.'
+            - '<body>Abilities can be readied even with an item in your offhand.'
             - ''
-            - '<gold>Click <gray>to change this setting.'
+            - '<hint>Click <body>to change this setting.'
     # Configure the slot representing the setting to disable consumption of rested and boosted experience
     disable-bonus-experience-consumption-setting-slot:
       # Configure the setting display for when the setting is ENABLED (consumption is disabled)
       enabled:
         display-item:
           material: RED_STAINED_GLASS_PANE
-          name: '<gold>Bonus Experience Consumption'
+          name: '<primary>Bonus Experience Consumption'
           lore:
-            - '<gray>Status: <red>Disabled</red>.'
-            - '<gray>Rested and boosted experience will not be consumed.'
-            - '<gray>You will not receive bonus experience while this is enabled.'
+            - '<body>Status: <negative>Disabled</negative>.'
+            - '<body>Rested and boosted experience will not be consumed.'
+            - '<body>You will not receive bonus experience while this is enabled.'
             - ''
-            - '<gold>Click <gray>to enable bonus experience consumption.'
+            - '<hint>Click <body>to enable bonus experience consumption.'
       # Configure the setting display for when the setting is DISABLED (consumption is enabled)
       disabled:
         display-item:
           material: GREEN_STAINED_GLASS_PANE
-          name: '<gold>Bonus Experience Consumption'
+          name: '<primary>Bonus Experience Consumption'
           lore:
-            - '<gray>Status: <green>Enabled</green>.'
-            - '<gray>Rested and boosted experience will be consumed normally.'
-            - '<gray>You will receive bonus experience from your pools.'
+            - '<body>Status: <positive>Enabled</positive>.'
+            - '<body>Rested and boosted experience will be consumed normally.'
+            - '<body>You will receive bonus experience from your pools.'
             - ''
-            - '<gold>Click <gray>to disable bonus experience consumption.'
+            - '<hint>Click <body>to disable bonus experience consumption.'
     # Configure the slot representing the quest progress notification setting
     quest-progress-notification-setting-slot:
       # Configure the setting display for when the setting is ENABLED (notifications are on)
       enabled:
         display-item:
           material: GREEN_STAINED_GLASS_PANE
-          name: '<gold>Quest Progress Notifications'
+          name: '<primary>Quest Progress Notifications'
           lore:
-            - '<gray>Status: <green>Enabled</green>.'
-            - '<gray>You will receive chat notifications when you'
-            - '<gray>reach progress milestones on quest objectives.'
+            - '<body>Status: <positive>Enabled</positive>.'
+            - '<body>You will receive chat notifications when you'
+            - '<body>reach progress milestones on quest objectives.'
             - ''
-            - '<gold>Click <gray>to disable these notifications.'
+            - '<hint>Click <body>to disable these notifications.'
       # Configure the setting display for when the setting is DISABLED (notifications are off)
       disabled:
         display-item:
           material: RED_STAINED_GLASS_PANE
-          name: '<gold>Quest Progress Notifications'
+          name: '<primary>Quest Progress Notifications'
           lore:
-            - '<gray>Status: <red>Disabled</red>.'
-            - '<gray>You will not receive chat notifications for'
-            - '<gray>quest objective progress milestones.'
+            - '<body>Status: <negative>Disabled</negative>.'
+            - '<body>You will not receive chat notifications for'
+            - '<body>quest objective progress milestones.'
             - ''
-            - '<gold>Click <gray>to enable these notifications.'
+            - '<hint>Click <body>to enable these notifications.'
   # This GUI allows players to configure the allowlist of blocks for Remote Transfer.
   remote-transfer-gui:
-    title: "<gold>Toggling Remote Transfer Items"
+    title: "<primary>Toggling Remote Transfer Items"
     previous-gui-button:
       display-item:
-        name: "<red>Return to Editing <ability></red>"
+        name: "<primary>Back to Editing <ability>"
         material: BARRIER
         # Supports the following placeholders: <ability>
         lore:
-          - '<gray>Click to return to editing <gold><ability></gold>'
+          - '<body>Click to return to editing <primary><ability><body>.'
     # These categories should match exactly to the ones in the mining_configuration.yml.
     # The "all" category is an internal concept that acts as the combination of all configured categories.
     # If any category is defined in the mining_configuration.yml but not here, you will get errors.
@@ -1032,58 +1050,58 @@ gui:
           # The material to use for the category-button when displaying this category.
           material: ENDER_CHEST
           # Supports the following placeholders: <remote-transfer-category>
-          name: "<red>Click to change sort category."
+          name: "<primary>Click to change sort category."
           lore:
-            - "<gray>Current Category: <gold><remote-transfer-category>"
+            - "<body>Current Category: <primary><remote-transfer-category>"
       nether:
         name: "Nether"
         display-item:
           material: MAGMA_BLOCK
-          name: "<red>Click to change sort category."
+          name: "<primary>Click to change sort category."
           lore:
-            - "<gray>Current Category: <gold><remote-transfer-category>"
+            - "<body>Current Category: <primary><remote-transfer-category>"
       caves:
         name: "Caves"
         display-item:
           material: AMETHYST_BLOCK
-          name: "<red>Click to change sort category."
+          name: "<primary>Click to change sort category."
           lore:
-            - "<gray>Current Category: <gold><remote-transfer-category>"
+            - "<body>Current Category: <primary><remote-transfer-category>"
       end:
         name: "End"
         display-item:
           material: ENDER_PEARL
-          name: "<red>Click to change sort category."
+          name: "<primary>Click to change sort category."
           lore:
-            - "<gray>Current Category: <gold><remote-transfer-category>"
+            - "<body>Current Category: <primary><remote-transfer-category>"
       ocean:
         name: "Ocean"
         display-item:
           material: PRISMARINE
-          name: "<red>Click to change sort category."
+          name: "<primary>Click to change sort category."
           lore:
-            - "<gray>Current Category: <gold><remote-transfer-category>"
+            - "<body>Current Category: <primary><remote-transfer-category>"
       ores:
         name: "Ores"
         display-item:
           material: DIAMOND_ORE
-          name: "<red>Click to change sort category."
+          name: "<primary>Click to change sort category."
           lore:
-            - "<gray>Current Category: <gold><remote-transfer-category>"
+            - "<body>Current Category: <primary><remote-transfer-category>"
       overworld:
         name: "Overworld"
         display-item:
           material: MOSSY_COBBLESTONE
-          name: "<red>Click to change sort category."
+          name: "<primary>Click to change sort category."
           lore:
-            - "<gray>Current Category: <gold><remote-transfer-category>"
+            - "<body>Current Category: <primary><remote-transfer-category>"
       terracotta:
         name: "Terracotta"
         display-item:
           material: TERRACOTTA
-          name: "<red>Click to change sort category."
+          name: "<primary>Click to change sort category."
           lore:
-            - "<gray>Current Category: <gold><remote-transfer-category>"
+            - "<body>Current Category: <primary><remote-transfer-category>"
     # What button should be used to display an option for a category
     # This will be all the allowed items configured in the mining_configuration.yml
     # The display item will be the item configured over there with no edits to the name.
@@ -1092,177 +1110,177 @@ gui:
       option-enabled:
         # Supports the following placeholders: <remote-transfer-category>
         display-item:
-          name: '<gold><item-type>'
+          name: '<primary><item-type>'
           settings:
             glowing: true
           lore:
-            - '<gray>Click to toggle the filter state for this item.'
-            - '<gray>Item is currently <green>enabled</green>.'
-            - '<gray>Category: <gold><remote-transfer-category>'
+            - '<body>Click to toggle the filter state for this item.'
+            - '<body>Item is currently <positive>enabled</positive>.'
+            - '<body>Category: <primary><remote-transfer-category>'
       # What lore to add if the option is currently disabled.
       option-disabled:
         # Supports the following placeholders: <remote-transfer-category>
         display-item:
-          name: '<gold><item-type>'
+          name: '<primary><item-type>'
           lore:
-            - '<gray>Click to toggle the filter state for this item.'
-            - '<gray>Item is currently <red>disabled</red>.'
-            - '<gray>Category: <gold><remote-transfer-category>'
+            - '<body>Click to toggle the filter state for this item.'
+            - '<body>Item is currently <negative>disabled</negative>.'
+            - '<body>Category: <primary><remote-transfer-category>'
     # Configure the slot to toggle all blocks in an entire category
     toggle-entire-category-slot:
       # Configure the slot to be displayed to enable all items in the category.
       toggle-to-be-enabled:
         display-item:
           material: GREEN_STAINED_GLASS_PANE
-          name: '<gold>Click to toggle all items</gold>'
+          name: '<primary>Click to toggle all items'
           lore:
-            - '<gray>Click to toggle all items in the current category to be <green>enabled</green>.'
+            - '<body>Click to toggle all items in the current category to be <positive>enabled</positive>.'
       # Configure the slot to be displayed to disabled all items in the category.
       toggle-to-be-disabled:
         display-item:
           material: RED_STAINED_GLASS_PANE
-          name: '<gold>Click to toggle all items</gold>'
+          name: '<primary>Click to toggle all items'
           lore:
-            - '<gray>Click to toggle all items in the current category to be <red>disabled</red>.'
+            - '<body>Click to toggle all items in the current category to be <negative>disabled</negative>.'
   # This GUI allows players to view all of their banked special types of exp
   # such as rested, boosted, redeemable, etc.
   experience-bank-gui:
     # What should the displayed title of this GUI be
-    title: '<black>Experience Bank'
+    title: '<primary>Experience Bank'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to Home Menu</red>"
+        name: "<primary>Back to Home"
         material: BARRIER
         lore:
-          - '<gray>Click to return to the Home Menu</gray>'
+          - '<body>Click to return to the home menu.'
     # This slot allows players to open the GUI for redeeming redeemable experience
     redeemable-experience-slot:
       display-item:
-        name: "<gold>Redeemable Experience"
+        name: "<primary>Redeemable Experience"
         material: EXPERIENCE_BOTTLE
         lore:
-          - '<gray>Redeemable Experience: <gold><redeemable-experience>'
+          - '<body>Redeemable Experience: <primary><redeemable-experience>'
           - ''
-          - '<gold>Click <gray>to spend your redeemable experience.'
+          - '<hint>Click <body>to spend your redeemable experience.'
     # This slot allows players to open the GUI for redeeming redeemable levels
     redeemable-levels-slot:
       display-item:
-        name: "<gold>Redeemable Levels"
+        name: "<primary>Redeemable Levels"
         material: ENCHANTED_BOOK
         lore:
-          - '<gray>Redeemable Experience: <gold><redeemable-levels>'
+          - '<body>Redeemable Experience: <primary><redeemable-levels>'
           - ''
-          - '<gold>Click <gray>to spend your redeemable levels.'
+          - '<hint>Click <body>to spend your redeemable levels.'
         settings:
           glowing: true
     # This slot allows players to view information about their boosted experience
     boosted-experience-slot:
       example-base-amount: 100
       display-item:
-        name: "<gold>Boosted Experience Bank"
+        name: "<primary>Boosted Experience Bank"
         material: BEACON
         lore:
-          - '<gray>Boosted Experience: <gold><boosted-experience>'
-          - '<gray>Usage Rate: <gold><boosted-experience-usage-rate>'
+          - '<body>Boosted Experience: <primary><boosted-experience>'
+          - '<body>Usage Rate: <primary><boosted-experience-usage-rate>'
           - ''
-          - '<gray>All experience gained is boosted. This lasts'
-          - '<gray>until your banked experience is drained.'
-          - '<gray>Example: Gaining <gold><example-base-amount></gold> exp will be boosted to'
-          - '<gray>to <gold><example-boosted-amount></gold>, taking <gold><example-consumed-amount></gold> exp from the bank.'
+          - '<body>All experience gained is boosted. This lasts'
+          - '<body>until your banked experience is drained.'
+          - '<body>Example: Gaining <primary><example-base-amount></primary> exp will be boosted to'
+          - '<body>to <primary><example-boosted-amount></primary>, taking <primary><example-consumed-amount></primary> exp from the bank.'
     # This slot allows players to view information about their rested experience
     rested-experience-slot:
       example-base-amount: 100
       display-item:
-        name: "<gold>Rested Experience Bank"
+        name: "<primary>Rested Experience Bank"
         material: LIME_BED
         lore:
-          - '<gray>Rested Experience: <gold><rested-experience> Level(s)'
-          - '<gray>Usage Rate: <gold><rested-experience-usage-rate>'
+          - '<body>Rested Experience: <primary><rested-experience> Level(s)'
+          - '<body>Usage Rate: <primary><rested-experience-usage-rate>'
           - ''
-          - '<gray>All experience gained is boosted. This lasts'
-          - '<gray>until your banked experience is drained.'
-          - "<gray>Example: If you're <gold>50%</gold> towards next level,"
-          - "<gray>your exp gain will be <gold>x<rested-experience-usage-rate></gold> until you level up."
-          - '<gray>This will consume <gold>0.5</gold> from your banked levels'
+          - '<body>All experience gained is boosted. This lasts'
+          - '<body>until your banked experience is drained.'
+          - "<body>Example: If you're <primary>50%</primary> towards next level,"
+          - "<body>your exp gain will be <primary>x<rested-experience-usage-rate></primary> until you level up."
+          - '<body>This will consume <primary>0.5</primary> from your banked levels'
   redeemable-skill-select-gui:
-    title: "<black>Select Skill to Redeem Into"
+    title: "<primary>Select Skill to Redeem Into"
     # Configure the slot players click to go back to the experience bank gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to the Experience Bank</red>"
+        name: "<primary>Back to Experience Bank"
         material: BARRIER
         lore:
-          - '<gray>Click to return to the Experience Bank</gray>'
+          - '<body>Click to return to the experience bank.'
     # The lore to append to the Skill items from the skill-gui
     lore-to-append:
       - ''
-      - '<gray><gold>Click</gold> to spend your redeemable resources into this skill.'
+      - '<body><hint>Click</hint> to spend your redeemable resources into this skill.'
   redeemable-experience-gui:
-    title: "<black>Redeeming Experience into <skill>"
+    title: "<primary>Redeeming Experience into <skill>"
     # Configure the slot players click to go back to the redeemable skill selection gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to selecting a Skill</red>"
+        name: "<primary>Back to Select Skill"
         material: BARRIER
         lore:
-          - '<gray>Click to return to selecting a Skill./gray>'
+          - '<body>Click to return to skill selection.'
     redeem-amount:
       display-item:
         material: GREEN_STAINED_GLASS_PANE
-        name: '<gold>Redeem <redeemable-experience-to-spend> Experience'
+        name: '<primary>Redeem <redeemable-experience-to-spend> Experience'
         lore:
-          - '<gray><gold>Click</gold> to redeem <gold><redeemable-experience-to-spend></gold> experience'
-          - '<gray>into <gold><skill></gold>.'
+          - '<body><hint>Click</hint> to redeem <primary><redeemable-experience-to-spend></primary> experience'
+          - '<body>into <primary><skill></primary>.'
     redeem-all:
       display-item:
         material: PURPLE_STAINED_GLASS_PANE
-        name: '<gold>Redeem All Experience'
+        name: '<primary>Redeem All Experience'
         lore:
-          - '<gray><gold>Click</gold> to redeem all of your redeemable'
-          - '<gray>experience into <gold><skill></gold>.'
+          - '<body><hint>Click</hint> to redeem all of your redeemable'
+          - '<body>experience into <primary><skill></primary>.'
     redeem-custom:
       display-item:
         material: LIGHT_BLUE_STAINED_GLASS_PANE
-        name: '<gold>Input Redeem Amount'
+        name: '<primary>Input Redeem Amount'
         lore:
-          - '<gray><gold>Click</gold> to type in chat the amount of'
-          - '<gray>redeemable experience you want to redeem into <gold><skill></gold>.'
-      prompt: '<gray>Please type in chat how much rested experience you would like to redeem. You have <gold><redeemable-experience></gold> redeemable experience to spend.'
-      invalid-input: '<red>The input provided not a valid number. Please try redeeming again.'
+          - '<body><hint>Click</hint> to type in chat the amount of'
+          - '<body>redeemable experience you want to redeem into <primary><skill></primary>.'
+      prompt: '<body>Please type in chat how much redeemable experience you would like to redeem. You have <primary><redeemable-experience></primary> redeemable experience to spend.'
+      invalid-input: '<negative>The input provided not a valid number. Please try redeeming again.'
   redeemable-levels-gui:
-    title: "<black>Redeeming Levels into <skill>"
+    title: "<primary>Redeeming Levels into <skill>"
     # Configure the slot players click to go back to the redeemable skill selection gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
       display-item:
-        name: "<red>Return to selecting a Skill</red>"
+        name: "<primary>Back to Select Skill"
         material: BARRIER
         lore:
-          - '<gray>Click to return to selecting a Skill./gray>'
+          - '<body>Click to return to skill selection.'
     redeem-amount:
       display-item:
         material: GREEN_STAINED_GLASS_PANE
-        name: '<gold>Redeem <redeemable-levels-to-spend> Levels'
+        name: '<primary>Redeem <redeemable-levels-to-spend> Levels'
         lore:
-          - '<gray><gold>Click</gold> to redeem <gold><redeemable-levels-to-spend></gold> levels'
-          - '<gray>into <gold><skill></gold>.'
+          - '<body><hint>Click</hint> to redeem <primary><redeemable-levels-to-spend></primary> levels'
+          - '<body>into <primary><skill></primary>.'
     redeem-all:
       display-item:
         material: PURPLE_STAINED_GLASS_PANE
-        name: '<gold>Redeem All Levels'
+        name: '<primary>Redeem All Levels'
         lore:
-          - '<gray><gold>Click</gold> to redeem all of your redeemable'
-          - '<gray>levels into <gold><skill></gold>.'
+          - '<body><hint>Click</hint> to redeem all of your redeemable'
+          - '<body>levels into <primary><skill></primary>.'
     redeem-custom:
       display-item:
         material: LIGHT_BLUE_STAINED_GLASS_PANE
-        name: '<gold>Input Redeem Amount'
+        name: '<primary>Input Redeem Amount'
         lore:
-          - '<gray><gold>Click</gold> to type in chat the amount of'
-          - '<gray>redeemable levels you want to redeem into <gold><skill></gold>.'
-      prompt: '<gray>Please type in chat how many rested levels you would like to redeem. You have <gold><redeemable-experience></gold> redeemable levels to spend.'
-      invalid-input: '<red>The input provided not a valid number. Please try redeeming again.'
+          - '<body><hint>Click</hint> to type in chat the amount of'
+          - '<body>redeemable levels you want to redeem into <primary><skill></primary>.'
+      prompt: '<body>Please type in chat how many redeemable levels you would like to redeem. You have <primary><redeemable-levels></primary> redeemable levels to spend.'
+      invalid-input: '<negative>The input provided not a valid number. Please try redeeming again.'

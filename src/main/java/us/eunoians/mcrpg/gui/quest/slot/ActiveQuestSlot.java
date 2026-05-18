@@ -87,11 +87,9 @@ public class ActiveQuestSlot implements McRPGSlot {
                 .mapToInt(s -> s.getPhaseIndex())
                 .min().orElse(0) + 1;
 
-        ItemBuilder builder = ItemBuilder.from(RegistryAccess.registryAccess()
-                        .registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM))
+        ItemBuilder builder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM))
                 .addPlaceholders(placeholders);
+        builder.applyTagReplacements(localizationManager.getPaletteReplacements());
 
         builder.addDisplayLore(formatLocalizedLine(
                 localizationManager.getLocalizedMessage(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_PHASE_LINE),

@@ -16,6 +16,34 @@ stats:
     # Set to 1 to prevent free casts without allowing truly zero-cost abilities.
     minimum-ability-cost: 1
 
+# ─── Color Palette ───
+# Semantic color placeholders used in all locale YAML files. Locale files reference
+# these as <primary>, <hint>, <mana>, etc. — the localization system replaces them
+# with the MiniMessage values configured here before parsing.
+# Change any value to retheme the entire plugin. Use any valid MiniMessage color tag
+# (e.g., <color:#hexcode>, <gold>, <aqua>, etc.).
+palette:
+  # GUI titles, navigation item names, stat value highlights, skill names in lore
+  primary: "<color:#D4A76A>"
+  # Click hints, calls-to-action, interactive prompts
+  hint: "<color:#E8C97A>"
+  # Mana cost values, mana-related lore
+  mana: "<color:#5EA8FF>"
+  # Active (ComboActivatable) ability names and type tags
+  ability-active: "<color:#FF7B5E>"
+  # Passive ability names and type tags
+  ability-passive: "<color:#7FB87F>"
+  # Innate ability names, disabled/inactive states
+  ability-innate: "<color:#9E9E9E>"
+  # All descriptive/body lore text, labels before values
+  body: "<gray>"
+  # Enabled, success, accepted
+  positive: "<green>"
+  # Disabled, error, deny, abandon
+  negative: "<red>"
+  # Caution, expiration, approaching limits
+  warning: "<yellow>"
+
 configuration:
   database:
     # Sets the type of the database driver. The existing options are: 'SQLite'

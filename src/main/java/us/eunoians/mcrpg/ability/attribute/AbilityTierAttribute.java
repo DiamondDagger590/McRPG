@@ -105,7 +105,9 @@ public class AbilityTierAttribute extends OptionalSavingAbilityAttribute<Integer
             @Override
             public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
                 if (ability instanceof TierableAbility) {
-                    ItemBuilder itemBuilder = ItemBuilder.from(mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(LocalizationKey.TIER_ATTRIBUTE_DISPLAY_ITEM));
+                    var localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+                    ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(LocalizationKey.TIER_ATTRIBUTE_DISPLAY_ITEM));
+                    itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
                     var extraLore = AbilityLoreAppender.getAppendLore(mcRPGPlayer, ability);
                     extraLore.getLeft().forEach(itemBuilder::addDisplayLore);
                     itemBuilder.setPlaceholders(extraLore.getRight());

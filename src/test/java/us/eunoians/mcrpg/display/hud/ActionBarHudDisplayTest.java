@@ -70,7 +70,18 @@ public class ActionBarHudDisplayTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("Given multiple active slots at different priorities, when resolveCenter is called, then the highest-priority slot wins")
+    @DisplayName("Built-in priorities maintain expected ordering: COMBO_STATE > ABILITY_FEEDBACK > SAFE_ZONE_TRANSITION > AMBIENT_FEEDBACK")
+    void priorityConstants_maintainExpectedOrdering() {
+        assertTrue(CenterContentPriority.COMBO_STATE > CenterContentPriority.ABILITY_FEEDBACK,
+                "COMBO_STATE must beat ABILITY_FEEDBACK");
+        assertTrue(CenterContentPriority.ABILITY_FEEDBACK > CenterContentPriority.SAFE_ZONE_TRANSITION,
+                "ABILITY_FEEDBACK must beat SAFE_ZONE_TRANSITION");
+        assertTrue(CenterContentPriority.SAFE_ZONE_TRANSITION > CenterContentPriority.AMBIENT_FEEDBACK,
+                "SAFE_ZONE_TRANSITION must beat AMBIENT_FEEDBACK");
+    }
+
+    @Test
+    @DisplayName("Given COMBO_STATE and ABILITY_FEEDBACK both active, when resolveCenter is called, then COMBO_STATE wins")
     void resolveCenter_returnsHighestPriorityContent_whenMultipleSlotsActive(McRPGPlayer mcRPGPlayer) {
         addPlayerToServer(mcRPGPlayer);
         ActionBarHudDisplay hud = new ActionBarHudDisplay(mcRPGPlayer, newRenderer());
@@ -83,7 +94,7 @@ public class ActionBarHudDisplayTest extends McRPGBaseTest {
         Optional<Component> resolved = hud.resolveCenter(0L);
 
         assertTrue(resolved.isPresent());
-        assertSame(ability, resolved.get());
+        assertSame(combo, resolved.get());
     }
 
     @Test
@@ -92,15 +103,16 @@ public class ActionBarHudDisplayTest extends McRPGBaseTest {
         addPlayerToServer(mcRPGPlayer);
         ActionBarHudDisplay hud = new ActionBarHudDisplay(mcRPGPlayer, newRenderer());
 
-        Component combo = Component.text("COMBO");
-        Component ability = Component.text("COOLDOWN");
-        hud.setSlot(CenterContentPriority.COMBO_STATE, new IndefiniteCenterContent(combo));
-        hud.setSlot(CenterContentPriority.ABILITY_FEEDBACK, new TimedCenterContent(ability, 100L));
+        Component cooldown = Component.text("COOLDOWN");
+        Component xp = Component.text("XP");
+        // ABILITY_FEEDBACK (40) is higher than AMBIENT_FEEDBACK (10); when it expires, XP is revealed
+        hud.setSlot(CenterContentPriority.ABILITY_FEEDBACK, new TimedCenterContent(cooldown, 100L));
+        hud.setSlot(CenterContentPriority.AMBIENT_FEEDBACK, new IndefiniteCenterContent(xp));
 
         Optional<Component> resolved = hud.resolveCenter(500L);
 
         assertTrue(resolved.isPresent());
-        assertSame(combo, resolved.get());
+        assertSame(xp, resolved.get());
         assertFalse(hud.getSlot(CenterContentPriority.ABILITY_FEEDBACK).isPresent(),
                 "Expired slot should have been evicted from the priority map");
     }

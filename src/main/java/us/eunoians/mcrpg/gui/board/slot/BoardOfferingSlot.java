@@ -119,6 +119,7 @@ public class BoardOfferingSlot implements McRPGSlot {
         // Build base item (material + name) from localized section
         ItemBuilder builder = ItemBuilder.from(localization.getLocalizedSection(mcRPGPlayer,
                 LocalizationKey.QUEST_BOARD_OFFERING_SLOT_DISPLAY_ITEM));
+        builder.applyTagReplacements(localization.getPaletteReplacements());
         if (rarityOpt.isPresent()) {
             builder = rarityOpt.get().configureIcon(builder);
         }

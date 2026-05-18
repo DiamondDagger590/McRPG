@@ -41,11 +41,12 @@ public class ToggleLoadoutActiveSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        return ItemBuilder.from(RegistryAccess.registryAccess()
-                .registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION)
-                .getLocalizedSection(mcRPGPlayer, isLoadoutActive() ? LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_ACTIVE_DISPLAY_ITEM
-                        : LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_INACTIVE_DISPLAY_ITEM));
+        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, isLoadoutActive()
+                ? LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_ACTIVE_DISPLAY_ITEM
+                : LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_TOGGLE_LOADOUT_INACTIVE_DISPLAY_ITEM));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @NotNull

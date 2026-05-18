@@ -36,10 +36,10 @@ public class QuestHistorySortSlot implements McRPGSlot {
         var route = historyGui.isSortAscending()
                 ? LocalizationKey.QUEST_HISTORY_GUI_SORT_DATE_ASC_DISPLAY_ITEM
                 : LocalizationKey.QUEST_HISTORY_GUI_SORT_DATE_DESC_DISPLAY_ITEM;
-        return ItemBuilder.from(RegistryAccess.registryAccess()
-                .registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION)
-                .getLocalizedSection(mcRPGPlayer, route));
+        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, route));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @NotNull

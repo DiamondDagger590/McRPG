@@ -27,8 +27,10 @@ public class HomeComingSoonSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        return ItemBuilder.from(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(mcRPGPlayer, LocalizationKey.HOME_GUI_COMING_SOON_SLOT_DISPLAY_ITEM));
+        var localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.HOME_GUI_COMING_SOON_SLOT_DISPLAY_ITEM));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @NotNull

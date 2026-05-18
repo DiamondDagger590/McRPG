@@ -17,11 +17,18 @@ import java.util.Optional;
  * <p>
  * Renders empty once {@link #expiryEpochMillis} has elapsed, letting the owning
  * slot self-evict and reveal any lower-priority content.
+ * <p>
+ * An optional {@code maxExpiryTick} can be supplied to impose an early TTL: if the
+ * current server tick reaches {@code maxExpiryTick} before the real-time cooldown
+ * expires, the content self-evicts anyway. This is used to show a brief countdown
+ * flash (e.g. ~3 seconds) without persisting the full cooldown duration on the HUD.
+ * Pass {@link Long#MAX_VALUE} (or use the two-argument constructor) to disable the TTL.
  */
 public final class CountdownCooldownCenterContent implements ActionBarCenterContent {
 
     private final String abilityName;
     private final long expiryEpochMillis;
+    private final long maxExpiryTick;
     private final TimeProvider timeProvider;
 
     /**
@@ -37,18 +44,40 @@ public final class CountdownCooldownCenterContent implements ActionBarCenterCont
     private int cachedWidth = -1;
 
     /**
+     * Constructs a countdown that persists until the cooldown's real-time expiry.
+     *
      * @param abilityName       The display name of the ability on cooldown,
      *                          currently unused in the rendered string but kept
      *                          for future per-ability formatting.
-     * @param expiryEpochMillis The real-time epoch millis at which the cooldown
-     *                          ends.
+     * @param expiryEpochMillis The real-time epoch millis at which the cooldown ends.
      * @param timeProvider      Clock used to compute remaining time each frame.
      */
     public CountdownCooldownCenterContent(@NotNull String abilityName,
                                           long expiryEpochMillis,
                                           @NotNull TimeProvider timeProvider) {
+        this(abilityName, expiryEpochMillis, Long.MAX_VALUE, timeProvider);
+    }
+
+    /**
+     * Constructs a countdown that self-evicts at whichever comes first: the cooldown's
+     * real-time expiry or the given server-tick TTL.
+     *
+     * @param abilityName       The display name of the ability on cooldown,
+     *                          currently unused in the rendered string but kept
+     *                          for future per-ability formatting.
+     * @param expiryEpochMillis The real-time epoch millis at which the cooldown ends.
+     * @param maxExpiryTick     The server tick at which this content should stop rendering
+     *                          even if the cooldown has not yet expired. Use
+     *                          {@link Long#MAX_VALUE} to disable the TTL.
+     * @param timeProvider      Clock used to compute remaining time each frame.
+     */
+    public CountdownCooldownCenterContent(@NotNull String abilityName,
+                                          long expiryEpochMillis,
+                                          long maxExpiryTick,
+                                          @NotNull TimeProvider timeProvider) {
         this.abilityName = abilityName;
         this.expiryEpochMillis = expiryEpochMillis;
+        this.maxExpiryTick = maxExpiryTick;
         this.timeProvider = timeProvider;
     }
 
@@ -71,7 +100,7 @@ public final class CountdownCooldownCenterContent implements ActionBarCenterCont
     @Override
     public Optional<Component> render(long currentTick) {
         long nowMillis = timeProvider.now().toEpochMilli();
-        if (nowMillis >= expiryEpochMillis) {
+        if (currentTick >= maxExpiryTick || nowMillis >= expiryEpochMillis) {
             return Optional.empty();
         }
         long remainingSeconds = Math.max(1L, (expiryEpochMillis - nowMillis) / 1000L);

@@ -216,7 +216,9 @@ public class ActiveAbilityComboSlot implements McRPGSlot {
     private ItemBuilder buildEmptyItem(@NotNull McRPGPlayer mcRPGPlayer) {
         var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         String patternDisplay = localizationManager.getLocalizedMessage(mcRPGPlayer, comboPattern.getLocalizationKey());
-        return ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_GUI_ACTIVE_COMBO_SLOT_EMPTY_DISPLAY_ITEM))
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_GUI_ACTIVE_COMBO_SLOT_EMPTY_DISPLAY_ITEM))
                 .addPlaceholder("combo-pattern", patternDisplay);
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 }

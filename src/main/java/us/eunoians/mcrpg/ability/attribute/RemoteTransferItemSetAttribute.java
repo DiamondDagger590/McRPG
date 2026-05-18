@@ -98,10 +98,13 @@ public class RemoteTransferItemSetAttribute extends OptionalSavingAbilityAttribu
             @NotNull
             @Override
             public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(RegistryAccess.registryAccess()
+                var localizationManager = RegistryAccess.registryAccess()
                         .registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .manager(McRPGManagerKey.LOCALIZATION);
+                ItemBuilder itemBuilder = ItemBuilder.from(localizationManager
                         .getLocalizedSection(mcRPGPlayer, LocalizationKey.REMOTE_TRANSFER_BLOCK_TOGGLE_ATTRIBUTE_DISPLAY_ITEM));
+                itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+                return itemBuilder;
             }
 
             @NotNull

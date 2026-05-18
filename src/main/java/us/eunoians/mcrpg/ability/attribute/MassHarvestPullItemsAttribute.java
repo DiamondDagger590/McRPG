@@ -71,8 +71,11 @@ public class MassHarvestPullItemsAttribute extends OptionalSavingAbilityAttribut
             @NotNull
             @Override
             public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
+                var localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+                ItemBuilder itemBuilder = ItemBuilder.from(localizationManager
                         .getLocalizedSection(getContent() ? LocalizationKey.MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_ENABLED_DISPLAY_ITEM : LocalizationKey.MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_DISABLED_DISPLAY_ITEM));
+                itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+                return itemBuilder;
             }
         };
     }

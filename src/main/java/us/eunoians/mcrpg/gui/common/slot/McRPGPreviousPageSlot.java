@@ -20,6 +20,8 @@ public class McRPGPreviousPageSlot extends PreviousPageSlot<McRPGPlayer> impleme
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer corePlayer) {
         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-        return ItemBuilder.from(localizationManager.getLocalizedSection(corePlayer, LocalizationKey.GUI_COMMON_PREVIOUS_PAGE_BUTTON_DISPLAY_ITEM));
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(corePlayer, LocalizationKey.GUI_COMMON_PREVIOUS_PAGE_BUTTON_DISPLAY_ITEM));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 }

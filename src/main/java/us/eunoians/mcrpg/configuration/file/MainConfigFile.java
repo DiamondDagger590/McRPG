@@ -120,6 +120,29 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route MOB_HEALTH_BAR_DISPLAY_DURATION = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "health-bar-display-duration"));
     public static final Route MCMMO_CONVERSION_EQUATION = Route.fromString(toRoutePath(MCMMO_CONFIGURATION_HEADER, "conversion-equation"));
 
+    // Palette (color theming)
+    private static final String PALETTE_HEADER = "palette";
+    /** Primary color: GUI titles, navigation names, stat value highlights. Default: {@code <color:#D4A76A>} */
+    public static final Route PALETTE_PRIMARY = Route.fromString(toRoutePath(PALETTE_HEADER, "primary"));
+    /** Hint color: click prompts, calls-to-action. Default: {@code <color:#E8C97A>} */
+    public static final Route PALETTE_HINT = Route.fromString(toRoutePath(PALETTE_HEADER, "hint"));
+    /** Mana color: mana cost values, mana-related lore. Default: {@code <color:#5EA8FF>} */
+    public static final Route PALETTE_MANA = Route.fromString(toRoutePath(PALETTE_HEADER, "mana"));
+    /** Active ability color: combo-activated ability names and type tags. Default: {@code <color:#FF7B5E>} */
+    public static final Route PALETTE_ABILITY_ACTIVE = Route.fromString(toRoutePath(PALETTE_HEADER, "ability-active"));
+    /** Passive ability color: event-driven ability names and type tags. Default: {@code <color:#7FB87F>} */
+    public static final Route PALETTE_ABILITY_PASSIVE = Route.fromString(toRoutePath(PALETTE_HEADER, "ability-passive"));
+    /** Innate ability color: always-on ability names, disabled/inactive states. Default: {@code <color:#9E9E9E>} */
+    public static final Route PALETTE_ABILITY_INNATE = Route.fromString(toRoutePath(PALETTE_HEADER, "ability-innate"));
+    /** Body text color: descriptive lore, labels before values. Default: {@code <gray>} */
+    public static final Route PALETTE_BODY = Route.fromString(toRoutePath(PALETTE_HEADER, "body"));
+    /** Positive color: enabled, success, accepted. Default: {@code <green>} */
+    public static final Route PALETTE_POSITIVE = Route.fromString(toRoutePath(PALETTE_HEADER, "positive"));
+    /** Negative color: disabled, error, deny. Default: {@code <red>} */
+    public static final Route PALETTE_NEGATIVE = Route.fromString(toRoutePath(PALETTE_HEADER, "negative"));
+    /** Warning color: caution, expiration, approaching limits. Default: {@code <yellow>} */
+    public static final Route PALETTE_WARNING = Route.fromString(toRoutePath(PALETTE_HEADER, "warning"));
+
     // Stats (player resource pools)
     private static final String STATS_HEADER = "stats";
     private static final String STATS_MANA_HEADER = toRoutePath(STATS_HEADER, "mana");

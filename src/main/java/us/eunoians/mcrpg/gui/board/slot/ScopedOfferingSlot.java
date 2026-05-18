@@ -123,6 +123,7 @@ public class ScopedOfferingSlot implements McRPGSlot {
 
         ItemBuilder builder = ItemBuilder.from(localization.getLocalizedSection(mcRPGPlayer,
                 LocalizationKey.QUEST_BOARD_SCOPED_OFFERING_SLOT_DISPLAY_ITEM));
+        builder.applyTagReplacements(localization.getPaletteReplacements());
         if (rarityOpt.isPresent()) {
             builder = rarityOpt.get().configureIcon(builder);
         }

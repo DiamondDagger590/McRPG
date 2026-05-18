@@ -66,6 +66,7 @@ public class QuestDetailRewardSlot implements McRPGSlot {
         ItemBuilder builder = ItemBuilder.from(localization.getLocalizedSection(mcRPGPlayer,
                         LocalizationKey.QUEST_DETAIL_GUI_REWARD_SLOT_DISPLAY_ITEM))
                 .addPlaceholders(placeholders);
+        builder.applyTagReplacements(localization.getPaletteReplacements());
 
         for (String line : rewardLines) {
             builder.addDisplayLore(line);

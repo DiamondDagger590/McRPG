@@ -1,7 +1,7 @@
 # GUI/UX System & Color Palette
 
-> **Last Updated:** 2026-05-15
-> **Status:** Phase 0 (documentation) complete; Phase 1 LLD written; Phases 2–4 pending implementation
+> **Last Updated:** 2026-05-17
+> **Status:** Phase 1 implemented; Phases 2–4 pending implementation
 > **Scope:** Unified GUI color palette, navigation standardization, ability display improvements, upgrade quest slot separation
 
 ---
@@ -118,10 +118,12 @@ flowchart LR
 
 ### Bugs
 
-- **Broken MiniMessage tag** in redeem GUI back button lore: `./gray>` instead of `</gray>`
-- **Loadout GUI back button lore** is a YAML scalar string, not a list like every other back button
-- **Title typo**: "Home Gui" with lowercase "Gui"
-- **Naming mismatch**: Ability Edit back button says "Return to Ability Selection" but target GUI title is "Viewing Abilities"
+> All bugs below were resolved in Phase 1.
+
+- ~~**Broken MiniMessage tag** in redeem GUI back button lore: `./gray>` instead of `</gray>`~~ — Fixed
+- ~~**Loadout GUI back button lore** is a YAML scalar string, not a list like every other back button~~ — Fixed
+- ~~**Title typo**: "Home Gui" with lowercase "Gui"~~ — Fixed
+- ~~**Naming mismatch**: Ability Edit back button says "Return to Ability Selection" but target GUI title is "Viewing Abilities"~~ — Fixed
 
 ---
 
@@ -253,14 +255,16 @@ All back buttons follow one pattern:
 
 Each phase gets its own LLD when implementation begins.
 
-### Phase 1: Palette Infrastructure & GUI Locale Sweep
+### Phase 1: Palette Infrastructure & GUI Locale Sweep ✓ Implemented
 
-- **Build palette replacement infrastructure**: `config.yml` palette section, `McRPGLocalizationManager` post-processing hook (via McCore `LocalizationManager.postProcessResolvedString()`), `ItemBuilder.applyTagReplacements()`, `ReloadableContent`-backed palette map
+- **Palette replacement infrastructure**: `config.yml` palette section, `McRPGLocalizationManager` post-processing hook (via McCore `LocalizationManager.postProcessResolvedString()`), `ItemBuilder.applyTagReplacements()`, `ReloadableContent`-backed palette map
+- **Close tag support**: Both opening (`<primary>`) and closing (`</primary>`) palette placeholder forms are mapped, so MiniMessage close-tag notation works as server owners expect
 - **Full `en_gui.yml` sweep**: titles, back buttons, sort buttons, home slots, pagination, value highlights, body text, click hints, status indicators — all replaced with palette placeholders (`<primary>`, `<hint>`, `<body>`, `<positive>`, `<negative>`, `<warning>`)
 - Standardize all back button labels to `"Back to [Parent]"` pattern with `<primary>` color and contextual `<body>` lore
 - Fix bugs: broken MiniMessage tag (`./gray>`), loadout lore YAML scalar, title typo ("Home Gui"), naming mismatch, "action abr" typo, "rested levels" copy-paste error
 - Add palette comment header to `en_gui.yml`
-- Wire all slot classes to apply palette tag replacements via `applyTagReplacements()`
+- Wire all slot classes (including `GuiModifiableAttribute` implementations) to apply palette tag replacements via `applyTagReplacements()`
+- Fix default loadout display name to use `<primary>` instead of hardcoded `<gray>`/`<gold>`
 - **LLD:** [phase-1-palette-infrastructure-and-locale-sweep.md](../lld/gui-ux-system/phase-1-palette-infrastructure-and-locale-sweep.md)
 
 ### Phase 2: Ability Display Overhaul

@@ -31,31 +31,27 @@ public class LocaleSettingSlot extends McRPGSettingSlot<LocalePlayerSetting> {
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         LocalePlayerSetting setting = getSetting();
+        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
 
         if (setting instanceof LocaleSetting localeSetting) {
-            return switch (localeSetting) {
-                case CLIENT_LOCALE -> ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_CLIENT_LOCALE_DISPLAY_ITEM));
-                case SERVER_LOCALE -> ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_SERVER_LOCALE_DISPLAY_ITEM));
+            ItemBuilder itemBuilder = switch (localeSetting) {
+                case CLIENT_LOCALE -> ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_CLIENT_LOCALE_DISPLAY_ITEM));
+                case SERVER_LOCALE -> ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_SERVER_LOCALE_DISPLAY_ITEM));
             };
+            itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+            return itemBuilder;
         } else if (setting instanceof SpecificLocaleSetting specificLocaleSetting) {
-            // Get the locale name from the locale file
             String localeName = getLocaleDisplayName(specificLocaleSetting.getLocaleCode());
-
-            // Use the fallback locale display item with the locale name placeholder
-            return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION)
-                    .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_FALLBACK_LOCALE_DISPLAY_ITEM))
+            ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_FALLBACK_LOCALE_DISPLAY_ITEM))
                     .addPlaceholders(Map.of("locale", localeName));
+            itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+            return itemBuilder;
         }
 
         // Fallback - shouldn't happen
-        return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION)
-                .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_CLIENT_LOCALE_DISPLAY_ITEM));
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_LOCALE_SETTING_SLOT_CLIENT_LOCALE_DISPLAY_ITEM));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     /**

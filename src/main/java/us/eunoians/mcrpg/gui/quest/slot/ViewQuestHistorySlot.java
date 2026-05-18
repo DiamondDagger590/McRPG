@@ -33,9 +33,10 @@ public class ViewQuestHistorySlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        return ItemBuilder.from(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION)
-                .getLocalizedSection(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_VIEW_HISTORY_BUTTON_DISPLAY_ITEM));
+        var localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_VIEW_HISTORY_BUTTON_DISPLAY_ITEM));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @NotNull

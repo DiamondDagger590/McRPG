@@ -74,6 +74,7 @@ public class QuestDetailStageSlot implements McRPGSlot {
         ItemBuilder builder = ItemBuilder.from(localization.getLocalizedSection(mcRPGPlayer,
                         LocalizationKey.QUEST_DETAIL_GUI_STAGE_SLOT_DISPLAY_ITEM))
                 .addPlaceholders(placeholders);
+        builder.applyTagReplacements(localization.getPaletteReplacements());
 
         String stateLabel = resolveStageStateLabel(localization, mcRPGPlayer);
         builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer,

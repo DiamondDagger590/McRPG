@@ -36,11 +36,11 @@ public class QuestAbandonInfoSlot implements McRPGSlot {
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("quest_name", questDisplayName);
-        return ItemBuilder.from(RegistryAccess.registryAccess()
-                        .registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_ABANDON_CONFIRM_GUI_QUEST_INFO_DISPLAY_ITEM))
+        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_ABANDON_CONFIRM_GUI_QUEST_INFO_DISPLAY_ITEM))
                 .addPlaceholders(placeholders);
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @NotNull

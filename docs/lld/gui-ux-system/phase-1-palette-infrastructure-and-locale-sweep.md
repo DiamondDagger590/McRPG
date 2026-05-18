@@ -1,7 +1,7 @@
 # Phase 1 LLD: Palette Infrastructure & GUI Locale Sweep
 
 > **HLD Reference:** [docs/hld/gui/gui-ux-system.md](../../hld/gui/gui-ux-system.md)
-> **Status:** Pending Implementation
+> **Status:** Implemented
 
 ## Scope
 
@@ -791,6 +791,12 @@ Validates all back button locale entries follow the standardized pattern:
 
 10. **Palette section placement in `config.yml`**: The `palette:` section is placed at the top level (after `stats:`, before `configuration:`) because it is a cross-cutting concern that affects all player-facing output, not a subsection of any particular configuration domain. It is not nested under `configuration:` to avoid implying it's an advanced admin setting.
 
+11. **Close tag support in palette replacement**: The palette replacement system maps both opening tags (`<primary>` → `<color:#D4A76A>`) and their corresponding closing tags (`</primary>` → `</color:#D4A76A>`). This was not in the original design but was added during implementation because server owners reasonably expect MiniMessage close-tag notation to work with palette placeholders (e.g., `<primary>text</primary>`). Implemented via a private `addPaletteEntry()` helper in `McRPGLocalizationManager` that adds both forms to the replacement map for each role.
+
+12. **`GuiModifiableAttribute` classes require `applyTagReplacements()`**: The original slot enumeration in section 6.2 did not include `GuiModifiableAttribute` implementations (`AbilityToggledOffAttribute`, `AbilityTierAttribute`, `AbilityLocationAttribute`, `MassHarvestPullItemsAttribute`, `RemoteTransferItemSetAttribute`). These classes build `ItemBuilder` instances from localized sections directly, bypassing the normal slot wiring, and therefore require explicit `applyTagReplacements()` calls in their `getItem()` methods. All five were updated during implementation.
+
+13. **Default loadout display name used hardcoded colors**: `Loadout.getDefaultDisplayItem()` hardcoded `"<gray>Loadout <gold>" + getLoadoutSlot()` rather than using palette placeholders. Changed to `"<primary>Loadout " + getLoadoutSlot()` to be consistent with the palette system.
+
 ---
 
 ## 11. Open Items / Future Considerations
@@ -806,5 +812,3 @@ Validates all back button locale entries follow the standardized pattern:
 5. **`ScopedBackSlot` using common back button**: The `ScopedBackSlot` currently uses `GUI_COMMON_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM` instead of a board-specific key. Phase 1 updates the common button to use `<primary>` color and standardized text, which improves this slot's display. A future enhancement could give it a dedicated locale key for more specific text ("Back to Quest Board" vs generic "Back to Previous GUI").
 
 6. **Dynamic lore palette resolution**: Slots that add dynamic lore lines (e.g., `AbilityLoreAppender`, `BoardOfferingSlot` objective/reward lines) must call `resolvePaletteColors()` on each dynamic string. This is a manual step that could be missed for new code. The `CLAUDE.md` and `core.mdc` rules should be updated to mention this requirement. A future McCore enhancement could make `ItemBuilder.addDisplayLoreComponent()` auto-resolve palette tags.
-
-7. **Closing tag stripping**: The existing YAML has many explicit closing tags like `</red>`, `</gold>`, `</gray>`. When replacing `<red>` with `<primary>`, the corresponding `</red>` becomes orphaned (MiniMessage handles unclosed tags via reset, so `</red>` on its own is harmless but messy). The sweep should remove explicit closing tags that are no longer needed, since palette placeholders follow MiniMessage's standard "next color tag resets previous" behavior.

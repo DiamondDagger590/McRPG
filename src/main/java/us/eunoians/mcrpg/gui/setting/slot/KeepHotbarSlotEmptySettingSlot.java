@@ -21,20 +21,18 @@ public class KeepHotbarSlotEmptySettingSlot extends McRPGSettingSlot<KeepHotbarS
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         ItemBuilder itemBuilder;
         if (getSetting() == KeepHotbarSlotEmptySetting.DISABLED) {
-            itemBuilder = ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION)
-                    .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_DISABLED_DISPLAY_ITEM));
+            itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_DISABLED_DISPLAY_ITEM));
         } else {
             int userSlot = getSetting().getSlot() + 1;
-            itemBuilder = ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION)
-                    .getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_ENABLED_DISPLAY_ITEM))
+            itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.PLAYER_SETTINGS_GUI_KEEP_HOTBAR_SLOT_EMPTY_SETTING_ENABLED_DISPLAY_ITEM))
                     .setMaxStackSize(userSlot)
                     .setAmount(userSlot)
                     .addPlaceholder("slot", Integer.toString(userSlot));
         }
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
         return itemBuilder;
     }
 }

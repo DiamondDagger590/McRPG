@@ -151,9 +151,12 @@ public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements 
             @NotNull
             @Override
             public ItemBuilder getItem(@NotNull McRPGPlayer corePlayer) {
-                return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
+                var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION);
+                ItemBuilder itemBuilder = ItemBuilder.from(localizationManager
                         .getLocalizedSection(corePlayer, LocalizationKey.LOADOUT_DISPLAY_ITEM_INPUT_GUI_INPUT_HIGHLIGHT_DISPLAY_ITEM));
+                itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+                return itemBuilder;
             }
         };
     }

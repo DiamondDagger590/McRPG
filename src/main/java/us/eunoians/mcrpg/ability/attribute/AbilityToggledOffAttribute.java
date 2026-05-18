@@ -72,8 +72,11 @@ public class AbilityToggledOffAttribute extends OptionalSavingAbilityAttribute<B
             @NotNull
             @Override
             public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-                return ItemBuilder.from(mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
+                var localizationManager = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+                ItemBuilder itemBuilder = ItemBuilder.from(localizationManager
                         .getLocalizedSection(getContent() ? LocalizationKey.ABILITY_TOGGLED_OFF_ATTRIBUTE_DISPLAY_ITEM : LocalizationKey.ABILITY_TOGGLED_ON_ATTRIBUTE_DISPLAY_ITEM));
+                itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+                return itemBuilder;
             }
         };
     }

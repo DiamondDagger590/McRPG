@@ -26,10 +26,11 @@ public final class RedeemableLevelsSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        return ItemBuilder.from(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.EXPERIENCE_BANK_GUI_REDEEMABLE_LEVELS_SLOT_DISPLAY_ITEM))
+        var localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.EXPERIENCE_BANK_GUI_REDEEMABLE_LEVELS_SLOT_DISPLAY_ITEM))
                 .addPlaceholders(Map.of("redeemable-levels", Integer.toString(mcRPGPlayer.getExperienceExtras().getRedeemableLevels())));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @Override

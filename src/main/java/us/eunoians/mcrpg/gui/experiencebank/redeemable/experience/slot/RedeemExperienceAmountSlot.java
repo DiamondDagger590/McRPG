@@ -35,10 +35,11 @@ public class RedeemExperienceAmountSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        return ItemBuilder.from(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.REDEEMABLE_EXPERIENCE_GUI_REDEEM_AMOUNT_BUTTON_DISPLAY_ITEM))
+        var localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.REDEEMABLE_EXPERIENCE_GUI_REDEEM_AMOUNT_BUTTON_DISPLAY_ITEM))
                 .addPlaceholders(getPlaceholders(mcRPGPlayer));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @Override

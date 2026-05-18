@@ -108,11 +108,11 @@ public class QuestDetailOverviewSlot implements McRPGSlot {
         int phaseCount = defOpt.map(QuestDefinition::getPhaseCount).orElse(0);
         placeholders.put("phase_total", String.valueOf(phaseCount));
 
-        return ItemBuilder.from(RegistryAccess.registryAccess()
-                        .registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_OVERVIEW_SLOT_DISPLAY_ITEM))
+        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_OVERVIEW_SLOT_DISPLAY_ITEM))
                 .addPlaceholders(placeholders);
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @NotNull

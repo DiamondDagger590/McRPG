@@ -716,10 +716,14 @@ public final class LocalizationKey extends ConfigFile {
 
     // Mana feedback — under the existing ability section
     private static final String MANA_FEEDBACK_HEADER = toRoutePath(ABILITY_HEADER, "mana-feedback");
-    /** Sent when a player attempts to use a {@link us.eunoians.mcrpg.ability.impl.type.ManaAbility} without enough mana. */
+    /** Sent as a chat message when a player attempts to use a {@link us.eunoians.mcrpg.ability.impl.type.ManaAbility} without enough mana. */
     public static final Route MANA_INSUFFICIENT = Route.fromString(toRoutePath(MANA_FEEDBACK_HEADER, "insufficient"));
-    /** Sent when a player attempts to activate an ability that is on cooldown via the combo system. */
+    /** Short action bar HUD flash (TimedCenterContent) shown when the player lacks mana to activate an ability. Placeholders: {@code <ability>}. */
+    public static final Route MANA_INSUFFICIENT_HUD = Route.fromString(toRoutePath(MANA_FEEDBACK_HEADER, "insufficient-hud"));
+    /** Sent as a chat message when a player attempts to activate an ability that is on cooldown via the combo system. */
     public static final Route COOLDOWN_ACTIVE = Route.fromString(toRoutePath(MANA_FEEDBACK_HEADER, "cooldown-active"));
+    /** Short action bar HUD flash (TimedCenterContent) shown when a player's combo ability is on cooldown. Placeholders: {@code <ability>}, {@code <remaining>}. */
+    public static final Route COOLDOWN_ACTIVE_HUD = Route.fromString(toRoutePath(MANA_FEEDBACK_HEADER, "cooldown-active-hud"));
 
     // Player stat display — convention: stat.<key>.display-name / display-symbol
     private static final String STAT_HEADER = "stat";

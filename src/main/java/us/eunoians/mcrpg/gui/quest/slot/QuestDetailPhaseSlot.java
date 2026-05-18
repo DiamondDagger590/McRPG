@@ -51,6 +51,7 @@ public class QuestDetailPhaseSlot implements McRPGSlot {
 
         ItemBuilder builder = ItemBuilder.from(localization.getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_PHASE_HEADER_DISPLAY_ITEM))
                 .addPlaceholders(placeholders);
+        builder.applyTagReplacements(localization.getPaletteReplacements());
 
         if (!phaseDef.getRewards().isEmpty()) {
             builder.addDisplayLore("");

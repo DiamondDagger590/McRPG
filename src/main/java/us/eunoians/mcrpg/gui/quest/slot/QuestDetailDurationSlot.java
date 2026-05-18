@@ -47,10 +47,12 @@ public class QuestDetailDurationSlot implements McRPGSlot {
                 .orElse(localization.getLocalizedMessage(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_EXPIRES_NONE))
                 : localization.getLocalizedMessage(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_EXPIRES_NONE);
 
-        return ItemBuilder.from(localization.getLocalizedSection(
+        ItemBuilder itemBuilder = ItemBuilder.from(localization.getLocalizedSection(
                         mcRPGPlayer,
                         LocalizationKey.QUEST_DETAIL_GUI_DURATION_SLOT_DISPLAY_ITEM))
                 .addPlaceholders(Map.of("quest_duration", duration));
+        itemBuilder.applyTagReplacements(localization.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @NotNull

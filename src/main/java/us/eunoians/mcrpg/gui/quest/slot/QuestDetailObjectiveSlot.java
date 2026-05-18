@@ -89,6 +89,7 @@ public class QuestDetailObjectiveSlot implements McRPGSlot {
         ItemBuilder builder = ItemBuilder.from(localization.getLocalizedSection(mcRPGPlayer,
                         LocalizationKey.QUEST_DETAIL_GUI_OBJECTIVE_SLOT_DISPLAY_ITEM))
                 .addPlaceholders(placeholders);
+        builder.applyTagReplacements(localization.getPaletteReplacements());
 
         for (int i = 1; i < descLines.length; i++) {
             builder.addDisplayLore(localization.getLocalizedMessage(mcRPGPlayer,

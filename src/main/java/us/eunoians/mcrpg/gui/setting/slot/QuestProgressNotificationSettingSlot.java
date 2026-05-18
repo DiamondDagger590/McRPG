@@ -24,16 +24,17 @@ public class QuestProgressNotificationSettingSlot extends McRPGSettingSlot<Quest
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         switch (getSetting()) {
             case ENABLED -> {
-                return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_PROGRESS_NOTIFICATION_SETTING_ENABLED_DISPLAY_ITEM));
+                ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_PROGRESS_NOTIFICATION_SETTING_ENABLED_DISPLAY_ITEM));
+                itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+                return itemBuilder;
             }
             case DISABLED -> {
-                return ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_PROGRESS_NOTIFICATION_SETTING_DISABLED_DISPLAY_ITEM));
+                ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_PROGRESS_NOTIFICATION_SETTING_DISABLED_DISPLAY_ITEM));
+                itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+                return itemBuilder;
             }
             default -> {
                 return ItemBuilder.from(new ItemStack(Material.AIR));

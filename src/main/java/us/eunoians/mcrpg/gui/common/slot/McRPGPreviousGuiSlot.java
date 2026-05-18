@@ -27,6 +27,7 @@ public abstract class McRPGPreviousGuiSlot implements McRPGSlot {
         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Route route = localizationManager.doesAnyLocaleContainRoute(mcRPGPlayer, getSpecificDisplayItemRoute()) ? getSpecificDisplayItemRoute() : LocalizationKey.GUI_COMMON_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM;
         ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, route));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
         itemBuilder.addPlaceholders(getPlaceholders(mcRPGPlayer));
         return itemBuilder;
     }

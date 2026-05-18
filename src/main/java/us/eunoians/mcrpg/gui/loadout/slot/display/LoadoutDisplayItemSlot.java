@@ -39,9 +39,9 @@ public class LoadoutDisplayItemSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        return ItemBuilder.from(RegistryAccess.registryAccess()
-                        .registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_EDIT_DISPLAY_ITEM_SLOT_DISPLAY_ITEM), loadout.getDisplay().getDisplayItem().itemBuilder());
+        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_EDIT_DISPLAY_ITEM_SLOT_DISPLAY_ITEM), loadout.getDisplay().getDisplayItem().itemBuilder());
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 }

@@ -37,10 +37,11 @@ public class HomeExperienceBankSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        return ItemBuilder.from(McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION)
-                .getLocalizedSection(mcRPGPlayer, LocalizationKey.HOME_GUI_EXPERIENCE_BANK_SLOT_DISPLAY_ITEM))
-                .addPlaceholders(getPlaceholders(mcRPGPlayer));
+        McRPGLocalizationManager localizationManager = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.HOME_GUI_EXPERIENCE_BANK_SLOT_DISPLAY_ITEM));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        itemBuilder.addPlaceholders(getPlaceholders(mcRPGPlayer));
+        return itemBuilder;
     }
 
     @NotNull

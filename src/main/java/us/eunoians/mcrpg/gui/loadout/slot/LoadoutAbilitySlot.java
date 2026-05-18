@@ -72,9 +72,9 @@ public class LoadoutAbilitySlot implements McRPGSlot {
                 itemBuilder.addDisplayLoreComponent(miniMessage.deserialize(line).decoration(TextDecoration.ITALIC, false));
             }
         } else {
-            itemBuilder = ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION)
-                    .getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_GUI_FREE_ABILITY_SLOT_DISPLAY_ITEM));
+            var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+            itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.LOADOUT_GUI_FREE_ABILITY_SLOT_DISPLAY_ITEM));
+            itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
         }
        return itemBuilder;
     }

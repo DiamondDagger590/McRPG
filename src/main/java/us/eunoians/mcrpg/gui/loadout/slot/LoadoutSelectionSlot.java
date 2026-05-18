@@ -70,20 +70,18 @@ public class LoadoutSelectionSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
+        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         ItemBuilder itemBuilder;
         if (isPlayerOnGeyser()) {
-            itemBuilder = ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION)
-                    .getLocalizedSection(mcRPGPlayer,
+            itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer,
                             isLoadoutActive() ? LocalizationKey.LOADOUT_SELECTION_GUI_ACTIVE_LOADOUT_SELECTION_SLOT_GEYSER_DISPLAY_ITEM :
                                     LocalizationKey.LOADOUT_SELECTION_GUI_INACTIVE_LOADOUT_SELECTION_SLOT_GEYSER_DISPLAY_ITEM), loadout.getDisplay().getDisplayItem().itemBuilder());
         } else {
-            itemBuilder = ItemBuilder.from(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION)
-                    .getLocalizedSection(mcRPGPlayer,
+            itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer,
                             isLoadoutActive() ? LocalizationKey.LOADOUT_SELECTION_GUI_ACTIVE_LOADOUT_SELECTION_SLOT_DISPLAY_ITEM :
                                     LocalizationKey.LOADOUT_SELECTION_GUI_INACTIVE_LOADOUT_SELECTION_SLOT_DISPLAY_ITEM), loadout.getDisplay().getDisplayItem().itemBuilder());
         }
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
         itemBuilder.addPlaceholder("name", loadout.getDisplay().getDisplayName().orElse(Integer.toString(loadout.getLoadoutSlot())));
         appendActiveAbilitiesPreview(mcRPGPlayer, itemBuilder);
         return itemBuilder;
