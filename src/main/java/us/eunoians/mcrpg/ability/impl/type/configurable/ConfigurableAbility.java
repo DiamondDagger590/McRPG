@@ -63,6 +63,17 @@ public interface ConfigurableAbility extends Ability {
 
     @NotNull
     @Override
+    default String getColoredName(@NotNull McRPGPlayer player) {
+        McRPGLocalizationManager localizationManager = player.getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        return localizationManager.getLocalizedMessage(
+                player,
+                Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME),
+                Map.of("ability", getName(player)));
+    }
+
+    @NotNull
+    @Override
     default AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
         McRPGLocalizationManager localizationManager = player.getPlugin().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);

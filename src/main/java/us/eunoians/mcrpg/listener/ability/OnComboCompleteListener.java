@@ -109,7 +109,7 @@ public class OnComboCompleteListener implements Listener {
             long expiryMillis = cooldownableAbility.getCooldownForHolder(abilityHolder);
             long remainingSeconds = Math.max(1, (expiryMillis - mcRPG.getTimeProvider().now().toEpochMilli()) / 1000);
             String remainingStr = String.valueOf(remainingSeconds);
-            String abilityName = ability.getName(mcRPGPlayer);
+            String abilityName = ability.getColoredName(mcRPGPlayer);
 
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
 
@@ -143,7 +143,7 @@ public class OnComboCompleteListener implements Listener {
         double effectiveCost = consumeEvent.getEffectiveAmount();
         if (!manaInstance.consume(effectiveCost)) {
             int currentMana = (int) Math.round(manaInstance.getCurrent());
-            String abilityName = ability.getName(mcRPGPlayer);
+            String abilityName = ability.getColoredName(mcRPGPlayer);
 
             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1.0f, 0.5f);
 

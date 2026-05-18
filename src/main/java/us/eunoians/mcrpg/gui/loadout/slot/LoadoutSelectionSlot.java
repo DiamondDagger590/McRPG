@@ -20,7 +20,6 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -97,8 +96,8 @@ public class LoadoutSelectionSlot implements McRPGSlot {
      * Appends a summary line listing the active (combo) abilities in the loadout.
      * <p>
      * The line is only added when at least one active ability is present. Each ability name
-     * is derived from its registry key and formatted as title-case words
-     * (e.g., {@code "serrated_strikes"} → {@code "Serrated Strikes"}).
+     * is resolved via the registry and colored with its type-specific palette color using
+     * {@link us.eunoians.mcrpg.ability.Ability#getColoredName(McRPGPlayer)}.
      *
      * @param mcRPGPlayer The player viewing the slot.
      * @param itemBuilder The item builder to append the line to.
@@ -111,7 +110,7 @@ public class LoadoutSelectionSlot implements McRPGSlot {
         var abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
         String abilitiesDisplay = activeKeys.stream()
                 .filter(key -> abilityRegistry.registered(key) && abilityRegistry.getRegisteredAbility(key) instanceof ComboActivatable)
-                .map(key -> "<gold>" + formatAbilityName(key))
+                .map(key -> abilityRegistry.getRegisteredAbility(key).getColoredName(mcRPGPlayer))
                 .collect(Collectors.joining("<gray>, "));
         if (abilitiesDisplay.isBlank()) {
             return;
@@ -121,20 +120,6 @@ public class LoadoutSelectionSlot implements McRPGSlot {
                 .getLocalizedMessage(mcRPGPlayer, LocalizationKey.LOADOUT_SELECTION_GUI_ACTIVE_ABILITIES_PREVIEW);
         previewLine = previewLine.replace("<active-abilities>", abilitiesDisplay);
         itemBuilder.addDisplayLore(List.of("", previewLine));
-    }
-
-    /**
-     * Formats a {@link NamespacedKey} key string into a title-case display name.
-     * For example, {@code "serrated_strikes"} becomes {@code "Serrated Strikes"}.
-     *
-     * @param key The namespaced key whose {@link NamespacedKey#getKey()} is formatted.
-     * @return The title-case formatted name.
-     */
-    @NotNull
-    private String formatAbilityName(@NotNull NamespacedKey key) {
-        return Arrays.stream(key.getKey().split("_"))
-                .map(word -> word.isEmpty() ? word : Character.toUpperCase(word.charAt(0)) + word.substring(1))
-                .collect(Collectors.joining(" "));
     }
 
     private boolean isLoadoutActive() {

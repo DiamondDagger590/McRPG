@@ -31,13 +31,13 @@ ability:
   mana-feedback:
     # Sent as a chat message when the player does not have enough mana to activate an ability.
     # Placeholders: <ability> (ability name), <cost> (required mana), <current> (current mana)
-    insufficient: "<negative>Not enough mana to use <ability>! <body>(need <cost>, have <current>)"
+    insufficient: "<negative>Not enough mana to use <ability><negative>! <body>(need <cost>, have <current>)"
     # Short HUD flash shown on the action bar when the player lacks mana (~3 seconds).
     # Placeholders: <ability> (ability name)
     insufficient-hud: "<negative>Not Enough Mana"
     # Sent as a chat message when the player attempts to activate an ability that is on cooldown.
     # Placeholders: <ability> (ability name), <remaining> (seconds remaining)
-    cooldown-active: "<negative><ability> is on cooldown! <body>(<remaining>s remaining)"
+    cooldown-active: "<ability> <negative>is on cooldown! <body>(<remaining>s remaining)"
     # Short HUD flash shown on the action bar when an ability is on cooldown (~3 seconds).
     # Placeholders: <ability> (ability name), <remaining> (seconds remaining)
     cooldown-active-hud: "<negative>On Cooldown <body>(<remaining>s)"
@@ -48,7 +48,7 @@ ability:
     ability-still-on-cooldown: "<negative><ability> is still on cooldown."
     # The message to send to the player whenever an ability is no longer on cooldown
     # Supports <ability> as a placeholder for the ability that was on cooldown.
-    ability-no-longer-on-cooldown: "<primary><ability> <body>is now off cooldown!"
+    ability-no-longer-on-cooldown: "<ability> <body>is now off cooldown!"
   # Configure messages for when abilities are unlocked
   # Supports <ability> as a placeholder for the ability name
   unlock:
@@ -109,7 +109,7 @@ ability:
     bleed:
       display-item:
         # Allows you to configure how this ability's name will be displayed
-        name: "<ability-innate><ability>"
+        name: "<ability-innate><ability></ability-innate>"
         # The name of this ability to be displayed across McRPG
         ability-name: "Bleed"
         material: REDSTONE
@@ -123,7 +123,7 @@ ability:
     # Configure localization for the Deeper Wound ability
     deeper-wound:
       display-item:
-        name: "<ability-passive><ability>"
+        name: "<ability-passive><ability></ability-passive>"
         ability-name: "Deeper Wound"
         material: RED_DYE
         # Supports the following placeholders: <skill>, <activation-chance>, <additional-bleed-cycles>, <tier>
@@ -137,7 +137,7 @@ ability:
     # Configure localization for the Enhanced Bleed ability
     enhanced-bleed:
       display-item:
-        name: "<ability-passive><ability>"
+        name: "<ability-passive><ability></ability-passive>"
         ability-name: "Enhanced Bleed"
         material: SPIDER_EYE
         lore:
@@ -151,7 +151,7 @@ ability:
           - '<body>Bonus Damage: <primary><bonus-damage>'
     rage-spike:
       display-item:
-        name: "<ability-active><ability>"
+        name: "<ability-active><ability></ability-active>"
         ability-name: "Rage Spike"
         material: IRON_SWORD
         lore:
@@ -164,7 +164,7 @@ ability:
           - '<body>Cooldown: <primary><cooldown>'
     serrated-strikes:
       display-item:
-        name: "<ability-active><ability>"
+        name: "<ability-active><ability></ability-active>"
         ability-name: "Serrated Strikes"
         material: STONE_SWORD
         lore:
@@ -178,7 +178,7 @@ ability:
           - '<body>Cooldown: <primary><cooldown>'
     vampire:
       display-item:
-        name: "<ability-passive><ability>"
+        name: "<ability-passive><ability></ability-passive>"
         ability-name: "Vampire"
         material: GHAST_TEAR
         lore:
@@ -191,7 +191,7 @@ ability:
           - '<body>Healing Amount: <primary><healing-amount>'
     extra-ore:
       display-item:
-        name: "<ability-innate><ability>"
+        name: "<ability-innate><ability></ability-innate>"
         ability-name: "Extra Ore"
         material: DIAMOND
         amount: 2
@@ -203,7 +203,7 @@ ability:
           - '<body>Activation Chance: <primary><activation-chance>'
     its-a-triple:
       display-item:
-        name: "<ability-passive><ability>"
+        name: "<ability-passive><ability></ability-passive>"
         ability-name: "It's A Triple"
         material: DIAMOND
         amount: 3
@@ -216,7 +216,7 @@ ability:
           - '<body>Activation Chance: <primary><activation-chance>'
     ore-scanner:
       display-item:
-        name: "<ability-active><ability>"
+        name: "<ability-active><ability></ability-active>"
         ability-name: "Ore Scanner"
         material: DIAMOND_ORE
         lore:
@@ -229,7 +229,7 @@ ability:
       block-detected: "<body>You've detected <primary><count> <block_type> <body>near you."
     remote-transfer:
       display-item:
-        name: "<ability-passive><ability>"
+        name: "<ability-passive><ability></ability-passive>"
         ability-name: "Remote Transfer"
         material: CHEST
         lore:
@@ -242,7 +242,7 @@ ability:
           - '<body>Transfer Range: <primary><range>'
     dryads-gift:
       display-item:
-        name: "<ability-passive><ability>"
+        name: "<ability-passive><ability></ability-passive>"
         ability-name: "Dryad's Gift"
         material: EXPERIENCE_BOTTLE
         lore:
@@ -255,7 +255,7 @@ ability:
           - '<body>Experience Dropped: <primary><experience-dropped>'
     extra-lumber:
       display-item:
-        name: "<ability-innate><ability>"
+        name: "<ability-innate><ability></ability-innate>"
         ability-name: "Extra Lumber"
         material: OAK_LOG
         amount: 2
@@ -267,7 +267,7 @@ ability:
           - '<body>Activation Chance: <primary><activation-chance>'
     nymphs-vitality:
       display-item:
-        name: "<ability-passive><ability>"
+        name: "<ability-passive><ability></ability-passive>"
         ability-name: "Nymph's Vitality"
         material: OAK_SAPLING
         lore:
@@ -279,7 +279,7 @@ ability:
           - '<body>Minimum Hunger: <primary><minimum-hunger>'
     heavy-swing:
       display-item:
-        name: "<ability-passive><ability>"
+        name: "<ability-passive><ability></ability-passive>"
         ability-name: "Heavy Swing"
         material: NETHERITE_AXE
         lore:
@@ -292,7 +292,7 @@ ability:
           - '<body>Radius: <primary><radius>'
     verdant-surge:
       display-item:
-        name: "<ability-active><ability>"
+        name: "<ability-active><ability></ability-active>"
         ability-name: "Verdant Surge"
         material: BONE_MEAL
         lore:
@@ -306,7 +306,7 @@ ability:
           - '<body>Cooldown: <primary><cooldown>'
     mass-harvest:
       display-item:
-        name: "<ability-active><ability>"
+        name: "<ability-active><ability></ability-active>"
         ability-name: "Mass Harvest"
         material: IRON_HOE
         lore:
@@ -319,7 +319,7 @@ ability:
           - '<body>Cooldown: <primary><cooldown>'
     too-many-plants:
       display-item:
-        name: "<ability-innate><ability>"
+        name: "<ability-innate><ability></ability-innate>"
         ability-name: "Too Many Plants"
         material: CARROT
         amount: 2
@@ -331,7 +331,7 @@ ability:
           - '<body>Activation Chance: <primary><activation-chance>'
     instant-irrigation:
       display-item:
-        name: "<ability-innate><ability>"
+        name: "<ability-innate><ability></ability-innate>"
         ability-name: "Instant Irrigation"
         material: WATER_BUCKET
         lore:

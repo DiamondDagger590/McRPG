@@ -52,6 +52,11 @@ public class AbilityToggledOffAttribute extends OptionalSavingAbilityAttribute<B
     }
 
     @Override
+    public int getDisplayPriority() {
+        return 10;
+    }
+
+    @Override
     @NotNull
     public McRPGSlot getSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
         return new McRPGSlot() {

@@ -2,7 +2,7 @@
 
 > **HLD Reference:** [docs/hld/gui-ux-system.md](../../hld/gui-ux-system.md)
 > **Phase 2 LLD:** [phase-2-ability-display-overhaul.md](phase-2-ability-display-overhaul.md)
-> **Status:** Pending
+> **Status:** Complete
 
 ## Scope
 
@@ -22,6 +22,15 @@ Phase 3 introduces a dedicated `UpgradeQuestSlot` to the Ability Edit GUI, repla
 - New locale entries in `en_gui.yml` under `ability-edit-gui.upgrade-quest-slot`
 - New `en_gui.yml` entry for quest detail back button from ability edit
 - Unit tests
+
+**Also implemented during this phase (post-LLD refinements):**
+- `Ability.getColoredName(McRPGPlayer)` default method on the `Ability` interface, overridden by `ConfigurableAbility` to return palette-resolved, self-closing MiniMessage strings from the locale `name:` field
+- All 18 ability `name:` fields in `en_abilities.yml` updated to include closing palette tags (e.g., `<ability-passive><ability></ability-passive>`) so the colored name is self-contained
+- `UpgradeQuestSlot`, `RemoteTransferGui`, `OnComboCompleteListener`, `OnAbilityCooldownExpireListener`, and `LoadoutSelectionSlot` use `getColoredName()` for the `<ability>` placeholder
+- `AbilityUpgradeRewardType` and `AbilityUpgradeNextTierRewardType` resolve ability names from the registry via `getColoredName(player)` instead of title-casing registry keys
+- `LoadoutSetCommand` includes a `<loadout-name>` placeholder from `LoadoutDisplay.getDisplayName()`
+- Locale templates in `en_abilities.yml`, `en_gui.yml`, `en_commands.yml`, and `en_quest.yml` updated to remove redundant color wrappers around `<ability>` and to use palette tags instead of deprecated `<gray>`/`<gold>`
+- `AbilityLoreAppender` retains `getName()` (not `getColoredName()`) because its placeholder map merges into `AbilityItemBuilder` and would override the item name placeholder — the locale `name:` field on the item already handles ability name coloring
 
 **Out of scope (later phases):**
 - Color sweep of remaining locale files: `en.yml`, `en_skills.yml`, `en_quest.yml`, `en_stats.yml` (Phase 4)
@@ -226,7 +235,7 @@ public class UpgradeQuestSlot implements McRPGSlot {
         itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
 
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("ability", ability.getName(mcRPGPlayer));
+        placeholders.put("ability", ability.getColoredName(mcRPGPlayer));
         placeholders.put("upgrade-quest-progress", questInstance.getOverallProgressBar(20));
         placeholders.put("quest-percent", formatProgressPercent(mcRPGPlayer));
 
@@ -250,7 +259,7 @@ public class UpgradeQuestSlot implements McRPGSlot {
         itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
 
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("ability", ability.getName(mcRPGPlayer));
+        placeholders.put("ability", ability.getColoredName(mcRPGPlayer));
         populateTierLevelPlaceholders(placeholders, mcRPGPlayer);
 
         itemBuilder.setPlaceholders(placeholders);
@@ -271,7 +280,7 @@ public class UpgradeQuestSlot implements McRPGSlot {
         itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
 
         Map<String, String> placeholders = new HashMap<>();
-        placeholders.put("ability", ability.getName(mcRPGPlayer));
+        placeholders.put("ability", ability.getColoredName(mcRPGPlayer));
         itemBuilder.setPlaceholders(placeholders);
         return itemBuilder;
     }
@@ -610,7 +619,112 @@ The `getAppendLore()` method currently builds quest progress lore that was consu
 
 **No functional changes needed** — the method continues to work exactly as before. The only change is removing the import of `AbilityLoreAppender` from `AbilityTierAttribute.java` (which is deleted as part of the `getSlot()` removal).
 
-### 2.7 `LocalizationKey` — Add New Route Constants
+**Note:** `AbilityLoreAppender` continues to use `ability.getName()` (not `getColoredName()`) for its `"ability"` placeholder. Its placeholder map merges into `AbilityItemBuilder`'s map, and using a pre-colored string there would override the item name with raw MiniMessage tags that the `ItemBuilder` rendering path doesn't re-parse. The locale `name:` field on the item already handles ability name coloring.
+
+### 2.7 `Ability.getColoredName()` — Unified Colored Ability Name (Post-LLD Refinement)
+
+Added during implementation to unify ability name coloring across GUIs, chat messages, and reward descriptions.
+
+**`Ability` interface** gains a new default method:
+
+```java
+@NotNull
+default String getColoredName(@NotNull McRPGPlayer player) {
+    return getName(player);
+}
+```
+
+The default returns the plain name so non-configurable abilities and third-party implementations work without changes.
+
+**`ConfigurableAbility` interface** overrides this to resolve the palette-colored name from the locale `name:` field:
+
+```java
+@NotNull
+@Override
+default String getColoredName(@NotNull McRPGPlayer player) {
+    McRPGLocalizationManager localizationManager = player.getPlugin().registryAccess()
+            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+    return localizationManager.getLocalizedMessage(
+            player,
+            Route.addTo(getDisplayItemRoute(), ItemBuilderConfigurationKeys.NAME),
+            Map.of("ability", getName(player)));
+}
+```
+
+This returns the fully resolved string including palette color tags. The locale `name:` fields include closing tags to prevent color bleed (e.g., `<ability-passive><ability></ability-passive>`), so the returned string is self-contained.
+
+**Callers updated to use `getColoredName()`:**
+
+| Caller | Placeholder Key | Notes |
+|--------|----------------|-------|
+| `UpgradeQuestSlot` (3 places) | `"ability"` | All three build methods |
+| `RemoteTransferGui` | `"ability"` | Previous GUI slot |
+| `OnComboCompleteListener` (2 places) | `"ability"` | Cooldown + mana insufficient messages |
+| `OnAbilityCooldownExpireListener` | `"ability"` | Cooldown expired message |
+| `AbilityUpgradeRewardType.describeForDisplay(McRPGPlayer)` | `"ability"` | Registry lookup + `getColoredName()` |
+| `AbilityUpgradeNextTierRewardType.describeForDisplay(McRPGPlayer)` | `"ability"` | Registry lookup + `getColoredName()` |
+| `LoadoutSelectionSlot.appendActiveAbilitiesPreview()` | inline | Registry lookup + `getColoredName()` (replaced `formatAbilityName()` + `<gold>`) |
+
+**Callers that intentionally keep `getName()`:**
+
+| Caller | Reason |
+|--------|--------|
+| `AbilityLoreAppender` | Placeholder map merges into `AbilityItemBuilder` — colored name would produce raw tags in item name |
+
+### 2.8 Locale Changes — Ability Name Self-Closing Tags
+
+All 18 ability `name:` entries in `en_abilities.yml` were updated to include explicit closing palette tags so the colored name string is self-contained and does not bleed color into adjacent text:
+
+```yaml
+# Before:
+name: "<ability-innate><ability>"
+
+# After:
+name: "<ability-innate><ability></ability-innate>"
+```
+
+The three patterns used:
+
+| Ability Type | Locale Pattern |
+|---|---|
+| Active (`ComboActivatable`) | `<ability-active><ability></ability-active>` |
+| Passive (tierable/unlockable) | `<ability-passive><ability></ability-passive>` |
+| Innate (always-on) | `<ability-innate><ability></ability-innate>` |
+
+### 2.9 Locale Changes — Chat and Reward Templates
+
+Chat templates in `en_abilities.yml` were updated to remove redundant color wrappers around `<ability>` since the placeholder now carries its own color:
+
+```yaml
+# Before:
+cooldown-active: "<negative><ability> is on cooldown! ..."
+
+# After:
+cooldown-active: "<ability> <negative>is on cooldown! ..."
+```
+
+Similar updates in `en_quest.yml` for reward format templates and `en_commands.yml` for the loadout set success message.
+
+### 2.10 `LoadoutSetCommand` — Loadout Name Placeholder
+
+The success message now includes a `<loadout-name>` placeholder populated from `LoadoutDisplay.getDisplayName()`:
+
+```java
+successPlaceholders.put("loadout-name",
+    found.loadout().getDisplay().getDisplayName().orElse("Loadout " + loadoutSlot));
+```
+
+The `en_commands.yml` entry was updated:
+
+```yaml
+loadout-set-success-message: "<body>Your active loadout is now <primary><loadout-name><body>."
+```
+
+### 2.11 `LoadoutSelectionSlot` — Colored Ability Preview
+
+The `appendActiveAbilitiesPreview()` method was updated to look up abilities from the registry and call `getColoredName(mcRPGPlayer)` instead of title-casing registry keys and wrapping them in `<gold>`. The unused `formatAbilityName()` helper was removed.
+
+### 2.12 `LocalizationKey` — New Route Constants
 
 ```java
 // Upgrade Quest Slot (under ability-edit-gui)
@@ -700,7 +814,7 @@ UpgradeQuestSlot.buildActiveQuestItem(mcRPGPlayer)
   ├─> Resolve localized section from UPGRADE_QUEST_SLOT_ACTIVE_DISPLAY_ITEM
   ├─> Apply palette replacements
   ├─> Build placeholders:
-  │   ├─> "ability" → ability.getName(mcRPGPlayer)
+  │   ├─> "ability" → ability.getColoredName(mcRPGPlayer)
   │   ├─> "upgrade-quest-progress" → questInstance.getOverallProgressBar(20)
   │   ├─> "quest-percent" → formatted percentage (0-1 max decimal digits)
   │   └─> appendObjectiveSummary():
@@ -756,7 +870,7 @@ Player clicks back button in QuestDetailGui (fromAbilityEdit=true)
           name: "<primary>Upgrade Quest"
           material: WRITABLE_BOOK
           lore:
-            - "<body>Quest progress for <primary><ability><body>:"
+            - "<body>Quest progress for <ability>:"
             - "<upgrade-quest-progress> <body>(<primary><quest-percent>%<body>)"
             - ""
             - "<body>Current objectives:"
@@ -771,7 +885,7 @@ Player clicks back button in QuestDetailGui (fromAbilityEdit=true)
           material: BOOK
           lore:
             - "<body>No active upgrade quest for"
-            - "<primary><ability><body>."
+            - "<ability>."
             - ""
             - "<body>Next upgrade available at"
             - "<primary><skill> <body>level <primary><next-tier-level><body>."
@@ -782,7 +896,7 @@ Player clicks back button in QuestDetailGui (fromAbilityEdit=true)
           name: "<primary>Upgrade Quest"
           material: ENCHANTED_BOOK
           lore:
-            - "<primary><ability> <body>has reached its"
+            - "<ability> <body>has reached its"
             - "<body>maximum tier."
             - ""
             - "<positive>Fully upgraded!"
@@ -866,26 +980,30 @@ The implementation iterates `questInstance.getActiveQuestStages()`, then each st
 - Back button click opens `AbilityAttributeEditGui` with the correct ability
 - Existing factory methods (`forActiveQuest`, `forCompletedQuest`, `forBoardPreview`) are unaffected — `fromAbilityEdit=false`
 
-### 7.5 `AbilityAttributeEditGuiSlotPresenceTest`
+### 7.5 `AbilityAttributeEditGuiSlotOrderTest`
 
-- `AbilityTierAttribute` does NOT produce a slot (no longer `GuiModifiableAttribute`)
-- `AbilityUpgradeQuestAttribute` DOES produce a slot (now `GuiModifiableAttribute`)
-- GUI slot count reflects the removal of tier slot and addition of quest slot
-- Other `GuiModifiableAttribute` implementations (toggle, location, etc.) still produce slots
+- Default `getDisplayPriority()` returns 50
+- Slots sorted by priority produce the correct relative order (toggle before quest before location)
+- Built-in attribute priorities are all below the third-party threshold (50)
 
-### 7.6 `AbilityAttributeEditGuiSlotOrderTest`
+**Removed during implementation review:** Per-attribute exact priority value assertions (e.g., toggle=10, quest=20) were deemed too brittle — the relative order and contract tests above are sufficient.
 
-- Slots appear sorted by `getDisplayPriority()` — toggle (10) before quest (20) before location (30)
-- Two attributes with equal priority maintain stable ordering (no exception, no flicker)
-- Third-party attributes with default priority (50) sort after all built-in attributes
-- Adding/removing attributes does not change the relative order of remaining slots
+**Removed:** `AbilityAttributeEditGuiSlotPresenceTest` — deemed too brittle and redundant; the ordering tests and the state resolution tests already cover the relevant behavior.
 
-### 7.7 `UpgradeQuestSlotObjectiveSummaryTest`
+### 7.6 `UpgradeQuestSlotObjectiveSummaryTest`
 
 - Single objective in active stage → summary shows one line with description and progress
 - Multiple objectives in active stage → summary shows one line per objective
 - Multiple active stages (parallel phases) → summary shows objectives from all active stages
 - Quest with no active stages (edge case) → summary placeholder is empty string
+
+### 7.7 `AbilityUpgradeRewardTypeDisplayTest`
+
+Added during the ability name unification pass:
+- Registered ability key → `describeForDisplay(player)` uses `getColoredName()` from the registry
+- Unregistered ability key → falls back to title-cased key string
+- Null ability key → uses "Unknown"
+- Same three cases repeated for `AbilityUpgradeNextTierRewardType`
 
 ---
 
@@ -918,6 +1036,14 @@ The implementation iterates `questInstance.getActiveQuestStages()`, then each st
 13. **Objective summary covers all active stages**: Upgrade quests could theoretically have multi-phase structures with parallel stages. Rather than showing only the first active stage's objectives (which could confuse a player who sees "100% complete" on the first stage but the quest isn't done), the summary iterates all active stages. For typical single-stage upgrade quests this changes nothing; for complex ones it provides full visibility.
 
 14. **Upgrade quests are non-abandonable — no new code needed**: The `QuestDetailGui.paintInventory()` already checks `questInstance.getQuestSource().isAbandonable()` before showing the abandon slot. Upgrade quests use a source type that returns `false`, so the abandon button is naturally suppressed. This phase does not add any abandon-prevention logic — it relies on the existing source-based gate.
+
+15. **Closing palette tags in locale YAML, not Java**: The initial implementation attempted to programmatically append MiniMessage closing tags in `ConfigurableAbility.getColoredName()` via an `appendCloseTag()` helper. This was replaced during review with explicit closing tags in the locale YAML `name:` fields (e.g., `</ability-passive>`). This approach is simpler, keeps Java code clean, and lets server owners control color boundaries directly in configuration.
+
+16. **`AbilityLoreAppender` keeps `getName()` — not `getColoredName()`**: Switching `AbilityLoreAppender` to `getColoredName()` caused raw MiniMessage tags to appear in the item display name. The root cause: the lore appender's placeholder map merges into `AbilityItemBuilder`'s map, overriding the `"ability"` key. The `ItemBuilder` rendering path for item names does not re-parse MiniMessage on already-substituted strings. The locale `name:` field on the item handles coloring independently, so the lore appender's placeholder should remain the plain name.
+
+17. **Loadout command displays custom name**: The `LoadoutSetCommand` success message was updated to show the loadout's display name instead of just the slot number. This was a gap identified during the ability name unification — the palette-tagged message template uses `<loadout-name>` with a fallback to `"Loadout N"` when no custom name is set.
+
+18. **Ability name unification across surfaces**: Rather than coloring ability names per-callsite with hardcoded tags, a centralized `getColoredName()` method on the `Ability` interface ensures consistent type-colored names everywhere. Callsites that previously used `<gold><ability>`, `<primary><ability>`, or title-cased keys now call `getColoredName()` and let the locale define the color. This is additive and backward-compatible — the default implementation returns `getName()`.
 
 ---
 

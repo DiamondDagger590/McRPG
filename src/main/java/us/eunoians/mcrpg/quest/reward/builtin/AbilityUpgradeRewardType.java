@@ -169,7 +169,7 @@ public class AbilityUpgradeRewardType implements QuestRewardType {
         var localization = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
-        Map<String, String> vars = rewardVars();
+        Map<String, String> vars = rewardVars(player);
         String label;
 
         if (localizationRoute != null) {
@@ -205,13 +205,39 @@ public class AbilityUpgradeRewardType implements QuestRewardType {
     }
 
     /**
-     * Builds the placeholder variable map for MiniMessage resolution.
+     * Builds the placeholder variable map for MiniMessage resolution without a player context.
+     * Falls back to title-casing the registry key when no player is available.
      * Keys match the placeholders documented in {@code en_quest.yml}:
      * {@code <ability>} and {@code <tier>}.
      */
     @NotNull
     private Map<String, String> rewardVars() {
         String abilityName = abilityKey != null ? formatAbilityName(abilityKey.getKey()) : "Unknown";
+        return Map.of("ability", abilityName, "tier", String.valueOf(targetTier));
+    }
+
+    /**
+     * Builds the placeholder variable map for MiniMessage resolution with a player context.
+     * Looks up the {@link Ability} from the registry and calls {@link Ability#getColoredName(McRPGPlayer)}
+     * so the ability name carries its type-color and is self-closing.
+     * Falls back to title-casing the registry key if the ability is not registered.
+     *
+     * @param player The player whose locale chain is used for name resolution.
+     * @return A map containing {@code ability} (colored name) and {@code tier}.
+     */
+    @NotNull
+    private Map<String, String> rewardVars(@NotNull McRPGPlayer player) {
+        String abilityName;
+        if (abilityKey != null) {
+            AbilityRegistry abilityRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY);
+            if (abilityRegistry.registered(abilityKey)) {
+                abilityName = abilityRegistry.getRegisteredAbility(abilityKey).getColoredName(player);
+            } else {
+                abilityName = formatAbilityName(abilityKey.getKey());
+            }
+        } else {
+            abilityName = "Unknown";
+        }
         return Map.of("ability", abilityName, "tier", String.valueOf(targetTier));
     }
 

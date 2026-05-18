@@ -162,14 +162,14 @@ quest-reward-types:
   #               (e.g. "mcrpg:bleed" becomes "Bleed")
   #   <tier>    — the target tier number configured on the reward
   ability-upgrade:
-    format: "Upgrade: <ability> (Tier <tier>)"
+    format: "<body>Upgrade: <ability> <body>(Tier <primary><tier><body>)"
 
   # mcrpg:ability_upgrade_next_tier — upgrades an ability to whatever
   # its next unlocked tier is at grant time.
   # Placeholders:
   #   <ability> — formatted ability name (same derivation as above)
   ability-upgrade-next-tier:
-    format: "Upgrade: <ability> (Next Tier)"
+    format: "<body>Upgrade: <ability> <body>(Next Tier)"
 
 # Display names for quest templates.
 # These are resolved via the 'display-name-route' field on each template definition.

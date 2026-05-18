@@ -64,6 +64,11 @@ public class AbilityLocationAttribute extends OptionalSavingAbilityAttribute<Loc
         return Methods.serializeLocation(getContent());
     }
 
+    @Override
+    public int getDisplayPriority() {
+        return 30;
+    }
+
     @NotNull
     @Override
     public McRPGSlot getSlot(@NotNull McRPGPlayer player, @NotNull Ability ability) {

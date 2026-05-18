@@ -51,6 +51,11 @@ public class MassHarvestPullItemsAttribute extends OptionalSavingAbilityAttribut
         return true;
     }
 
+    @Override
+    public int getDisplayPriority() {
+        return 40;
+    }
+
     @NotNull
     public McRPGSlot getSlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
         return new McRPGSlot() {

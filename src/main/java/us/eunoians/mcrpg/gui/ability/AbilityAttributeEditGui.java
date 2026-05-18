@@ -22,6 +22,7 @@ import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -60,9 +61,13 @@ public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements Fil
             throw new InventoryAlreadyExistsForGuiException(this);
         } else {
             int size = getModifiableAttributes().size();
-            this.inventory = Bukkit.createInventory(player, Math.min(54, Math.max(9, Math.min(54, size % 9 != 0 ? (size / 9) * 9 + 9 : size) + 9)),
-                    getCreatingPlayer().getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
-                            .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.ABILITY_EDIT_GUI_TITLE, Map.of("ability", ability.getName(getCreatingPlayer()))));
+            this.inventory = Bukkit.createInventory(player,
+                    Math.min(54, Math.max(9, Math.min(54, size % 9 != 0 ? (size / 9) * 9 + 9 : size) + 9)),
+                    getCreatingPlayer().getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                            .manager(McRPGManagerKey.LOCALIZATION)
+                            .getLocalizedMessageAsComponent(getCreatingPlayer(),
+                                    LocalizationKey.ABILITY_EDIT_GUI_TITLE,
+                                    Map.of("ability", ability.getColoredName(getCreatingPlayer()))));
             paintInventory();
         }
     }
@@ -116,9 +121,11 @@ public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements Fil
     }
 
     /**
-     * Get a {@link List} of all {@link GuiModifiableAttribute}s for the {@link Ability} being modified.
+     * Get a {@link List} of all {@link GuiModifiableAttribute}s for the {@link Ability} being modified,
+     * sorted ascending by {@link GuiModifiableAttribute#getDisplayPriority()} so slots always appear in a
+     * stable, predictable position regardless of map iteration order.
      *
-     * @return A {@link List} of all {@link GuiModifiableAttribute}s for the {@link Ability} being modified.
+     * @return A sorted {@link List} of all {@link GuiModifiableAttribute}s for the {@link Ability} being modified.
      */
     @NotNull
     private List<GuiModifiableAttribute> getModifiableAttributes() {
@@ -132,6 +139,7 @@ public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements Fil
                 }
             }
         }
+        modifiableAttributes.sort(Comparator.comparingInt(GuiModifiableAttribute::getDisplayPriority));
         return modifiableAttributes;
     }
 }

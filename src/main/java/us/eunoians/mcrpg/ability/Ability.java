@@ -77,6 +77,29 @@ public interface Ability extends McRPGContent {
     String getName();
 
     /**
+     * Gets the localized name of this ability with its type color tag already resolved to a
+     * MiniMessage-compatible string. For example, a passive ability's locale {@code name:} field
+     * {@code <ability-passive><ability>} resolves to something like
+     * {@code <color:#7FB87F>Enhanced Bleed} after palette replacement.
+     * <p>
+     * This sits between {@link #getName(McRPGPlayer)} (plain text, no color) and
+     * {@link #getDisplayName(McRPGPlayer)} (fully parsed {@link Component}). Use this when
+     * embedding an ability name as a MiniMessage placeholder value where the caller needs the
+     * type color but does not yet want a parsed {@link Component}.
+     * <p>
+     * The default implementation returns {@link #getName(McRPGPlayer)} (no color).
+     * {@link us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility} overrides
+     * this to resolve the locale {@code name:} field with palette substitution.
+     *
+     * @param player The player whose localization and palette to use.
+     * @return A palette-resolved MiniMessage string containing the ability name with its type color.
+     */
+    @NotNull
+    default String getColoredName(@NotNull McRPGPlayer player) {
+        return getName(player);
+    }
+
+    /**
      * Gets the name to display in messages or guis for this ability. This may have a placeholder
      * such as {@code <ability-name>} which should be replaced by {@link #getName()}.
      *

@@ -75,6 +75,11 @@ public class RemoteTransferItemSetAttribute extends OptionalSavingAbilityAttribu
         return getContent().contains(customItemWrapper);
     }
 
+    @Override
+    public int getDisplayPriority() {
+        return 40;
+    }
+
     @NotNull
     @Override
     public McRPGSlot getSlot(@NotNull McRPGPlayer player, @NotNull Ability ability) {

@@ -106,7 +106,7 @@ public class RemoteTransferGui extends McRPGPaginatedGui {
             @Override
             public Map<String, String> getPlaceholders(@NotNull McRPGPlayer mcRPGPlayer) {
                 return Map.of("ability", McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY)
-                        .getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY).getName(mcRPGPlayer));
+                        .getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY).getColoredName(mcRPGPlayer));
             }
         };
     }

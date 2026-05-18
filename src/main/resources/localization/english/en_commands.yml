@@ -134,8 +134,8 @@ commands:
       # Supports the following placeholders: <loadout-matches>
       ambiguous-matches: '<red>Multiple loadouts match that input. Please use a slot number or a more specific name. Matching loadouts: <loadout-matches>'
       # The message to be sent if the loadout was set successfully.
-      # Supports the following placeholders: <loadout-slot>
-      loadout-set-success-message: "<gray>Your active loadout is now <gold>loadout #<loadout-slot></gold>.</gray>"
+      # Supports the following placeholders: <loadout-slot>, <loadout-name>
+      loadout-set-success-message: "<body>Your active loadout is now <primary><loadout-name><body>."
   # Configure /mcrpg admin commands
   admin:
     # Configure the reload command

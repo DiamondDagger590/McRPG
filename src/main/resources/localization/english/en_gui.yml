@@ -312,6 +312,12 @@ gui:
           material: BARRIER
           lore:
             - '<hint>Click <body>to return to active quests.'
+      from-ability-edit:
+        display-item:
+          name: "<primary>Back to Ability Settings"
+          material: BARRIER
+          lore:
+            - '<hint>Click <body>to return to ability settings.'
     # Overview header slot. Placeholders: <quest_name>, <quest_state>, <start_time>,
     # <end_time>, <expiration_time>, <completed_date>, <phase_total>
     overview-slot:
@@ -606,6 +612,44 @@ gui:
         lore:
           - "<hint>Click <body>to edit what blocks can"
           - "<body>and can't be transferred."
+    upgrade-quest-slot:
+      # Shown when the player has an active upgrade quest for this ability.
+      # Placeholders: <ability>, <upgrade-quest-progress>, <quest-percent>, <objective-summary>
+      active:
+        display-item:
+          name: "<primary>Upgrade Quest"
+          material: WRITABLE_BOOK
+          lore:
+            - "<body>Quest progress for <ability>:"
+            - "<upgrade-quest-progress> <body>(<primary><quest-percent>%<body>)"
+            - ""
+            - "<body>Current objectives:"
+            - "<objective-summary>"
+            - ""
+            - "<hint>Click <body>to view quest details."
+      # Shown when no upgrade quest is active and the player hasn't reached the level for the next tier.
+      # Placeholders: <ability>, <next-tier-level>, <skill>
+      locked:
+        display-item:
+          name: "<primary>Upgrade Quest"
+          material: BOOK
+          lore:
+            - "<body>No active upgrade quest for"
+            - "<ability>."
+            - ""
+            - "<body>Next upgrade available at"
+            - "<primary><skill> <body>level <primary><next-tier-level><body>."
+      # Shown when the ability has reached its maximum tier.
+      # Placeholders: <ability>
+      max-tier:
+        display-item:
+          name: "<primary>Upgrade Quest"
+          material: ENCHANTED_BOOK
+          lore:
+            - "<ability> <body>has reached its"
+            - "<body>maximum tier."
+            - ""
+            - "<positive>Fully upgraded!"
     mass-harvest-pull-items-attribute:
       toggled-off:
         display-item:

@@ -1,8 +1,8 @@
 # GUI/UX System & Color Palette
 
 > **Last Updated:** 2026-05-18
-> **Status:** Phases 1–2 complete; Phase 4 partially complete (GUI/commands locale sweep done); Phase 3 pending
-> **Scope:** Unified GUI color palette, navigation standardization, ability display improvements, upgrade quest slot separation
+> **Status:** Phases 1–3 complete; Phase 4 partially complete (GUI/commands locale sweep done)
+> **Scope:** Unified GUI color palette, navigation standardization, ability display improvements, upgrade quest slot separation, ability name unification
 
 ---
 
@@ -230,9 +230,9 @@ The GUI needs to communicate ability type to the player. Classification uses exi
 
 There is no `InnateAbility` interface — "innate" is a data-level concept (no unlock attribute), not a type-level one. The existing `InnateAbilityFilter` uses this same detection.
 
-### 2. Ability Item Lore Structure (Target State)
+### 2. Ability Item Lore Structure (Current State)
 
-After this system is implemented, ability items in the Viewing Abilities GUI will display:
+Ability items in the Viewing Abilities GUI display:
 
 ```
 [Ability Name]                          ← colored by type
@@ -253,12 +253,14 @@ Upgrade Quest Progress: ████████░░      ← existing, from A
 
 ### 3. Upgrade Quest Slot (Ability Edit GUI)
 
-Currently, upgrade quest progress is crammed onto the tier attribute item via `AbilityLoreAppender`. This system introduces a dedicated `UpgradeQuestSlot`:
+The dedicated `UpgradeQuestSlot` (implemented in Phase 3) replaces the quest progress lore that was previously crammed onto the tier attribute item. The tier slot was removed from the Edit GUI entirely — tier information remains visible on the ability item in the Viewing Abilities GUI.
 
-- **Has active quest**: Shows progress bar, quest name, "Click to view quest details" — click navigates to `QuestDetailGui`
-- **No active quest**: Shows disabled state item ("No Active Upgrade Quest")
+Three display states:
+- **Active quest** (`WRITABLE_BOOK`): Shows progress bar, objective summary, click hint to navigate to `QuestDetailGui`
+- **Locked behind level** (`BOOK`): Shows next tier level requirement and skill name
+- **Max tier reached** (`ENCHANTED_BOOK`): Shows "Fully upgraded!" — no click action
 
-The tier attribute item (`AbilityTierAttribute.getSlot()`) stops calling `AbilityLoreAppender.getAppendLore()` for quest progress — it only shows tier number and upgrade eligibility.
+The slot uses `ability.getColoredName()` for the `<ability>` placeholder, so ability names are consistently colored by type across all three states. Orphaned quest UUIDs (from server crashes or edge cases) are self-healed on GUI open.
 
 ### 4. Navigation Standardization
 
@@ -282,6 +284,8 @@ All back buttons follow one pattern:
 
 - New abilities registered via `ContentExpansion` automatically appear in the Ability GUI with correct type coloring if they implement the standard type interfaces.
 - The `UpgradeQuestSlot` works with any `TierableAbility` that has an `AbilityUpgradeQuestAttribute`, including third-party abilities.
+- `Ability.getColoredName(McRPGPlayer)` returns a self-closing palette-colored string for any `ConfigurableAbility`. Third-party abilities inheriting `ConfigurableAbility` automatically get type-colored names from their locale `name:` field. Non-configurable abilities return `getName()` by default — override `getColoredName()` to customize.
+- Ability locale `name:` fields should include closing palette tags (e.g., `<ability-active><ability></ability-active>`) to prevent color bleed into adjacent text. The `AbilityNameColorConsistencyTest` enforces this for bundled abilities.
 
 ---
 
@@ -306,12 +310,17 @@ Each phase gets its own LLD when implementation begins.
 - Implemented dynamic palette tag support; removed 10 individual `PALETTE_*` route constants
 - Click hints use the verb-only format: `<hint>Left-click <body>to enable` (see rule #4)
 
-### Phase 3: Ability Edit GUI Quest Slot (Pending)
+### Phase 3: Ability Edit GUI Quest Slot + Ability Name Unification ✅ Complete
 
-- Create `UpgradeQuestSlot` class with quest detail navigation
-- Add to `AbilityAttributeEditGui` layout
-- Remove quest progress lore from `AbilityTierAttribute` tier item
-- New locale keys in `en_gui.yml`
+- Created `UpgradeQuestSlot` with three display states (active quest, locked behind level, max tier) and click navigation to `QuestDetailGui`
+- `AbilityUpgradeQuestAttribute` implements `GuiModifiableAttribute`; `AbilityTierAttribute` no longer does — tier slot removed from Edit GUI
+- `GuiModifiableAttribute.getDisplayPriority()` default method (returns 50) with built-in overrides for deterministic slot ordering
+- `QuestDetailGui.forUpgradeQuest()` factory method with back navigation to `AbilityAttributeEditGui`
+- New locale keys in `en_gui.yml` for all three slot states and the ability-edit back button
+- **Ability name unification (post-LLD refinement):** `Ability.getColoredName(McRPGPlayer)` method returns palette-resolved, self-closing MiniMessage strings from locale `name:` fields. Used across `UpgradeQuestSlot`, `RemoteTransferGui`, combo/cooldown listeners, reward type descriptions, and `LoadoutSelectionSlot` ability preview
+- All 18 ability `name:` fields in `en_abilities.yml` include closing palette tags (e.g., `</ability-passive>`) to prevent color bleed
+- `LoadoutSetCommand` success message shows custom loadout display name via `<loadout-name>` placeholder
+- Locale templates in `en_abilities.yml`, `en_gui.yml`, `en_commands.yml`, `en_quest.yml` updated to remove redundant color wrappers around `<ability>` placeholder
 
 ### Phase 4: Remaining Locale Sweep (Partially Complete)
 

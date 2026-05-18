@@ -22,4 +22,18 @@ public interface GuiModifiableAttribute {
      */
     @NotNull
     McRPGSlot getSlot(@NotNull McRPGPlayer player, @NotNull Ability ability);
+
+    /**
+     * Determines the display order of this attribute's slot in the {@link AbilityAttributeEditGui}.
+     * Lower values appear earlier (top-left of the inventory). Slots with equal priority maintain
+     * arbitrary order relative to each other.
+     * <p>
+     * Built-in McRPG attributes use priorities 10–40, leaving space for expansions at the default
+     * value of 50 to sort after all built-in attributes without displacing them.
+     *
+     * @return The display priority for this attribute's GUI slot.
+     */
+    default int getDisplayPriority() {
+        return 50;
+    }
 }

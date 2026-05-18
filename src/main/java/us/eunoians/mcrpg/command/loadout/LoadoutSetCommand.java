@@ -55,7 +55,9 @@ public class LoadoutSetCommand extends McRPGCommandBase {
                             if (resolution instanceof LoadoutResolution.Found found) {
                                 int loadoutSlot = found.loadout().getLoadoutSlot();
                                 loadoutHolder.setCurrentLoadoutSlot(loadoutSlot);
-                                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LOADOUT_SET_COMMAND_LOADOUT_SET_SUCCESS_MESSAGE, getSlotPlaceholders(loadoutSlot)));
+                                Map<String, String> successPlaceholders = new HashMap<>(getSlotPlaceholders(loadoutSlot));
+                                successPlaceholders.put("loadout-name", found.loadout().getDisplay().getDisplayName().orElse("Loadout " + loadoutSlot));
+                                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LOADOUT_SET_COMMAND_LOADOUT_SET_SUCCESS_MESSAGE, successPlaceholders));
                             } else if (resolution instanceof LoadoutResolution.Ambiguous ambiguous) {
                                 player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LOADOUT_SET_COMMAND_AMBIGUOUS_MATCHES_MESSAGE, getMatchesPlaceholders(ambiguous.matches())));
                             } else {

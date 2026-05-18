@@ -407,6 +407,8 @@ public final class LocalizationKey extends ConfigFile {
             Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "previous-gui-button.from-history.display-item"));
     public static final Route QUEST_DETAIL_GUI_PREVIOUS_FROM_ACTIVE_BUTTON_DISPLAY_ITEM =
             Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "previous-gui-button.from-active.display-item"));
+    public static final Route QUEST_DETAIL_GUI_PREVIOUS_FROM_ABILITY_EDIT_BUTTON_DISPLAY_ITEM =
+            Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "previous-gui-button.from-ability-edit.display-item"));
     public static final Route QUEST_DETAIL_GUI_OVERVIEW_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "overview-slot.display-item"));
     public static final Route QUEST_DETAIL_GUI_PHASE_HEADER_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "phase-header.display-item"));
     public static final Route QUEST_DETAIL_GUI_STAGE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.display-item"));
@@ -474,6 +476,10 @@ public final class LocalizationKey extends ConfigFile {
     private static final String MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_HEADER = toRoutePath(ABILITY_EDIT_GUI_HEADER, "mass-harvest-pull-items-attribute");
     public static final Route MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_HEADER, "toggled-off.display-item"));
     public static final Route MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(MASS_HARVEST_PULL_ITEMS_ATTRIBUTE_HEADER, "toggled-on.display-item"));
+    private static final String UPGRADE_QUEST_SLOT_HEADER = toRoutePath(ABILITY_EDIT_GUI_HEADER, "upgrade-quest-slot");
+    public static final Route UPGRADE_QUEST_SLOT_ACTIVE_DISPLAY_ITEM = Route.fromString(toRoutePath(UPGRADE_QUEST_SLOT_HEADER, "active.display-item"));
+    public static final Route UPGRADE_QUEST_SLOT_LOCKED_DISPLAY_ITEM = Route.fromString(toRoutePath(UPGRADE_QUEST_SLOT_HEADER, "locked.display-item"));
+    public static final Route UPGRADE_QUEST_SLOT_MAX_TIER_DISPLAY_ITEM = Route.fromString(toRoutePath(UPGRADE_QUEST_SLOT_HEADER, "max-tier.display-item"));
 
     private static final String LOADOUT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-gui");
     public static final Route LOADOUT_GUI_TITLE =  Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "title"));
