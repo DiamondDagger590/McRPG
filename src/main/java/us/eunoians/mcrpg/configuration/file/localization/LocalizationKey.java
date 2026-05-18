@@ -372,6 +372,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_BOARD_GROUP_NO_PERMISSION = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-no-permission"));
     public static final Route QUEST_BOARD_GROUP_SLOTS_FULL = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-slots-full"));
     public static final Route QUEST_BOARD_GROUP_ENTITY_LORE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-entity-lore"));
+    public static final Route QUEST_BOARD_GROUP_ENTITY_SELECT_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "group-entity-select-slot.display-item"));
 
     // Active Quest GUI
     private static final String ACTIVE_QUEST_GUI_HEADER = toRoutePath(GUI_HEADER, "active-quest-gui");
@@ -607,6 +608,33 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ABILITY_LOCKED_LORE = Route.fromString(toRoutePath(ABILITY_LORE_HEADER, "ability-locked"));
     public static final Route EXPANSION_PACK_LORE = Route.fromString(toRoutePath(ABILITY_LORE_HEADER, "expansion-pack"));
 
+    private static final String ABILITY_LORE_TYPE_HEADER = toRoutePath(ABILITY_LORE_HEADER, "type");
+    /** Type tag for active (ComboActivatable) abilities. */
+    public static final Route ABILITY_LORE_TYPE_ACTIVE = Route.fromString(toRoutePath(ABILITY_LORE_TYPE_HEADER, "active"));
+    /** Type tag for passive abilities (PassiveAbility + has ABILITY_UNLOCKED_ATTRIBUTE). */
+    public static final Route ABILITY_LORE_TYPE_PASSIVE = Route.fromString(toRoutePath(ABILITY_LORE_TYPE_HEADER, "passive"));
+    /** Type tag for innate abilities (no ABILITY_UNLOCKED_ATTRIBUTE — always present in loadouts). */
+    public static final Route ABILITY_LORE_TYPE_INNATE = Route.fromString(toRoutePath(ABILITY_LORE_TYPE_HEADER, "innate"));
+
+    /** Mana cost line for ManaAbility abilities. Placeholder: {@code <mana-cost>} */
+    public static final Route ABILITY_LORE_MANA_COST_LINE = Route.fromString(toRoutePath(ABILITY_LORE_HEADER, "mana-cost-line"));
+
+    private static final String ABILITY_LORE_STATUS_HEADER = toRoutePath(ABILITY_LORE_HEADER, "status");
+    /** Status line when ability is enabled. */
+    public static final Route ABILITY_LORE_STATUS_ENABLED = Route.fromString(toRoutePath(ABILITY_LORE_STATUS_HEADER, "enabled"));
+    /** Status line when ability is disabled. */
+    public static final Route ABILITY_LORE_STATUS_DISABLED = Route.fromString(toRoutePath(ABILITY_LORE_STATUS_HEADER, "disabled"));
+
+    private static final String ABILITY_LORE_HINT_HEADER = toRoutePath(ABILITY_LORE_HEADER, "hint");
+    /** Hint shown when ability is currently disabled (left-click to enable). */
+    public static final Route ABILITY_LORE_HINT_TOGGLE_ENABLE = Route.fromString(toRoutePath(ABILITY_LORE_HINT_HEADER, "toggle-enable"));
+    /** Hint shown when ability is currently enabled (left-click to disable). */
+    public static final Route ABILITY_LORE_HINT_TOGGLE_DISABLE = Route.fromString(toRoutePath(ABILITY_LORE_HINT_HEADER, "toggle-disable"));
+    /** Hint for opening the ability configure/edit GUI (always shown). */
+    public static final Route ABILITY_LORE_HINT_CONFIGURE = Route.fromString(toRoutePath(ABILITY_LORE_HINT_HEADER, "configure"));
+    /** Hint for Bedrock (Geyser) players who cannot distinguish click types. */
+    public static final Route ABILITY_LORE_HINT_CONFIGURE_BEDROCK = Route.fromString(toRoutePath(ABILITY_LORE_HINT_HEADER, "configure-bedrock"));
+
     private static final String ABILITY_SPECIFIC_LOCALIZATION_HEADER = toRoutePath(ABILITY_HEADER, "ability-specific-localization");
     private static final String BLEED_HEADER = toRoutePath(ABILITY_SPECIFIC_LOCALIZATION_HEADER, "bleed");
     public static final Route BLEED_DISPLAY_ITEM_HEADER = Route.fromString(toRoutePath(BLEED_HEADER, "display-item"));
@@ -656,7 +684,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_PROGRESS_NOTIFICATION_SETTING_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_PROGRESS_NOTIFICATION_SETTING_HEADER, "enabled.display-item"));
     public static final Route QUEST_PROGRESS_NOTIFICATION_SETTING_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_PROGRESS_NOTIFICATION_SETTING_HEADER, "disabled.display-item"));
 
-    // Quest Board GUI Polish (Phase 4)
+    // Quest Board GUI Polish
     public static final Route QUEST_BOARD_RARITY_LINE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "rarity-line"));
     public static final Route QUEST_BOARD_DURATION_LINE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "duration-line"));
     public static final Route QUEST_BOARD_BOARD_QUESTS_LINE = Route.fromString(toRoutePath(QUEST_BOARD_GUI_HEADER, "board-quests-line"));

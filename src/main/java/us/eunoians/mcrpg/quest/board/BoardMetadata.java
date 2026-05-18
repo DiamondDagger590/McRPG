@@ -20,9 +20,10 @@ import java.util.stream.Collectors;
  * Controls whether a quest is eligible for the quest board, which rarity tiers it can appear
  * under, which refresh types it supports, and optional acceptance cooldown behavior.
  * <p>
- * For hand-crafted quests in Phase 1, rarity affects <b>appearance frequency only</b> — which
- * slots the quest can appear in. Difficulty/reward multipliers are cosmetic; mechanical scaling
- * only applies to template-generated quests (Phase 2+).
+ * For hand-crafted quest definitions, rarity affects <b>appearance frequency only</b> — it
+ * determines which board slots the quest can appear in. Difficulty and reward multipliers are
+ * cosmetic for hand-crafted quests; mechanical scaling based on rarity only applies to
+ * template-generated quests (see {@link us.eunoians.mcrpg.quest.board.template.QuestTemplate}).
  *
  * @param boardEligible         whether this quest can appear on the board
  * @param supportedRarities     the set of rarity keys this quest is eligible for

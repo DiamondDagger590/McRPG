@@ -23,9 +23,9 @@ public final class BoardSlotCategory {
     public enum Visibility {
         /** All players see the same offerings. */
         SHARED,
-        /** Each player gets unique offerings (Phase 2). */
+        /** Each player gets their own uniquely generated set of offerings. */
         PERSONAL,
-        /** Offerings are scoped to a group (e.g., land members) (Phase 3). */
+        /** Offerings are scoped to a group (e.g., land members) via a {@link us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapter}. */
         SCOPED
     }
 

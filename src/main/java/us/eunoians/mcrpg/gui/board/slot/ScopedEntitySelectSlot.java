@@ -3,18 +3,20 @@ package us.eunoians.mcrpg.gui.board.slot;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.board.BoardGuiMode;
 import us.eunoians.mcrpg.gui.board.QuestBoardGui;
 import us.eunoians.mcrpg.gui.board.ScopedEntitySelectorGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -49,14 +51,25 @@ public class ScopedEntitySelectSlot implements McRPGSlot {
         return true;
     }
 
+    /**
+     * Builds the display item from the locale section, resolving palette tags and
+     * substituting {@code <scope_name>} with this slot's entity display name.
+     *
+     * @param mcRPGPlayer the player viewing the slot
+     * @return the constructed {@link ItemBuilder}
+     */
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        return ItemBuilder.from(new ItemStack(Material.SHIELD))
-                .setDisplayName(displayName)
-                .addDisplayLore("Scope: " + scopeProviderKey.getKey().replace('_', ' '))
-                .addDisplayLore("")
-                .addDisplayLore("Click to view offerings");
+        McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(
+                localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_BOARD_GROUP_ENTITY_SELECT_SLOT_DISPLAY_ITEM));
+        Map<String, String> replacements = new HashMap<>(localizationManager.getPaletteReplacements());
+        replacements.put("<scope_name>", displayName);
+        itemBuilder.applyTagReplacements(replacements);
+        return itemBuilder;
     }
 
     @NotNull

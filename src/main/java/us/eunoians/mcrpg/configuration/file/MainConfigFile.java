@@ -122,26 +122,15 @@ public final class MainConfigFile extends ConfigFile {
 
     // Palette (color theming)
     private static final String PALETTE_HEADER = "palette";
-    /** Primary color: GUI titles, navigation names, stat value highlights. Default: {@code <color:#D4A76A>} */
-    public static final Route PALETTE_PRIMARY = Route.fromString(toRoutePath(PALETTE_HEADER, "primary"));
-    /** Hint color: click prompts, calls-to-action. Default: {@code <color:#E8C97A>} */
-    public static final Route PALETTE_HINT = Route.fromString(toRoutePath(PALETTE_HEADER, "hint"));
-    /** Mana color: mana cost values, mana-related lore. Default: {@code <color:#5EA8FF>} */
-    public static final Route PALETTE_MANA = Route.fromString(toRoutePath(PALETTE_HEADER, "mana"));
-    /** Active ability color: combo-activated ability names and type tags. Default: {@code <color:#FF7B5E>} */
-    public static final Route PALETTE_ABILITY_ACTIVE = Route.fromString(toRoutePath(PALETTE_HEADER, "ability-active"));
-    /** Passive ability color: event-driven ability names and type tags. Default: {@code <color:#7FB87F>} */
-    public static final Route PALETTE_ABILITY_PASSIVE = Route.fromString(toRoutePath(PALETTE_HEADER, "ability-passive"));
-    /** Innate ability color: always-on ability names, disabled/inactive states. Default: {@code <color:#9E9E9E>} */
-    public static final Route PALETTE_ABILITY_INNATE = Route.fromString(toRoutePath(PALETTE_HEADER, "ability-innate"));
-    /** Body text color: descriptive lore, labels before values. Default: {@code <gray>} */
-    public static final Route PALETTE_BODY = Route.fromString(toRoutePath(PALETTE_HEADER, "body"));
-    /** Positive color: enabled, success, accepted. Default: {@code <green>} */
-    public static final Route PALETTE_POSITIVE = Route.fromString(toRoutePath(PALETTE_HEADER, "positive"));
-    /** Negative color: disabled, error, deny. Default: {@code <red>} */
-    public static final Route PALETTE_NEGATIVE = Route.fromString(toRoutePath(PALETTE_HEADER, "negative"));
-    /** Warning color: caution, expiration, approaching limits. Default: {@code <yellow>} */
-    public static final Route PALETTE_WARNING = Route.fromString(toRoutePath(PALETTE_HEADER, "warning"));
+    /**
+     * Section-level route for the entire palette block. Used as the {@link com.diamonddagger590.mccore.configuration.ReloadableContent}
+     * trigger so that any change to the palette section (including adding new custom keys) triggers a rebuild.
+     * <p>
+     * The 10 built-in palette roles (primary, hint, mana, etc.) are shipped as defaults in {@code config.yml}.
+     * Server owners can add arbitrary additional entries — any key added becomes a usable placeholder in locale files
+     * (e.g., a key {@code my-color} with value {@code <color:#ABC123>} enables {@code <my-color>} in any locale YAML).
+     */
+    public static final Route PALETTE_SECTION = Route.fromString(PALETTE_HEADER);
 
     // Stats (player resource pools)
     private static final String STATS_HEADER = "stats";

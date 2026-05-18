@@ -62,7 +62,7 @@ commands:
     # confirm command.
     no-pending-confirmations: "<gray>You do not have any pending commands to confirm."
     # The message to send to players when they run a command that they need to confirm.
-    confirmation-required: "<gray>Please run <click:run_command:/mcrpg confirm><hover:show_text:'<gray>Click this to run <gold>/mcrpg confirm</gold></gray>'><gold><underlined>/mcrpg confirm</gold></click> to run confirm you want to run this command."
+    confirmation-required: "<body>Please run <click:run_command:/mcrpg confirm><hover:show_text:'<hint>Click <body>to run <primary>/mcrpg confirm'><primary><underlined>/mcrpg confirm</primary></click> <body>to confirm you want to run this command."
   # Configure /mcrpg give commmands
   give:
     # Configure the experience give command

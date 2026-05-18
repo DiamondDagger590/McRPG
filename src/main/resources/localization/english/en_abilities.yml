@@ -3,6 +3,25 @@
 # English localization for McRPG abilities.
 # This file is part of the English (en) locale.
 #
+# Color Palette
+# This file uses semantic color placeholders that resolve to MiniMessage values
+# configured in config.yml's palette section. Available placeholders:
+#
+#   <primary>         Warm Amber (#D4A76A)  -- titles, nav items, stat values
+#   <hint>            Warm Yellow (#E8C97A) -- click hints, calls-to-action
+#   <mana>            Sky Blue (#5EA8FF)    -- mana costs
+#   <ability-active>  Coral (#FF7B5E)       -- active ability names/tags
+#   <ability-passive> Sage Green (#7FB87F)  -- passive ability names/tags
+#   <ability-innate>  Silver (#9E9E9E)      -- innate abilities, disabled states
+#   <body>            Gray                  -- body text, labels
+#   <positive>        Green                 -- enabled, success
+#   <negative>        Red                   -- disabled, error, deny
+#   <warning>         Yellow                -- caution, expiration
+#
+# Server owners can customize all colors in config.yml under the 'palette' section.
+# You can also define your own custom color tags there — any key you add becomes
+# a usable <placeholder> in this file.
+#
 #######################################
 locale: en
 config-version: 1
@@ -26,20 +45,20 @@ ability:
   cooldown:
     # The message to send to the player when they try to use an ability still on cooldown
     # Supports <ability> as a placeholder for the ability on cooldown.
-    ability-still-on-cooldown: "<red><ability> is still on cooldown."
+    ability-still-on-cooldown: "<negative><ability> is still on cooldown."
     # The message to send to the player whenever an ability is no longer on cooldown
     # Supports <ability> as a placeholder for the ability that was on cooldown.
-    ability-no-longer-on-cooldown: "<gold><ability> <gray>is now off cooldown!"
+    ability-no-longer-on-cooldown: "<primary><ability> <body>is now off cooldown!"
   # Configure messages for when abilities are unlocked
   # Supports <ability> as a placeholder for the ability name
   unlock:
     # The message to send when a player unlocks a new ability
-    ability-unlocked: "<green>You have unlocked a new ability! <ability> <green>is now available for use."
+    ability-unlocked: "<positive>You have unlocked a new ability! <ability> <positive>is now available for use."
     # The message to send when an ability is automatically added to the player's loadout
-    ability-added-to-loadout: "<green>The new ability has automatically been added to your current loadout."
+    ability-added-to-loadout: "<positive>The new ability has automatically been added to your current loadout."
     # The message to send when an ability cannot be added because there's already an active ability for that skill
     # Supports <skill> and <ability> placeholders
-    ability-not-added-duplicate-skill: "<red>You already have an active ability for the skill <skill> <red>in your loadout, so <ability> <red>was not automatically added."
+    ability-not-added-duplicate-skill: "<negative>You already have an active ability for the skill <skill> <negative>in your loadout, so <ability> <negative>was not automatically added."
   # Configure additional lore lines for ability items that will be appended to ability item lore when conditions are met
   lore:
     # Configure ability upgrade quest lore
@@ -47,253 +66,278 @@ ability:
     quest:
       # The lore to add when an ability has an active upgrade quest
       quest-progress:
-        - '<gray>Upgrade Quest Progress: <upgrade-quest-progress>'
+        - '<body>Upgrade Quest Progress: <upgrade-quest-progress>'
     # The lore to add when the player isn't high enough level to upgrade the ability.
     # The following placeholders are supported: <next-tier-level>, <skill>
     upgrade-locked-behind-levelup:
-      - '<gray>Upgrade this ability once you reach <gold>Lv <next-tier-level></gold>'
-      - '<gray>in <gold><skill></gold><gray>.'
+      - '<body>Upgrade this ability once you reach <primary>Lv <next-tier-level>'
+      - '<body>in <primary><skill><body>.'
     ability-locked:
-      - '<gray>Unlock this ability when your <gold><skill></gold> skill'
-      - '<gray>reaches level <gold><ability-unlock-level></gold>.'
+      - '<body>Unlock this ability when your <primary><skill> <body>skill'
+      - '<body>reaches level <primary><ability-unlock-level><body>.'
     # The lore to add to show what expansion pack an ability is from (only will be displayed if it isn't from McRPG)
     # The following placeholders are supported: <expansion-pack>
     expansion-pack:
-      - '<gray>Expansion Pack: <gold><expansion-pack>'
+      - '<body>Expansion Pack: <primary><expansion-pack>'
+    # Java-injected type tag lore line (shown for every ability)
+    type:
+      # Shown for ComboActivatable abilities
+      active: '<body>Type: <ability-active>Active'
+      # Shown for PassiveAbility abilities that require unlocking
+      passive: '<body>Type: <ability-passive>Passive'
+      # Shown for abilities with no unlock attribute (always present in loadouts)
+      innate: '<body>Type: <ability-innate>Innate'
+    # Java-injected mana cost line for ManaAbility abilities with cost > 0.
+    # Placeholder: <mana-cost> (resolved to the tier-dependent mana cost integer)
+    mana-cost-line: '<body>Mana Cost: <mana><mana-cost>'
+    # Java-injected toggle status lines (shown when ability has AbilityToggledOffAttribute)
+    status:
+      enabled: '<body>Status: <positive>Enabled'
+      disabled: '<body>Status: <negative>Disabled'
+    # Java-injected click hint lines
+    hint:
+      # Shown when ability is currently disabled (left-click to enable)
+      toggle-enable: '<hint>Left-click <body>to enable'
+      # Shown when ability is currently enabled (left-click to disable)
+      toggle-disable: '<hint>Left-click <body>to disable'
+      # Always shown — all abilities have an edit GUI accessible via right-click
+      configure: '<hint>Right-click <body>to configure'
+      # Shown for Bedrock (Geyser) players instead of separate left/right hints
+      configure-bedrock: '<hint>Click <body>to configure'
   ability-specific-localization:
     # Configure localization for the Bleed ability
     bleed:
       display-item:
         # Allows you to configure how this ability's name will be displayed
-        name: "<red><ability></red>"
+        name: "<ability-innate><ability>"
         # The name of this ability to be displayed across McRPG
         ability-name: "Bleed"
         material: REDSTONE
         # Supports the following placeholders: <skill>, <activation-chance>
         lore:
-          - '<gray>Inflicts <red>Bleed</red> when you strike an enemy'
-          - '<gray>with a sword, dealing damage over time.'
+          - '<body>Inflicts <ability-innate>Bleed</ability-innate> <body>when you strike an enemy'
+          - '<body>with a sword, dealing damage over time.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Activation Chance: <gold><activation-chance>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Activation Chance: <primary><activation-chance>'
     # Configure localization for the Deeper Wound ability
     deeper-wound:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-passive><ability>"
         ability-name: "Deeper Wound"
         material: RED_DYE
         # Supports the following placeholders: <skill>, <activation-chance>, <additional-bleed-cycles>, <tier>
         lore:
-          - '<gray>Enhances Bleed ability to last longer.'
+          - '<body>Enhances Bleed ability to last longer.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Activation Chance: <gold><activation-chance>'
-          - '<gray>Additional Bleed Cycles: <gold><additional-bleed-cycles>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Activation Chance: <primary><activation-chance>'
+          - '<body>Additional Bleed Cycles: <primary><additional-bleed-cycles>'
     # Configure localization for the Enhanced Bleed ability
     enhanced-bleed:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-passive><ability>"
         ability-name: "Enhanced Bleed"
         material: SPIDER_EYE
         lore:
-          - '<gray>Enhances Bleed to deal more damage each tick.'
-          - '<gray>Has a chance to deal bonus damage on top.'
+          - '<body>Enhances Bleed to deal more damage each tick.'
+          - '<body>Has a chance to deal bonus damage on top.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Base Damage Boost: <gold><base-damage-boost>'
-          - '<gray>Bonus Damage Chance: <gold><bonus-damage-chance>'
-          - '<gray>Bonus Damage: <gold><bonus-damage>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Base Damage Boost: <primary><base-damage-boost>'
+          - '<body>Bonus Damage Chance: <primary><bonus-damage-chance>'
+          - '<body>Bonus Damage: <primary><bonus-damage>'
     rage-spike:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-active><ability>"
         ability-name: "Rage Spike"
         material: IRON_SWORD
         lore:
-          - '<gray>Ready your sword, then crouch to blast forward,'
-          - '<gray>damaging and knocking back foes in your path.'
+          - '<body>Ready your sword, then crouch to blast forward,'
+          - '<body>damaging and knocking back foes in your path.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Damage: <gold><damage>'
-          - '<gray>Cooldown: <gold><cooldown>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Damage: <primary><damage>'
+          - '<body>Cooldown: <primary><cooldown>'
     serrated-strikes:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-active><ability>"
         ability-name: "Serrated Strikes"
         material: STONE_SWORD
         lore:
-          - '<gray>Ready your sword and strike an enemy to temporarily'
-          - '<gray>increase how often Bleed can activate.'
+          - '<body>Ready your sword and strike an enemy to temporarily'
+          - '<body>increase how often Bleed can activate.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Duration: <gold><ability-duration>'
-          - '<gray>Bleed Chance Bonus: <gold><activation-chance-increase>'
-          - '<gray>Cooldown: <gold><cooldown>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Duration: <primary><ability-duration>'
+          - '<body>Bleed Chance Bonus: <primary><activation-chance-increase>'
+          - '<body>Cooldown: <primary><cooldown>'
     vampire:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-passive><ability>"
         ability-name: "Vampire"
         material: GHAST_TEAR
         lore:
-          - '<gray>Each time Bleed deals damage, you have a chance'
-          - '<gray>to heal.'
+          - '<body>Each time Bleed deals damage, you have a chance'
+          - '<body>to heal.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Activation Chance: <gold><activation-chance>'
-          - '<gray>Healing Amount: <gold><healing-amount>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Activation Chance: <primary><activation-chance>'
+          - '<body>Healing Amount: <primary><healing-amount>'
     extra-ore:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-innate><ability>"
         ability-name: "Extra Ore"
         material: DIAMOND
         amount: 2
         lore:
-          - '<gray>Occasionally doubles block drops'
-          - '<gray>while mining.'
+          - '<body>Occasionally doubles block drops'
+          - '<body>while mining.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Activation Chance: <gold><activation-chance>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Activation Chance: <primary><activation-chance>'
     its-a-triple:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-passive><ability>"
         ability-name: "It's A Triple"
         material: DIAMOND
         amount: 3
         lore:
-          - '<gray>Can turn Extra Ore''s doubled drops into'
-          - '<gray>triple drops instead.'
+          - '<body>Can turn Extra Ore''s doubled drops into'
+          - '<body>triple drops instead.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Activation Chance: <gold><activation-chance>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Activation Chance: <primary><activation-chance>'
     ore-scanner:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-active><ability>"
         ability-name: "Ore Scanner"
         material: DIAMOND_ORE
         lore:
-          - '<gray>Activate to see all nearby ores!'
+          - '<body>Activate to see all nearby ores!'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Range: <gold><range>'
-          - '<gray>Cooldown: <gold><cooldown>'
-      block-detected: "<gray>You've detected <gold><count> <block_type></gold> near you."
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Range: <primary><range>'
+          - '<body>Cooldown: <primary><cooldown>'
+      block-detected: "<body>You've detected <primary><count> <block_type> <body>near you."
     remote-transfer:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-passive><ability>"
         ability-name: "Remote Transfer"
         material: CHEST
         lore:
-          - '<gray>Link a chest so mined blocks teleport into it.'
-          - '<gray>Use <gold>/mcrpg link</gold> to link.'
-          - '<gray>Use <gold>/mcrpg unlink</gold> to unlink.'
+          - '<body>Link a chest so mined blocks teleport into it.'
+          - '<body>Use <primary>/mcrpg link</primary> <body>to link.'
+          - '<body>Use <primary>/mcrpg unlink</primary> <body>to unlink.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Transfer Range: <gold><range>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Transfer Range: <primary><range>'
     dryads-gift:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-passive><ability>"
         ability-name: "Dryad's Gift"
         material: EXPERIENCE_BOTTLE
         lore:
-          - '<gray>Sometimes drops experience when you'
-          - '<gray>break wood blocks.'
+          - '<body>Sometimes drops experience when you'
+          - '<body>break wood blocks.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Activation Chance: <gold><activation-chance>'
-          - '<gray>Experience Dropped: <gold><experience-dropped>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Activation Chance: <primary><activation-chance>'
+          - '<body>Experience Dropped: <primary><experience-dropped>'
     extra-lumber:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-innate><ability>"
         ability-name: "Extra Lumber"
         material: OAK_LOG
         amount: 2
         lore:
-          - '<gray>Occasionally doubles drops while you'
-          - '<gray>cut wood.'
+          - '<body>Occasionally doubles drops while you'
+          - '<body>cut wood.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Activation Chance: <gold><activation-chance>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Activation Chance: <primary><activation-chance>'
     nymphs-vitality:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-passive><ability>"
         ability-name: "Nymph's Vitality"
         material: OAK_SAPLING
         lore:
-          - '<gray>In wooded biomes, stops hunger from falling'
-          - '<gray>below a minimum level.'
+          - '<body>In wooded biomes, stops hunger from falling'
+          - '<body>below a minimum level.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Minimum Hunger: <gold><minimum-hunger>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Minimum Hunger: <primary><minimum-hunger>'
     heavy-swing:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-passive><ability>"
         ability-name: "Heavy Swing"
         material: NETHERITE_AXE
         lore:
-          - '<gray>Sometimes breaks nearby wood in an area'
-          - '<gray>as you chop trees.'
+          - '<body>Sometimes breaks nearby wood in an area'
+          - '<body>as you chop trees.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Activation Chance: <gold><activation-chance>'
-          - '<gray>Radius: <gold><radius>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Activation Chance: <primary><activation-chance>'
+          - '<body>Radius: <primary><radius>'
     verdant-surge:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-active><ability>"
         ability-name: "Verdant Surge"
         material: BONE_MEAL
         lore:
-          - '<gray>Channels the power of nature to send out'
-          - '<gray>pulses that grow any crop they touch.'
+          - '<body>Channels the power of nature to send out'
+          - '<body>pulses that grow any crop they touch.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Pulse Count: <gold><pulse-count>'
-          - '<gray>Pulse Radius: <gold><radius>'
-          - '<gray>Cooldown: <gold><cooldown>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Pulse Count: <primary><pulse-count>'
+          - '<body>Pulse Radius: <primary><radius>'
+          - '<body>Cooldown: <primary><cooldown>'
     mass-harvest:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-active><ability>"
         ability-name: "Mass Harvest"
         material: IRON_HOE
         lore:
-          - '<gray>Sends out a pulse that harvests crops'
-          - '<gray>and replants them as it travels.'
+          - '<body>Sends out a pulse that harvests crops'
+          - '<body>and replants them as it travels.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Tier: <gold><tier>'
-          - '<gray>Pulse Radius: <gold><radius>'
-          - '<gray>Cooldown: <gold><cooldown>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Tier: <primary><tier>'
+          - '<body>Pulse Radius: <primary><radius>'
+          - '<body>Cooldown: <primary><cooldown>'
     too-many-plants:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-innate><ability>"
         ability-name: "Too Many Plants"
         material: CARROT
         amount: 2
         lore:
-          - '<gray>Chance to double crop drops'
-          - '<gray>when you harvest.'
+          - '<body>Chance to double crop drops'
+          - '<body>when you harvest.'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Activation Chance: <gold><activation-chance>'
+          - '<body>Skill: <primary><skill>'
+          - '<body>Activation Chance: <primary><activation-chance>'
     instant-irrigation:
       display-item:
-        name: "<red><ability></red>"
+        name: "<ability-innate><ability>"
         ability-name: "Instant Irrigation"
         material: WATER_BUCKET
         lore:
-          - '<gray>Break dirt with a hoe to bring forth'
-          - '<gray>a natural source of water!'
+          - '<body>Break dirt with a hoe to bring forth'
+          - '<body>a natural source of water!'
           - ''
-          - '<gray>Skill: <gold><skill>'
-          - '<gray>Cooldown: <gold><cooldown>'
-      activation-message: "<gray>You found a water source! You'll be able to do this again in <gold><cooldown> seconds</gold>."
+          - '<body>Skill: <primary><skill>'
+          - '<body>Cooldown: <primary><cooldown>'
+      activation-message: "<body>You found a water source! You'll be able to do this again in <primary><cooldown> <body>seconds."

@@ -22,6 +22,11 @@ stats:
 # with the MiniMessage values configured here before parsing.
 # Change any value to retheme the entire plugin. Use any valid MiniMessage color tag
 # (e.g., <color:#hexcode>, <gold>, <aqua>, etc.).
+#
+# You can also add your own custom color tags here. Any key you add becomes a usable
+# placeholder in locale files. For example, adding:
+#   my-guild-color: "<color:#FF00FF>"
+# lets you use <my-guild-color> in any locale YAML string.
 palette:
   # GUI titles, navigation item names, stat value highlights, skill names in lore
   primary: "<color:#D4A76A>"

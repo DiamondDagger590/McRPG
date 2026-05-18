@@ -14,7 +14,7 @@ Palette colors are **runtime-resolvable placeholders**. Locale YAML files use se
 title: "<primary>Viewing Abilities"
 lore:
   - "<body>Mana Cost: <mana>30"
-  - "<hint>Right-click to configure"
+  - "<hint>Right-click <body>to configure"
 ```
 
 Server owners customize colors in `config.yml` — one change rethemes the entire plugin:
@@ -62,7 +62,14 @@ palette:
 1. **Titles**: Always `<primary>` — never bare `<gold>`, `<black>`, or `<red>`
 2. **Back button names**: Always `<primary>` — label pattern is `"Back to [Parent]"`
 3. **Stat values in lore**: Always `<primary>` — `<body>Skill: <primary>Herbalism`
-4. **Click prompts**: Always `<hint>` — `<hint>Right-click to configure`
+4. **Click hints**: Use the **verb-only `<hint>` format** — color only the click-type verb with `<hint>`, leave the rest in `<body>`:
+   - Standard navigation/action: `<hint>Left-click <body>to edit` / `<hint>Right-click <body>to configure` / `<hint>Click <body>to view`
+   - **Compound click types are hyphenated**: `Left-click`, `Right-click`, `Shift-click` (not `Left click`)
+   - **Semantic overrides** replace `<hint>` on the verb for destructive or strongly positive actions:
+     - Destructive (abandon, disable, delete): `<negative>Right-click <body>to abandon` / `<negative>Click <body>to disable`
+     - Positive/acceptance (enable, accept, confirm add): `<positive>Click <body>to enable` / `<positive>Click <body>to accept`
+   - The sentence-completion portion (`to ...`) is always `<body>`
+   - **Never** color the entire hint line a single color — splitting verb from sentence is required
 5. **Ability item names**: Color by type — `<ability-active>`, `<ability-passive>`, or `<ability-innate>`
 6. **Mana costs in ability lore**: Always `<mana>` — `<body>Mana Cost: <mana>30`
 7. **Body text / labels**: Always `<body>` — `<body>Activation Chance:`

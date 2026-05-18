@@ -455,6 +455,30 @@ Third-party expansions should follow the same pattern — include their own `Sta
 
 **New tierable abilities** must carry `@ParserConfigKeys` (even if the array is empty) and add a corresponding entry to `ParserConfigCoverageTest`'s registry. The `ParserConfigKeysPresenceTest` will fail CI if the annotation is missing.
 
+#### Third-party ability locale color requirements
+
+Every ability's `name:` field in its locale YAML file must use one of the three semantic type palette placeholders — **not** `<red>`, `<gold>`, or any raw hex color.
+
+| Ability type | Placeholder to use |
+|---|---|
+| `ComboActivatable` (active, player-triggered) | `<ability-active>` |
+| `PassiveAbility` + `ABILITY_UNLOCKED_ATTRIBUTE` (tierable/upgradable passive) | `<ability-passive>` |
+| All others (always-on innate passives, no unlock gate) | `<ability-innate>` |
+
+Example locale YAML for a third-party innate ability:
+
+```yaml
+ability:
+  ability-specific-localization:
+    my-ability:
+      display-item:
+        name: "<ability-innate><ability>"
+        lore:
+          - "<body>Some description text"
+```
+
+The `AbilityNameColorConsistencyTest` enforces this rule for all bundled abilities at CI time. Third-party expansions should ship a similar test for their own locale YAML files.
+
 New global statistics go in `McRPGStatistic` as `static final` constants. Per-skill statistics are constructed in `McRPGSkill.getDefaultStatistics()` using the key-derivation methods `Skill.getExperienceStatisticKey()` and `Skill.getMaxLevelStatisticKey()`. Per-ability activation statistics are constructed in `ActiveAbility.getDefaultStatistics()` using `ActiveAbility.getActivationStatisticKey()`. Third-party skills and abilities should override these default methods if they need custom key conventions.
 
 ### DAO Pattern
@@ -523,6 +547,7 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - **No unbounded `Map` or `Set` fields without a documented eviction strategy** — insert-only caches are memory leaks; document the cleanup lifecycle event in Javadoc
 - **No `putHolderOnCooldown()` inside `comboActivate()`** — the combo listener (`OnComboCompleteListener`) manages cooldown application for combo-activated abilities. Calling it inside the ability causes double-cooldown
 - **No void-return `comboActivate()` or `activateAbility()`** — both return `boolean` (`true` = executed, `false` = internally cancelled). The boolean enables mana refund and conditional cooldown in callers
+- **No roadmap or LLD phase references in Javadoc or comments** — labels like "Phase 1", "Phase 2 LLD", or "Future phases" rot immediately: they are meaningless to engineers who weren't present during planning. Describe the *what* and *why* of the code instead. For extension points, name the type or mechanism (e.g. `ContentExpansion`, `QuestTemplate`). For deprecated code, explain what changed architecturally rather than which delivery phase removed it. The only acceptable "phase" language is inside inline comments that label the sequential steps of a single async operation (e.g. `// Phase 1 (DB executor): load`, `// Phase 2 (main thread): generate`).
 
 ---
 
@@ -663,7 +688,9 @@ Numeric values shown in localized strings, GUI placeholders, ability lore, PAPI 
 
 ### GUI Color Palette
 
-All player-facing colors follow the **Warm Fantasy RPG** palette defined in [`PALETTE.md`](PALETTE.md). Colors are **runtime-resolvable placeholders** — locale YAML files use semantic names like `<primary>`, and `McRPGLocalizationManager` replaces them with configured MiniMessage values before parsing. Server owners customize colors in `config.yml`'s `palette` section. The palette defines 10 semantic roles: `<primary>` (titles, nav, values), `<hint>` (click prompts), `<mana>` (mana costs), `<ability-active>`/`<ability-passive>`/`<ability-innate>` (ability type colors), `<body>` (lore text), `<positive>`/`<negative>`/`<warning>` (status). `<gold>` is deprecated — use `<primary>` instead. See `PALETTE.md` for the full specification and `.cursor/rules/core.mdc` for enforcement rules.
+All player-facing colors follow the **Warm Fantasy RPG** palette defined in [`PALETTE.md`](PALETTE.md). Colors are **runtime-resolvable placeholders** — locale YAML files use semantic names like `<primary>`, and `McRPGLocalizationManager` replaces them with configured MiniMessage values before parsing. Server owners customize colors in `config.yml`'s `palette` section. The palette defines 10 semantic roles: `<primary>` (titles, nav, values), `<hint>` (click hints — verb only), `<mana>` (mana costs), `<ability-active>`/`<ability-passive>`/`<ability-innate>` (ability type colors), `<body>` (lore text), `<positive>`/`<negative>`/`<warning>` (status). `<gold>` is deprecated — use `<primary>` instead. See `PALETTE.md` for the full specification and `.cursor/rules/core.mdc` for enforcement rules.
+
+**Click-hint format:** All click instructions in GUI lore use the verb-only `<hint>` format: `<hint>Left-click <body>to edit` — `<hint>` colors only the click-type verb, `<body>` covers the rest. Compound click types are hyphenated (`Left-click`, `Right-click`, `Shift-click`). Destructive actions use `<negative>` on the verb instead; acceptance/positive actions use `<positive>`. Never color the entire hint line a single tag.
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **HLD Reference:** [docs/hld/gui-ux-system.md](../../hld/gui-ux-system.md)
 > **Phase 1 LLD:** [phase-1-palette-infrastructure-and-locale-sweep.md](phase-1-palette-infrastructure-and-locale-sweep.md)
-> **Status:** Pending
+> **Status:** Complete
 
 ## Scope
 
@@ -119,8 +119,8 @@ flowchart TD
         TYPE["Type line<br/>'Type: Passive'"]
         MANA["Mana Cost line<br/>'Mana Cost: 30'<br/>(only if ManaAbility, cost > 0)"]
         STATUS["Status line<br/>'Status: Enabled'<br/>(only if has toggle attribute)"]
-        TOGGLE_HINT["Toggle hint<br/>'Left-click to disable'<br/>(only if has toggle attribute)"]
-        CONFIG_HINT["Configure hint<br/>'Right-click to configure'"]
+        TOGGLE_HINT["Toggle hint<br/>'&lt;hint&gt;Left-click &lt;body&gt;to disable'<br/>(only if has toggle attribute)"]
+        CONFIG_HINT["Configure hint<br/>'&lt;hint&gt;Right-click &lt;body&gt;to configure'"]
     end
 
     subgraph appenderSection [From AbilityLoreAppender]
@@ -576,13 +576,13 @@ ability:
       disabled: '<body>Status: <negative>Disabled'
     hint:
       # Shown when ability is currently disabled
-      toggle-enable: '<hint>Left-click to enable'
+      toggle-enable: '<hint>Left-click <body>to enable'
       # Shown when ability is currently enabled
-      toggle-disable: '<hint>Left-click to disable'
+      toggle-disable: '<hint>Left-click <body>to disable'
       # Always shown (all abilities have an edit GUI)
-      configure: '<hint>Right-click to configure'
+      configure: '<hint>Right-click <body>to configure'
       # Shown for Bedrock (Geyser) players instead of separate left/right hints
-      configure-bedrock: '<hint>Click to configure'
+      configure-bedrock: '<hint>Click <body>to configure'
     # ... existing quest, upgrade-locked-behind-levelup, ability-locked, expansion-pack keys ...
 ```
 
@@ -771,8 +771,8 @@ AbilityGui paints a slot (e.g., Bleed)
       |   |-> palette resolved -> gray "Status: " + green "Enabled"
       |
       |-> appendClickHints()
-      |   |-> Toggle hint: "Left-click to disable" (currently enabled)
-      |   |-> Configure hint: "Right-click to configure" (always)
+      |   |-> Toggle hint: "<hint>Left-click <body>to disable" (currently enabled)
+      |   |-> Configure hint: "<hint>Right-click <body>to configure" (always)
       |
       |-> AbilityLoreAppender.getAppendLore()
       |   |-> If has active upgrade quest: add quest progress bar
@@ -802,8 +802,8 @@ AbilitySlot.getItem(mcRPGPlayer) for RageSpike
   |   |-> Replace <mana-cost> with "30"
   |   |-> palette resolved -> gray "Mana Cost: " + sky blue "30"
   |
-  |-> appendStatusLore() -> "Status: Enabled"
-  |-> appendClickHints() -> toggle + configure hints
+  |-> appendStatusLore() -> "<body>Status: <positive>Enabled"
+  |-> appendClickHints() -> "<hint>Left-click <body>to disable" + "<hint>Right-click <body>to configure"
 ```
 
 ---
@@ -875,8 +875,8 @@ Tests for lore injection ordering and conditional display:
 - Status "Enabled" line is present when `AbilityToggledOffAttribute.getContent()` is `false`
 - Status "Disabled" line is present when `AbilityToggledOffAttribute.getContent()` is `true`
 - Status line is absent when `AbilityToggledOffAttribute` is not in `AbilityData`
-- Toggle hint says "Left-click to enable" when ability is disabled
-- Toggle hint says "Left-click to disable" when ability is enabled
+- Toggle hint contains `<hint>Left-click <body>to enable` when ability is disabled
+- Toggle hint contains `<hint>Left-click <body>to disable` when ability is enabled
 - Toggle hint is absent when `AbilityToggledOffAttribute` is not present
 - Configure hint "Right-click to configure" is always present
 - Lore order: base lore, blank separator, type tag, mana cost (if applicable), status (if applicable), toggle hint (if applicable), configure hint, then `AbilityLoreAppender` content
@@ -945,7 +945,7 @@ Tests that the palette system dynamically picks up arbitrary keys from the `pale
 
 12. **Third-party ability locale color requirements documented in-phase**: The requirement for third-party abilities to specify the correct type color in their locale YAML's `name:` field is documented in `CLAUDE.md` and the HLD extension points section as part of this phase, not deferred. This prevents third-party developers from shipping abilities with wrong/missing colors before the documentation catches up.
 
-13. **Geyser-aware click hints**: Bedrock players (detected via the existing `GeyserHook.isBedrockPlayer()`) see a single "Click to configure" hint instead of separate left-click/right-click hints. Since Geyser routes all click types to the edit GUI, showing "Left-click to disable / Right-click to configure" would be misleading. The Bedrock hint short-circuits in `appendClickHints()` before the toggle/configure logic, returning a single line.
+13. **Geyser-aware click hints**: Bedrock players (detected via the existing `GeyserHook.isBedrockPlayer()`) see a single `<hint>Click <body>to configure` hint instead of separate left-click/right-click hints. Since Geyser routes all click types to the edit GUI, showing `<hint>Left-click <body>to disable` / `<hint>Right-click <body>to configure` would be misleading. The Bedrock hint short-circuits in `appendClickHints()` before the toggle/configure logic, returning a single line.
 
 14. **Mana cost uses `McRPGDisplayDecimalFormatter` with 0 min / 2 max fraction digits**: Even though `getManaCost()` currently returns `int`, the display uses `formatDisplayDecimal(mcRPGPlayer, manaCost, 0, 2)` so that integer costs render cleanly (e.g., "30" not "30.00") while fractional costs, if ever introduced, automatically show up to 2 decimal places without code changes. This also respects locale-specific decimal separators for international players.
 

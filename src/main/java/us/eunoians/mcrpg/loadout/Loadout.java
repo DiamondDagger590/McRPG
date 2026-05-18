@@ -369,7 +369,7 @@ public final class Loadout {
      * @return The default {@link LoadoutDisplay} for loadouts.
      */
     private LoadoutDisplay getDefaultDisplayItem() {
-        return new LoadoutDisplay(Material.CHERRY_SIGN, "<primary>Loadout " + getLoadoutSlot());
+        return new LoadoutDisplay(Material.CHERRY_SIGN, "Loadout " + getLoadoutSlot());
     }
 
 }

@@ -142,10 +142,13 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - **No `putHolderOnCooldown()` inside `comboActivate()`** — the combo listener (`OnComboCompleteListener`) manages cooldown application for combo-activated abilities. Calling it inside the ability causes double-cooldown
 - **No void-return `comboActivate()` or `activateAbility()`** — both return `boolean` (`true` = executed, `false` = internally cancelled). The boolean enables mana refund and conditional cooldown in callers
 - **No `ConfigurableTierableAbility` without `@ParserConfigKeys`** — every concrete implementation must declare its Parser-backed YAML keys via the annotation. The `ParserConfigKeysPresenceTest` enforces this at CI time
+- **No roadmap/LLD phase references in Javadoc or comments** — labels like "Phase 1", "Phase 2 LLD", or "Future phases" rot immediately: they are meaningless to engineers who weren't present when the work was planned. Describe the *what* and *why* of the code instead. For extension points, name the type or mechanism (e.g. `ContentExpansion`, `QuestTemplate`). For deprecated code, explain what changed architecturally, not when in a delivery roadmap it changed. The only acceptable "phase" language is within inline comments describing the sequential steps of a single async operation (e.g. `// Phase 1 (DB executor): load`, `// Phase 2 (main thread): generate`).
 
 ## GUI Color Palette
 
 All player-facing text uses the **Warm Fantasy RPG** palette defined in [`PALETTE.md`](../../PALETTE.md). Colors are **runtime-resolvable placeholders** — locale YAML files use semantic names like `<primary>`, and `McRPGLocalizationManager` replaces them with configured MiniMessage values before parsing. Server owners customize colors in `config.yml`'s `palette` section. Never introduce a new color without adding it to the palette first.
+
+The palette is **dynamic**: `McRPGLocalizationManager.buildPaletteReplacements()` iterates every key in the `palette:` YAML section at startup (and on reload). Server owners can add arbitrary custom keys alongside the ten built-in roles — any key they define becomes a usable placeholder in locale files (e.g., adding `my-guild-color: "<color:#FF00FF>"` enables `<my-guild-color>` everywhere). This is driven by `MainConfigFile.PALETTE_SECTION`, the single route that triggers palette reloads.
 
 | Role | Placeholder | Default Value | When to Use |
 |------|-------------|---------------|-------------|
@@ -161,6 +164,40 @@ All player-facing text uses the **Warm Fantasy RPG** palette defined in [`PALETT
 | **warning** | `<warning>` | `<yellow>` | Caution, expiration, approaching limits |
 
 **Forbidden in new code:** `<gold>` (replaced by `<primary>`), `<red>` for item names (use `<primary>` or type placeholder), `<black>` for titles (use `<primary>`), raw hex codes in locale YAML (use palette placeholders).
+
+### Click-hint format rule
+
+All click instructions in GUI lore use the **verb-only `<hint>` format**: color only the click-type verb with `<hint>`, leave the rest of the sentence in `<body>`:
+
+```yaml
+# Correct — verb-only highlight
+- '<hint>Left-click <body>to edit this ability.'
+- '<hint>Right-click <body>to configure.'
+- '<hint>Click <body>to view details.'
+
+# Wrong — whole line colored
+- '<hint>Click to configure'        # entire hint is <hint>
+- '<body>Click to edit'             # click verb colored same as body text
+- '<body><hint>Click</hint> to ...' # inline tag wrapping the verb only
+```
+
+**Semantic overrides** replace `<hint>` on the verb for clearly destructive or strongly positive actions:
+- Destructive (abandon, disable, delete): `<negative>Right-click <body>to abandon` / `<negative>Click <body>to disable`
+- Positive/acceptance (enable, accept, confirm add): `<positive>Click <body>to accept` / `<positive>Click <body>to enable`
+
+**Hyphenation**: compound click types are always hyphenated — `Left-click`, `Right-click`, `Shift-click`.
+
+### Ability name color rule
+
+Every ability's `name:` field in its locale YAML **must** use the correct type placeholder — never `<red>`, `<gold>`, or a raw hex code:
+
+| Ability type | Required placeholder |
+|---|---|
+| `ComboActivatable` | `<ability-active>` |
+| `PassiveAbility` + `ABILITY_UNLOCKED_ATTRIBUTE` in applicable attributes | `<ability-passive>` |
+| All others (always-on innate passives) | `<ability-innate>` |
+
+The `AbilityNameColorConsistencyTest` enforces this for all bundled abilities at CI time. Third-party expansions should include an equivalent test for their own locale YAML files.
 
 ## Mana Balance Framework
 

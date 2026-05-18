@@ -12,9 +12,9 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.impl.RequireEmptyOffhandSetting;
 
 /**
- * @deprecated The ready-state activation model was removed in the mana ability system Phase 2.
- *             This slot corresponds to {@link RequireEmptyOffhandSetting}, which no longer affects
- *             gameplay. Scheduled for removal in a future release.
+ * @deprecated The ready-state activation model was removed when the mana-based combo activation
+ *             system was introduced. This slot corresponds to {@link RequireEmptyOffhandSetting},
+ *             which no longer affects gameplay. Scheduled for removal in a future release.
  */
 @Deprecated(forRemoval = true)
 public class RequireEmptyOffhandSettingSlot extends McRPGSettingSlot<RequireEmptyOffhandSetting> {

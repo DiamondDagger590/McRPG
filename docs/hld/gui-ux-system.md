@@ -1,7 +1,7 @@
 # GUI/UX System & Color Palette
 
-> **Last Updated:** 2026-05-10
-> **Status:** Phase 0 (documentation) complete; Phases 1–4 pending implementation
+> **Last Updated:** 2026-05-18
+> **Status:** Phases 1–2 complete; Phase 4 partially complete (GUI/commands locale sweep done); Phase 3 pending
 > **Scope:** Unified GUI color palette, navigation standardization, ability display improvements, upgrade quest slot separation
 
 ---
@@ -142,7 +142,7 @@ Palette colors are **runtime-resolvable placeholders**, not hardcoded hex codes 
 title: "<primary>Viewing Abilities"
 lore:
   - "<body>Mana Cost: <mana>30"
-  - "<hint>Right-click to configure"
+  - "<hint>Right-click <body>to configure"
 ```
 
 **Config section** (server-owner customizable, in `config.yml`):
@@ -174,7 +174,7 @@ MiniMessage parses:   Component with warm amber "Skill: Herbalism"
 | Role | Placeholder | Default Value | Hex | When to Use |
 |------|-------------|---------------|-----|-------------|
 | **primary** | `<primary>` | `<color:#D4A76A>` | `#D4A76A` | GUI titles, navigation item names, stat value highlights, skill names in lore, section headers, item name accents |
-| **hint** | `<hint>` | `<color:#E8C97A>` | `#E8C97A` | Click hints, calls-to-action, interactive prompts |
+| **hint** | `<hint>` | `<color:#E8C97A>` | `#E8C97A` | Click/keyboard hint verbs only — colors the action word; the rest of the sentence uses `<body>` |
 | **mana** | `<mana>` | `<color:#5EA8FF>` | `#5EA8FF` | Mana cost values, mana-related lore |
 
 ### Ability Type Colors (3 custom hex)
@@ -199,7 +199,7 @@ MiniMessage parses:   Component with warm amber "Skill: Herbalism"
 1. **Titles**: Always `<primary>` — never bare `<gold>`, `<black>`, or `<red>`
 2. **Back button names**: Always `<primary>` — pattern is `"Back to [Parent]"`
 3. **Stat values in lore**: Always `<primary>` — e.g., `<body>Skill: <primary>Herbalism`
-4. **Click prompts**: Always `<hint>` — e.g., `<hint>Right-click to configure`
+4. **Click/keyboard hints**: Verb-only `<hint>` format — color only the action verb, leave the rest of the sentence in `<body>`: `<hint>Right-click <body>to configure`, `<hint>Left-click <body>to edit`, `<hint>Press <primary>1<body>/<primary>2<body>/<primary>3 <body>to move`. Compound click types are hyphenated (`Left-click`, `Right-click`, `Shift-click`). Destructive verbs use `<negative>` instead: `<negative>Right-click <body>to abandon`. Positive/acceptance verbs use `<positive>`: `<positive>Click <body>to accept`.
 5. **Ability item names**: Color by type — `<ability-active>`, `<ability-passive>`, or `<ability-innate>`
 6. **Mana costs in ability lore**: Always `<mana>` — e.g., `<body>Mana Cost: <mana>30`
 7. **Body text / labels**: Always `<body>` — e.g., `<body>Activation Chance:`
@@ -239,10 +239,10 @@ After this system is implemented, ability items in the Viewing Abilities GUI wil
 Description line 1                      ← from en_abilities.yml
 Description line 2
 
-Type: Active/Passive/Innate             ← new, colored by type
-Status: Enabled/Disabled                ← new, if toggleable
-Left-click to enable/disable            ← new click hint, if toggleable
-Right-click to configure                ← new click hint, if has editable attributes
+Type: Active/Passive/Innate             ← colored by type
+Status: Enabled/Disabled                ← if toggleable
+Left-click to enable/disable            ← verb-only hint format: <hint>Left-click <body>to enable
+Right-click to configure                ← <hint>Right-click <body>to configure
 
 Skill: Herbalism                        ← existing stat lines from en_abilities.yml
 Activation Chance: 0.5
@@ -285,40 +285,46 @@ All back buttons follow one pattern:
 
 ---
 
-## Proposed Implementation Phases
+## Implementation Phases
 
 Each phase gets its own LLD when implementation begins.
 
-### Phase 1: Palette Infrastructure + GUI Locale Sweep
+### Phase 1: Palette Infrastructure + GUI Locale Sweep ✅ Complete
 
-- Add `palette` config section to `config.yml` with all 10 default entries
-- Add `Route` constants for each palette key in the config file wrapper
-- Extend `McRPGLocalizationManager` to load the palette map from config and merge it into every placeholder resolution call (palette entries have lowest priority — per-call placeholders win on key collision)
-- Update all GUI titles to `<primary>` placeholder
-- Standardize all back button labels to `"Back to [Parent]"` pattern with `<primary>`
-- Update home GUI slot names and sort button names from `<red>` to `<primary>`
-- Replace `<gold>` with `<primary>` across en_gui.yml value highlights
-- Fix bugs: broken MiniMessage tag, loadout lore scalar, title typo, naming mismatch
+- Added `palette` config section to `config.yml` with all 10 default entries
+- Dynamic palette system: `McRPGLocalizationManager.buildPaletteReplacements()` iterates all keys under the `palette:` section — server owners can add arbitrary custom color tags
+- Updated all GUI titles to `<primary>`, standardized back button labels to `"Back to [Parent]"` pattern
+- Replaced `<gold>` / `<red>` / `<black>` with palette placeholders across `en_gui.yml`
+- Fixed bugs: broken MiniMessage tag, loadout lore scalar, title typo, naming mismatch
 
-### Phase 2: Ability Display Overhaul
+### Phase 2: Ability Display Overhaul ✅ Complete
 
-- Change ability name colors in en_abilities.yml to type placeholders (`<ability-active>`, `<ability-passive>`, `<ability-innate>`)
-- Add type tag, toggle status, and click hint lore lines to AbilitySlot
-- New locale keys in en_abilities.yml and LocalizationKey.java
-- Replace `<gold>` with `<primary>` in en_abilities.yml stat values
-- Use `<mana>` placeholder for mana cost values in ability lore
+- Changed ability name colors in `en_abilities.yml` to type placeholders (`<ability-active>`, `<ability-passive>`, `<ability-innate>`)
+- Added type tag, toggle status, mana cost, and click hint lore lines to `AbilitySlot` (Java-injected)
+- Geyser-aware click hints: Bedrock players see a single "Click to configure" hint
+- Full `en_abilities.yml` color sweep: `<gray>` → `<body>`, `<gold>` → `<primary>`, `<red>` → palette roles
+- Implemented dynamic palette tag support; removed 10 individual `PALETTE_*` route constants
+- Click hints use the verb-only format: `<hint>Left-click <body>to enable` (see rule #4)
 
-### Phase 3: Ability Edit GUI Quest Slot
+### Phase 3: Ability Edit GUI Quest Slot (Pending)
 
 - Create `UpgradeQuestSlot` class with quest detail navigation
 - Add to `AbilityAttributeEditGui` layout
 - Remove quest progress lore from `AbilityTierAttribute` tier item
-- New locale keys in en_gui.yml
+- New locale keys in `en_gui.yml`
 
-### Phase 4: Remaining Locale Sweep
+### Phase 4: Remaining Locale Sweep (Partially Complete)
 
-- Update loadout GUI colors in en_gui.yml
-- Sweep remaining locale files (en.yml, en_skills.yml, en_commands.yml, en_quest.yml, en_stats.yml) to replace `<gold>` and raw hex with palette placeholders
+**Done:**
+- Standardized all click/keyboard hints in `en_gui.yml` to verb-only `<hint>` format
+- Updated `en_abilities.yml` hint lines to verb-only format
+- Updated `en_commands.yml` confirmation hover text from legacy `<gray>`/`<gold>` to palette tags
+- Fixed loadout default display name (`<primary>` was double-applied via template)
+- Fixed `ScopedEntitySelectSlot` hardcoded English strings — now locale-backed with palette + placeholder support
+- Standardized `Press 1/2/3` combo-slot keyboard hint to `<hint>Press <primary>1<body>/...` format
+
+**Remaining:**
+- Sweep `en.yml`, `en_skills.yml`, `en_quest.yml`, `en_stats.yml` for any remaining `<gold>` / raw hex / unhyphenated click type patterns
 
 ---
 

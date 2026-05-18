@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.ability.impl.type.configurable;
 
 import com.diamonddagger590.mccore.builder.item.ItemBuilderConfigurationKeys;
+import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
@@ -11,6 +12,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemBuilder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Map;
@@ -62,7 +64,12 @@ public interface ConfigurableAbility extends Ability {
     @NotNull
     @Override
     default AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
-        return AbilityItemBuilder.from(player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedSection(player, getDisplayItemRoute()), player, this);
+        McRPGLocalizationManager localizationManager = player.getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder intermediate = ItemBuilder.from(
+                localizationManager.getLocalizedSection(player, getDisplayItemRoute()));
+        intermediate.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return new AbilityItemBuilder(intermediate.asItemStack(), player, this);
     }
 
     @NotNull

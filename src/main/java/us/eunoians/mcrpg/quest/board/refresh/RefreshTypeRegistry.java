@@ -14,8 +14,8 @@ import java.util.Set;
 /**
  * Registry for {@link RefreshType} implementations.
  * <p>
- * Phase 1 registers built-in time-based types (daily, weekly). Future phases or
- * third-party plugins may register event-driven types.
+ * The built-in time-based types (daily, weekly) are registered at startup. Third-party plugins
+ * may register additional event-driven types via a {@link us.eunoians.mcrpg.expansion.ContentExpansion}.
  */
 public class RefreshTypeRegistry implements Registry<RefreshType> {
 

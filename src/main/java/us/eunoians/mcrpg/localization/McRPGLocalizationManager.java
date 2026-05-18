@@ -19,6 +19,8 @@ import us.eunoians.mcrpg.setting.impl.LocaleSetting;
 import us.eunoians.mcrpg.setting.impl.LocalePlayerSetting;
 import us.eunoians.mcrpg.setting.impl.SpecificLocaleSetting;
 
+import dev.dejvokep.boostedyaml.block.implementation.Section;
+
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -57,17 +59,19 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
     }
 
     /**
-     * Builds the palette replacement map from {@code config.yml}. Each palette role
-     * (e.g., {@code "primary"}) maps to its configured MiniMessage value
-     * (e.g., {@code <color:#D4A76A>}). The map keys are the full placeholder strings
-     * including angle brackets (e.g., {@code <primary>}).
+     * Builds the palette replacement map by iterating all keys under the {@code palette} section in
+     * {@code config.yml}. Each key becomes a usable placeholder in locale YAML files (e.g., a key
+     * {@code "my-color"} with value {@code "<color:#ABC123>"} enables {@code <my-color>} and
+     * {@code </my-color>} in any locale string).
      * <p>
-     * Close tags (e.g., {@code </primary>}) are also mapped. When the configured value
-     * is a MiniMessage color tag like {@code <color:#D4A76A>}, the close tag maps to the
-     * corresponding MiniMessage close form ({@code </color:#D4A76A>}). For named tags like
-     * {@code <gray>}, the close tag maps to {@code </gray>}. This ensures server owners can
-     * use natural MiniMessage notation (e.g., {@code <primary>50%</primary>}) and have it
-     * resolve correctly.
+     * The 10 built-in palette roles (primary, hint, mana, etc.) are always present via {@code config.yml}
+     * defaults. Server owners can add arbitrary additional entries without any Java changes.
+     * <p>
+     * Close tags (e.g., {@code </primary>}) are also mapped. When the configured value is a MiniMessage
+     * color tag like {@code <color:#D4A76A>}, the close tag maps to the corresponding MiniMessage close
+     * form ({@code </color:#D4A76A>}). For named tags like {@code <gray>}, the close tag maps to
+     * {@code </gray>}. This ensures server owners can use natural MiniMessage notation (e.g.,
+     * {@code <primary>50%</primary>}) and have it resolve correctly.
      *
      * @param mcRPG The plugin instance.
      * @return A {@link ReloadableContent} wrapping the palette replacement map.
@@ -78,18 +82,19 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.MAIN_CONFIG);
-        return new ReloadableContent<>(config, MainConfigFile.PALETTE_PRIMARY, (doc, ignored) -> {
+        return new ReloadableContent<>(config, MainConfigFile.PALETTE_SECTION, (doc, ignored) -> {
             Map<String, String> map = new LinkedHashMap<>();
-            addPaletteEntry(map, "primary", doc.getString(MainConfigFile.PALETTE_PRIMARY, "<color:#D4A76A>"));
-            addPaletteEntry(map, "hint", doc.getString(MainConfigFile.PALETTE_HINT, "<color:#E8C97A>"));
-            addPaletteEntry(map, "mana", doc.getString(MainConfigFile.PALETTE_MANA, "<color:#5EA8FF>"));
-            addPaletteEntry(map, "ability-active", doc.getString(MainConfigFile.PALETTE_ABILITY_ACTIVE, "<color:#FF7B5E>"));
-            addPaletteEntry(map, "ability-passive", doc.getString(MainConfigFile.PALETTE_ABILITY_PASSIVE, "<color:#7FB87F>"));
-            addPaletteEntry(map, "ability-innate", doc.getString(MainConfigFile.PALETTE_ABILITY_INNATE, "<color:#9E9E9E>"));
-            addPaletteEntry(map, "body", doc.getString(MainConfigFile.PALETTE_BODY, "<gray>"));
-            addPaletteEntry(map, "positive", doc.getString(MainConfigFile.PALETTE_POSITIVE, "<green>"));
-            addPaletteEntry(map, "negative", doc.getString(MainConfigFile.PALETTE_NEGATIVE, "<red>"));
-            addPaletteEntry(map, "warning", doc.getString(MainConfigFile.PALETTE_WARNING, "<yellow>"));
+            Section paletteSection = doc.getSection(MainConfigFile.PALETTE_SECTION);
+            if (paletteSection == null) {
+                return map;
+            }
+            for (Object key : paletteSection.getKeys()) {
+                String roleName = key.toString();
+                String value = paletteSection.getString(roleName);
+                if (value != null && !value.isBlank()) {
+                    addPaletteEntry(map, roleName, value);
+                }
+            }
             return map;
         });
     }

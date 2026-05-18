@@ -8,8 +8,8 @@ import java.time.ZonedDateTime;
 /**
  * Abstract class representing a category refresh trigger.
  * <p>
- * Phase 1 ships two time-based built-in types ({@code mcrpg:daily} and {@code mcrpg:weekly}).
- * The extension point supports future event-driven types (e.g., world boss respawn) that
+ * Two built-in time-based types are provided ({@code mcrpg:daily} and {@code mcrpg:weekly}).
+ * The extension point supports custom event-driven types (e.g., world boss respawn) that
  * register Bukkit event listeners instead of being polled by the rotation task.
  */
 public abstract class RefreshType {

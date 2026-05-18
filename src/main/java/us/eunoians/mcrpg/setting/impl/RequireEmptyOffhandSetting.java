@@ -18,9 +18,9 @@ import java.util.Optional;
 /**
  * This setting previously allowed players to require an empty offhand in order to ready their abilities.
  *
- * @deprecated The ready-state activation model was removed in the mana ability system Phase 2.
- *             This setting no longer affects gameplay because abilities are activated exclusively
- *             via click-combo sequences. Scheduled for removal in a future release.
+ * @deprecated The ready-state activation model was removed when the mana-based combo activation
+ *             system was introduced. This setting no longer affects gameplay because abilities are
+ *             activated exclusively via click-combo sequences. Scheduled for removal in a future release.
  */
 @Deprecated(forRemoval = true)
 public enum RequireEmptyOffhandSetting implements McRPGSetting {

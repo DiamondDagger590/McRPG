@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Validates that every {@code previous-gui-button} entry in {@code en_gui.yml}
- * follows the standardized back-button pattern defined in the Phase 1 LLD.
+ * conforms to the standardized back-button pattern used across all McRPG GUIs.
  * <p>
  * Rules enforced:
  * <ul>
