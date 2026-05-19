@@ -108,12 +108,11 @@ public class AbilitySlot implements McRPGSlot {
 
         ItemBuilder itemBuilder = ability.getDisplayItemBuilder(mcRPGPlayer);
 
-        // Blank separator before injected lore block
-        itemBuilder.addDisplayLoreComponent(Component.empty());
-
         appendTypeLore(itemBuilder, mcRPGPlayer, localizationManager, miniMessage);
         appendManaCostLore(itemBuilder, mcRPGPlayer, localizationManager, miniMessage);
         appendStatusLore(itemBuilder, mcRPGPlayer, localizationManager, miniMessage);
+        // Blank separator between the combined stats block and click hints
+        itemBuilder.addDisplayLoreComponent(Component.empty());
         appendClickHints(itemBuilder, mcRPGPlayer, localizationManager, miniMessage);
 
         // AbilityLoreAppender content (quest progress, upgrade locked, ability locked, expansion pack)

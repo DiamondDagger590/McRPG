@@ -75,7 +75,10 @@ public final class AbilityLoreAppender {
                     if (activeUpgradeQuest != null) {
                         lore.add("");
                         lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.QUEST_PROGRESS_LORE));
+                        double overallProgress = activeUpgradeQuest.getOverallProgress();
                         placeholders.put("upgrade-quest-progress", activeUpgradeQuest.getOverallProgressBar(20));
+                        placeholders.put("quest-percent", localizationManager.getDisplayDecimalFormatter()
+                                .formatDisplayDecimal(mcRPGPlayer, overallProgress * 100, 0, 1));
                     } else {
                         abilityData.getAbilityAttribute(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY).ifPresent(abilityAttribute -> {
                             if (abilityAttribute instanceof AbilityTierAttribute abilityTierAttribute) {

@@ -62,11 +62,11 @@ ability:
   # Configure additional lore lines for ability items that will be appended to ability item lore when conditions are met
   lore:
     # Configure ability upgrade quest lore
-    # The following placeholders are supported: <ability-points>, <next-tier-ability-points>, <upgrade-quest-progress>
+    # The following placeholders are supported: <ability-points>, <next-tier-ability-points>, <upgrade-quest-progress>, <quest-percent>
     quest:
       # The lore to add when an ability has an active upgrade quest
       quest-progress:
-        - '<body>Upgrade Quest Progress: <upgrade-quest-progress>'
+        - '<body>Upgrade Quest: <primary><quest-percent>% <body>completed'
     # The lore to add when the player isn't high enough level to upgrade the ability.
     # The following placeholders are supported: <next-tier-level>, <skill>
     upgrade-locked-behind-levelup:
@@ -113,31 +113,37 @@ ability:
         # The name of this ability to be displayed across McRPG
         ability-name: "Bleed"
         material: REDSTONE
-        # Supports the following placeholders: <skill>, <activation-chance>
+        # Supports the following placeholders: <skill>, <activation-chance>, <bleed-damage>, <bleed-cycles>, <bleed-duration>
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Inflicts <ability-innate>Bleed</ability-innate> <body>when you strike an enemy'
-          - '<body>with a sword, dealing damage over time.'
+          - '<body>Sword strikes have a chance to inflict'
+          - '<colored-ability><body>, causing the enemy to take'
+          - '<body>damage repeatedly over a short duration.'
           - ''
           - '<body>Skill: <skill>'
-          - '<body>Activation Chance: <primary><activation-chance>'
+          - '<body>Activation Chance: <primary><activation-chance>%'
+          - '<body>Damage per Tick: <primary><bleed-damage> HP'
+          - '<body>Tick Count: <primary><bleed-cycles>'
+          - '<body>Duration: <primary><bleed-duration>s'
     # Configure localization for the Deeper Wound ability
     deeper-wound:
       display-item:
         name: "<ability-passive><ability></ability-passive>"
         ability-name: "Deeper Wound"
         material: RED_DYE
-        # Supports the following placeholders: <skill>, <activation-chance>, <additional-bleed-cycles>, <tier>
+        # Supports the following placeholders: <skill>, <activation-chance>, <additional-bleed-cycles>, <tier>, <colored-ability_mcrpg_bleed>
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Enhances Bleed ability to last longer.'
+          - '<body>When <colored-ability_mcrpg_bleed> <body>activates, there is'
+          - '<body>a chance it lasts longer than normal,'
+          - '<body>dealing more ticks before wearing off.'
           - ''
           - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Activation Chance: <primary><activation-chance>'
-          - '<body>Additional Bleed Cycles: <primary><additional-bleed-cycles>'
+          - '<body>Activation Chance: <primary><activation-chance>%'
+          - '<body>Extra Ticks: <primary><additional-bleed-cycles>'
     # Configure localization for the Enhanced Bleed ability
     enhanced-bleed:
       display-item:
@@ -147,14 +153,15 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Enhances Bleed to deal more damage each tick.'
-          - '<body>Has a chance to deal bonus damage on top.'
+          - '<body>Each <colored-ability_mcrpg_bleed> <body>tick deals more damage.'
+          - '<body>On top of that, each tick has a chance to'
+          - '<body>deal additional bonus damage.'
           - ''
           - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Base Damage Boost: <primary><base-damage-boost>'
-          - '<body>Bonus Damage Chance: <primary><bonus-damage-chance>'
-          - '<body>Bonus Damage: <primary><bonus-damage>'
+          - '<body>Base Damage Boost: <primary><base-damage-boost> HP'
+          - '<body>Bonus Damage Chance: <primary><bonus-damage-chance>%'
+          - '<body>Bonus Damage: <primary><bonus-damage> HP'
     rage-spike:
       display-item:
         name: "<ability-active><ability></ability-active>"
@@ -163,13 +170,14 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Ready your sword, then crouch to blast forward,'
-          - '<body>damaging and knocking back foes in your path.'
+          - '<body>Launch yourself forward in the direction'
+          - '<body>you''re facing, damaging and knocking back'
+          - '<body>all enemies in your path.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Damage: <primary><damage>'
-          - '<body>Cooldown: <primary><cooldown>'
+          - '<body>Damage: <primary><damage> HP'
+          - '<body>Cooldown: <primary><cooldown>s'
     serrated-strikes:
       display-item:
         name: "<ability-active><ability></ability-active>"
@@ -178,14 +186,15 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Ready your sword and strike an enemy to temporarily'
-          - '<body>increase how often Bleed can activate.'
+          - '<body>Temporarily increase your'
+          - '<colored-ability_mcrpg_bleed> <body>activation chance after'
+          - '<body>striking an enemy.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Duration: <primary><ability-duration>'
-          - '<body>Bleed Chance Bonus: <primary><activation-chance-increase>'
-          - '<body>Cooldown: <primary><cooldown>'
+          - '<body>Duration: <primary><ability-duration>s'
+          - '<body>Bleed Chance Bonus: <primary><activation-chance-increase>%'
+          - '<body>Cooldown: <primary><cooldown>s'
     vampire:
       display-item:
         name: "<ability-passive><ability></ability-passive>"
@@ -194,13 +203,14 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Each time Bleed deals damage, you have a chance'
-          - '<body>to heal.'
+          - '<body>Each time <colored-ability_mcrpg_bleed> <body>deals damage to'
+          - '<body>an enemy, you have a chance to heal a'
+          - '<body>portion of that damage back.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Activation Chance: <primary><activation-chance>'
-          - '<body>Healing Amount: <primary><healing-amount>'
+          - '<body>Activation Chance: <primary><activation-chance>%'
+          - '<body>Healing: <primary><healing-amount> HP'
     extra-ore:
       display-item:
         name: "<ability-innate><ability></ability-innate>"
@@ -210,11 +220,11 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Occasionally doubles block drops'
-          - '<body>while mining.'
+          - '<body>Each block you mine has a chance to drop'
+          - '<body>double its normal drops.'
           - ''
-          - '<body>Skill: <primary><skill>'
-          - '<body>Activation Chance: <primary><activation-chance>'
+          - '<body>Skill: <skill>'
+          - '<body>Activation Chance: <primary><activation-chance>%'
     its-a-triple:
       display-item:
         name: "<ability-passive><ability></ability-passive>"
@@ -224,12 +234,13 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Can turn Extra Ore''s doubled drops into'
-          - '<body>triple drops instead.'
+          - '<body>When <colored-ability_mcrpg_extra_ore> <body>triggers, there'
+          - '<body>is an additional chance to turn the double'
+          - '<body>drop into a triple drop instead.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Activation Chance: <primary><activation-chance>'
+          - '<body>Activation Chance: <primary><activation-chance>%'
     ore-scanner:
       display-item:
         name: "<ability-active><ability></ability-active>"
@@ -238,12 +249,14 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Activate to see all nearby ores!'
+          - '<body>Scan the area around you, highlighting all'
+          - '<body>nearby ores with a colored glow. Turns you'
+          - '<body>toward the most valuable ore detected.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Range: <primary><range>'
-          - '<body>Cooldown: <primary><cooldown>'
+          - '<body>Range: <primary><range> blocks'
+          - '<body>Cooldown: <primary><cooldown>s'
       block-detected: "<body>You've detected <primary><count> <block_type> <body>near you."
     remote-transfer:
       display-item:
@@ -253,13 +266,15 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Link a chest so mined blocks teleport into it.'
-          - '<body>Use <primary>/mcrpg link</primary> <body>to link.'
-          - '<body>Use <primary>/mcrpg unlink</primary> <body>to unlink.'
+          - '<body>Mined blocks automatically teleport into a'
+          - '<body>linked chest if it''s within range. Use'
+          - '<body><primary>/mcrpg link<body> and <primary>/mcrpg unlink<body> to manage.'
+          - '<body>Configure which blocks transfer via the'
+          - '<body>ability settings menu.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Transfer Range: <primary><range>'
+          - '<body>Transfer Range: <primary><range> blocks'
     dryads-gift:
       display-item:
         name: "<ability-passive><ability></ability-passive>"
@@ -268,13 +283,13 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Sometimes drops experience when you'
-          - '<body>break wood blocks.'
+          - '<body>Breaking wood blocks has a chance to drop'
+          - '<body>bonus experience orbs on the ground.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Activation Chance: <primary><activation-chance>'
-          - '<body>Experience Dropped: <primary><experience-dropped>'
+          - '<body>Activation Chance: <primary><activation-chance>%'
+          - '<body>Experience Dropped: <primary><experience-dropped> XP'
     extra-lumber:
       display-item:
         name: "<ability-innate><ability></ability-innate>"
@@ -284,11 +299,11 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Occasionally doubles drops while you'
-          - '<body>cut wood.'
+          - '<body>Each wood block you chop has a chance to'
+          - '<body>drop double its normal drops.'
           - ''
-          - '<body>Skill: <primary><skill>'
-          - '<body>Activation Chance: <primary><activation-chance>'
+          - '<body>Skill: <skill>'
+          - '<body>Activation Chance: <primary><activation-chance>%'
     nymphs-vitality:
       display-item:
         name: "<ability-passive><ability></ability-passive>"
@@ -297,12 +312,12 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>In wooded biomes, stops hunger from falling'
-          - '<body>below a minimum level.'
+          - '<body>While in a wooded biome, your hunger will'
+          - '<body>not drop below a minimum threshold.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Minimum Hunger: <primary><minimum-hunger>'
+          - '<body>Minimum Hunger: <primary><minimum-hunger> bars'
     heavy-swing:
       display-item:
         name: "<ability-passive><ability></ability-passive>"
@@ -311,13 +326,14 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Sometimes breaks nearby wood in an area'
-          - '<body>as you chop trees.'
+          - '<body>When chopping wood, there is a chance to'
+          - '<body>break all nearby wood blocks in a radius'
+          - '<body>around the one you hit.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Activation Chance: <primary><activation-chance>'
-          - '<body>Radius: <primary><radius>'
+          - '<body>Activation Chance: <primary><activation-chance>%'
+          - '<body>Radius: <primary><radius> blocks'
     verdant-surge:
       display-item:
         name: "<ability-active><ability></ability-active>"
@@ -326,14 +342,15 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Channels the power of nature to send out'
-          - '<body>pulses that grow any crop they touch.'
+          - '<body>Send out multiple pulses of nature energy'
+          - '<body>that grow any crop they pass through,'
+          - '<body>radiating outward one after another.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
           - '<body>Pulse Count: <primary><pulse-count>'
-          - '<body>Pulse Radius: <primary><radius>'
-          - '<body>Cooldown: <primary><cooldown>'
+          - '<body>Pulse Radius: <primary><radius> blocks'
+          - '<body>Cooldown: <primary><cooldown>s'
     mass-harvest:
       display-item:
         name: "<ability-active><ability></ability-active>"
@@ -342,13 +359,14 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Sends out a pulse that harvests crops'
-          - '<body>and replants them as it travels.'
+          - '<body>Send out a pulse that harvests all mature'
+          - '<body>crops in its path and automatically replants'
+          - '<body>them.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
-          - '<body>Pulse Radius: <primary><radius>'
-          - '<body>Cooldown: <primary><cooldown>'
+          - '<body>Pulse Radius: <primary><radius> blocks'
+          - '<body>Cooldown: <primary><cooldown>s'
     too-many-plants:
       display-item:
         name: "<ability-innate><ability></ability-innate>"
@@ -358,11 +376,11 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Chance to double crop drops'
-          - '<body>when you harvest.'
+          - '<body>Harvesting mature crops has a chance to'
+          - '<body>drop double their normal yield.'
           - ''
-          - '<body>Skill: <primary><skill>'
-          - '<body>Activation Chance: <primary><activation-chance>'
+          - '<body>Skill: <skill>'
+          - '<body>Activation Chance: <primary><activation-chance>%'
     instant-irrigation:
       display-item:
         name: "<ability-innate><ability></ability-innate>"
@@ -371,9 +389,9 @@ ability:
         item-flags:
           - 'HIDE_ATTRIBUTES'
         lore:
-          - '<body>Break dirt with a hoe to bring forth'
-          - '<body>a natural source of water!'
+          - '<body>Breaking dirt with a hoe turns it into a'
+          - '<body>water source block.'
           - ''
-          - '<body>Skill: <primary><skill>'
-          - '<body>Cooldown: <primary><cooldown>'
+          - '<body>Skill: <skill>'
+          - '<body>Cooldown: <primary><cooldown>s'
       activation-message: "<body>You found a water source! You'll be able to do this again in <primary><cooldown> <body>seconds."

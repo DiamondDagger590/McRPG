@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityData;
+import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttribute;
 import us.eunoians.mcrpg.ability.attribute.DisplayableAttribute;
 import us.eunoians.mcrpg.ability.Ability;
@@ -69,13 +70,27 @@ public class AbilityItemBuilder extends ItemBuilder {
     private void addPlaceholders() {
         McRPG plugin = player.getPlugin();
         SkillRegistry skillRegistry = plugin.registryAccess().registry(McRPGRegistryKey.SKILL);
+        AbilityRegistry abilityRegistry = plugin.registryAccess().registry(McRPGRegistryKey.ABILITY);
         SkillHolder skillHolder = player.asSkillHolder();
-        // Ability placeholder
+        // Plain ability placeholder (used in item name: field where locale wraps it in a palette tag)
         addPlaceholder(AbilityItemPlaceholderKeys.ABILITY.getKey(), ability.getName(player));
-        // Skill placeholder
+        // Colored self-reference — safe for use in lore lines
+        addPlaceholder(AbilityItemPlaceholderKeys.COLORED_ABILITY.getKey(), ability.getColoredName(player));
+        // Skill placeholder for the ability's own skill
         if (ability instanceof SkillAbility skillAbility) {
             Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
             addPlaceholder(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getColoredName(player));
+        }
+        // Cross-reference placeholders: <colored-ability_ns_key> for any registered ability.
+        // Colons are replaced with underscores because MiniMessage tag names only allow [a-z0-9_-]*.
+        for (var abilityKey : abilityRegistry.getAllAbilities()) {
+            Ability registeredAbility = abilityRegistry.getRegisteredAbility(abilityKey);
+            addPlaceholder("colored-ability_" + abilityKey.namespace() + "_" + abilityKey.getKey(), registeredAbility.getColoredName(player));
+        }
+        // Cross-reference placeholders: <colored-skill_ns_key> for any registered skill.
+        for (Skill registeredSkill : skillRegistry.getRegisteredSkills()) {
+            var skillKey = registeredSkill.getSkillKey();
+            addPlaceholder("colored-skill_" + skillKey.namespace() + "_" + skillKey.getKey(), registeredSkill.getColoredName(player));
         }
         // Add information about specific ability attributes
         Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(ability);

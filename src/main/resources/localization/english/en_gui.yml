@@ -859,10 +859,10 @@ gui:
           - '<hint>Press <primary>1<body>/<primary>2<body>/<primary>3 <body>to move to that slot'
           - '<hint>Click <body>to change ability'
         # Appended after additional-lore only when the ability has an active upgrade quest.
-        # Supported placeholders: <upgrade-quest-progress>
+        # Supported placeholders: <upgrade-quest-progress>, <quest-percent>
         upgrade-quest-progress-lore:
           - ''
-          - '<body>Upgrade Quest: <upgrade-quest-progress>'
+          - '<body>Upgrade Quest: <primary><quest-percent>% <body>completed'
       # Display item for empty active combo slots.
       # Supported placeholders: <combo-pattern> (e.g. "R → R → R")
       empty:

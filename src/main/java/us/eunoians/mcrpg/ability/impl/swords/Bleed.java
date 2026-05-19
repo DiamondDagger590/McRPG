@@ -116,11 +116,23 @@ public final class Bleed extends McRPGAbility implements PassiveAbility, Configu
     @NotNull
     @Override
     public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        var localizationManager = getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+        var formatter = localizationManager.getDisplayDecimalFormatter();
+        YamlDocument swordsConfig = getYamlDocument();
+        int cycles = swordsConfig.getInt(SwordsConfigFile.BLEED_BASE_CYCLES);
+        double frequency = swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_FREQUENCY);
+        double damage = swordsConfig.getDouble(SwordsConfigFile.BLEED_BASE_DAMAGE);
+        double duration = cycles * frequency;
+
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put(AbilityItemPlaceholderKeys.ACTIVATION_CHANCE.getKey(),
-                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.LOCALIZATION)
-                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getActivationChance(player.asSkillHolder())));
+                formatter.formatDisplayDecimal(player, getActivationChance(player.asSkillHolder())));
+        placeholders.put(AbilityItemPlaceholderKeys.BLEED_DAMAGE.getKey(),
+                formatter.formatDisplayDecimal(player, damage, 0, 2));
+        placeholders.put(AbilityItemPlaceholderKeys.BLEED_CYCLES.getKey(), String.valueOf(cycles));
+        placeholders.put(AbilityItemPlaceholderKeys.BLEED_DURATION.getKey(),
+                formatter.formatDisplayDecimal(player, duration, 0, 1));
         return placeholders;
     }
 }

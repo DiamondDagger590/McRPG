@@ -196,12 +196,15 @@ public class ActiveAbilityComboSlot implements McRPGSlot {
         if (activeQuest == null) {
             return;
         }
+        double overallProgress = activeQuest.getOverallProgress();
         String progressBar = activeQuest.getOverallProgressBar(20);
         var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        String questPercent = localizationManager.getDisplayDecimalFormatter().formatDisplayDecimal(mcRPGPlayer, overallProgress * 100, 0, 1);
         List<String> progressLore = localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.LOADOUT_GUI_ACTIVE_COMBO_SLOT_UPGRADE_QUEST_PROGRESS_LORE);
         var miniMessage = McRPG.getInstance().getMiniMessage();
         for (String line : progressLore) {
-            String resolved = line.replace("<upgrade-quest-progress>", progressBar);
+            String resolved = line.replace("<upgrade-quest-progress>", progressBar)
+                    .replace("<quest-percent>", questPercent);
             builder.addDisplayLoreComponent(miniMessage.deserialize(resolved).decoration(TextDecoration.ITALIC, false));
         }
     }

@@ -27,6 +27,17 @@ public enum AbilityItemPlaceholderKeys {
     MINIMUM_HUNGER("minimum-hunger"),
     PULSE_COUNT("pulse-count"),
     MANA_COST("mana-cost"),
+    /**
+     * The current ability's colored name (palette-resolved). Safe for use in lore but not in the
+     * item {@code name:} field, where the locale template already wraps {@code <ability>} in a palette tag.
+     */
+    COLORED_ABILITY("colored-ability"),
+    /** Base damage dealt per Bleed tick, as configured in swords_configuration.yml. */
+    BLEED_DAMAGE("bleed-damage"),
+    /** Number of Bleed ticks as configured in swords_configuration.yml. */
+    BLEED_CYCLES("bleed-cycles"),
+    /** Total Bleed duration in seconds, computed as {@code cycles * frequency}. */
+    BLEED_DURATION("bleed-duration"),
 
     ;
 
