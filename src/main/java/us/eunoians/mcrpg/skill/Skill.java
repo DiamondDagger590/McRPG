@@ -69,6 +69,20 @@ public interface Skill extends McRPGContent {
     String getName();
 
     /**
+     * Returns the localized skill name with palette color tags applied. The default
+     * implementation returns the plain name so non-configurable and third-party
+     * implementations work without changes. {@link us.eunoians.mcrpg.skill.impl.type.ConfigurableSkill}
+     * overrides this to resolve the palette-colored name from the locale {@code name:} field.
+     *
+     * @param player The player whose locale chain is used for resolution.
+     * @return The colored skill name as a raw MiniMessage string, safe to embed in any template.
+     */
+    @NotNull
+    default String getColoredName(@NotNull McRPGPlayer player) {
+        return getName(player);
+    }
+
+    /**
      * Gets the name to display in messages or guis for this skill. This may have a placeholder
      * such as {@code <skill-name>} which should be replaced by {@link #getName()}.
      *

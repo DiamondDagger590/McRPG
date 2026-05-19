@@ -1,7 +1,7 @@
 # GUI/UX System & Color Palette
 
-> **Last Updated:** 2026-05-18
-> **Status:** Phases 1–3 complete; Phase 4 partially complete (GUI/commands locale sweep done)
+> **Last Updated:** 2026-05-19
+> **Status:** All phases complete
 > **Scope:** Unified GUI color palette, navigation standardization, ability display improvements, upgrade quest slot separation, ability name unification
 
 ---
@@ -322,18 +322,48 @@ Each phase gets its own LLD when implementation begins.
 - `LoadoutSetCommand` success message shows custom loadout display name via `<loadout-name>` placeholder
 - Locale templates in `en_abilities.yml`, `en_gui.yml`, `en_commands.yml`, `en_quest.yml` updated to remove redundant color wrappers around `<ability>` placeholder
 
-### Phase 4: Remaining Locale Sweep (Partially Complete)
+### Phase 4: Remaining Locale Sweep + Skill Colors + McCore Infrastructure ✅ Complete
 
-**Done:**
-- Standardized all click/keyboard hints in `en_gui.yml` to verb-only `<hint>` format
-- Updated `en_abilities.yml` hint lines to verb-only format
-- Updated `en_commands.yml` confirmation hover text from legacy `<gray>`/`<gold>` to palette tags
-- Fixed loadout default display name (`<primary>` was double-applied via template)
-- Fixed `ScopedEntitySelectSlot` hardcoded English strings — now locale-backed with palette + placeholder support
-- Standardized `Press 1/2/3` combo-slot keyboard hint to `<hint>Press <primary>1<body>/...` format
+- Full palette sweep of `en.yml`, `en_skills.yml`, `en_quest.yml`, `en_commands.yml` — all `<gold>`, `<gray>`, `<red>`, `<green>`, `<yellow>`, `<white>`, `<dark_gray>` replaced with semantic palette placeholders
+- 4 new per-skill palette entries in `config.yml`: `skill-swords` (#C75050), `skill-mining` (#7AAFC9), `skill-herbalism` (#6DB86D), `skill-woodcutting` (#B8874B)
+- `Skill.getColoredName(McRPGPlayer)` API with `ConfigurableSkill` override — mirrors `Ability.getColoredName()` from Phase 3
+- Propagated `getColoredName()` to 20+ callsites: ability item builders, lore appenders, experience displays, commands, redeem GUIs, upgrade quest slots
+- Quest locale deduplication: ~70 stale quest entries removed from `en.yml`, example quests and `quest-notifications` moved to `en_quest.yml`
+- `HIDE_ATTRIBUTES` item flag on all ~124 GUI icons across `en_gui.yml`, `en_abilities.yml`, `en_skills.yml`
+- `en_quest.yml` reward `default-color` changed from `<gold>` to `<primary>`
+- `SkillNameColorConsistencyTest` — enforces `<skill-*>` palette tags in skill locale names
 
-**Remaining:**
-- Sweep `en.yml`, `en_skills.yml`, `en_quest.yml`, `en_stats.yml` for any remaining `<gold>` / raw hex / unhyphenated click type patterns
+**McCore infrastructure fixes** (discovered during implementation):
+- **ItemBuilder "Double-Bake" Bug:** `getDisplayItemBuilder()` called `intermediate.asItemStack()` prematurely, baking YAML lore into Components before placeholder substitution. MiniMessage tags in placeholder values (from `getColoredName()`) then rendered as literal text. Fixed by adding copy constructors to `BaseItemBuilder`/`ItemBuilder` that transfer internal state without `asItemStack()`, and passing the builder directly to specialized constructors.
+- **Lore Merge Bug:** `BaseItemBuilder.asItemStack()` had two separate `setData(LORE, ...)` calls — the component-based list overwrote the string-based list. After the copy constructor fix, YAML lore (strings) and dynamic lore (components) occupied separate lists, and the component call silently discarded all YAML lore. Fixed by merging both sources into a single `List<Component>` before writing — strings first (YAML description), components second (dynamic metadata).
+
+**Previous Phase 3 incremental work now subsumed:**
+- Click/keyboard hint standardization to verb-only `<hint>` format
+- `ScopedEntitySelectSlot` locale-backing
+- Loadout display name double-apply fix
+- Combo-slot `Press 1/2/3` hint format
+
+---
+
+## Known Gaps / Post-Implementation Notes
+
+Items identified during or after the Phase 4 pass that may warrant follow-up:
+
+1. **Implicitly-fixed slots not individually verified in-game.** The McCore lore merge fix resolves the double-bake and lost-lore bugs for all slots that call `getDisplayItemBuilder()` and then add component lore. The following slots were **not** individually tested in-game after the fix — only `AbilitySlot` was verified:
+   - `LoadoutAbilitySlot` (loadout GUI — ability with additional lore)
+   - `ActiveAbilityComboSlot` (loadout GUI — combo pattern + upgrade quest progress)
+   - `LoadoutSelectAbilitySlot` (ability selection GUI — ability with select lore)
+   - `RedeemableSkillSelectionSlot` (experience bank — skill with redeem lore)
+
+2. **Lore ordering is implicit.** The `asItemStack()` merge always places string-based lore (from YAML) before component-based lore (from `addDisplayLoreComponent()`). Every current callsite expects this order (YAML description first, dynamic metadata second), but it's not enforced by contract. A future builder that needs dynamic lore *before* YAML lore would require a configurable strategy.
+
+3. **Third-party `ItemBuilder` subclasses.** Any third-party plugin that extends `ItemBuilder` and constructs from an `ItemStack` (the old path) will still hit the double-bake issue. They need to add a copy constructor delegating to `super(source)`. This should be documented in the McCore changelog / migration guide.
+
+4. **Copy constructor shares `ItemStack` reference.** `BaseItemBuilder`'s copy constructor copies `itemStack` by reference, not clone. The source builder is discarded immediately in all current callsites (`getDisplayItemBuilder()`), but a future caller retaining both builders could see cross-contamination. Low risk, but worth noting.
+
+5. **`en_stats.yml` not swept.** Confirmed clean — the file contains no color tags and no display items. No action needed, but flagged for completeness.
+
+6. **No unit test coverage for the McCore lore merge.** The double-bake and lore merge fixes are infrastructure-level changes in McCore's `BaseItemBuilder`. There are no unit tests validating the merge behavior (string + component lore coexistence). MockBukkit's `ItemStack` may not fully simulate `DataComponentTypes.LORE`, making this difficult to test without integration tests, but a basic builder test verifying both lore sources appear would add confidence.
 
 ---
 

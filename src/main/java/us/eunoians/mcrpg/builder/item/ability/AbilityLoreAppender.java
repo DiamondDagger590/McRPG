@@ -90,7 +90,7 @@ public final class AbilityLoreAppender {
                                             lore.add("");
                                             lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.UPGRADE_LOCKED_BEHIND_LEVELUP_LORE));
                                             placeholders.put("next-tier-level", Integer.toString(tierableAbility.getUnlockLevelForTier(nextTier)));
-                                            placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer));
+                                            placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getColoredName(mcRPGPlayer));
                                         }
                                     }
                                 }
@@ -103,7 +103,7 @@ public final class AbilityLoreAppender {
                     placeholders.put("ability-unlock-level", Integer.toString(tierableAbility.getUnlockLevel()));
                     if (tierableAbility instanceof SkillAbility skillAbility) {
                         Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
-                        placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer));
+                        placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getColoredName(mcRPGPlayer));
                     }
                 }
             }

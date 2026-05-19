@@ -80,7 +80,7 @@ public interface ConfigurableAbility extends Ability {
         ItemBuilder intermediate = ItemBuilder.from(
                 localizationManager.getLocalizedSection(player, getDisplayItemRoute()));
         intermediate.applyTagReplacements(localizationManager.getPaletteReplacements());
-        return new AbilityItemBuilder(intermediate.asItemStack(), player, this);
+        return new AbilityItemBuilder(intermediate, player, this);
     }
 
     @NotNull

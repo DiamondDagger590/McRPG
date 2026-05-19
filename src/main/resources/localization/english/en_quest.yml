@@ -120,10 +120,10 @@ quest-reward-types:
   # default because of MiniMessage stream ordering — the later tag wins.
   #
   # Examples:
-  #   default-color: "<gold>"       # warm gold theme (shipped default)
+  #   default-color: "<primary>"     # palette primary color (shipped default)
   #   default-color: "<#ffaa00>"    # custom hex colour
   #   default-color: ""             # no default; only template-level colours apply
-  default-color: "<gold>"
+  default-color: "<primary>"
 
   # mcrpg:experience — grants McRPG skill XP to the completing player.
   # Placeholders:
@@ -232,8 +232,64 @@ quest-templates:
 #   plugins/McRPG/localization/<language>/ to override these English strings.
 # -----------------------------------------------------------------------
 
+# Quest event notifications sent as chat messages to in-scope players.
+# Placeholder syntax uses <placeholder_name> for all values.
+quest-notifications:
+  # Sent to all in-scope players when any quest starts.
+  # Placeholder: <quest_name>
+  quest-started: '<primary>Quest Started: <skill><quest_name>'
+  # Sent to all in-scope players when a quest is completed.
+  # Placeholder: <quest_name>
+  quest-completed: '<positive>Quest Completed: <primary><quest_name><positive>! Rewards have been granted.'
+  # Sent to all in-scope players when a quest is manually abandoned.
+  # Placeholder: <quest_name>
+  quest-cancelled: '<warning>Quest Abandoned: <primary><quest_name><warning>.'
+  # Sent to all in-scope players when a quest expires.
+  # Placeholder: <quest_name>
+  quest-expired: '<negative>Quest Expired: <primary><quest_name><negative>.'
+  # Sent to all in-scope players when a quest phase is completed.
+  # Placeholders: <quest_name>, <phase_number>
+  phase-completed: '<primary>Phase <phase_number> of <quest_name> <primary>is complete!'
+  # Sent to the contributing player when they cross a configured progress threshold.
+  # Requires the quest progress notifications player setting to be enabled.
+  # Placeholders: <quest_name>, <objective_name>, <percentage>
+  objective-threshold: '<body>You have completed <primary><percentage>%<body> of <primary><objective_name><body> for <primary><quest_name><body>.'
+  # Sent to all online players when the quest board rotates.
+  board-rotated: '<primary>The quest board has rotated! <body>New quests are now available.'
+  # Sent to a player when a single quest is nearing its expiry time.
+  # Placeholders: <quest_name>, <time_remaining>
+  near-expiry-single: '<warning>Quest <primary><quest_name><warning> is expiring in <primary><time_remaining><warning>!'
+  # Header sent when multiple quests are nearing expiry at the same time.
+  # Placeholder: <count>
+  near-expiry-batch-header: '<warning>You have <primary><count><warning> quests expiring soon:'
+  # One line per quest in a batched near-expiry notification.
+  # Placeholders: <quest_name>, <time_remaining>
+  near-expiry-batch-entry: '<warning>  • <primary><quest_name> <body>(<time_remaining>)'
+
 quests:
   mcrpg:
+
+    # ================================================================
+    #  EXAMPLE QUESTS
+    # ================================================================
+
+    example_mining:
+      display-name: "<primary>Daily Mining Challenge"
+      objectives:
+        break_stone_blocks:
+          description: "<body>Mine Stone Blocks"
+        break_deepslate:
+          description: "<body>Mine Deepslate"
+
+    example_branching:
+      display-name: "<primary>Ore Specialist"
+      objectives:
+        break_iron_ore:
+          description: "<body>Mine Iron Ore"
+        break_diamond_ore:
+          description: "<body>Mine Diamond Ore"
+        break_emerald_ore:
+          description: "<body>Mine Emerald Ore"
 
     # ================================================================
     #  ABILITY UPGRADE QUESTS — SWORDS

@@ -479,6 +479,31 @@ ability:
 
 The `AbilityNameColorConsistencyTest` enforces this rule for all bundled abilities at CI time. Third-party expansions should ship a similar test for their own locale YAML files.
 
+#### Third-party skill locale color requirements
+
+Every skill's `name:` field in its locale YAML file must use the per-skill palette placeholder — **not** `<gold>`, `<primary>`, or any raw hex color. Bundled skills ship with these:
+
+| Skill | Placeholder |
+|---|---|
+| Swords | `<skill-swords>` |
+| Mining | `<skill-mining>` |
+| Herbalism | `<skill-herbalism>` |
+| Woodcutting | `<skill-woodcutting>` |
+
+Third-party skills should add a `skill-{key}: "<color:#RRGGBB>"` entry to `config.yml`'s `palette:` section and use `<skill-{key}>` in their locale's `name:` field. The `Skill.getColoredName(McRPGPlayer)` method resolves to this colored name at runtime — all callsites that show a skill name in player-facing text must call `getColoredName()`, not `getName()`. The only exception is when the name is used as a raw command argument (e.g., `player.performCommand`), where plain text is required.
+
+Example locale YAML for a third-party skill:
+
+```yaml
+skills:
+  my-skill:
+    display-item:
+      name: '<skill-my-skill><skill></skill-my-skill>'
+      skill-name: 'My Skill'
+```
+
+The `SkillNameColorConsistencyTest` enforces this rule for all bundled skills at CI time. Third-party expansions should ship a similar test for their own locale YAML files.
+
 New global statistics go in `McRPGStatistic` as `static final` constants. Per-skill statistics are constructed in `McRPGSkill.getDefaultStatistics()` using the key-derivation methods `Skill.getExperienceStatisticKey()` and `Skill.getMaxLevelStatisticKey()`. Per-ability activation statistics are constructed in `ActiveAbility.getDefaultStatistics()` using `ActiveAbility.getActivationStatisticKey()`. Third-party skills and abilities should override these default methods if they need custom key conventions.
 
 ### DAO Pattern

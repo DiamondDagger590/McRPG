@@ -30,12 +30,16 @@ gui:
       display-item:
         name: "<primary>Next Page"
         material: ARROW
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>this to go to the next page.'
     previous-page-button:
       display-item:
         name: "<primary>Previous Page"
         material: ARROW
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>this to go to the previous page.'
     # Configure the back button
@@ -43,6 +47,8 @@ gui:
       display-item:
         name: "<primary>Back to Previous GUI"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to the previous menu.'
     # Configure the item to be used as a filler for the gui
@@ -50,6 +56,8 @@ gui:
       display-item:
         name: ""
         material: GRAY_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
   # The GUI serves as the "main" McRPG gui and is the main access point
   # for most players into McRPG content.
   home-gui:
@@ -58,6 +66,8 @@ gui:
     settings-slot:
       display-item:
         material: PLAYER_HEAD
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Settings'
         lore:
           - '<hint>Click <body>to edit your McRPG settings.'
@@ -65,6 +75,8 @@ gui:
     abilities-slot:
       display-item:
         material: DIAMOND_ORE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Abilities"
         lore:
           - '<hint>Click <body>to view your abilities.'
@@ -72,6 +84,8 @@ gui:
     skills-slot:
       display-item:
         material: DIAMOND_SWORD
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Skills"
         lore:
           - '<hint>Click <body>to view your skills.'
@@ -79,6 +93,8 @@ gui:
     loadouts-slot:
       display-item:
         material: COMPASS
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Loadouts"
         lore:
           - '<hint>Click <body>to edit your loadouts.'
@@ -86,6 +102,8 @@ gui:
     experience-bank-slot:
       display-item:
         material: EXPERIENCE_BOTTLE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Experience Bank"
         # Supported placeholders: <redeemable-experience>, <redeemable-levels>,
         # <rested-experience> and <boosted-experience>
@@ -101,6 +119,8 @@ gui:
     quests-slot:
       display-item:
         material: WRITABLE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Quests"
         lore:
           - '<hint>Click <body>to view your active quests.'
@@ -108,12 +128,16 @@ gui:
     coming-soon-slot:
       display-item:
         material: GRAY_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<ability-innate>Coming Soon"
         lore:
           - '<body>Quest Board coming in a future update!'
     board-slot:
       display-item:
         material: OAK_SIGN
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Quest Board"
         lore:
           - '<hint>Click <body>to browse and accept'
@@ -127,6 +151,8 @@ gui:
       display-item:
         name: "<primary>Back to Home"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to the home menu.'
     offering-lore:
@@ -138,15 +164,21 @@ gui:
     offering-slot:
       display-item:
         material: PAPER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<rarity_color><quest_name>'
     # Scoped (group) offering slot. Placeholders: <quest_name>, <rarity_color>
     scoped-offering-slot:
       display-item:
         material: PAPER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<rarity_color><quest_name>'
     no-offerings-slot:
       display-item:
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<negative>No Offerings'
         lore:
           - '<body>There are no quest offerings available right now.'
@@ -158,6 +190,8 @@ gui:
     group-tab:
       display-item:
         material: COMPASS
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Group Quests'
         lore:
           - '<hint>Click <body>to view group quests.'
@@ -166,6 +200,8 @@ gui:
     group-entity-slot:
       display-item:
         material: SHIELD
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary><entity_name>'
         lore:
           - '<body>Active quests: <primary><quest_count>'
@@ -174,6 +210,8 @@ gui:
     group-no-offerings:
       display-item:
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<ability-innate>No Group Quests Available'
         lore:
           - '<body>New offerings are generated at the next rotation.'
@@ -182,6 +220,8 @@ gui:
     group-entity-select-slot:
       display-item:
         material: SHIELD
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary><scope_name>'
         lore:
           - '<hint>Click <body>to view offerings for this group.'
@@ -227,6 +267,8 @@ gui:
       display-item:
         name: "<primary>Back to Home"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to the home menu.'
     # Template for each active quest item. Placeholders: <quest_name>
@@ -234,6 +276,8 @@ gui:
     quest-slot:
       display-item:
         material: WRITABLE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary><quest_name>"
         lore: []
       phase-line: '<body>Phase: <primary><current_phase>/<total_phases>'
@@ -248,6 +292,8 @@ gui:
     view-history-button:
       display-item:
         material: BOOKSHELF
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Quest History"
         lore:
           - '<hint>Click <body>to view your completed quests.'
@@ -258,17 +304,23 @@ gui:
       display-item:
         name: "<primary>Back to Active Quests"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to your active quests.'
     sort-date-desc:
       display-item:
         material: HOPPER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Sort: Newest First"
         lore:
           - '<hint>Click <body>to sort by oldest first.'
     sort-date-asc:
       display-item:
         material: HOPPER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Sort: Oldest First"
         lore:
           - '<hint>Click <body>to sort by newest first.'
@@ -276,6 +328,8 @@ gui:
     completed-quest-slot:
       display-item:
         material: WRITTEN_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary><quest_name>"
         lore:
           - '<body>Completed: <primary><completed_date>'
@@ -285,6 +339,8 @@ gui:
     unknown-quest-slot:
       display-item:
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<negative><quest_name>"
         lore:
           - '<body>Completed: <primary><completed_date>'
@@ -323,6 +379,8 @@ gui:
     overview-slot:
       display-item:
         material: ENCHANTED_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary><quest_name>"
         lore:
           - '<body>State: <primary><quest_state>'
@@ -331,6 +389,8 @@ gui:
     phase-header:
       display-item:
         material: YELLOW_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Phase <phase_number>/<phase_total>"
         lore:
           - '<body>Completion mode: <primary><completion_mode>'
@@ -339,6 +399,8 @@ gui:
     stage-slot:
       display-item:
         material: PAPER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Stage <stage_number>/<stage_total>"
         lore:
           - '<body>Objectives: <primary><objective_count>'
@@ -356,6 +418,8 @@ gui:
     objective-slot:
       display-item:
         material: MAP
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<body><objective_description>"
         lore: []
       # Progress lore line appended below the objective description.
@@ -372,6 +436,8 @@ gui:
     reward-slot:
       display-item:
         material: GOLD_INGOT
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Quest Completion Rewards"
         lore:
           - '<body>Rewards earned when the entire quest is'
@@ -410,6 +476,8 @@ gui:
     duration-slot:
       display-item:
         material: CLOCK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Quest Duration"
         lore:
           - '<body>Expires after: <primary><quest_duration>'
@@ -417,6 +485,8 @@ gui:
     abandon-button:
       display-item:
         material: RED_WOOL
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<negative>Abandon Quest"
         lore:
           - '<negative>Click <body>to abandon this quest.'
@@ -432,6 +502,8 @@ gui:
     confirm-button:
       display-item:
         material: TNT
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<negative>Abandon Quest"
         lore:
           - '<negative>Click <body>to abandon <primary><quest_name><body>.'
@@ -441,6 +513,8 @@ gui:
     cancel-button:
       display-item:
         material: LIME_WOOL
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<positive>Go Back"
         lore:
           - '<hint>Click <body>to cancel and go back.'
@@ -448,6 +522,8 @@ gui:
     quest-info:
       display-item:
         material: WRITABLE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary><quest_name>"
         lore:
           - '<body>You are about to abandon this quest.'
@@ -460,6 +536,8 @@ gui:
       display-item:
         name: "<primary>Back to Home"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to the home menu.'
   # Some GUIs (such as the ability gui) have different ability sort options that are provided.
@@ -469,48 +547,64 @@ gui:
       display-item:
         name: "<primary>Alphabetical Sort"
         material: BAMBOO_HANGING_SIGN
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how abilities are sorted.'
     innate-abilities:
       display-item:
         name: "<primary>Innate Abilities Sort"
         material: REDSTONE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how abilities are sorted.'
     skill:
       display-item:
         name: "<primary>Sort by Skill"
         material: DIAMOND_SWORD
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how abilities are sorted.'
     unlocked-abilities:
       display-item:
         name: "<primary>Sort by Unlock Level"
         material: DIAMOND
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how abilities are sorted.'
     upgradable-abilities:
       display-item:
         name: "<primary>Sort by Abilities you can upgrade"
         material: DIAMOND
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how abilities are sorted.'
     passive-abilities:
       display-item:
         name: "<primary>Sort by Passive Abilities"
         material: GHAST_TEAR
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how abilities are sorted.'
     active-abilities:
       display-item:
         name: "<primary>Sort by Active Abilities"
         material: STONE_SWORD
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how abilities are sorted.'
     loadout-order:
       display-item:
         name: "<primary>Sort by Loadout Order"
         material: PAPER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how abilities are sorted.'
   # This GUI allows players to view and edit their skills.
@@ -522,6 +616,8 @@ gui:
       display-item:
         name: "<primary>Back to Home"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to the home menu.'
   # Some GUIs (such as the skills gui) have different skill sort options that are provided.
@@ -531,18 +627,24 @@ gui:
       display-item:
         name: "<primary>Alphabetical Sort"
         material: BAMBOO_HANGING_SIGN
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how skills are sorted.'
     skill-level:
       display-item:
         name: "<primary>Skill Level Sort"
         material: DIAMOND_ORE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how skills are sorted.'
     experience-to-level:
       display-item:
         name: "<primary>Skill Remaining Exp To Level Sort"
         material: EXPERIENCE_BOTTLE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how skills are sorted.'
   # This GUI allows for editing an ability's attributes. Since these items are shared
@@ -555,6 +657,8 @@ gui:
       display-item:
         name: "<primary>Back to Viewing Abilities"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to the ability list.'
     # Allows configuration of displaying different states of a location attribute (such as Remote Transfer)
@@ -587,6 +691,8 @@ gui:
       display-item:
         name: "<primary>Ability Tier Upgrade"
         material: IRON_INGOT
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         # Supports the following placeholders: <tier>
         lore:
           - "<body>Tier: <primary><tier>"
@@ -608,6 +714,8 @@ gui:
     remote-transfer-block-toggle-attribute:
       display-item:
         material: CHEST
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: "<primary>Block Filter"
         lore:
           - "<hint>Click <body>to edit what blocks can"
@@ -676,6 +784,8 @@ gui:
     invalid-slot:
       display-item:
         material: RED_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: " "
     # Configure the slot players click to change an ability that is already in their loadout.
     ability-slot:
@@ -687,6 +797,8 @@ gui:
     free-ability-slot:
       display-item:
         material: CYAN_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Empty Loadout Slot'
         lore:
           - ''
@@ -695,6 +807,8 @@ gui:
     loadout-display-open-slot:
       display-item:
         material: OAK_HANGING_SIGN
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Edit Loadout Display'
         lore:
           - '<hint>Click <body>to change how this loadout is displayed.'
@@ -703,6 +817,8 @@ gui:
     combo-info-slot:
       display-item:
         material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Combo Abilities'
         lore:
           - '<body>Active abilities are triggered'
@@ -719,6 +835,8 @@ gui:
     combo-zone-filler:
       display-item:
         material: LIGHT_BLUE_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Combo Abilities'
         lore:
           - '<body>Active abilities are triggered'
@@ -768,6 +886,8 @@ gui:
     previous-gui-button:
       display-item:
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Back to Viewing Loadouts'
         lore:
           - '<hint>Click <body>to return to the loadout list.'
@@ -781,6 +901,8 @@ gui:
       display-item:
         name: "<primary>Back to Home"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to the home menu.'
     # Configure the slot for any bedrock players using geyser
@@ -796,6 +918,7 @@ gui:
           POWER: 1
         item-flags:
           - 'HIDE_ENCHANTS'
+          - 'HIDE_ATTRIBUTES'
       # Configure the slot for any bedrock players using geyser when the current loadout is inactive
       inactive-loadout:
         name: '<primary><name>'
@@ -815,6 +938,7 @@ gui:
           POWER: 1
         item-flags:
           - 'HIDE_ENCHANTS'
+          - 'HIDE_ATTRIBUTES'
       # Configure the slot for any players not using geyser when the current loadout is inactive
       inactive-loadout:
         name: '<primary><name>'
@@ -837,6 +961,8 @@ gui:
       # How to display this slot in a GUI?
       display-item:
         material: OAK_HANGING_SIGN
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Loadout Display Name'
         lore:
           - "<hint>Click <body>to change what the loadout's name is."
@@ -853,12 +979,16 @@ gui:
       # Configure the slot to be shown to players when the loadout they're viewing is currently active.
       active-display-item:
         material: GREEN_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Loadout Active State'
         lore:
           - '<body>This loadout is currently <positive>active</positive>.'
       # Configure the slot to be shown to players when the loadout they're viewing is currently inactive.
       inactive-display-item:
         material: RED_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Loadout Active State'
         lore:
           - '<body>This loadout is currently <negative>inactive</negative>.'
@@ -870,11 +1000,15 @@ gui:
     item-input-highlight-slot:
       display-item:
         material: PURPLE_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: ""
     # Configure the slot players can click to cancel editing the loadout's display item
     cancel-item-edit-slot:
       display-item:
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Cancel editing loadout display item.'
         lore:
           - '<hint>Click <body>to cancel editing loadout display item.'
@@ -882,6 +1016,8 @@ gui:
     confirm-item-edit-slot:
       display-item:
         material: GREEN_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Loadout Display Item'
         lore:
           - '<hint>Click <body>to change what item is used to display the loadout.'
@@ -894,6 +1030,8 @@ gui:
       display-item:
         name: "<primary>Back to Editing Loadout"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to your loadout.'
     # Configure the slot players click to add an ability to their loadout.
@@ -911,6 +1049,8 @@ gui:
       display-item:
         name: "<primary>Back to Home"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to the home menu.'
     # Configure the slot representing the experience display setting controlling how players can get experience updates visually.
@@ -1088,6 +1228,8 @@ gui:
       display-item:
         name: "<primary>Back to Editing <ability>"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         # Supports the following placeholders: <ability>
         lore:
           - '<hint>Click <body>to return to editing <primary><ability><body>.'
@@ -1205,6 +1347,8 @@ gui:
       display-item:
         name: "<primary>Back to Home"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to the home menu.'
     # This slot allows players to open the GUI for redeeming redeemable experience
@@ -1212,6 +1356,8 @@ gui:
       display-item:
         name: "<primary>Redeemable Experience"
         material: EXPERIENCE_BOTTLE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Redeemable Experience: <primary><redeemable-experience>'
           - ''
@@ -1221,6 +1367,8 @@ gui:
       display-item:
         name: "<primary>Redeemable Levels"
         material: ENCHANTED_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Redeemable Experience: <primary><redeemable-levels>'
           - ''
@@ -1233,6 +1381,8 @@ gui:
       display-item:
         name: "<primary>Boosted Experience Bank"
         material: BEACON
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Boosted Experience: <primary><boosted-experience>'
           - '<body>Usage Rate: <primary><boosted-experience-usage-rate>'
@@ -1247,6 +1397,8 @@ gui:
       display-item:
         name: "<primary>Rested Experience Bank"
         material: LIME_BED
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Rested Experience: <primary><rested-experience> Level(s)'
           - '<body>Usage Rate: <primary><rested-experience-usage-rate>'
@@ -1264,6 +1416,8 @@ gui:
       display-item:
         name: "<primary>Back to Experience Bank"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to the experience bank.'
     # The lore to append to the Skill items from the skill-gui
@@ -1278,11 +1432,15 @@ gui:
       display-item:
         name: "<primary>Back to Select Skill"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to skill selection.'
     redeem-amount:
       display-item:
         material: GREEN_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Redeem <redeemable-experience-to-spend> Experience'
         lore:
           - '<hint>Click <body>to redeem <primary><redeemable-experience-to-spend></primary> experience'
@@ -1290,6 +1448,8 @@ gui:
     redeem-all:
       display-item:
         material: PURPLE_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Redeem All Experience'
         lore:
           - '<hint>Click <body>to redeem all of your redeemable'
@@ -1297,6 +1457,8 @@ gui:
     redeem-custom:
       display-item:
         material: LIGHT_BLUE_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Input Redeem Amount'
         lore:
           - '<hint>Click <body>to type in chat the amount of'
@@ -1311,11 +1473,15 @@ gui:
       display-item:
         name: "<primary>Back to Select Skill"
         material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to return to skill selection.'
     redeem-amount:
       display-item:
         material: GREEN_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Redeem <redeemable-levels-to-spend> Levels'
         lore:
           - '<hint>Click <body>to redeem <primary><redeemable-levels-to-spend></primary> levels'
@@ -1323,6 +1489,8 @@ gui:
     redeem-all:
       display-item:
         material: PURPLE_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Redeem All Levels'
         lore:
           - '<hint>Click <body>to redeem all of your redeemable'
@@ -1330,6 +1498,8 @@ gui:
     redeem-custom:
       display-item:
         material: LIGHT_BLUE_STAINED_GLASS_PANE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         name: '<primary>Input Redeem Amount'
         lore:
           - '<hint>Click <body>to type in chat the amount of'

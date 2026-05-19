@@ -71,9 +71,9 @@ ability:
     # The following placeholders are supported: <next-tier-level>, <skill>
     upgrade-locked-behind-levelup:
       - '<body>Upgrade this ability once you reach <primary>Lv <next-tier-level>'
-      - '<body>in <primary><skill><body>.'
+      - '<body>in <skill><body>.'
     ability-locked:
-      - '<body>Unlock this ability when your <primary><skill> <body>skill'
+      - '<body>Unlock this ability when your <skill> <body>skill'
       - '<body>reaches level <primary><ability-unlock-level><body>.'
     # The lore to add to show what expansion pack an ability is from (only will be displayed if it isn't from McRPG)
     # The following placeholders are supported: <expansion-pack>
@@ -114,11 +114,13 @@ ability:
         ability-name: "Bleed"
         material: REDSTONE
         # Supports the following placeholders: <skill>, <activation-chance>
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Inflicts <ability-innate>Bleed</ability-innate> <body>when you strike an enemy'
           - '<body>with a sword, dealing damage over time.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Activation Chance: <primary><activation-chance>'
     # Configure localization for the Deeper Wound ability
     deeper-wound:
@@ -127,10 +129,12 @@ ability:
         ability-name: "Deeper Wound"
         material: RED_DYE
         # Supports the following placeholders: <skill>, <activation-chance>, <additional-bleed-cycles>, <tier>
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Enhances Bleed ability to last longer.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
           - '<body>Activation Chance: <primary><activation-chance>'
           - '<body>Additional Bleed Cycles: <primary><additional-bleed-cycles>'
@@ -140,11 +144,13 @@ ability:
         name: "<ability-passive><ability></ability-passive>"
         ability-name: "Enhanced Bleed"
         material: SPIDER_EYE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Enhances Bleed to deal more damage each tick.'
           - '<body>Has a chance to deal bonus damage on top.'
           - ''
-          - '<body>Skill: <primary><skill>'
+          - '<body>Skill: <skill>'
           - '<body>Tier: <primary><tier>'
           - '<body>Base Damage Boost: <primary><base-damage-boost>'
           - '<body>Bonus Damage Chance: <primary><bonus-damage-chance>'
@@ -154,6 +160,8 @@ ability:
         name: "<ability-active><ability></ability-active>"
         ability-name: "Rage Spike"
         material: IRON_SWORD
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Ready your sword, then crouch to blast forward,'
           - '<body>damaging and knocking back foes in your path.'
@@ -167,6 +175,8 @@ ability:
         name: "<ability-active><ability></ability-active>"
         ability-name: "Serrated Strikes"
         material: STONE_SWORD
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Ready your sword and strike an enemy to temporarily'
           - '<body>increase how often Bleed can activate.'
@@ -181,6 +191,8 @@ ability:
         name: "<ability-passive><ability></ability-passive>"
         ability-name: "Vampire"
         material: GHAST_TEAR
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Each time Bleed deals damage, you have a chance'
           - '<body>to heal.'
@@ -195,6 +207,8 @@ ability:
         ability-name: "Extra Ore"
         material: DIAMOND
         amount: 2
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Occasionally doubles block drops'
           - '<body>while mining.'
@@ -207,6 +221,8 @@ ability:
         ability-name: "It's A Triple"
         material: DIAMOND
         amount: 3
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Can turn Extra Ore''s doubled drops into'
           - '<body>triple drops instead.'
@@ -219,6 +235,8 @@ ability:
         name: "<ability-active><ability></ability-active>"
         ability-name: "Ore Scanner"
         material: DIAMOND_ORE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Activate to see all nearby ores!'
           - ''
@@ -232,6 +250,8 @@ ability:
         name: "<ability-passive><ability></ability-passive>"
         ability-name: "Remote Transfer"
         material: CHEST
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Link a chest so mined blocks teleport into it.'
           - '<body>Use <primary>/mcrpg link</primary> <body>to link.'
@@ -245,6 +265,8 @@ ability:
         name: "<ability-passive><ability></ability-passive>"
         ability-name: "Dryad's Gift"
         material: EXPERIENCE_BOTTLE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Sometimes drops experience when you'
           - '<body>break wood blocks.'
@@ -259,6 +281,8 @@ ability:
         ability-name: "Extra Lumber"
         material: OAK_LOG
         amount: 2
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Occasionally doubles drops while you'
           - '<body>cut wood.'
@@ -270,6 +294,8 @@ ability:
         name: "<ability-passive><ability></ability-passive>"
         ability-name: "Nymph's Vitality"
         material: OAK_SAPLING
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>In wooded biomes, stops hunger from falling'
           - '<body>below a minimum level.'
@@ -282,6 +308,8 @@ ability:
         name: "<ability-passive><ability></ability-passive>"
         ability-name: "Heavy Swing"
         material: NETHERITE_AXE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Sometimes breaks nearby wood in an area'
           - '<body>as you chop trees.'
@@ -295,6 +323,8 @@ ability:
         name: "<ability-active><ability></ability-active>"
         ability-name: "Verdant Surge"
         material: BONE_MEAL
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Channels the power of nature to send out'
           - '<body>pulses that grow any crop they touch.'
@@ -309,6 +339,8 @@ ability:
         name: "<ability-active><ability></ability-active>"
         ability-name: "Mass Harvest"
         material: IRON_HOE
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Sends out a pulse that harvests crops'
           - '<body>and replants them as it travels.'
@@ -323,6 +355,8 @@ ability:
         ability-name: "Too Many Plants"
         material: CARROT
         amount: 2
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Chance to double crop drops'
           - '<body>when you harvest.'
@@ -334,6 +368,8 @@ ability:
         name: "<ability-innate><ability></ability-innate>"
         ability-name: "Instant Irrigation"
         material: WATER_BUCKET
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
         lore:
           - '<body>Break dirt with a hoe to bring forth'
           - '<body>a natural source of water!'

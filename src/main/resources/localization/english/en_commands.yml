@@ -11,56 +11,56 @@ commands:
   # The name of console to use if the sender of a command is ever console and the <sender> placeholder is used
   console-name: "console"
   # The message to send when a non-player tries to use a player-only command
-  non-player-error: "<red>Non-players are not allowed to run this command."
+  non-player-error: "<negative>Non-players are not allowed to run this command."
   # Configure command descriptions shown in help text
   descriptions:
-    redeem: "<gray>The subcommand that allows players to redeem things."
-    redeem-skill: "<gray>The skill to redeem experience in."
-    redeem-experience-amount: "<gray>How much experience to redeem?"
-    redeem-levels-amount: "<gray>How many levels to redeem?"
-    give: "<gray>The subcommand for all commands that give targets something."
-    give-player: "<gray>The player to give something to."
-    give-experience-skill: "<gray>The skill to give experience for."
-    give-experience-amount: "<gray>The amount of experience to give."
-    give-levels-skill: "<gray>The skill to give levels for."
-    give-levels-amount: "<gray>The amount of levels to give."
-    give-levels-reset-experience-flag: "<gray>If the player's current experience should be reset to 0 after levels are given."
-    reset: "<gray>The subcommand for all commands that resets a target."
-    reset-player: "<gray>The player to reset something for."
-    reset-skill: "<gray>The skill to reset."
-    loadout-slot: "<gray>The loadout to set."
-    loadout-edit-slot: "<gray>The loadout to edit."
-    loadout-copy-player: "<gray>The player to copy your current loadout to."
-    loadout-copy-slot: "<gray>The target loadout slot to overwrite (defaults to the player's current slot)."
-    debug-player: "<gray>The player to debug."
-    exp-bank-player: "<gray>The player to modify."
-    exp-bank-amount: "<gray>The amount to modify."
-    exp-bank-rested-amount: "<gray>The amount of rested experience."
-    exp-bank-boosted-amount: "<gray>The amount of boosted experience."
-    exp-bank-redeemable-experience-amount: "<gray>The amount of redeemable experience."
-    exp-bank-redeemable-levels-amount: "<gray>The amount of redeemable levels."
-    exp-bank-reset-player: "<gray>The player to reset."
-    exp-bank-give-player: "<gray>The player to give something to."
-    exp-bank-remove-player: "<gray>The player to remove something from."
-    statistic: "<gray>The subcommand for viewing and managing statistics."
-    statistic-view: "<gray>View a specific statistic for a player."
-    statistic-view-player: "<gray>The player to view statistics for."
-    statistic-view-statistic: "<gray>The statistic to view."
-    statistic-list: "<gray>List all statistics for a player."
-    statistic-list-player: "<gray>The player to list statistics for."
-    statistic-set: "<gray>Set a statistic value for a player."
-    statistic-set-player: "<gray>The player to set the statistic for."
-    statistic-set-statistic: "<gray>The statistic to set."
-    statistic-set-value: "<gray>The value to set the statistic to."
-    statistic-reset: "<gray>Reset a statistic (or all statistics) for a player."
-    statistic-reset-player: "<gray>The player to reset the statistic for."
-    statistic-reset-statistic: "<gray>The statistic to reset. If omitted, resets all."
+    redeem: "<body>The subcommand that allows players to redeem things."
+    redeem-skill: "<body>The skill to redeem experience in."
+    redeem-experience-amount: "<body>How much experience to redeem?"
+    redeem-levels-amount: "<body>How many levels to redeem?"
+    give: "<body>The subcommand for all commands that give targets something."
+    give-player: "<body>The player to give something to."
+    give-experience-skill: "<body>The skill to give experience for."
+    give-experience-amount: "<body>The amount of experience to give."
+    give-levels-skill: "<body>The skill to give levels for."
+    give-levels-amount: "<body>The amount of levels to give."
+    give-levels-reset-experience-flag: "<body>If the player's current experience should be reset to 0 after levels are given."
+    reset: "<body>The subcommand for all commands that resets a target."
+    reset-player: "<body>The player to reset something for."
+    reset-skill: "<body>The skill to reset."
+    loadout-slot: "<body>The loadout to set."
+    loadout-edit-slot: "<body>The loadout to edit."
+    loadout-copy-player: "<body>The player to copy your current loadout to."
+    loadout-copy-slot: "<body>The target loadout slot to overwrite (defaults to the player's current slot)."
+    debug-player: "<body>The player to debug."
+    exp-bank-player: "<body>The player to modify."
+    exp-bank-amount: "<body>The amount to modify."
+    exp-bank-rested-amount: "<body>The amount of rested experience."
+    exp-bank-boosted-amount: "<body>The amount of boosted experience."
+    exp-bank-redeemable-experience-amount: "<body>The amount of redeemable experience."
+    exp-bank-redeemable-levels-amount: "<body>The amount of redeemable levels."
+    exp-bank-reset-player: "<body>The player to reset."
+    exp-bank-give-player: "<body>The player to give something to."
+    exp-bank-remove-player: "<body>The player to remove something from."
+    statistic: "<body>The subcommand for viewing and managing statistics."
+    statistic-view: "<body>View a specific statistic for a player."
+    statistic-view-player: "<body>The player to view statistics for."
+    statistic-view-statistic: "<body>The statistic to view."
+    statistic-list: "<body>List all statistics for a player."
+    statistic-list-player: "<body>The player to list statistics for."
+    statistic-set: "<body>Set a statistic value for a player."
+    statistic-set-player: "<body>The player to set the statistic for."
+    statistic-set-statistic: "<body>The statistic to set."
+    statistic-set-value: "<body>The value to set the statistic to."
+    statistic-reset: "<body>Reset a statistic (or all statistics) for a player."
+    statistic-reset-player: "<body>The player to reset the statistic for."
+    statistic-reset-statistic: "<body>The statistic to reset. If omitted, resets all."
   # Configure messages to surrounding /mcrpg confirm
   # This command will be used to confirm important commands such as resetting a player
   confirmation:
     # The message to send if the player doesn't have any pending confirmations and they run the
     # confirm command.
-    no-pending-confirmations: "<gray>You do not have any pending commands to confirm."
+    no-pending-confirmations: "<body>You do not have any pending commands to confirm."
     # The message to send to players when they run a command that they need to confirm.
     confirmation-required: "<body>Please run <click:run_command:/mcrpg confirm><hover:show_text:'<hint>Click <body>to run <primary>/mcrpg confirm'><primary><underlined>/mcrpg confirm</primary></click> <body>to confirm you want to run this command."
   # Configure /mcrpg give commmands
@@ -69,70 +69,70 @@ commands:
     # Supports the following placeholders: <experience>, <skill>, <target>, <sender>
     experience:
       # The message to send to the player getting experience.
-      recipient-message: "<gray>You have been given <gold><experience></gold> in <gold><skill></gold>."
+      recipient-message: "<body>You have been given <primary><experience></primary> in <skill><body>."
       # The message to send to the sender when the command works.
-      sender-success-message: "<gray>You gave <gold><experience></gold> in <gold><skill></gold> to <gold><target></gold>."
+      sender-success-message: "<body>You gave <primary><experience></primary> in <skill> <body>to <primary><target></primary>."
       # The message to send to the sender when the command fails.
-      sender-error-message: "<red>Unable to give <gray><player></gray> experience at the moment."
+      sender-error-message: "<negative>Unable to give <body><player></body> experience at the moment."
     # Configure the level give command
     # Supports the following placeholders: <level>, <skill>, <target>, <sender>
     level:
       # The message to send to the player getting levels.
-      recipient-message: "<gray>You have been given <gold><level> level(s)</gold> in <gold><skill></gold>."
+      recipient-message: "<body>You have been given <primary><level> level(s)</primary> in <skill><body>."
       # The message to send to the sender when the command works.
-      sender-success-message: "<gray>You gave <gold><level> level(s)</gold> in <gold><skill></gold> to <gold><target></gold>."
+      sender-success-message: "<body>You gave <primary><level> level(s)</primary> in <skill> <body>to <primary><target></primary>."
       # The message to send to the sender when the command fails.
-      sender-error-message: "<red>Unable to give <gray><player></gray> levels at the moment."
+      sender-error-message: "<negative>Unable to give <body><player></body> levels at the moment."
   # Configure the link command for Remote Transfer
   # Supports the following placeholders: <skill> (the localized name of Remote Transfer)
   link:
     # The message to be sent if the command is run while the player isn't looking at a chest
-    not-looking-at-chest-message: '<red>You must be looking at a chest in order to link <skill>.'
+    not-looking-at-chest-message: '<negative>You must be looking at a chest in order to link <skill><negative>.'
     # The message to be sent if the command is run and the Remote Transfer ability is disabled
-    remote-transfer-not-enabled-message: '<red><skill> is not currently enabled.'
+    remote-transfer-not-enabled-message: '<negative><skill> is not currently enabled.'
     # The message to be sent if the linking worked successfully.
-    link-success-message: '<gray>Successfully linked chest to your <skill> ability.'
+    link-success-message: '<body>Successfully linked chest to your <skill> <body>ability.'
   # Configure the unlink command for Remote Transfer
   # Supports the following placeholders: <skill> (the localized name of Remote Transfer)
   unlink:
     # The message to be sent if unlinking worked successfully.
-    unlink-success-message: '<gray>You have unlinked your chest.'
+    unlink-success-message: '<body>You have unlinked your chest.'
     # The message to be sent if the command is run but the player doesn't have a linked chest.
-    no-linked-chest-message: "<gray>You don't have a linked chest."
+    no-linked-chest-message: "<body>You don't have a linked chest."
   # Configure the different /mcrpg loadout commands.
   loadout:
     # Configure the /mcrpg loadout copy command.
     copy:
       # The message sent when a non-player (e.g. console) tries to use this command.
-      player-only-message: "<red>Only players can use this command."
+      player-only-message: "<negative>Only players can use this command."
       # The message sent when the specified target slot is not valid for that player.
       # Supports: <target>, <loadout-slot>
-      invalid-slot-message: "<red>Slot <gold><loadout-slot></gold> is not a valid loadout slot for <gold><target></gold>."
+      invalid-slot-message: "<negative>Slot <primary><loadout-slot></primary> is not a valid loadout slot for <primary><target></primary>."
       # The message sent to the executor when all abilities in their loadout were copied successfully.
       # Supports: <target>, <loadout-slot>
-      executor-success-message: "<gray>Copied your current loadout to <gold><target></gold>'s slot <gold><loadout-slot></gold>."
+      executor-success-message: "<body>Copied your current loadout to <primary><target></primary>'s slot <primary><loadout-slot></primary>."
       # The message sent to the executor when some abilities were skipped because the target lacks access.
       # Supports: <target>, <loadout-slot>, <skipped-abilities>
-      executor-partial-success-message: "<gray>Copied your current loadout to <gold><target></gold>'s slot <gold><loadout-slot></gold>. <yellow><skipped-abilities> ability(s) were skipped because <gold><target></gold> does not have access.</yellow>"
+      executor-partial-success-message: "<body>Copied your current loadout to <primary><target></primary>'s slot <primary><loadout-slot></primary>. <warning><skipped-abilities> ability(s) were skipped because <primary><target></primary> does not have access.</warning>"
       # The message sent to the target player to notify them that their loadout slot was updated.
       # Supports: <loadout-slot>
-      target-notification-message: "<gray>A player copied their current loadout to your slot <gold><loadout-slot></gold>."
+      target-notification-message: "<body>A player copied their current loadout to your slot <primary><loadout-slot></primary>."
     # Configure the loadout edit command.
     edit:
       # The message to be sent to the player who ran the command if they don't have a loadout
       # matching the provided slot number, exact name, or partial name.
-      no-loadout-matches: '<red>No loadout found matching that slot number or name.'
+      no-loadout-matches: '<negative>No loadout found matching that slot number or name.'
       # The message to be sent to the player when their input matches more than one loadout name.
       # Supports the following placeholders: <loadout-matches>
-      ambiguous-matches: '<red>Multiple loadouts match that input. Please use a slot number or a more specific name. Matching loadouts: <loadout-matches>'
+      ambiguous-matches: '<negative>Multiple loadouts match that input. Please use a slot number or a more specific name. Matching loadouts: <loadout-matches>'
     # Configure the loadout set command.
     set:
       # The message to be sent to the player who ran the command if they don't have a loadout
       # matching the provided slot number, exact name, or partial name.
-      no-loadout-matches: '<red>No loadout found matching that slot number or name.'
+      no-loadout-matches: '<negative>No loadout found matching that slot number or name.'
       # The message to be sent to the player when their input matches more than one loadout name.
       # Supports the following placeholders: <loadout-matches>
-      ambiguous-matches: '<red>Multiple loadouts match that input. Please use a slot number or a more specific name. Matching loadouts: <loadout-matches>'
+      ambiguous-matches: '<negative>Multiple loadouts match that input. Please use a slot number or a more specific name. Matching loadouts: <loadout-matches>'
       # The message to be sent if the loadout was set successfully.
       # Supports the following placeholders: <loadout-slot>, <loadout-name>
       loadout-set-success-message: "<body>Your active loadout is now <primary><loadout-name><body>."
@@ -141,131 +141,131 @@ commands:
     # Configure the reload command
     reload:
       # The message to send to the sender when the command works.
-      sender-success-message: "<gray>You have reloaded all McRPG files."
+      sender-success-message: "<body>You have reloaded all McRPG files."
     # Configure the debug command
     # Supports the following placeholders: <target>, <skill>, <level>, <experience>
     debug:
       # The header message printed at the start of debug output.
-      header-message: "<gray>Printing debug information for player <gold><target>"
+      header-message: "<body>Printing debug information for player <primary><target>"
       # The message showing skill information.
-      skill-info-message: "<gray>Skill: <gold><skill> <gray>Level: <gold><level> <gray>Exp: <gold><experience>"
+      skill-info-message: "<body>Skill: <primary><skill> <body>Level: <primary><level> <body>Exp: <primary><experience>"
     # Configure /mcrpg quest admin registry commands
     # Lists registered objective types, reward types, scope providers, and quest definitions.
     quest-registry:
       # Supports: <registry_type>, <count>
-      header: "<gold><registry_type> <gray>(<count>):"
+      header: "<primary><registry_type> <body>(<count>):"
       # Supports: <registry_key>
-      entry: "  <white><registry_key>"
+      entry: "  <primary><registry_key>"
       # Supports: <registry_type>
-      empty: "<gray>No <white><registry_type></white> registered."
+      empty: "<body>No <primary><registry_type></primary> registered."
     # Configure /mcrpg board admin commands
     board-admin:
       # Configure /mcrpg board admin rotate
       rotate:
         # Supports: <refresh_type>
-        success: "<green>Board rotation triggered for refresh type: <white><refresh_type></white>."
+        success: "<positive>Board rotation triggered for refresh type: <primary><refresh_type></primary>."
       # Configure /mcrpg board admin offerings
       offerings:
-        list-empty: "<gray>No visible shared offerings on the board."
+        list-empty: "<body>No visible shared offerings on the board."
         # Supports: <count>
-        list-header: "<gold>Shared Board Offerings <gray>(<count>):"
+        list-header: "<primary>Shared Board Offerings <body>(<count>):"
         # Supports: <offering_id>, <quest_def>, <rarity>, <category>
-        list-entry: "  <white><offering_id></white> | <white><quest_def></white> | <white><rarity></white> | <white><category>"
+        list-entry: "  <primary><offering_id></primary> | <primary><quest_def></primary> | <primary><rarity></primary> | <primary><category>"
         # Supports: <offering_id>
-        expire-not-found: "<red>Offering not found: <white><offering_id>"
+        expire-not-found: "<negative>Offering not found: <primary><offering_id>"
         # Supports: <offering_id>, <offering_state>
-        expire-invalid-state: "<red>Offering <white><offering_id></white> cannot be expired (current state: <white><offering_state></white>)."
+        expire-invalid-state: "<negative>Offering <primary><offering_id></primary> cannot be expired (current state: <primary><offering_state></primary>)."
         # Supports: <offering_id>
-        expire-success: "<green>Offering <white><offering_id></white> expired successfully."
+        expire-success: "<positive>Offering <primary><offering_id></primary> expired successfully."
         # Supports: <offering_id>
-        expire-error: "<red>Error expiring offering <white><offering_id></white>. Check console."
+        expire-error: "<negative>Error expiring offering <primary><offering_id></primary>. Check console."
       # Configure /mcrpg board admin scoped
       scoped:
         # Supports: <entity_id>
-        list-empty: "<gray>No scoped board state found for entity: <white><entity_id>"
+        list-empty: "<body>No scoped board state found for entity: <primary><entity_id>"
         # Supports: <entity_id>, <count>
-        list-header: "<gold>Scoped Board State for '<white><entity_id></white>' <gray>(<count>):"
+        list-header: "<primary>Scoped Board State for '<primary><entity_id></primary>' <body>(<count>):"
         # Supports: <offering_id>, <offering_state>, <accepted_by>
-        list-entry: "  <white><offering_id></white> | state=<white><offering_state></white> | accepted_by=<white><accepted_by>"
+        list-entry: "  <primary><offering_id></primary> | state=<primary><offering_state></primary> | accepted_by=<primary><accepted_by>"
         # Supports: <entity_id>, <cancelled_count>
-        reset-success: "<green>Reset scoped board state for '<white><entity_id></white>'. Cancelled <white><cancelled_count></white> quest(s)."
+        reset-success: "<positive>Reset scoped board state for '<primary><entity_id></primary>'. Cancelled <primary><cancelled_count></primary> quest(s)."
         # Supports: <entity_id>
-        reset-error: "<red>Error resetting scoped state for <white><entity_id></white>. Check console."
+        reset-error: "<negative>Error resetting scoped state for <primary><entity_id></primary>. Check console."
         # Supports: <entity_id>
-        generate-success: "<green>Generating scoped offerings for entity '<white><entity_id></white>'."
+        generate-success: "<positive>Generating scoped offerings for entity '<primary><entity_id></primary>'."
       # Configure /mcrpg board admin player
       player:
         # Supports: <target>
-        offerings-header: "<gold>Offerings visible to <white><target></white>:"
+        offerings-header: "<primary>Offerings visible to <primary><target></primary>:"
         # Supports: <count>
-        offerings-scoped-count: "<gray>Scoped offerings: <white><count>"
+        offerings-scoped-count: "<body>Scoped offerings: <primary><count>"
         # Supports: <entity_id>, <offering_id>, <quest_def>, <rarity>
-        offerings-entry: "  <gray>[<white><entity_id></white>] <white><offering_id></white> | <white><quest_def></white> | <white><rarity>"
+        offerings-entry: "  <body>[<primary><entity_id></primary>] <primary><offering_id></primary> | <primary><quest_def></primary> | <primary><rarity>"
         # Supports: <target>
-        accepted-empty: "<gray><target> has no active board quests."
+        accepted-empty: "<body><target> has no active board quests."
         # Supports: <target>, <count>
-        accepted-header: "<gold>Active Board Quests for <white><target></white> <gray>(<count>):"
+        accepted-header: "<primary>Active Board Quests for <primary><target></primary> <body>(<count>):"
         # Supports: <quest_uuid>, <quest_key>, <quest_state>, <rarity>
-        accepted-entry: "  <white><quest_uuid></white> | <white><quest_key></white> | state=<white><quest_state></white> | rarity=<white><rarity>"
+        accepted-entry: "  <primary><quest_uuid></primary> | <primary><quest_key></primary> | state=<primary><quest_state></primary> | rarity=<primary><rarity>"
         # Supports: <offering_id>
-        abandon-not-found: "<red>Offering not found: <white><offering_id>"
+        abandon-not-found: "<negative>Offering not found: <primary><offering_id>"
         # Supports: <offering_id>, <offering_state>
-        abandon-invalid-state: "<red>Offering <white><offering_id></white> is not in ACCEPTED state (current: <white><offering_state></white>)."
+        abandon-invalid-state: "<negative>Offering <primary><offering_id></primary> is not in ACCEPTED state (current: <primary><offering_state></primary>)."
         # Supports: <offering_id>
-        abandon-success: "<green>Offering <white><offering_id></white> abandoned successfully."
+        abandon-success: "<positive>Offering <primary><offering_id></primary> abandoned successfully."
         # Supports: <offering_id>
-        abandon-error: "<red>Error abandoning offering <white><offering_id></white>. Check console."
+        abandon-error: "<negative>Error abandoning offering <primary><offering_id></primary>. Check console."
       # Configure /mcrpg board admin cooldown
       cooldown:
         # Supports: <scope_type_id>, <scope_id>
-        list-empty: "<gray>No active cooldowns for <white><scope_type_id></white>:<white><scope_id>"
+        list-empty: "<body>No active cooldowns for <primary><scope_type_id></primary>:<primary><scope_id>"
         # Supports: <scope_type_id>, <scope_id>, <count>
-        list-header: "<gold>Cooldowns for <white><scope_type_id></white>:<white><scope_id></white> <gray>(<count>):"
+        list-header: "<primary>Cooldowns for <primary><scope_type_id></primary>:<primary><scope_id></primary> <body>(<count>):"
         # Supports: <cooldown_type>, <category>, <quest_def>, <expires>
-        list-entry: "  <white>type=<cooldown_type></white> | cat=<white><category></white> | quest=<white><quest_def></white> | expires=<white><expires>"
+        list-entry: "  <primary>type=<cooldown_type></primary> | cat=<primary><category></primary> | quest=<primary><quest_def></primary> | expires=<primary><expires>"
         # Supports: <deleted_count>, <scope_type_id>, <scope_id>
-        reset-success: "<green>Cleared <white><deleted_count></white> cooldown(s) for <white><scope_type_id></white>:<white><scope_id></white>."
+        reset-success: "<positive>Cleared <primary><deleted_count></primary> cooldown(s) for <primary><scope_type_id></primary>:<primary><scope_id></primary>."
         # Supports: <scope_type_id>, <scope_id>
-        reset-error: "<red>Error resetting cooldowns for <white><scope_type_id></white>:<white><scope_id></white>. Check console."
+        reset-error: "<negative>Error resetting cooldowns for <primary><scope_type_id></primary>:<primary><scope_id></primary>. Check console."
       # Configure /mcrpg board admin rewards
       rewards:
         # Supports: <target>
-        pending-empty: "<gray>No pending rewards for <white><target></white>."
+        pending-empty: "<body>No pending rewards for <primary><target></primary>."
         # Supports: <target>, <count>
-        pending-header: "<gold>Pending Rewards for <white><target></white> <gray>(<count>):"
+        pending-header: "<primary>Pending Rewards for <primary><target></primary> <body>(<count>):"
         # Supports: <reward_type>, <quest_key>, <expires>
-        pending-entry: "  <white><reward_type></white> | quest=<white><quest_key></white> | expires=<white><expires>"
+        pending-entry: "  <primary><reward_type></primary> | quest=<primary><quest_key></primary> | expires=<primary><expires>"
         # Supports: <deleted_count>, <target>
-        clear-success: "<green>Cleared <white><deleted_count></white> pending reward(s) for <white><target></white>."
+        clear-success: "<positive>Cleared <primary><deleted_count></primary> pending reward(s) for <primary><target></primary>."
         # Supports: <target>
-        clear-error: "<red>Error clearing pending rewards for <white><target></white>. Check console."
+        clear-error: "<negative>Error clearing pending rewards for <primary><target></primary>. Check console."
       # Configure /mcrpg board admin purge
       purge:
         # Supports: <deleted_count>
-        success: "<green>Purge complete. Pruned <white><deleted_count></white> expired cooldown(s)."
-        error: "<red>Error during purge. Check console."
+        success: "<positive>Purge complete. Pruned <primary><deleted_count></primary> expired cooldown(s)."
+        error: "<negative>Error during purge. Check console."
     # Configure the reset commands
     reset:
       # Supports the following placeholders: <target>, <sender>
       player:
         # The message to send to the player being reset.
-        recipient-message: "<gray>You have had your McRPG data reset."
+        recipient-message: "<body>You have had your McRPG data reset."
         # The message to send to the sender when the command works.
-        sender-success-message: "<gray>You have reset <gold><target>'s <gray>McRPG data."
+        sender-success-message: "<body>You have reset <primary><target>'s <body>McRPG data."
         # The message to send to the sender when the command fails to save updated data.
-        sender-error-saving-message: "<red>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
+        sender-error-saving-message: "<negative>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
         # The message to send to the sender when the command fails.
-        sender-error-message: "<red>Unable to reset McRPG data for <target>."
+        sender-error-message: "<negative>Unable to reset McRPG data for <target>."
       # Supports the following placeholders: <skill>, <target>, <sender>
       skill:
         # The message to send to the player being reset.
-        recipient-message: "<gray>You have had your <gold><skill> skill <gray>reset."
+        recipient-message: "<body>You have had your <skill> <body>skill reset."
         # The message to send to the sender when the command works.
-        sender-success-message: "<gray>You have reset <gold><target>'s <skill> skill<gray>."
+        sender-success-message: "<body>You have reset <primary><target>'s <skill> <body>skill."
         # The message to send to the sender when the command fails to save updated data.
-        sender-error-saving-message: "<red>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
+        sender-error-saving-message: "<negative>There was an error trying to save data for <target> after resetting their data. Please have an admin check console."
         # The message to send to the sender when the command fails.
-        sender-error-message: "<red>Unable to reset McRPG data for <target>."
+        sender-error-message: "<negative>Unable to reset McRPG data for <target>."
     # Configure admin commands for modifying the experience bank of a player
     exp-bank:
       # Configure redeemable modify commands
@@ -275,232 +275,232 @@ commands:
           # Supports the following placeholders: <redeemable-experience>, <target>, <sender>
           give:
             # The message to send to the player getting redeemable experience.
-            recipient-message: "<gray>You have been given <gold><redeemable-experience></gold> redeemable experience."
+            recipient-message: "<body>You have been given <primary><redeemable-experience></primary> redeemable experience."
             # The message to send to the sender when the command works.
-            sender-success-message: "<gray>You gave <gold><redeemable-experience></gold> redeemable experience to <gold><target></gold>."
+            sender-success-message: "<body>You gave <primary><redeemable-experience></primary> redeemable experience to <primary><target></primary>."
             # The message to send to the sender when the command fails.
-            sender-error-message: "<red>Unable to give <gray><player></gray> redeemable experience at the moment."
+            sender-error-message: "<negative>Unable to give <body><player></body> redeemable experience at the moment."
           # Configure the remove redeemable experience command
           # Supports the following placeholders: <redeemable-experience>, <target>, <sender>
           remove:
             # The message to send to the player losing redeemable experience.
-            recipient-message: "<gray>You have lost <gold><redeemable-experience></gold> redeemable experience."
+            recipient-message: "<body>You have lost <primary><redeemable-experience></primary> redeemable experience."
             # The message to send to the sender when the command works.
-            sender-success-message: "<gray>You removed <gold><redeemable-experience></gold> redeemable experience from <gold><target></gold>."
+            sender-success-message: "<body>You removed <primary><redeemable-experience></primary> redeemable experience from <primary><target></primary>."
             # The message to send to the sender when the command fails.
-            sender-error-message: "<red>Unable to remove <gray><player></gray>'s redeemable experience at the moment."
+            sender-error-message: "<negative>Unable to remove <body><player></body>'s redeemable experience at the moment."
           # Configure the reset redeemable experience command
           # Supports the following placeholders: <target>, <sender>
           reset:
             # The message to send to the player having their redeemable experience reset.
-            recipient-message: "<gray>You have had your redeemable experience reset."
+            recipient-message: "<body>You have had your redeemable experience reset."
             # The message to send to the sender when the command works.
-            sender-success-message: "<gray>You reset <gold><target></gold>'s redeemable experience."
+            sender-success-message: "<body>You reset <primary><target></primary>'s redeemable experience."
             # The message to send to the sender when the command fails.
-            sender-error-message: "<red>Unable to reset <gray><player></gray>'s redeemable experience at the moment."
+            sender-error-message: "<negative>Unable to reset <body><player></body>'s redeemable experience at the moment."
         levels:
           # Configure the give redeemable levels command
           # Supports the following placeholders: <redeemable-levels>, <target>, <sender>
           give:
             # The message to send to the player getting redeemable levels.
-            recipient-message: "<gray>You have been given <gold><redeemable-levels></gold> redeemable levels."
+            recipient-message: "<body>You have been given <primary><redeemable-levels></primary> redeemable levels."
             # The message to send to the sender when the command works.
-            sender-success-message: "<gray>You gave <gold><redeemable-levels></gold> redeemable levels to <gold><target></gold>."
+            sender-success-message: "<body>You gave <primary><redeemable-levels></primary> redeemable levels to <primary><target></primary>."
             # The message to send to the sender when the command fails.
-            sender-error-message: "<red>Unable to give <gray><player></gray> redeemable levels at the moment."
+            sender-error-message: "<negative>Unable to give <body><player></body> redeemable levels at the moment."
           # Configure the remove redeemable levels command
           # Supports the following placeholders: <redeemable-levels>, <target>, <sender>
           remove:
             # The message to send to the player losing redeemable levels.
-            recipient-message: "<gray>You have had your redeemable levels reset."
+            recipient-message: "<body>You have had your redeemable levels reset."
             # The message to send to the sender when the command works.
-            sender-success-message: "<gray>You reset <gold><target></gold>'s redeemable levels."
+            sender-success-message: "<body>You reset <primary><target></primary>'s redeemable levels."
             # The message to send to the sender when the command fails.
-            sender-error-message: "<red>Unable to give <gray><player></gray> redeemable levels at the moment."
+            sender-error-message: "<negative>Unable to give <body><player></body> redeemable levels at the moment."
           # Configure the give redeemable levels command
           # Supports the following placeholders: <target>, <sender>
           reset:
             # The message to send to the player having their redeemable levels reset.
-            recipient-message: "<gray>You have been given <gold><redeemable-levels></gold> redeemable levels."
+            recipient-message: "<body>You have been given <primary><redeemable-levels></primary> redeemable levels."
             # The message to send to the sender when the command works.
-            sender-success-message: "<gray>You reset <gold><target></gold>'s redeemable levels."
+            sender-success-message: "<body>You reset <primary><target></primary>'s redeemable levels."
             # The message to send to the sender when the command fails.
-            sender-error-message: "<red>Unable to reset <gray><player></gray>'s redeemable levels at the moment."
+            sender-error-message: "<negative>Unable to reset <body><player></body>'s redeemable levels at the moment."
       # Configure rested experience modify commands.
       rested-experience:
         # Configure the give rested experience command
         # Supports the following placeholders: <rested-experience>, <target>, <sender>
         give:
           # The message to send to the player getting rested experience.
-          recipient-message: "<gray>You have been given <gold><rested-experience></gold> rested experience."
+          recipient-message: "<body>You have been given <primary><rested-experience></primary> rested experience."
           # The message to send to the sender when the command works.
-          sender-success-message: "<gray>You gave <gold><rested-experience></gold> rested experience to <gold><target></gold>."
+          sender-success-message: "<body>You gave <primary><rested-experience></primary> rested experience to <primary><target></primary>."
           # The message to send to the sender when the command fails.
-          sender-error-message: "<red>Unable to give <gray><player></gray> rested experience at the moment."
+          sender-error-message: "<negative>Unable to give <body><player></body> rested experience at the moment."
         # Configure the remove rested experience command
         # Supports the following placeholders: <rested-experience>, <target>, <sender>
         remove:
           # The message to send to the player losing rested experience.
-          recipient-message: "<gray>You have lost <gold><rested-experience></gold> rested experience."
+          recipient-message: "<body>You have lost <primary><rested-experience></primary> rested experience."
           # The message to send to the sender when the command works.
-          sender-success-message: "<gray>You removed <gold><rested-experience></gold> rested experience from <gold><target></gold>."
+          sender-success-message: "<body>You removed <primary><rested-experience></primary> rested experience from <primary><target></primary>."
           # The message to send to the sender when the command fails.
-          sender-error-message: "<red>Unable to remove <gray><player></gray>'s rested experience at the moment."
+          sender-error-message: "<negative>Unable to remove <body><player></body>'s rested experience at the moment."
         # Configure the reset rested experience command
         # Supports the following placeholders: <target>, <sender>
         reset:
           # The message to send to the player having their rested experience reset.
-          recipient-message: "<gray>You have had your rested experience reset."
+          recipient-message: "<body>You have had your rested experience reset."
           # The message to send to the sender when the command works.
-          sender-success-message: "<gray>You reset <gold><target></gold>'s rested experience."
+          sender-success-message: "<body>You reset <primary><target></primary>'s rested experience."
           # The message to send to the sender when the command fails.
-          sender-error-message: "<red>Unable to reset <gray><player></gray>'s rested experience at the moment."
+          sender-error-message: "<negative>Unable to reset <body><player></body>'s rested experience at the moment."
       # Configure boosted experience modify commands.
       boosted-experience:
         # Configure the give boosted experience command
         # Supports the following placeholders: <boosted-experience>, <target>, <sender>
         give:
           # The message to send to the player getting boosted experience.
-          recipient-message: "<gray>You have been given <gold><boosted-experience></gold> boosted experience."
+          recipient-message: "<body>You have been given <primary><boosted-experience></primary> boosted experience."
           # The message to send to the sender when the command works.
-          sender-success-message: "<gray>You gave <gold><boosted-experience></gold> boosted experience to <gold><target></gold>."
+          sender-success-message: "<body>You gave <primary><boosted-experience></primary> boosted experience to <primary><target></primary>."
           # The message to send to the sender when the command fails.
-          sender-error-message: "<red>Unable to give <gray><player></gray> boosted experience at the moment."
+          sender-error-message: "<negative>Unable to give <body><player></body> boosted experience at the moment."
         # Configure the remove rested experience command
         # Supports the following placeholders: <boosted-experience>, <target>, <sender>
         remove:
           # The message to send to the player losing boosted experience.
-          recipient-message: "<gray>You have lost <gold><boosted-experience></gold> boosted experience."
+          recipient-message: "<body>You have lost <primary><boosted-experience></primary> boosted experience."
           # The message to send to the sender when the command works.
-          sender-success-message: "<gray>You removed <gold><boosted-experience></gold> boosted experience from <gold><target></gold>."
+          sender-success-message: "<body>You removed <primary><boosted-experience></primary> boosted experience from <primary><target></primary>."
           # The message to send to the sender when the command fails.
-          sender-error-message: "<red>Unable to remove <gray><player></gray>'s boosted experience at the moment."
+          sender-error-message: "<negative>Unable to remove <body><player></body>'s boosted experience at the moment."
         # Configure the reset boosted experience command
         # Supports the following placeholders: <target>, <sender>
         reset:
           # The message to send to the player having their boosted experience reset.
-          recipient-message: "<gray>You have had your boosted experience reset."
+          recipient-message: "<body>You have had your boosted experience reset."
           # The message to send to the sender when the command works.
-          sender-success-message: "<gray>You reset <gold><target></gold>'s boosted experience."
+          sender-success-message: "<body>You reset <primary><target></primary>'s boosted experience."
           # The message to send to the sender when the command fails.
-          sender-error-message: "<red>Unable to reset <gray><player></gray>'s boosted experience at the moment."
+          sender-error-message: "<negative>Unable to reset <body><player></body>'s boosted experience at the moment."
   # Configure /mcrpg quest commands
   quest:
     # Messages shared across multiple quest commands
     common:
       # Supports: <quest_uuid>
-      invalid-uuid: "<red>Invalid UUID: <white><quest_uuid>"
-      specify-player-from-console: "<red>You must specify a player when running from console."
+      invalid-uuid: "<negative>Invalid UUID: <primary><quest_uuid>"
+      specify-player-from-console: "<negative>You must specify a player when running from console."
       # Supports: <quest_uuid>
-      quest-not-found: "<red>No active quest found with UUID: <white><quest_uuid>"
+      quest-not-found: "<negative>No active quest found with UUID: <primary><quest_uuid>"
     # Configure /mcrpg quest list
     list:
-      no-permission-others: "<red>You don't have permission to view other players' quests."
+      no-permission-others: "<negative>You don't have permission to view other players' quests."
       # Supports: <target>
-      no-active-quests: "<gray>No active quests for <white><target></white>."
+      no-active-quests: "<body>No active quests for <primary><target></primary>."
       # Supports: <target>, <count>
-      header: "<gold>Active quests for <white><target></white> <gray>(<count>):"
+      header: "<primary>Active quests for <primary><target></primary> <body>(<count>):"
       # Supports: <quest_key>, <quest_state>, <stages_completed>, <stages_total>, <quest_uuid>
-      entry: "  <white><quest_key></white> <gray>- <quest_state> <dark_gray>[<stages_completed>/<stages_total> stages] <dark_gray>(UUID: <quest_uuid>...)"
+      entry: "  <primary><quest_key></primary> <body>- <quest_state> <body>[<stages_completed>/<stages_total> stages] <body>(UUID: <quest_uuid>...)"
     # Configure /mcrpg quest info
     info:
-      title: "<gold><bold>Quest Info</bold></gold>"
+      title: "<primary><bold>Quest Info</bold></primary>"
       # Supports: <quest_key>
-      definition: "  <gray>Definition: <white><quest_key>"
+      definition: "  <body>Definition: <primary><quest_key>"
       # Supports: <quest_uuid>
-      uuid: "  <gray>UUID: <white><quest_uuid>"
+      uuid: "  <body>UUID: <primary><quest_uuid>"
       # Supports: <quest_state>
-      state: "  <gray>State: <white><quest_state>"
+      state: "  <body>State: <primary><quest_state>"
       # Supports: <scope_type>
-      scope-type: "  <gray>Scope Type: <white><scope_type>"
+      scope-type: "  <body>Scope Type: <primary><scope_type>"
       # Supports: <timestamp>
-      started: "  <gray>Started: <white><timestamp>"
+      started: "  <body>Started: <primary><timestamp>"
       # Supports: <timestamp>
-      ended: "  <gray>Ended: <white><timestamp>"
+      ended: "  <body>Ended: <primary><timestamp>"
       # Supports: <timestamp>
-      expires: "  <gray>Expires: <white><timestamp>"
+      expires: "  <body>Expires: <primary><timestamp>"
       # Supports: <count>
-      stages-header: "  <gold>Stages <gray>(<count>):"
+      stages-header: "  <primary>Stages <body>(<count>):"
       # Supports: <state_color>, <stage_state>, <stage_key>, <phase_index>
-      stage-entry: "    <state_color>[<stage_state>] <white><stage_key></white> <dark_gray>(phase <phase_index>)"
+      stage-entry: "    <state_color>[<stage_state>] <primary><stage_key></primary> <body>(phase <phase_index>)"
       # Supports: <state_color>, <objective_key>, <current_progress>, <required_progress>
-      objective-entry: "      <state_color>● <white><objective_key></white> <gray>(<gold><current_progress></gold>/<gold><required_progress></gold>)"
+      objective-entry: "      <state_color>● <primary><objective_key></primary> <body>(<primary><current_progress></primary>/<primary><required_progress></primary>)"
     # Configure /mcrpg quest start
     start:
-      no-permission-others: "<red>You don't have permission to start quests for other players."
+      no-permission-others: "<negative>You don't have permission to start quests for other players."
       # Supports: <target>, <quest_key>
-      cannot-start: "<red>Player <white><target></white> cannot start quest <white><quest_key></white> (already active or repeat-mode restriction)."
+      cannot-start: "<negative>Player <primary><target></primary> cannot start quest <primary><quest_key></primary> (already active or repeat-mode restriction)."
       # Supports: <quest_key>, <target>, <quest_uuid>
-      success: "<green>Started quest <white><quest_key></white> for <white><target></white>. <gray>(UUID: <quest_uuid>)"
+      success: "<positive>Started quest <primary><quest_key></primary> for <primary><target></primary>. <body>(UUID: <quest_uuid>)"
       # Supports: <scope_type>
-      no-scope-provider: "<red>Failed to start quest: no scope provider for type <white><scope_type></white>"
-      error: "<red>An error occurred while validating quest start. Check console."
+      no-scope-provider: "<negative>Failed to start quest: no scope provider for type <primary><scope_type></primary>"
+      error: "<negative>An error occurred while validating quest start. Check console."
     # Configure /mcrpg quest cancel
     cancel:
       # Supports: <quest_state>
-      not-cancellable: "<red>Quest is not in a cancellable state: <white><quest_state>"
+      not-cancellable: "<negative>Quest is not in a cancellable state: <primary><quest_state>"
       # Supports: <quest_key>, <quest_uuid>
-      success: "<green>Cancelled quest <white><quest_key></white> <gray>(UUID: <quest_uuid>)"
+      success: "<positive>Cancelled quest <primary><quest_key></primary> <body>(UUID: <quest_uuid>)"
     # Configure /mcrpg quest admin commands
     admin:
       # Configure /mcrpg quest admin complete
       complete:
         # Supports: <quest_state>
-        not-in-progress: "<red>Quest is not in progress: <white><quest_state>"
+        not-in-progress: "<negative>Quest is not in progress: <primary><quest_state>"
         # Supports: <quest_key>, <quest_uuid>
-        success: "<green>Force-completed quest <white><quest_key></white> <gray>(UUID: <quest_uuid>)"
+        success: "<positive>Force-completed quest <primary><quest_key></primary> <body>(UUID: <quest_uuid>)"
         # Supports: <quest_key>
-        definition-not-found: "<red>Quest definition not found for key: <white><quest_key></white>. Cannot complete without definition."
+        definition-not-found: "<negative>Quest definition not found for key: <primary><quest_key></primary>. Cannot complete without definition."
       # Configure /mcrpg quest admin setprogress
       setprogress:
         # Supports: <objective_key>
-        invalid-objective-key: "<red>Invalid objective key: <white><objective_key>"
+        invalid-objective-key: "<negative>Invalid objective key: <primary><objective_key>"
         # Supports: <objective_key>, <quest_uuid>
-        objective-not-found: "<red>No objective found with key <white><objective_key></white> in quest <white><quest_uuid>"
+        objective-not-found: "<negative>No objective found with key <primary><objective_key></primary> in quest <primary><quest_uuid>"
         # Supports: <objective_key>, <current_progress>, <required_progress>, <quest_key>
-        success: "<green>Set progress of <white><objective_key></white> to <gold><current_progress></gold>/<gold><required_progress></gold> in quest <white><quest_key></white>."
+        success: "<positive>Set progress of <primary><objective_key></primary> to <primary><current_progress></primary>/<primary><required_progress></primary> in quest <primary><quest_key></primary>."
   # Configure commands to redeem things such as experience or levels.
   redeem:
     # Configure the redeemable levels command.
     levels:
       # The message to send to the player if they are trying to redeem an amount of levels more than
       # the amount they have.
-      not-enough-levels: "<red>You do not have enough levels to redeem the requested amount."
+      not-enough-levels: "<negative>You do not have enough levels to redeem the requested amount."
       # The message to send to the player if they are trying to redeem levels into a skill that is already maxed.
       # Supports the following placeholders: <skill>
-      skill-already-maxed: "<red>You can not redeem levels into <gold><skill></gold> as that skill is already max level."
+      skill-already-maxed: "<negative>You can not redeem levels into <skill> <negative>as that skill is already max level."
       # The message to send players if they successfully redeem levels.
       # Supports the following placeholders: <redeemed-levels>, <skill>
-      redeemed-levels: "<gray>You have redeemed <gold><redeemed-levels> levels</gold> into <gold><skill></gold>."
+      redeemed-levels: "<body>You have redeemed <primary><redeemed-levels> levels</primary> into <skill><body>."
     # Configure the redeemable experience command.
     experience:
       # The message to send to the player if they are trying to redeem an amount of experience more than
       # the amount they have.
-      not-enough-experience: "<red>You do not have enough experience to redeem the requested amount."
+      not-enough-experience: "<negative>You do not have enough experience to redeem the requested amount."
       # The message to send to the player if they are trying to redeem experience into a skill that is already maxed.
       # Supports the following placeholders: <skill>
-      skill-already-maxed: "<red>You can not redeem experience into <gold><skill></gold> as that skill is already max level."
+      skill-already-maxed: "<negative>You can not redeem experience into <skill> <negative>as that skill is already max level."
       # The message to send players if they successfully redeem experience.
       # Supports the following placeholders: <redeemed-experience>, <skill>
-      redeemed-experience: "<gray>You have redeemed <gold><redeemed-experience> experience</gold> into <gold><skill></gold>."
+      redeemed-experience: "<body>You have redeemed <primary><redeemed-experience> experience</primary> into <skill><body>."
   # Configure statistic commands
   # Supports the following placeholders: <statistic-name>, <statistic-value>, <target>, <sender>
   statistic:
     # The message shown when viewing a statistic value.
-    view-message: "<gray><gold><target></gold>'s <gold><statistic-name></gold>: <gold><statistic-value></gold>"
+    view-message: "<body><primary><target></primary>'s <primary><statistic-name></primary>: <primary><statistic-value></primary>"
     # The header shown at the top of the statistic list.
-    list-header: "<gray>--- Statistics for <gold><target></gold> ---"
+    list-header: "<body>--- Statistics for <primary><target></primary> ---"
     # Each line in the statistic list.
-    list-entry: "<gray>  <gold><statistic-name></gold>: <gold><statistic-value></gold>"
+    list-entry: "<body>  <primary><statistic-name></primary>: <primary><statistic-value></primary>"
     # The message shown when a statistic is set successfully.
-    set-success: "<gray>Set <gold><statistic-name></gold> to <gold><statistic-value></gold> for <gold><target></gold>."
+    set-success: "<body>Set <primary><statistic-name></primary> to <primary><statistic-value></primary> for <primary><target></primary>."
     # The message shown when a statistic is reset successfully.
-    reset-success: "<gray>Reset <gold><statistic-name></gold> for <gold><target></gold>."
+    reset-success: "<body>Reset <primary><statistic-name></primary> for <primary><target></primary>."
     # The message shown when all statistics are reset.
-    reset-all-success: "<gray>Reset all statistics for <gold><target></gold>."
+    reset-all-success: "<body>Reset all statistics for <primary><target></primary>."
     # The message shown while loading offline player data.
-    loading-message: "<gray>Loading statistics for <gold><target></gold>..."
+    loading-message: "<body>Loading statistics for <primary><target></primary>..."
     # The message shown when a database lookup fails.
-    lookup-error-message: "<red>Failed to look up statistics. Please try again."
+    lookup-error-message: "<negative>Failed to look up statistics. Please try again."
     # The message shown when an invalid value is provided for the set command.
-    invalid-value: "<red>Invalid value <gray><statistic-value></gray> for statistic <gray><statistic-name></gray>."
+    invalid-value: "<negative>Invalid value <body><statistic-value></body> for statistic <body><statistic-name></body>."

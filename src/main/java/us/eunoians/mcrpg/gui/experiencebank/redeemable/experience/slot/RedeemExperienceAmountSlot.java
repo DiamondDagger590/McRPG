@@ -69,7 +69,7 @@ public class RedeemExperienceAmountSlot implements McRPGSlot {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("redeemable-experience", Integer.toString(mcRPGPlayer.getExperienceExtras().getRedeemableExperience()));
         placeholders.put("redeemable-experience-to-spend", Integer.toString(amountToSpend));
-        placeholders.put("skill", skill.getName(mcRPGPlayer));
+        placeholders.put("skill", skill.getColoredName(mcRPGPlayer));
         return placeholders;
     }
 }

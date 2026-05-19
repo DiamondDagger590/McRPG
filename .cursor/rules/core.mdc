@@ -148,11 +148,11 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 
 All player-facing text uses the **Warm Fantasy RPG** palette defined in [`PALETTE.md`](../../PALETTE.md). Colors are **runtime-resolvable placeholders** — locale YAML files use semantic names like `<primary>`, and `McRPGLocalizationManager` replaces them with configured MiniMessage values before parsing. Server owners customize colors in `config.yml`'s `palette` section. Never introduce a new color without adding it to the palette first.
 
-The palette is **dynamic**: `McRPGLocalizationManager.buildPaletteReplacements()` iterates every key in the `palette:` YAML section at startup (and on reload). Server owners can add arbitrary custom keys alongside the ten built-in roles — any key they define becomes a usable placeholder in locale files (e.g., adding `my-guild-color: "<color:#FF00FF>"` enables `<my-guild-color>` everywhere). This is driven by `MainConfigFile.PALETTE_SECTION`, the single route that triggers palette reloads.
+The palette is **dynamic**: `McRPGLocalizationManager.buildPaletteReplacements()` iterates every key in the `palette:` YAML section at startup (and on reload). Server owners can add arbitrary custom keys alongside the built-in roles — any key they define becomes a usable placeholder in locale files (e.g., adding `my-guild-color: "<color:#FF00FF>"` enables `<my-guild-color>` everywhere). This is driven by `MainConfigFile.PALETTE_SECTION`, the single route that triggers palette reloads.
 
 | Role | Placeholder | Default Value | When to Use |
 |------|-------------|---------------|-------------|
-| **primary** | `<primary>` | `<color:#D4A76A>` | GUI titles, nav item names, stat value highlights, skill names, section headers |
+| **primary** | `<primary>` | `<color:#D4A76A>` | GUI titles, nav item names, stat value highlights, section headers |
 | **hint** | `<hint>` | `<color:#E8C97A>` | Click hints, calls-to-action, interactive prompts |
 | **mana** | `<mana>` | `<color:#5EA8FF>` | Mana cost values, mana-related lore |
 | **ability-active** | `<ability-active>` | `<color:#FF7B5E>` | Active (ComboActivatable) ability names and type tags |
@@ -162,6 +162,10 @@ The palette is **dynamic**: `McRPGLocalizationManager.buildPaletteReplacements()
 | **positive** | `<positive>` | `<green>` | Enabled, success, accepted |
 | **negative** | `<negative>` | `<red>` | Disabled, error, deny, abandon |
 | **warning** | `<warning>` | `<yellow>` | Caution, expiration, approaching limits |
+| **skill-swords** | `<skill-swords>` | `<color:#C75050>` | Swords skill name in any player-facing surface |
+| **skill-mining** | `<skill-mining>` | `<color:#7AAFC9>` | Mining skill name |
+| **skill-herbalism** | `<skill-herbalism>` | `<color:#6DB86D>` | Herbalism skill name |
+| **skill-woodcutting** | `<skill-woodcutting>` | `<color:#B8874B>` | Woodcutting skill name |
 
 **Forbidden in new code:** `<gold>` (replaced by `<primary>`), `<red>` for item names (use `<primary>` or type placeholder), `<black>` for titles (use `<primary>`), raw hex codes in locale YAML (use palette placeholders).
 
@@ -198,6 +202,25 @@ Every ability's `name:` field in its locale YAML **must** use the correct type p
 | All others (always-on innate passives) | `<ability-innate>` |
 
 The `AbilityNameColorConsistencyTest` enforces this for all bundled abilities at CI time. Third-party expansions should include an equivalent test for their own locale YAML files.
+
+### Skill name color rule
+
+Every skill's `name:` field in its locale YAML **must** use the per-skill palette placeholder — never `<gold>`, `<primary>`, or a raw hex code:
+
+| Skill | Required placeholder |
+|---|---|
+| Swords | `<skill-swords>` |
+| Mining | `<skill-mining>` |
+| Herbalism | `<skill-herbalism>` |
+| Woodcutting | `<skill-woodcutting>` |
+
+Third-party skills should define their own `skill-{key}` entry in `config.yml` and use it in their locale's `name:` field.
+
+The `SkillNameColorConsistencyTest` enforces this for all bundled skills at CI time.
+
+### Skill.getColoredName() API
+
+`Skill.getColoredName(McRPGPlayer)` returns the fully resolved, palette-colored skill name string for display. `ConfigurableSkill` resolves it from the locale `name:` field (which carries the `<skill-{key}>` tag) so the palette substitution happens in place. All callsites that show a skill name in player-facing text — GUI titles, ability lore, action bar, commands — must use `getColoredName()` instead of `getName()`. The only exception is when the name will be used as a command argument (e.g., `player.performCommand`), where plain text is required and `getName()` is correct.
 
 ## Mana Balance Framework
 

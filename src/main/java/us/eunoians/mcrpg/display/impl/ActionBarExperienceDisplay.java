@@ -62,7 +62,7 @@ public class ActionBarExperienceDisplay extends ExperienceDisplay {
         var skillHolderData = dataOptional.get();
         Component message = localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer,
                 LocalizationKey.ACTION_BAR_DISPLAY_MESSAGE, Map.of(
-                        SkillItemPlaceholderKeys.SKILL.getKey(), skill.getName(mcRPGPlayer),
+                        SkillItemPlaceholderKeys.SKILL.getKey(), skill.getColoredName(mcRPGPlayer),
                         SkillItemPlaceholderKeys.LEVEL.getKey(), Integer.toString(skillHolderData.getCurrentLevel()),
                         SkillItemPlaceholderKeys.CURRENT_EXPERIENCE.getKey(), Integer.toString(skillHolderData.getCurrentExperience()),
                         SkillItemPlaceholderKeys.REQUIRED_EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(skillHolderData.getExperienceForNextLevel()),

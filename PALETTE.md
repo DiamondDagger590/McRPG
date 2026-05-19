@@ -46,6 +46,19 @@ palette:
 | **ability-passive** | `<ability-passive>` | `<color:#7FB87F>` | `#7FB87F` | Passive ability names and type tags |
 | **ability-innate** | `<ability-innate>` | `<color:#9E9E9E>` | `#9E9E9E` | Innate (no unlock) ability names, disabled/inactive states, unavailable items |
 
+## Per-Skill Colors
+
+Each bundled skill has a dedicated palette role so server owners can theme individual skills independently. These are resolved the same way as all other palette roles via `McRPGLocalizationManager.buildPaletteReplacements()`.
+
+| Role | Placeholder | Default Value | Hex | Skill |
+|------|-------------|---------------|-----|-------|
+| **skill-swords** | `<skill-swords>` | `<color:#C75050>` | `#C75050` | Swords skill name in any player-facing surface |
+| **skill-mining** | `<skill-mining>` | `<color:#7AAFC9>` | `#7AAFC9` | Mining skill name |
+| **skill-herbalism** | `<skill-herbalism>` | `<color:#6DB86D>` | `#6DB86D` | Herbalism skill name |
+| **skill-woodcutting** | `<skill-woodcutting>` | `<color:#B8874B>` | `#B8874B` | Woodcutting skill name |
+
+Third-party expansions that add new skills should define an equivalent `skill-{skillname}` entry in `config.yml` and use it in their locale's `name:` field. The `SkillNameColorConsistencyTest` pattern should be mirrored in their own test suite.
+
 ## Standard Minecraft Colors
 
 | Role | Placeholder | Default Value | When to Use |
@@ -71,11 +84,12 @@ palette:
    - The sentence-completion portion (`to ...`) is always `<body>`
    - **Never** color the entire hint line a single color — splitting verb from sentence is required
 5. **Ability item names**: Color by type — `<ability-active>`, `<ability-passive>`, or `<ability-innate>`
-6. **Mana costs in ability lore**: Always `<mana>` — `<body>Mana Cost: <mana>30`
-7. **Body text / labels**: Always `<body>` — `<body>Activation Chance:`
-8. **Toggle on/off status**: `<positive>` / `<negative>` — `<positive>Enabled` / `<negative>Disabled`
-9. **Error messages**: Always `<negative>` — `<negative>Not enough mana`
-10. **Warnings**: Always `<warning>` — `<warning>Quest expires soon`
+6. **Skill item names**: Use the per-skill placeholder — `<skill-swords>`, `<skill-mining>`, `<skill-herbalism>`, `<skill-woodcutting>`. Resolved via `Skill.getColoredName(McRPGPlayer)` at runtime
+7. **Mana costs in ability lore**: Always `<mana>` — `<body>Mana Cost: <mana>30`
+8. **Body text / labels**: Always `<body>` — `<body>Activation Chance:`
+9. **Toggle on/off status**: `<positive>` / `<negative>` — `<positive>Enabled` / `<negative>Disabled`
+10. **Error messages**: Always `<negative>` — `<negative>Not enough mana`
+11. **Warnings**: Always `<warning>` — `<warning>Quest expires soon`
 
 ---
 

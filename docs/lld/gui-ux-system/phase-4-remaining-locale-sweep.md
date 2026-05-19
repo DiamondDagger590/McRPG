@@ -2,7 +2,7 @@
 
 > **HLD Reference:** [docs/hld/gui-ux-system.md](../../hld/gui-ux-system.md)
 > **Phase 3 LLD:** [phase-3-ability-edit-gui-quest-slot.md](phase-3-ability-edit-gui-quest-slot.md)
-> **Status:** Not Started
+> **Status:** Complete
 
 ## Scope
 
@@ -806,7 +806,131 @@ Parallel to `AbilityNameColorConsistencyTest`. Validates that every skill's loca
 
 ---
 
-## 9. Open Items / Future Considerations
+## 9. Implementation Notes — McCore Infrastructure Bugs
+
+During implementation, two McCore `BaseItemBuilder` bugs were discovered and fixed. Both stem from the interaction between string-based lore (populated by `ItemBuilder.from(Section)`) and component-based lore (added dynamically by GUI slots via `addDisplayLoreComponent()`).
+
+### 9.1 ItemBuilder "Double-Bake" Bug
+
+**Symptom:** MiniMessage tags (e.g., `<color:#C75050>`) appeared as literal text in ability/skill item lore after `Skill.getColoredName()` was introduced. The same bug had occurred in earlier phases with `Ability.getColoredName()` and was worked around per-callsite.
+
+**Root cause:** `ConfigurableAbility.getDisplayItemBuilder()` and `ConfigurableSkill.getDisplayItemBuilder()` called `intermediate.asItemStack()` to create the specialized builder (`AbilityItemBuilder` / `SkillItemBuilder`). This prematurely baked the YAML lore strings into Adventure `Component` objects on the `ItemStack`. When the specialized builder later applied placeholders containing MiniMessage tags (e.g., `<color:#C75050>Swords</color:#C75050>` from `getColoredName()`), those tags were inserted via `TextReplacementConfig.replacement(value)` — which treats the replacement value as **plain text**, not MiniMessage. The tags rendered as literal `<color:#C75050>` in-game.
+
+**Fix (McCore):** Added a `protected` copy constructor to `BaseItemBuilder` and `ItemBuilder` that transfers all internal mutable state (string-based `displayName`, `lore`, `placeholders`, `itemFlags`, etc.) without calling `asItemStack()`. The YAML lore stays as raw strings, so placeholder substitution and MiniMessage parsing happen together in the final `asItemStack()` call.
+
+```java
+// BaseItemBuilder — new protected copy constructor
+protected BaseItemBuilder(@NotNull BaseItemBuilder<?> source) {
+    this.itemStack = source.itemStack;
+    this.displayName = source.displayName;
+    this.displayNameComponent = source.displayNameComponent;
+    this.lore = new ArrayList<>(source.lore);
+    this.loreAsComponent = new ArrayList<>(source.loreAsComponent);
+    this.placeholders = new HashMap<>(source.placeholders);
+    this.itemFlags.addAll(source.itemFlags);
+    this.customItem = source.customItem;
+    this.staticItemName = source.staticItemName;
+    this.applyAudienceSkullTexture = source.applyAudienceSkullTexture;
+}
+
+// ItemBuilder — delegates to super
+protected ItemBuilder(@NotNull ItemBuilder source) {
+    super(source);
+}
+```
+
+**Fix (McRPG):** `AbilityItemBuilder` and `SkillItemBuilder` each gained a new constructor accepting `ItemBuilder` (delegating to the copy constructor). `ConfigurableAbility.getDisplayItemBuilder()` and `ConfigurableSkill.getDisplayItemBuilder()` now pass the `intermediate` builder directly instead of calling `intermediate.asItemStack()`. The `from(ItemBuilder, ...)` and `from(Section, ...)` static factory methods were updated to use the new constructors.
+
+### 9.2 Lore Merge Bug ("Lost Lore")
+
+**Symptom:** After the double-bake fix, YAML-sourced lore (description, stat lines from `en_abilities.yml` / `en_skills.yml`) disappeared entirely from item tooltips. Only the dynamically-injected lore (Type, Mana Cost, Status, click hints) remained.
+
+**Root cause:** `BaseItemBuilder.asItemStack()` had two independent `setData(DataComponentTypes.LORE, ...)` calls — one for the string-based `lore` list and one for the component-based `loreAsComponent` list. When both lists were non-empty, the component call ran second and **overwrote** the string-based lore entirely.
+
+Before the double-bake fix, this was invisible: the `BaseItemBuilder(ItemStack)` constructor extracted all lore into `loreAsComponent` (the component list), leaving the string list empty. After the copy constructor fix, YAML lore stayed in the string list while GUI slots added to the component list — both were populated, and the component path won.
+
+**Fix (McCore):** Merged both lore sources into a single `List<Component>` before writing. String-based lore is parsed first (preserving YAML-defined description and stat lines), then component-based lore is appended (preserving dynamically-injected Type/Mana/Status/hint lines).
+
+```java
+// BaseItemBuilder.asItemStack() — merged lore resolution
+List<Component> finalLore = new ArrayList<>();
+if (!this.lore.isEmpty()) {
+    finalLore.addAll(lore.stream().map(loreLine -> parseString(loreLine, audience)).toList());
+}
+if (!this.loreAsComponent.isEmpty()) {
+    finalLore.addAll(loreAsComponent.stream().map(this::parseComponent).toList());
+}
+if (!finalLore.isEmpty()) {
+    this.itemStack.setData(DataComponentTypes.LORE, ItemLore.lore(finalLore));
+}
+```
+
+### 9.3 Updated Class Diagram (McCore Changes)
+
+```mermaid
+classDiagram
+    direction TB
+
+    class BaseItemBuilder {
+        ~modified (McCore)~
+        #BaseItemBuilder(BaseItemBuilder source)
+        +asItemStack(Audience) ItemStack
+    }
+
+    class ItemBuilder {
+        ~modified (McCore)~
+        #ItemBuilder(ItemBuilder source)
+    }
+
+    class AbilityItemBuilder {
+        ~modified~
+        +AbilityItemBuilder(ItemBuilder, McRPGPlayer, Ability)
+        +from(ItemBuilder, McRPGPlayer, Ability)$ AbilityItemBuilder
+    }
+
+    class SkillItemBuilder {
+        ~modified~
+        +SkillItemBuilder(ItemBuilder, McRPGPlayer, Skill)
+        +from(ItemBuilder, McRPGPlayer, Skill)$ SkillItemBuilder
+    }
+
+    class ConfigurableAbility {
+        ~modified~
+        +getDisplayItemBuilder(McRPGPlayer) AbilityItemBuilder
+    }
+
+    class ConfigurableSkill {
+        ~modified~
+        +getDisplayItemBuilder(McRPGPlayer) SkillItemBuilder
+    }
+
+    ItemBuilder --|> BaseItemBuilder
+    AbilityItemBuilder --|> ItemBuilder
+    SkillItemBuilder --|> ItemBuilder
+    ConfigurableAbility ..> AbilityItemBuilder : "passes ItemBuilder (no asItemStack)"
+    ConfigurableSkill ..> SkillItemBuilder : "passes ItemBuilder (no asItemStack)"
+```
+
+---
+
+## 10. Affected Callsites (Implicitly Fixed)
+
+The following GUI slots call `getDisplayItemBuilder()` and then add component-based lore via `addDisplayLoreComponent()`. All of them were silently affected by the same double-bake bug (MiniMessage tags in placeholder values rendered as literal text) and the same lore merge bug (YAML lore overwritten by component lore). The McCore fixes in sections 9.1 and 9.2 resolve all of them generically:
+
+| Slot Class | Builder Source | Dynamic Lore Added |
+|---|---|---|
+| `AbilitySlot` | `ability.getDisplayItemBuilder()` | Type, mana cost, status, click hints, upgrade quest progress |
+| `LoadoutAbilitySlot` | `ability.getDisplayItemBuilder()` | Additional loadout lore lines |
+| `LoadoutSelectAbilitySlot` | `ability.getDisplayItemBuilder()` | Ability select lore lines |
+| `ActiveAbilityComboSlot` | `ability.getDisplayItemBuilder()` | Combo pattern display, upgrade quest progress |
+| `RedeemableSkillSelectionSlot` | `skill.getDisplayItemBuilder()` | Redeem skill selection lore |
+| `SkillSlot` | `skill.getDisplayItemBuilder()` | (none — but benefits from correct lore parsing) |
+
+These slots were not individually modified — the fix is entirely in McCore's `BaseItemBuilder`.
+
+---
+
+## 11. Open Items / Future Considerations
 
 1. **`HIDE_ADDITIONAL_TOOLTIP` deprecation**: On Paper 1.21, `ItemFlag.HIDE_ADDITIONAL_TOOLTIP` is deprecated in favor of `TooltipDisplay` / data components. `HIDE_ATTRIBUTES` is not deprecated and handles the weapon/tool stat lines correctly. If future Paper versions deprecate `HIDE_ATTRIBUTES`, the fix is a McCore `ItemBuilder` update to support the new `TooltipDisplay` API — no McRPG changes needed since the YAML config would remain the same.
 
@@ -815,3 +939,11 @@ Parallel to `AbilityNameColorConsistencyTest`. Validates that every skill's loca
 3. **Dynamic string palette resolution**: GUI slots that build lore strings programmatically (outside the locale chain) must call `resolvePaletteColors()` explicitly. This is already done by `AbilitySlot` and `UpgradeQuestSlot`. New GUI slots that construct MiniMessage strings from non-Route sources should follow the same pattern. All Route-based `getLocalizedMessage` paths are guaranteed to run palette resolution — no gaps exist.
 
 4. **Palette-tagged `<skill>` in command feedback**: After this phase, command messages like "You gave 500 XP in Swords to Player" will show "Swords" in its per-skill color. If the MiniMessage tags in chat output cause visual issues in specific server configurations (e.g., logging plugins that strip MiniMessage), server owners can set `skill-swords: ""` to disable the coloring.
+
+5. **Lore merge ordering assumption**: The `asItemStack()` merge always places string-based lore (from YAML `Section`) before component-based lore (from `addDisplayLoreComponent()`). This matches all current callsites where YAML defines the base description and slots append dynamic metadata. If a future builder needs the reverse order (dynamic first, YAML second), the merge logic would need a configurable ordering strategy.
+
+6. **Copy constructor shares `ItemStack` reference**: The `BaseItemBuilder` copy constructor copies `this.itemStack = source.itemStack` by reference rather than cloning. In practice this is safe because the source builder is discarded immediately after the copy (in `getDisplayItemBuilder()`), but a future caller that retains and mutates the source builder's `ItemStack` after copying would see cross-contamination. If this becomes a concern, the copy constructor should call `source.itemStack.clone()`.
+
+7. **Third-party `ItemBuilder` subclasses**: Any third-party plugin that extends `ItemBuilder` and uses the `ItemStack`-based constructor path would still hit the double-bake issue. They need to add their own copy constructor delegating to `super(source)` and update their factory methods. This is documented as a migration note for the McCore changelog.
+
+8. **In-game verification of implicitly-fixed slots**: The slots listed in section 10 (`LoadoutAbilitySlot`, `ActiveAbilityComboSlot`, `LoadoutSelectAbilitySlot`, `RedeemableSkillSelectionSlot`) were not individually tested in-game after the fix. They should be spot-checked to confirm YAML lore and dynamic lore both appear correctly.

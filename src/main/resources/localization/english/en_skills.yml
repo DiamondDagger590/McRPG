@@ -11,53 +11,61 @@ skills:
   # Supports <levels> and <skill> placeholders
   level-up:
     # The message to send when a player levels up a skill
-    level-up-message: "<green>You have gone up <gold><levels> levels<green> in <skill><green>."
+    level-up-message: "<positive>You have gone up <primary><levels> levels <positive>in <skill><positive>."
   swords:
     display-item:
-      name: '<red><skill></red>'
+      name: '<skill-swords><skill></skill-swords>'
       skill-name: 'Swords'
       material: DIAMOND_SWORD
+      item-flags:
+        - 'HIDE_ATTRIBUTES'
       lore:
-        - '<gray>Your strength in Swords grows each time you use a'
-        - '<gray>sword in combat. How much you gain will depend'
-        - '<gray>on the weapon you wield.'
+        - '<body>Your strength in Swords grows each time you use a'
+        - '<body>sword in combat. How much you gain will depend'
+        - '<body>on the weapon you wield.'
         - ''
-        - '<gray>Current Level: <gold><level>'
-        - '<gray>Current Experience: <gold><current-experience>'
-        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
+        - '<body>Current Level: <primary><level>'
+        - '<body>Current Experience: <primary><current-experience>'
+        - '<body>Experience Till Next Level: <primary><remaining-experience-to-level-up>'
   mining:
     display-item:
-      name: '<red><skill></red>'
+      name: '<skill-mining><skill></skill-mining>'
       skill-name: 'Mining'
       material: DIAMOND_PICKAXE
+      item-flags:
+        - 'HIDE_ATTRIBUTES'
       lore:
-        - '<gray>Your expertise in Mining grows each time you'
-        - '<gray>break blocks with a pickaxe.'
+        - '<body>Your expertise in Mining grows each time you'
+        - '<body>break blocks with a pickaxe.'
         - ''
-        - '<gray>Current Level: <gold><level>'
-        - '<gray>Current Experience: <gold><current-experience>'
-        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
+        - '<body>Current Level: <primary><level>'
+        - '<body>Current Experience: <primary><current-experience>'
+        - '<body>Experience Till Next Level: <primary><remaining-experience-to-level-up>'
   herbalism:
     display-item:
-      name: '<red><skill></red>'
+      name: '<skill-herbalism><skill></skill-herbalism>'
       skill-name: 'Herbalism'
       material: DIAMOND_HOE
+      item-flags:
+        - 'HIDE_ATTRIBUTES'
       lore:
-        - '<gray>Your expertise in Herbalism grows each time you'
-        - '<gray>harvest crops.'
+        - '<body>Your expertise in Herbalism grows each time you'
+        - '<body>harvest crops.'
         - ''
-        - '<gray>Current Level: <gold><level>'
-        - '<gray>Current Experience: <gold><current-experience>'
-        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
+        - '<body>Current Level: <primary><level>'
+        - '<body>Current Experience: <primary><current-experience>'
+        - '<body>Experience Till Next Level: <primary><remaining-experience-to-level-up>'
   woodcutting:
     display-item:
-      name: '<red><skill></red>'
+      name: '<skill-woodcutting><skill></skill-woodcutting>'
       skill-name: 'Woodcutting'
       material: DIAMOND_AXE
+      item-flags:
+        - 'HIDE_ATTRIBUTES'
       lore:
-        - '<gray>Your expertise in Woodcutting grows each time you'
-        - '<gray>break wood with an axe.'
+        - '<body>Your expertise in Woodcutting grows each time you'
+        - '<body>break wood with an axe.'
         - ''
-        - '<gray>Current Level: <gold><level>'
-        - '<gray>Current Experience: <gold><current-experience>'
-        - '<gray>Experience Till Next Level: <gold><remaining-experience-to-level-up>'
+        - '<body>Current Level: <primary><level>'
+        - '<body>Current Experience: <primary><current-experience>'
+        - '<body>Experience Till Next Level: <primary><remaining-experience-to-level-up>'

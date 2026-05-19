@@ -27,14 +27,31 @@ public class SkillItemBuilder extends ItemBuilder {
         addPlaceholders();
     }
 
+    /**
+     * Constructs a {@link SkillItemBuilder} by copying all builder state from an existing
+     * {@link ItemBuilder} without baking to an {@link org.bukkit.inventory.ItemStack}. This
+     * keeps lore and display name in string form so placeholders added here are resolved in
+     * the same MiniMessage parse pass as palette tags.
+     *
+     * @param source The builder to copy state from.
+     * @param player The player context for placeholder resolution.
+     * @param skill  The skill this builder is for.
+     */
+    public SkillItemBuilder(@NotNull final ItemBuilder source, @NotNull McRPGPlayer player, @NotNull final Skill skill) {
+        super(source);
+        this.player = player;
+        this.skill = skill;
+        addPlaceholders();
+    }
+
     @NotNull
     public static SkillItemBuilder from(@NotNull ItemBuilder itemBuilder, @NotNull McRPGPlayer mcRPGPlayer, @NotNull Skill skill) {
-        return new SkillItemBuilder(itemBuilder.asItemStack(), mcRPGPlayer, skill);
+        return new SkillItemBuilder(itemBuilder, mcRPGPlayer, skill);
     }
 
     @NotNull
     public static SkillItemBuilder from(@NotNull Section section, @NotNull McRPGPlayer mcRPGPlayer, @NotNull Skill skill) {
-        return new SkillItemBuilder(ItemBuilder.from(section).asItemStack(), mcRPGPlayer, skill);
+        return new SkillItemBuilder(ItemBuilder.from(section), mcRPGPlayer, skill);
     }
 
     private void addPlaceholders() {

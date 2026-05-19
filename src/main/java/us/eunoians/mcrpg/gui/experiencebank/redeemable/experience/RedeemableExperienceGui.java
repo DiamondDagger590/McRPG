@@ -62,7 +62,7 @@ public class RedeemableExperienceGui extends BaseGui<McRPGPlayer> implements Fil
                     RegistryAccess.registryAccess()
                             .registry(RegistryKey.MANAGER)
                             .manager(McRPGManagerKey.LOCALIZATION)
-                            .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.REDEEMABLE_EXPERIENCE_GUI_TITLE, Map.of("skill", skill.getName(getCreatingPlayer()))));
+                            .getLocalizedMessageAsComponent(getCreatingPlayer(), LocalizationKey.REDEEMABLE_EXPERIENCE_GUI_TITLE, Map.of("skill", skill.getColoredName(getCreatingPlayer()))));
             paintInventory();
         }
     }

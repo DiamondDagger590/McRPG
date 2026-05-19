@@ -290,7 +290,7 @@ public class UpgradeQuestSlot implements McRPGSlot {
                     skillRegistry.registered(skillAbility.getSkillKey())
                             ? skillRegistry.getRegisteredSkill(skillAbility.getSkillKey())
                             : null);
-            placeholders.put("skill", skill.map(s -> s.getName(player)).orElse(""));
+            placeholders.put("skill", skill.map(s -> s.getColoredName(player)).orElse(""));
         } else {
             placeholders.put("skill", "");
         }

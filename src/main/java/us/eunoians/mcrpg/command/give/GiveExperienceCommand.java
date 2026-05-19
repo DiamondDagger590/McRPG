@@ -89,7 +89,7 @@ public class GiveExperienceCommand extends GiveCommandBase {
                                                       @NotNull Skill skill, @Nullable McRPGPlayer mcRPGPlayer) {
         Map<String, String> placeholders = new HashMap<>(McRPGCommandBase.getPlaceholders(messageAudience, senderAudience, receiverAudience));
         placeholders.put(EXPERIENCE.getPlaceholder(), Integer.toString(experience));
-        placeholders.put(SKILL.getPlaceholder(), mcRPGPlayer == null ? skill.getName() : skill.getName(mcRPGPlayer));
+        placeholders.put(SKILL.getPlaceholder(), mcRPGPlayer == null ? skill.getName() : skill.getColoredName(mcRPGPlayer));
         return placeholders;
     }
 }

@@ -39,14 +39,31 @@ public class AbilityItemBuilder extends ItemBuilder {
         addPlaceholders();
     }
 
+    /**
+     * Constructs an {@link AbilityItemBuilder} by copying all builder state from an existing
+     * {@link ItemBuilder} without baking to an {@link org.bukkit.inventory.ItemStack}. This
+     * keeps lore and display name in string form so placeholders added here are resolved in
+     * the same MiniMessage parse pass as palette tags.
+     *
+     * @param source  The builder to copy state from.
+     * @param player  The player context for placeholder resolution.
+     * @param ability The ability this builder is for.
+     */
+    public AbilityItemBuilder(@NotNull final ItemBuilder source, @NotNull McRPGPlayer player, @NotNull final Ability ability) {
+        super(source);
+        this.player = player;
+        this.ability = ability;
+        addPlaceholders();
+    }
+
     @NotNull
     public static AbilityItemBuilder from(@NotNull ItemBuilder itemBuilder, @NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
-        return new AbilityItemBuilder(itemBuilder.asItemStack(), mcRPGPlayer, ability);
+        return new AbilityItemBuilder(itemBuilder, mcRPGPlayer, ability);
     }
 
     @NotNull
     public static AbilityItemBuilder from(@NotNull Section section, @NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
-        return new AbilityItemBuilder(ItemBuilder.from(section).asItemStack(), mcRPGPlayer, ability);
+        return new AbilityItemBuilder(ItemBuilder.from(section), mcRPGPlayer, ability);
     }
 
     private void addPlaceholders() {
@@ -58,7 +75,7 @@ public class AbilityItemBuilder extends ItemBuilder {
         // Skill placeholder
         if (ability instanceof SkillAbility skillAbility) {
             Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
-            addPlaceholder(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getName(player));
+            addPlaceholder(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getColoredName(player));
         }
         // Add information about specific ability attributes
         Optional<AbilityData> abilityDataOptional = skillHolder.getAbilityData(ability);

@@ -103,7 +103,7 @@ public class RedeemExperienceCommand extends McRPGCommandBase {
             if (skillDataOptional.isPresent()) {
                 SkillHolder.SkillHolderData skillData = skillDataOptional.get();
                 if (skillData.getCurrentLevel() >= skill.getMaxLevel()) {
-                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_EXPERIENCE_SKILL_ALREADY_MAXED_MESSAGE, Map.of(SKILL.getPlaceholder(), skill.getName(mcRPGPlayer))));
+                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_EXPERIENCE_SKILL_ALREADY_MAXED_MESSAGE, Map.of(SKILL.getPlaceholder(), skill.getColoredName(mcRPGPlayer))));
                     return;
                 }
                 // Cap redeem amount at XP needed to reach max level — prevents overflow past max
@@ -111,7 +111,7 @@ public class RedeemExperienceCommand extends McRPGCommandBase {
                 int effectiveAmount = Math.max(0, Math.min(amount, expToMaxLevel));
                 skillData.addExperience(effectiveAmount, us.eunoians.mcrpg.skill.experience.context.McRPGGainReason.REDEEM);
                 playerExperienceExtras.modifyRedeemableExperience(effectiveAmount * -1);
-                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_EXPERIENCE_REDEEMED_EXPERIENCE_MESSAGE, Map.of(SKILL.getPlaceholder(), skill.getName(mcRPGPlayer),
+                player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.REDEEMABLE_EXPERIENCE_REDEEMED_EXPERIENCE_MESSAGE, Map.of(SKILL.getPlaceholder(), skill.getColoredName(mcRPGPlayer),
                         REDEEMED_EXPERIENCE.getPlaceholder(), Integer.toString(effectiveAmount))));
             }
         });

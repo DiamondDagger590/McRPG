@@ -75,7 +75,7 @@ public class RedeemLevelsCustomSlot implements McRPGSlot {
     private Map<String, String> getPlaceholders(@NotNull McRPGPlayer mcRPGPlayer) {
         Map<String, String> placeholders = new HashMap<>();
         placeholders.put("redeemable-levels", Integer.toString(mcRPGPlayer.getExperienceExtras().getRedeemableLevels()));
-        placeholders.put("skill", skill.getName(mcRPGPlayer));
+        placeholders.put("skill", skill.getColoredName(mcRPGPlayer));
         return placeholders;
     }
 }

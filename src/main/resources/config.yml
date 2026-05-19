@@ -48,6 +48,14 @@ palette:
   negative: "<red>"
   # Caution, expiration, approaching limits
   warning: "<yellow>"
+  # Swords skill name in any player-facing surface
+  skill-swords: "<color:#C75050>"
+  # Mining skill name
+  skill-mining: "<color:#7AAFC9>"
+  # Herbalism skill name
+  skill-herbalism: "<color:#6DB86D>"
+  # Woodcutting skill name
+  skill-woodcutting: "<color:#B8874B>"
 
 configuration:
   database:
