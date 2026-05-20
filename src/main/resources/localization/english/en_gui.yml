@@ -743,7 +743,7 @@ gui:
           material: BOOK
           lore:
             - "<body>No active upgrade quest for"
-            - "<ability>."
+            - "<ability><body>."
             - ""
             - "<body>Next upgrade available at"
             - "<primary><skill> <body>level <primary><next-tier-level><body>."

@@ -95,7 +95,8 @@ public class BossBarExperienceDisplay extends ExperienceDisplay {
                 SkillItemPlaceholderKeys.CURRENT_EXPERIENCE.getKey(), Integer.toString(currentExperience),
                 SkillItemPlaceholderKeys.REQUIRED_EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(experienceForNextLevel),
                 SkillItemPlaceholderKeys.REMAINING_EXPERIENCE_TO_LEVEL_UP.getKey(), Integer.toString(remainingExperienceForNextLevel)));
-        bossBar = BossBar.bossBar(component, (((float) currentExperience) / ((float) experienceForNextLevel)),
+        float progress = experienceForNextLevel > 0 ? ((float) currentExperience) / ((float) experienceForNextLevel) : 1.0f;
+        bossBar = BossBar.bossBar(component, progress,
                 BossBar.Color.valueOf(mainConfig.getString(MainConfigFile.EXPERIENCE_BOSS_BAR_DISPLAY_COLOR, "PURPLE")),
                 BossBar.Overlay.valueOf(mainConfig.getString(MainConfigFile.EXPERIENCE_BOSS_BAR_STYLE, "NOTCHED_10")));
         audience.showBossBar(bossBar);

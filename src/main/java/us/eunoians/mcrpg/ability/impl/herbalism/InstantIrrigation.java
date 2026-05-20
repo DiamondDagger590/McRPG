@@ -16,6 +16,7 @@ import org.bukkit.event.Event;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
 import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
@@ -34,6 +35,7 @@ import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -124,6 +126,8 @@ public final class InstantIrrigation extends McRPGAbility implements PassiveAbil
     @NotNull
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
-        return CooldownableAbility.super.getApplicableAttributes();
+        Set<NamespacedKey> attributes = new HashSet<>(CooldownableAbility.super.getApplicableAttributes());
+        attributes.add(AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY);
+        return attributes;
     }
 }

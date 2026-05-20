@@ -283,21 +283,29 @@ public class SkillHolder extends LoadoutHolder {
 
         /**
          * Gets the amount of experience required for the next level up.
+         * Returns {@code 0} when at max level since there is no next level.
          *
-         * @return The amount of experience required for the next level up.
+         * @return The amount of experience required for the next level up, or {@code 0} at max level.
          */
         public int getExperienceForNextLevel() {
             ensureCacheValid();
+            if (cachedLevel >= skill.getMaxLevel()) {
+                return 0;
+            }
             return cachedExperienceForNextLevel;
         }
 
         /**
          * Gets the amount of experience the player still has to gain for the next level up.
+         * Returns {@code 0} when at max level since there is no next level.
          *
-         * @return The amount of experience required for the next level up.
+         * @return The amount of experience remaining for the next level up, or {@code 0} at max level.
          */
         public int getRemainingExperienceForNextLevel() {
             ensureCacheValid();
+            if (cachedLevel >= skill.getMaxLevel()) {
+                return 0;
+            }
             return cachedExperienceForNextLevel - cachedExperienceTowardsNextLevel;
         }
 
