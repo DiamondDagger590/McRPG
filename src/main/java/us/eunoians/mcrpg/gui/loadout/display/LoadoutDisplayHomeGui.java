@@ -6,14 +6,18 @@ import com.diamonddagger590.mccore.gui.BaseGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.FillerItemGui;
+import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
+import us.eunoians.mcrpg.gui.loadout.LoadoutGui;
 import us.eunoians.mcrpg.gui.loadout.slot.ToggleLoadoutActiveSlot;
 import us.eunoians.mcrpg.gui.loadout.slot.display.LoadoutDisplayItemSlot;
 import us.eunoians.mcrpg.gui.loadout.slot.display.LoadoutDisplayNameEditSlot;
@@ -32,6 +36,7 @@ public class LoadoutDisplayHomeGui extends BaseGui<McRPGPlayer> implements Fille
     private static final int NAME_EDIT_SLOT = 10;
     private static final int ITEM_EDIT_SLOT = 13;
     private static final int ACTIVE_TOGGLE_SLOT = 16;
+    private static final int BACK_SLOT = 18;
 
     private final Player player;
     private final Loadout loadout;
@@ -68,6 +73,34 @@ public class LoadoutDisplayHomeGui extends BaseGui<McRPGPlayer> implements Fille
         setSlot(NAME_EDIT_SLOT, new LoadoutDisplayNameEditSlot(loadout));
         setSlot(ITEM_EDIT_SLOT, new LoadoutDisplayItemSlot(loadout));
         setSlot(ACTIVE_TOGGLE_SLOT, new ToggleLoadoutActiveSlot(getCreatingPlayer(), loadout));
+        setSlot(BACK_SLOT, getPreviousGuiSlot());
+    }
+
+    /**
+     * Creates the back button slot that returns to the {@link LoadoutGui} for the current loadout.
+     *
+     * @return A {@link McRPGPreviousGuiSlot} that navigates back to the loadout editor.
+     */
+    @NotNull
+    private McRPGPreviousGuiSlot getPreviousGuiSlot() {
+        return new McRPGPreviousGuiSlot() {
+            @Override
+            public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+                if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
+                    Player player = mcRPGPlayer.getAsBukkitPlayer().get();
+                    LoadoutGui loadoutGui = new LoadoutGui(mcRPGPlayer, loadout);
+                    player.openInventory(loadoutGui.getInventory());
+                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutGui);
+                }
+                return true;
+            }
+
+            @NotNull
+            @Override
+            public Route getSpecificDisplayItemRoute() {
+                return LocalizationKey.LOADOUT_DISPLAY_HOME_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM;
+            }
+        };
     }
 
     @Override

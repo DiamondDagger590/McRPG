@@ -22,8 +22,10 @@ import us.eunoians.mcrpg.gui.ability.AbilitySortType;
 import us.eunoians.mcrpg.gui.ability.PaginatedSortedAbilityGui;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.loadout.slot.ActiveAbilityComboSlot;
+import us.eunoians.mcrpg.gui.loadout.slot.ComboInfoSlot;
 import us.eunoians.mcrpg.gui.loadout.slot.ComboZoneFillerSlot;
 import us.eunoians.mcrpg.gui.loadout.slot.LoadoutAbilitySlot;
+import us.eunoians.mcrpg.gui.loadout.slot.ViewInnateAbilitiesSlot;
 import us.eunoians.mcrpg.gui.loadout.slot.display.LoadoutDisplayHomeSlot;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -71,8 +73,10 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAV_BAR_START + 2;
     private static final int SORT_SLOT_INDEX = NAV_BAR_START + 4;
     private static final int NEXT_PAGE_SLOT_INDEX = NAV_BAR_START + 6;
+    private static final int VIEW_INNATE_ABILITIES_SLOT_INDEX = NAV_BAR_START + 7;
     private static final int LOADOUT_DISPLAY_EDIT_SLOT = NAV_BAR_START + 8;
 
+    private static final int COMBO_INFO_SLOT = 0;
     /** Inventory slots for the three active combo ability slots (row 1: slots 2, 4, 6). */
     private static final int COMBO_ACTIVE_SLOT_1 = 2;
     private static final int COMBO_ACTIVE_SLOT_2 = 4;
@@ -116,11 +120,9 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     @Override
     protected void paintAbilities(int page) {
         List<Ability> sortedPassives = getSortedAbilitiesForPage(page);
-        int passivesInLoadout = getUnsortedAbilities().size();
-        int activeCount = loadout.getOrderedActiveAbilities().size();
-        int maxPassiveCapacity = loadout.getAbilities().size() + loadout.getRemainingLoadoutSize() - activeCount;
-        int passiveDifference = passivesInLoadout - sortedPassives.size();
-        int totalPassiveSlotsToShow = Math.max(sortedPassives.size(), maxPassiveCapacity - passiveDifference);
+        int maxPassiveCapacity = loadout.getMaxPassiveLoadoutSize();
+        int passivesOnOtherPages = getUnsortedAbilities().size() - sortedPassives.size();
+        int totalPassiveSlotsToShow = Math.max(sortedPassives.size(), maxPassiveCapacity - passivesOnOtherPages);
 
         for (int i = 0; i < PASSIVE_GRID_SIZE; i++) {
             int inventorySlot = PASSIVE_GRID_START + i;
@@ -143,15 +145,16 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
     /**
      * Paints row 1 (slots 0-8) as the combo row.
      * <p>
-     * Light-blue filler panes (which carry the combo legend as hover lore) fill all 9 slots,
-     * then the three active ability slots are placed at positions 2, 4, 6 — symmetrically
-     * centred with 2 fillers on each edge and 1 between each active.
+     * A combo info slot (KNOWLEDGE_BOOK) sits at position 0, light-blue filler panes
+     * fill the remaining slots, and the three active ability slots are placed at
+     * positions 2, 4, 6.
      */
     private void paintComboRow() {
         var comboFiller = new ComboZoneFillerSlot();
         for (int i = 0; i < 9; i++) {
             setSlot(i, comboFiller);
         }
+        setSlot(COMBO_INFO_SLOT, new ComboInfoSlot());
         setComboActiveSlots();
     }
 
@@ -192,6 +195,7 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
         if (page < getMaximumPage()) {
             setSlot(NEXT_PAGE_SLOT_INDEX, getNextPageSlot());
         }
+        setSlot(VIEW_INNATE_ABILITIES_SLOT_INDEX, new ViewInnateAbilitiesSlot(getCreatingPlayer(), loadout));
         setSlot(LOADOUT_DISPLAY_EDIT_SLOT, new LoadoutDisplayHomeSlot(getLoadout()));
     }
 
@@ -281,6 +285,7 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
                 AbilitySortType.INNATE_ABILITIES,
                 AbilitySortType.UNLOCKED_ABILITIES,
                 AbilitySortType.UPGRADEABLE_ABILITIES,
+                AbilitySortType.PASSIVE_ABILITIES,
                 AbilitySortType.ACTIVE_ABILITIES
         );
     }

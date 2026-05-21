@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * This gui is used for whenever an {@link Ability} is having its attributes modified.
@@ -34,8 +35,28 @@ public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements Fil
 
     private final Player player;
     private final Ability ability;
+    private final Supplier<BaseGui> backGuiSupplier;
 
+    /**
+     * Creates an {@link AbilityAttributeEditGui} that returns to a fresh {@link AbilityGui} when the back button is clicked.
+     *
+     * @param mcRPGPlayer The player opening this GUI.
+     * @param ability     The ability whose attributes are being edited.
+     */
     public AbilityAttributeEditGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
+        this(mcRPGPlayer, ability, () -> new AbilityGui(mcRPGPlayer));
+    }
+
+    /**
+     * Creates an {@link AbilityAttributeEditGui} that returns to the GUI provided by {@code backGuiSupplier}
+     * when the back button is clicked. Use this overload when the edit GUI is opened from a context other
+     * than the standard {@link AbilityGui} (e.g., {@link InnateAbilityGui}).
+     *
+     * @param mcRPGPlayer    The player opening this GUI.
+     * @param ability        The ability whose attributes are being edited.
+     * @param backGuiSupplier A factory that produces the GUI to return to when back is clicked.
+     */
+    public AbilityAttributeEditGui(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability, @NotNull Supplier<BaseGui> backGuiSupplier) {
         super(mcRPGPlayer);
         Optional<Player> playerOptional = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOptional.isEmpty()) {
@@ -43,6 +64,7 @@ public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements Fil
         }
         this.player = playerOptional.get();
         this.ability = ability;
+        this.backGuiSupplier = backGuiSupplier;
     }
 
     /**
@@ -105,9 +127,9 @@ public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements Fil
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 if (mcRPGPlayer.getAsBukkitPlayer().isPresent()) {
                     Player player = mcRPGPlayer.getAsBukkitPlayer().get();
-                    AbilityGui abilityGui = new AbilityGui(mcRPGPlayer);
-                    player.openInventory(abilityGui.getInventory());
-                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, abilityGui);
+                    BaseGui backGui = backGuiSupplier.get();
+                    player.openInventory(backGui.getInventory());
+                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, backGui);
                 }
                 return true;
             }

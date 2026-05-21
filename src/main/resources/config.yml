@@ -231,7 +231,7 @@ configuration:
   gameplay:
     loadout:
       max-loadout-amount: 10
-      max-loadout-size: 9
+      max-passive-loadout-size: 6
       loadout-display-name-response-timeout: 10
     redeemable:
       custom-experience-amount-response-timeout: 10

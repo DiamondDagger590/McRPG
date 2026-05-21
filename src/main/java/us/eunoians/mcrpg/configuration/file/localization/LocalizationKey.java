@@ -284,6 +284,10 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ABILITY_GUI_TITLE = Route.fromString(toRoutePath(ABILITY_GUI_HEADER, "title"));
     public static final Route ABILITY_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(ABILITY_GUI_HEADER, "previous-gui-button.display-item"));
 
+    private static final String INNATE_ABILITY_GUI_HEADER = toRoutePath(GUI_HEADER, "innate-ability-gui");
+    public static final Route INNATE_ABILITY_GUI_TITLE = Route.fromString(toRoutePath(INNATE_ABILITY_GUI_HEADER, "title"));
+    public static final Route INNATE_ABILITY_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(INNATE_ABILITY_GUI_HEADER, "previous-gui-button.display-item"));
+
     private static final String SKILL_GUI_HEADER = toRoutePath(GUI_HEADER, "skill-gui");
     public static final Route SKILL_GUI_TITLE = Route.fromString(toRoutePath(SKILL_GUI_HEADER, "title"));
     public static final Route SKILL_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(SKILL_GUI_HEADER, "previous-gui-button.display-item"));
@@ -484,6 +488,7 @@ public final class LocalizationKey extends ConfigFile {
     private static final String LOADOUT_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-gui");
     public static final Route LOADOUT_GUI_TITLE =  Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "title"));
     public static final Route LOADOUT_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "previous-gui-button.display-item"));
+    public static final Route LOADOUT_GUI_VIEW_INNATE_ABILITIES_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "view-innate-abilities-slot.display-item"));
     public static final Route LOADOUT_GUI_INVALID_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "invalid-slot.display-item"));
     public static final Route LOADOUT_GUI_ABILITY_SLOT_ADDITIONAL_LORE = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "ability-slot.additional-lore"));
     public static final Route LOADOUT_GUI_FREE_ABILITY_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_GUI_HEADER, "free-ability-slot.display-item"));
@@ -519,6 +524,7 @@ public final class LocalizationKey extends ConfigFile {
 
     private static final String LOADOUT_DISPLAY_HOME_GUI_HEADER = toRoutePath(GUI_HEADER, "loadout-display-home-gui");
     public static final Route LOADOUT_DISPLAY_HOME_GUI_TITLE = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_HEADER, "title"));
+    public static final Route LOADOUT_DISPLAY_HOME_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_HEADER, "previous-gui-button.display-item"));
     private static final String LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_HEADER = toRoutePath(LOADOUT_DISPLAY_HOME_GUI_HEADER, "edit-name-slot");
     public static final Route LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_PROMPT = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_HEADER, "name-input-request-prompt"));
     public static final Route LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_DISPLAY_ITEM = Route.fromString(toRoutePath(LOADOUT_DISPLAY_HOME_GUI_NAME_EDIT_SLOT_HEADER, "display-item"));

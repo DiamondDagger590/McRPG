@@ -191,7 +191,13 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
 
     @Override
     protected @NotNull Set<AbilitySortType> getSkippedSortTypes() {
-        return Set.of(AbilitySortType.UPGRADEABLE_ABILITIES, AbilitySortType.INNATE_ABILITIES, AbilitySortType.LOADOUT_ORDER);
+        return Set.of(
+                AbilitySortType.UPGRADEABLE_ABILITIES,
+                AbilitySortType.INNATE_ABILITIES,
+                AbilitySortType.LOADOUT_ORDER,
+                AbilitySortType.PASSIVE_ABILITIES,
+                AbilitySortType.ACTIVE_ABILITIES
+        );
     }
 
     /**

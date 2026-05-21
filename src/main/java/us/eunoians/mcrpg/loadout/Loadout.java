@@ -164,14 +164,19 @@ public final class Loadout {
         if (abilities.contains(key)) {
             return false;
         }
+        var abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
         if (ability instanceof ActiveAbility) {
             long activeCount = abilities.stream()
-                    .map(k -> McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(k))
+                    .map(abilityRegistry::getRegisteredAbility)
                     .filter(a -> a instanceof ActiveAbility)
                     .count();
             return activeCount < getMaxActiveLoadoutSize();
         }
-        return true;
+        long passiveCount = abilities.stream()
+                .map(abilityRegistry::getRegisteredAbility)
+                .filter(a -> !(a instanceof ActiveAbility))
+                .count();
+        return passiveCount < getMaxPassiveLoadoutSize();
     }
 
     /**
@@ -355,12 +360,24 @@ public final class Loadout {
     }
 
     /**
-     * Gets the maximum size of a loadout.
+     * Gets the maximum total number of abilities (active + passive) allowed in a loadout.
      *
-     * @return The maximum size of a loadout.
+     * @return The sum of {@link #getMaxActiveLoadoutSize()} and {@link #getMaxPassiveLoadoutSize()}.
      */
     private int getMaxLoadoutSize() {
-        return McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_LOADOUT_SIZE);
+        return getMaxActiveLoadoutSize() + getMaxPassiveLoadoutSize();
+    }
+
+    /**
+     * Gets the maximum number of passive (non-active) abilities allowed in a loadout.
+     * <p>
+     * This value is read from the {@code max-passive-loadout-size} config key. Active abilities have
+     * their own separate budget via {@link #getMaxActiveLoadoutSize()}.
+     *
+     * @return The maximum passive ability count for a single loadout.
+     */
+    public int getMaxPassiveLoadoutSize() {
+        return McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).getFile(FileType.MAIN_CONFIG).getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE);
     }
 
     /**

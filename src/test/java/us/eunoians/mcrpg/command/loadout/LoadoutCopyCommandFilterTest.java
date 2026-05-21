@@ -72,7 +72,7 @@ public class LoadoutCopyCommandFilterTest extends McRPGBaseTest {
         when(herbalismConfig.getString(HerbalismConfigFile.LEVEL_UP_EQUATION)).thenReturn("5");
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mainConfig);
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         when(mainConfig.getStringList(MainConfigFile.DISABLED_WORLDS)).thenReturn(List.of(""));
 
         AbilityRegistry abilityRegistry = new AbilityRegistry(mcRPG);

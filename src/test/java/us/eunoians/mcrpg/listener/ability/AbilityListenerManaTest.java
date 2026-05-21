@@ -87,7 +87,7 @@ class AbilityListenerManaTest extends McRPGBaseTest {
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mainConfig);
         when(mainConfig.getStringList(MainConfigFile.DISABLED_WORLDS)).thenReturn(List.of());
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
 
         WorldManager worldManager = spy(new WorldManager(mcRPG));
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(worldManager);

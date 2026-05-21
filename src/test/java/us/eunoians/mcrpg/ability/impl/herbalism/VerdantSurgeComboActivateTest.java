@@ -80,7 +80,7 @@ class VerdantSurgeComboActivateTest extends McRPGBaseTest {
         when(mainConfig.getInt(MainConfigFile.MANA_MINIMUM_ABILITY_COST, 5)).thenReturn(1);
         when(mainConfig.getStringList(MainConfigFile.DISABLED_WORLDS)).thenReturn(List.of());
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
 
         AbilityRegistry abilityRegistry = new AbilityRegistry(mcRPG);
         RegistryAccess.registryAccess().register(abilityRegistry);

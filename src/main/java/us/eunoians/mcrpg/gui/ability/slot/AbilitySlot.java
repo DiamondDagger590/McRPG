@@ -32,6 +32,7 @@ import us.eunoians.mcrpg.registry.plugin.McRPGPluginHookKey;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * This slot is used in {@link us.eunoians.mcrpg.gui.ability.AbilityGui}s to represent an {@link Ability}
@@ -41,10 +42,33 @@ public class AbilitySlot implements McRPGSlot {
 
     private final McRPGPlayer mcRPGPlayer;
     private final Ability ability;
+    private final Supplier<AbilityAttributeEditGui> editGuiSupplier;
 
+    /**
+     * Creates an {@link AbilitySlot} that opens a standard {@link AbilityAttributeEditGui} on right-click,
+     * with the back button returning to a fresh {@link AbilityGui}.
+     *
+     * @param mcRPGPlayer The player viewing this slot.
+     * @param ability     The ability displayed in this slot.
+     */
     public AbilitySlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability) {
+        this(mcRPGPlayer, ability, () -> new AbilityAttributeEditGui(mcRPGPlayer, ability));
+    }
+
+    /**
+     * Creates an {@link AbilitySlot} with a custom factory for the edit GUI opened on right-click.
+     * Use this overload when the slot is hosted in a context other than the standard {@link AbilityGui}
+     * (e.g., {@link us.eunoians.mcrpg.gui.ability.InnateAbilityGui}) so the edit GUI's back button
+     * returns to the correct parent GUI.
+     *
+     * @param mcRPGPlayer      The player viewing this slot.
+     * @param ability          The ability displayed in this slot.
+     * @param editGuiSupplier  A factory that produces the {@link AbilityAttributeEditGui} to open.
+     */
+    public AbilitySlot(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Ability ability, @NotNull Supplier<AbilityAttributeEditGui> editGuiSupplier) {
         this.mcRPGPlayer = mcRPGPlayer;
         this.ability = ability;
+        this.editGuiSupplier = editGuiSupplier;
     }
 
     /**
@@ -77,7 +101,7 @@ public class AbilitySlot implements McRPGSlot {
                 // If the player is using geyser, we have custom logic for them since they don't have right/left clicks. (Or if they just did a left click lol)
                 var geyserOptional = mcRPGPlayer.getPlugin().registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.GEYSER);
                 if ((geyserOptional.isPresent() && geyserOptional.get().isBedrockPlayer(mcRPGPlayer.getUUID())) || clickType == ClickType.RIGHT) {
-                    AbilityAttributeEditGui abilityAttributeEditGui = new AbilityAttributeEditGui(mcRPGPlayer, ability);
+                    AbilityAttributeEditGui abilityAttributeEditGui = editGuiSupplier.get();
                     player.closeInventory();
                     guiManager.trackPlayerGui(mcRPGPlayer.getUUID(), abilityAttributeEditGui);
                     player.openInventory(abilityAttributeEditGui.getInventory());

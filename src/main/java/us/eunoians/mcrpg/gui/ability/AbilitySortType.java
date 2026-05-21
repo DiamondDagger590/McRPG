@@ -112,6 +112,7 @@ public enum AbilitySortType {
 
     private final static LinkedNode<AbilitySortType> FIRST_SORT_TYPE = new LinkedNode<>(AbilitySortType.SKILL);
     private static LinkedNode<AbilitySortType> loadoutOrderNode;
+    private static LinkedNode<AbilitySortType> innateAbilitiesNode;
     static {
         LinkedNode<AbilitySortType> prev = FIRST_SORT_TYPE;
         // Using definition order as the link order
@@ -123,6 +124,9 @@ public enum AbilitySortType {
                 prev = next;
                 if (type == LOADOUT_ORDER) {
                     loadoutOrderNode = next;
+                }
+                if (type == INNATE_ABILITIES) {
+                    innateAbilitiesNode = next;
                 }
             }
         }
@@ -226,5 +230,18 @@ public enum AbilitySortType {
     @NotNull
     public static LinkedNode<AbilitySortType> getLoadoutOrderNode() {
         return loadoutOrderNode;
+    }
+
+    /**
+     * Gets the {@link LinkedNode} for {@link #INNATE_ABILITIES}.
+     * <p>
+     * Use this to initialise a GUI that should display only innate abilities by default,
+     * e.g. {@link us.eunoians.mcrpg.gui.ability.InnateAbilityGui}.
+     *
+     * @return The {@link LinkedNode} wrapping {@link #INNATE_ABILITIES}.
+     */
+    @NotNull
+    public static LinkedNode<AbilitySortType> getInnateAbilitiesNode() {
+        return innateAbilitiesNode;
     }
 }

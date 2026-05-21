@@ -607,6 +607,18 @@ gui:
           - 'HIDE_ATTRIBUTES'
         lore:
           - '<hint>Click <body>to change how abilities are sorted.'
+  # This GUI shows only innate abilities (always-active, no unlock required), opened from the loadout GUI.
+  innate-ability-gui:
+    title: '<primary>Innate Abilities'
+    # Configure the slot players click to return to the loadout they came from.
+    previous-gui-button:
+      display-item:
+        name: "<primary>Back to Loadout"
+        material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        lore:
+          - '<hint>Click <body>to return to your loadout.'
   # This GUI allows players to view and edit their skills.
   skill-gui:
     title: '<primary>Viewing Skills'
@@ -830,11 +842,11 @@ gui:
           - '<body>Slot 1: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <yellow>R'
           - '<body>Slot 2: <yellow>R<dark_gray> → <yellow>R<dark_gray> → <aqua>L'
           - '<body>Slot 3: <yellow>R<dark_gray> → <aqua>L<dark_gray> → <yellow>R'
-    # Configure the light-blue filler item used in the combo row.
+    # Configure the filler item used in the combo row.
     # These panes double as the combo info legend — hovering any filler explains the system.
     combo-zone-filler:
       display-item:
-        material: LIGHT_BLUE_STAINED_GLASS_PANE
+        material: GRAY_STAINED_GLASS_PANE
         item-flags:
           - 'HIDE_ATTRIBUTES'
         name: '<primary>Combo Abilities'
@@ -882,6 +894,18 @@ gui:
         slot-1: '<yellow>R<dark_gray> → <yellow>R<dark_gray> → <yellow>R'
         slot-2: '<yellow>R<dark_gray> → <yellow>R<dark_gray> → <aqua>L'
         slot-3: '<yellow>R<dark_gray> → <aqua>L<dark_gray> → <yellow>R'
+    # Configure the slot players click to view innate (always-active) abilities from within the loadout.
+    view-innate-abilities-slot:
+      display-item:
+        material: NETHER_STAR
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: '<primary>Innate Abilities'
+        lore:
+          - '<body>View abilities that are always available'
+          - '<body>regardless of your loadout.'
+          - ''
+          - '<hint>Click <body>to view'
     # Configure the slot players can click to go from the loadout gui back to the loadout select gui.
     previous-gui-button:
       display-item:
@@ -993,6 +1017,15 @@ gui:
         lore:
           - '<body>This loadout is currently <negative>inactive</negative>.'
           - '<hint>Click <body>to set this loadout as your active loadout.'
+    # Configure the slot players click to go back to the loadout editor.
+    previous-gui-button:
+      display-item:
+        material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: '<primary>Back to Editing Loadout'
+        lore:
+          - '<hint>Click <body>to return to your loadout.'
   # This GUI allows for players to put an item into the GUI to set it as the display item for their GUI
   loadout-display-item-input-gui:
     title: '<primary>Input Loadout Display Item'
@@ -1018,9 +1051,9 @@ gui:
         material: GREEN_STAINED_GLASS_PANE
         item-flags:
           - 'HIDE_ATTRIBUTES'
-        name: '<primary>Loadout Display Item'
+        name: '<positive>Confirm'
         lore:
-          - '<hint>Click <body>to change what item is used to display the loadout.'
+          - '<hint>Click <body>to save the new display item.'
   # This GUI allows players to select abilities to put into their loadouts.
   loadout-ability-select-gui:
     title: '<primary>Select ability to use.'

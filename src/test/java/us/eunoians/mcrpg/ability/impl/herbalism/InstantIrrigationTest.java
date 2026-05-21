@@ -81,7 +81,7 @@ public class InstantIrrigationTest extends McRPGBaseTest {
         mainConfig = mock(YamlDocument.class);
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mainConfig);
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
 
         ReloadableContentManager reloadableContentManager = new ReloadableContentManager(mcRPG);
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(reloadableContentManager);

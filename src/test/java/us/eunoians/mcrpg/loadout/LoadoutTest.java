@@ -72,7 +72,7 @@ public class LoadoutTest extends McRPGBaseTest {
         mainConfig = mock(YamlDocument.class);
         when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mainConfig);
 //        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-//        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+//        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
 
         AbilityRegistry abilityRegistry = new AbilityRegistry(mcRPG);
         RegistryAccess.registryAccess().register(abilityRegistry);
@@ -96,7 +96,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void getLoadoutHolder_returnsUuid_whenPlayerLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         assertEquals(mcRPGPlayer.getUUID(), mcRPGPlayer.asSkillHolder().getLoadout(1).getLoadoutHolder());
     }
 
@@ -104,7 +104,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void getLoadoutSlot_returnsSlotNumber_whenMultipleLoadouts(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         assertEquals(1, mcRPGPlayer.asSkillHolder().getLoadout(1).getLoadoutSlot());
         assertEquals(2, mcRPGPlayer.asSkillHolder().getLoadout(2).getLoadoutSlot());
     }
@@ -113,27 +113,27 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void addAbility_addsAbility_whenValidAbility(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         assertDoesNotThrow(() -> loadout.addAbility(massHarvest.getAbilityKey()));
         assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
     }
 
-    @DisplayName("Given a loadout with max size of zero, when adding an ability, then it throws LoadoutMaxSizeExceededException and adds nothing")
+    @DisplayName("Given a loadout with max passive size of zero, when adding an active ability, then it succeeds because the active budget is separate")
     @Test
-    public void addAbility_throwsException_whenLoadoutMaxSizeExceeded(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void addAbility_succeeds_whenPassiveBudgetZeroButActiveBudgetAvailable(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(0);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(0);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        assertThrows(LoadoutMaxSizeExceededException.class, () -> loadout.addAbility(massHarvest.getAbilityKey()));
-        assertTrue(loadout.getAbilities().isEmpty());
+        assertDoesNotThrow(() -> loadout.addAbility(massHarvest.getAbilityKey()));
+        assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
     }
 
     @DisplayName("Given an ability that is not valid for the loadout, when adding an ability, then it throws InvalidAbilityForLoadoutException")
     @Test
     public void addAbility_throwsException_whenAbilityInvalidForLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         assertThrows(InvalidAbilityForLoadoutException.class, () -> loadout.addAbility(instantIrrigation.getAbilityKey()));
     }
@@ -142,7 +142,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void removeAbility_removesAbility_whenAbilityInLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
@@ -154,7 +154,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void replaceAbility_replacesAbility_whenDifferentAbilityProvided(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
@@ -168,7 +168,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void isAbilityInLoadout_returnsTrue_whenAbilityPresent(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         assertTrue(loadout.isAbilityInLoadout(massHarvest.getAbilityKey()));
@@ -178,7 +178,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void isAbilityInLoadout_returnsFalse_whenAbilityAbsent(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         assertFalse(loadout.isAbilityInLoadout(massHarvest.getAbilityKey()));
     }
@@ -187,7 +187,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void getAbilities_returnsAbilities_whenAbilityAdded(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         assertEquals(1, loadout.getAbilities().size());
@@ -198,7 +198,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void getRemainingLoadoutSize_returnsFive_whenLoadoutEmpty(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         assertEquals(5, loadout.getRemainingLoadoutSize());
     }
@@ -207,7 +207,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void getRemainingLoadoutSize_returnsFour_whenOneAbilityAdded(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         assertEquals(4, loadout.getRemainingLoadoutSize());
@@ -217,7 +217,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void copyLoadout_copiesLoadout_whenNewUuidProvided(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
 
@@ -239,7 +239,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void getDisplay_returnsNewDisplay_whenLoadoutDisplaySet(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         LoadoutDisplay loadoutDisplay = new LoadoutDisplay(Material.ACACIA_BOAT, "test");
         assertNotEquals(loadout.getDisplay(), loadoutDisplay);
@@ -251,7 +251,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void shouldSaveDisplay_returnsFalse_whenDisplayIsDefault(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         assertFalse(loadout.shouldSaveDisplay());
     }
@@ -260,7 +260,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void shouldSaveDisplay_returnsTrue_whenDisplayNotDefault(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.getDisplay().setDisplayItem(Material.ACACIA_BOAT);
         assertTrue(loadout.shouldSaveDisplay());
@@ -270,7 +270,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void canAbilityBeAddedToLoadout_returnsTrue_whenDifferentAbilitySameSkill(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout1 = mcRPGPlayer.asSkillHolder().getLoadout(1);
         Loadout loadout2 = mcRPGPlayer.asSkillHolder().getLoadout(2);
         assertDoesNotThrow(() -> loadout1.addAbility(massHarvest.getAbilityKey()));
@@ -282,7 +282,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void canAbilityBeReplacedIntoLoadout_returnsTrue_whenAbilitiesDifferent(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         assertTrue(loadout.canAbilityBeReplacedIntoLoadout(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()));
@@ -292,7 +292,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void canAbilityBeReplacedIntoLoadout_returnsFalse_whenAbilitiesSame(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         assertFalse(loadout.canAbilityBeReplacedIntoLoadout(massHarvest.getAbilityKey(), massHarvest.getAbilityKey()));
@@ -302,7 +302,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void replaceAbility_swapsPositions_whenBothAbilitiesAlreadyInLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         loadout.addAbility(verdantSurge.getAbilityKey());
@@ -322,7 +322,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void canAbilityBeReplacedIntoLoadout_returnsTrue_whenNewAbilityAlreadyInLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         loadout.addAbility(verdantSurge.getAbilityKey());
@@ -333,7 +333,7 @@ public class LoadoutTest extends McRPGBaseTest {
     @Test
     public void getOrderedAbilities_preservesInsertionOrder(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
-        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_SIZE)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
         loadout.addAbility(massHarvest.getAbilityKey());
         loadout.addAbility(verdantSurge.getAbilityKey());
