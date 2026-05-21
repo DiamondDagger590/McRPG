@@ -11,7 +11,7 @@ Palette colors are **runtime-resolvable placeholders**. Locale YAML files use se
 
 ```yaml
 # Locale YAML — what developers write:
-title: "<primary>Viewing Abilities"
+title: "<gui-title>Viewing Abilities"
 lore:
   - "<body>Mana Cost: <mana>30"
   - "<hint>Right-click <body>to configure"
@@ -22,6 +22,7 @@ Server owners customize colors in `config.yml` — one change rethemes the entir
 ```yaml
 # config.yml — server-owner customizable:
 palette:
+  gui-title: "<color:#8B6914>"
   primary: "<color:#D4A76A>"
   hint: "<color:#E8C97A>"
   mana: "<color:#5EA8FF>"
@@ -34,7 +35,8 @@ palette:
 
 | Role | Placeholder | Default Value | Hex | When to Use |
 |------|-------------|---------------|-----|-------------|
-| **primary** | `<primary>` | `<color:#D4A76A>` | `#D4A76A` | GUI titles, navigation item names (back/sort buttons), stat value highlights, skill names in lore, section headers, item name accents |
+| **gui-title** | `<gui-title>` | `<color:#8B6914>` | `#8B6914` | GUI inventory titles — darker brown-gold for contrast against the white title bar |
+| **primary** | `<primary>` | `<color:#D4A76A>` | `#D4A76A` | Navigation item names (back/sort buttons), stat value highlights, skill names in lore, section headers, item name accents |
 | **hint** | `<hint>` | `<color:#E8C97A>` | `#E8C97A` | Click hints, calls-to-action ("Left-click to toggle"), interactive prompts |
 | **mana** | `<mana>` | `<color:#5EA8FF>` | `#5EA8FF` | Mana cost values, mana-related lore |
 
@@ -44,7 +46,7 @@ palette:
 |------|-------------|---------------|-----|-------------|
 | **ability-active** | `<ability-active>` | `<color:#FF7B5E>` | `#FF7B5E` | Active (ComboActivatable) ability names and type tags |
 | **ability-passive** | `<ability-passive>` | `<color:#7FB87F>` | `#7FB87F` | Passive ability names and type tags |
-| **ability-innate** | `<ability-innate>` | `<color:#9E9E9E>` | `#9E9E9E` | Innate (no unlock) ability names, disabled/inactive states, unavailable items |
+| **ability-innate** | `<ability-innate>` | `<color:#A78BCA>` | `#A78BCA` | Innate (always-on, no unlock required) ability names |
 
 ## Per-Skill Colors
 
@@ -72,7 +74,7 @@ Third-party expansions that add new skills should define an equivalent `skill-{s
 
 ## Usage Rules
 
-1. **Titles**: Always `<primary>` — never bare `<gold>`, `<black>`, or `<red>`
+1. **Titles**: Always `<gui-title>` — never bare `<gold>`, `<black>`, `<red>`, or `<primary>`
 2. **Back button names**: Always `<primary>` — label pattern is `"Back to [Parent]"`
 3. **Stat values in lore**: Always `<primary>` — `<body>Skill: <primary>Herbalism`
 4. **Click hints**: Use the **verb-only `<hint>` format** — color only the click-type verb with `<hint>`, leave the rest in `<body>`:
@@ -99,5 +101,6 @@ Third-party expansions that add new skills should define an equivalent `skill-{s
 |------------|-------------|-----|
 | `<gold>` | `<primary>` | `<gold>` is #FFAA00 — harsh saturated orange that clashes with the inventory background |
 | `<red>` for item names | `<primary>` or ability type placeholder | Red on item names creates a hostile "error" feel for normal navigation and content |
-| `<black>` for titles | `<primary>` | Black is invisible on the dark inventory title bar |
-| Raw hex codes | Palette placeholder | Raw hex defeats the one-place-to-change benefit — always use `<primary>`, `<mana>`, etc. |
+| `<black>` for titles | `<gui-title>` | Black is invisible on the dark inventory title bar |
+| `<primary>` for titles | `<gui-title>` | `<primary>` (#D4A76A) is too light against the white title bar; `<gui-title>` (#8B6914) provides proper contrast |
+| Raw hex codes | Palette placeholder | Raw hex defeats the one-place-to-change benefit — always use `<gui-title>`, `<primary>`, `<mana>`, etc. |

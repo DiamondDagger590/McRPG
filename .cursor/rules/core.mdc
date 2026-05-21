@@ -152,12 +152,13 @@ The palette is **dynamic**: `McRPGLocalizationManager.buildPaletteReplacements()
 
 | Role | Placeholder | Default Value | When to Use |
 |------|-------------|---------------|-------------|
-| **primary** | `<primary>` | `<color:#D4A76A>` | GUI titles, nav item names, stat value highlights, section headers |
+| **gui-title** | `<gui-title>` | `<color:#8B6914>` | GUI inventory titles (high contrast against the white title bar) |
+| **primary** | `<primary>` | `<color:#D4A76A>` | Nav item names, stat value highlights, section headers |
 | **hint** | `<hint>` | `<color:#E8C97A>` | Click hints, calls-to-action, interactive prompts |
 | **mana** | `<mana>` | `<color:#5EA8FF>` | Mana cost values, mana-related lore |
 | **ability-active** | `<ability-active>` | `<color:#FF7B5E>` | Active (ComboActivatable) ability names and type tags |
 | **ability-passive** | `<ability-passive>` | `<color:#7FB87F>` | Passive ability names and type tags |
-| **ability-innate** | `<ability-innate>` | `<color:#9E9E9E>` | Innate ability names, disabled/inactive states |
+| **ability-innate** | `<ability-innate>` | `<color:#A78BCA>` | Innate ability names (always-on, no unlock required) |
 | **body** | `<body>` | `<gray>` | Descriptive lore text, labels before values |
 | **positive** | `<positive>` | `<green>` | Enabled, success, accepted |
 | **negative** | `<negative>` | `<red>` | Disabled, error, deny, abandon |
@@ -167,7 +168,7 @@ The palette is **dynamic**: `McRPGLocalizationManager.buildPaletteReplacements()
 | **skill-herbalism** | `<skill-herbalism>` | `<color:#6DB86D>` | Herbalism skill name |
 | **skill-woodcutting** | `<skill-woodcutting>` | `<color:#B8874B>` | Woodcutting skill name |
 
-**Forbidden in new code:** `<gold>` (replaced by `<primary>`), `<red>` for item names (use `<primary>` or type placeholder), `<black>` for titles (use `<primary>`), raw hex codes in locale YAML (use palette placeholders).
+**Forbidden in new code:** `<gold>` (replaced by `<primary>`), `<red>` for item names (use `<primary>` or type placeholder), `<black>` for titles (use `<gui-title>`), `<primary>` for titles (use `<gui-title>`), raw hex codes in locale YAML (use palette placeholders).
 
 ### Click-hint format rule
 

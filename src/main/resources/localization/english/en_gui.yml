@@ -61,7 +61,7 @@ gui:
   # The GUI serves as the "main" McRPG gui and is the main access point
   # for most players into McRPG content.
   home-gui:
-    title: "<primary>Home GUI"
+    title: "<gui-title>Home GUI"
     # The slot that takes players to the settings gui
     settings-slot:
       display-item:
@@ -144,7 +144,7 @@ gui:
           - '<body>daily and weekly quests.'
   # This GUI shows the quest board offerings.
   quest-board:
-    title: '<primary>Quest Board'
+    title: '<gui-title>Quest Board'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
@@ -195,7 +195,7 @@ gui:
         name: '<primary>Group Quests'
         lore:
           - '<hint>Click <body>to view group quests.'
-    group-selector-title: '<primary>Select a Group'
+    group-selector-title: '<gui-title>Select a Group'
     # Placeholders: <entity_name>, <quest_count>
     group-entity-slot:
       display-item:
@@ -262,7 +262,7 @@ gui:
     preview-contribution: '<body>  Your contribution: <primary><contribution> <body>(<primary><percent>%<body>)'
   # This GUI shows all active quests for the player.
   active-quest-gui:
-    title: '<primary>Active Quests'
+    title: '<gui-title>Active Quests'
     previous-gui-button:
       display-item:
         name: "<primary>Back to Home"
@@ -299,7 +299,7 @@ gui:
           - '<hint>Click <body>to view your completed quests.'
   # This GUI shows the player's completed quest history.
   quest-history-gui:
-    title: '<primary>Quest History'
+    title: '<gui-title>Quest History'
     previous-gui-button:
       display-item:
         name: "<primary>Back to Active Quests"
@@ -347,7 +347,7 @@ gui:
           - '<negative>Quest definition no longer exists.'
   # This GUI shows the detailed breakdown of a quest's phases, stages and objectives.
   quest-detail-gui:
-    title: '<primary>Quest Details'
+    title: '<gui-title>Quest Details'
     # Context-specific back labels (sub-menu style: full title + sentence lore, like quest-history-gui).
     previous-gui-button:
       from-board:
@@ -529,7 +529,7 @@ gui:
           - '<body>You are about to abandon this quest.'
   # This GUI allows players to view and edit their abilities.
   ability-gui:
-    title: '<primary>Viewing Abilities'
+    title: '<gui-title>Viewing Abilities'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
@@ -609,7 +609,7 @@ gui:
           - '<hint>Click <body>to change how abilities are sorted.'
   # This GUI shows only innate abilities (always-active, no unlock required), opened from the loadout GUI.
   innate-ability-gui:
-    title: '<primary>Innate Abilities'
+    title: '<gui-title>Innate Abilities'
     # Configure the slot players click to return to the loadout they came from.
     previous-gui-button:
       display-item:
@@ -621,7 +621,7 @@ gui:
           - '<hint>Click <body>to return to your loadout.'
   # This GUI allows players to view and edit their skills.
   skill-gui:
-    title: '<primary>Viewing Skills'
+    title: '<gui-title>Viewing Skills'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
@@ -662,7 +662,7 @@ gui:
   # This GUI allows for editing an ability's attributes. Since these items are shared
   # across multiple GUIs, they are configured under the ability.ability-attribute section.
   ability-edit-gui:
-    title: '<primary>Editing <ability>'
+    title: '<gui-title>Editing <ability>'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
@@ -791,7 +791,7 @@ gui:
   loadout-gui:
     # The title of the gui.
     # Supported placeholders: <loadout-name>
-    title: "<primary>Editing Loadout: <loadout-name>"
+    title: "<gui-title>Editing Loadout: <loadout-name>"
     # This slot shows a slot that players
     invalid-slot:
       display-item:
@@ -918,7 +918,7 @@ gui:
   # This GUI allows for players to choose which loadout they want to set as active or edit
   loadout-selection-gui:
     # The title of the gui
-    title: '<primary>Viewing Loadouts'
+    title: '<gui-title>Viewing Loadouts'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
@@ -977,7 +977,7 @@ gui:
   loadout-display-home-gui:
     # The title of the GUI
     # Supports the following placeholders: <loadout-name>
-    title: "<primary>Editing Loadout <loadout-name>"
+    title: "<gui-title>Editing Loadout <loadout-name>"
     # Configure the slot players can click to edit the name of their loadout
     edit-name-slot:
       # What message should be sent to players to prompt them for a new name in chat?
@@ -1028,7 +1028,7 @@ gui:
           - '<hint>Click <body>to return to your loadout.'
   # This GUI allows for players to put an item into the GUI to set it as the display item for their GUI
   loadout-display-item-input-gui:
-    title: '<primary>Input Loadout Display Item'
+    title: '<gui-title>Input Loadout Display Item'
     # Configure the slot that surrounds the input slot
     item-input-highlight-slot:
       display-item:
@@ -1056,7 +1056,7 @@ gui:
           - '<hint>Click <body>to save the new display item.'
   # This GUI allows players to select abilities to put into their loadouts.
   loadout-ability-select-gui:
-    title: '<primary>Select ability to use.'
+    title: '<gui-title>Select ability to use.'
     # Configure the slot players click to go back to the loadout menu.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
@@ -1075,7 +1075,7 @@ gui:
   # This GUI allows players to toggle their different settings.
   player-setting-gui:
     # The title of the gui
-    title: '<primary>Editing Settings'
+    title: '<gui-title>Editing Settings'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
@@ -1256,7 +1256,7 @@ gui:
             - '<hint>Click <body>to enable these notifications.'
   # This GUI allows players to configure the allowlist of blocks for Remote Transfer.
   remote-transfer-gui:
-    title: "<primary>Toggling Remote Transfer Items"
+    title: "<gui-title>Toggling Remote Transfer Items"
     previous-gui-button:
       display-item:
         name: "<primary>Back to Editing <ability>"
@@ -1373,7 +1373,7 @@ gui:
   # such as rested, boosted, redeemable, etc.
   experience-bank-gui:
     # What should the displayed title of this GUI be
-    title: '<primary>Experience Bank'
+    title: '<gui-title>Experience Bank'
     # Configure the slot players click to go back to the home gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
@@ -1442,7 +1442,7 @@ gui:
           - "<body>your exp gain will be <primary>x<rested-experience-usage-rate></primary> until you level up."
           - '<body>This will consume <primary>0.5</primary> from your banked levels'
   redeemable-skill-select-gui:
-    title: "<primary>Select Skill to Redeem Into"
+    title: "<gui-title>Select Skill to Redeem Into"
     # Configure the slot players click to go back to the experience bank gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
@@ -1458,7 +1458,7 @@ gui:
       - ''
       - '<hint>Click <body>to spend your redeemable resources into this skill.'
   redeemable-experience-gui:
-    title: "<primary>Redeeming Experience into <skill>"
+    title: "<gui-title>Redeeming Experience into <skill>"
     # Configure the slot players click to go back to the redeemable skill selection gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:
@@ -1499,7 +1499,7 @@ gui:
       prompt: '<body>Please type in chat how much redeemable experience you would like to redeem. You have <primary><redeemable-experience></primary> redeemable experience to spend.'
       invalid-input: '<negative>The input provided not a valid number. Please try redeeming again.'
   redeemable-levels-gui:
-    title: "<primary>Redeeming Levels into <skill>"
+    title: "<gui-title>Redeeming Levels into <skill>"
     # Configure the slot players click to go back to the redeemable skill selection gui.
     # Remove this to use the common previous gui button instead.
     previous-gui-button:

@@ -404,7 +404,7 @@ commands:
       entry: "  <primary><quest_key></primary> <body>- <quest_state> <body>[<stages_completed>/<stages_total> stages] <body>(UUID: <quest_uuid>...)"
     # Configure /mcrpg quest info
     info:
-      title: "<primary><bold>Quest Info</bold></primary>"
+      title: "<gui-title><bold>Quest Info</bold></gui-title>"
       # Supports: <quest_key>
       definition: "  <body>Definition: <primary><quest_key>"
       # Supports: <quest_uuid>

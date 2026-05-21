@@ -28,7 +28,9 @@ stats:
 #   my-guild-color: "<color:#FF00FF>"
 # lets you use <my-guild-color> in any locale YAML string.
 palette:
-  # GUI titles, navigation item names, stat value highlights, skill names in lore
+  # GUI inventory titles (high contrast against the white title bar)
+  gui-title: "<color:#3E3E50>"
+  # Navigation item names, stat value highlights, skill names in lore, section headers
   primary: "<color:#D4A76A>"
   # Click hints, calls-to-action, interactive prompts
   hint: "<color:#E8C97A>"
@@ -38,8 +40,8 @@ palette:
   ability-active: "<color:#FF7B5E>"
   # Passive ability names and type tags
   ability-passive: "<color:#7FB87F>"
-  # Innate ability names, disabled/inactive states
-  ability-innate: "<color:#9E9E9E>"
+  # Innate ability names (always-on passives requiring no unlock)
+  ability-innate: "<color:#A78BCA>"
   # All descriptive/body lore text, labels before values
   body: "<gray>"
   # Enabled, success, accepted
