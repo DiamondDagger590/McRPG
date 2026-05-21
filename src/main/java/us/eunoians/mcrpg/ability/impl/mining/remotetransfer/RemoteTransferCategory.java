@@ -1,12 +1,14 @@
 package us.eunoians.mcrpg.ability.impl.mining.remotetransfer;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashSet;
@@ -55,10 +57,14 @@ public class RemoteTransferCategory {
     }
 
     @NotNull
-    public ItemBuilder getItemBuilder(@NotNull McRPGPlayer player){
-        ItemBuilder itemBuilder = ItemBuilder.from(player.getPlugin().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION)
-                .getLocalizedSection(player, Route.fromString(toRoutePath(LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORIES_HEADER, categoryKey, "display-item"))));
+    public ItemBuilder getItemBuilder(@NotNull McRPGPlayer player) {
+        McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(player,
+                Route.fromString(toRoutePath(LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORIES_HEADER, categoryKey, "display-item"))));
         itemBuilder.addPlaceholder("remote-transfer-category", getName(player));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
         return itemBuilder;
     }
 }

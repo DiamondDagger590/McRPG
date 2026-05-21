@@ -459,8 +459,8 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-enabled.display-item"));
     public static final Route REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "category-item-option.option-disabled.display-item"));
     private static final String REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_HEADER = toRoutePath(REMOTE_TRANSFER_GUI_HEADER, "toggle-entire-category-slot");
-    public static final Route REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_ENABLE = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_HEADER, "toggle-to-be-enabled"));
-    public static final Route REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_DISABLE = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_HEADER, "toggle-to-be-disabled"));
+    public static final Route REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_ENABLE = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_HEADER, "toggle-to-be-enabled.display-item"));
+    public static final Route REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_TOGGLE_DISABLE = Route.fromString(toRoutePath(REMOTE_TRANSFER_GUI_TOGGLE_ENTIRE_CATEGORY_SLOT_HEADER, "toggle-to-be-disabled.display-item"));
 
     private static final String ABILITY_EDIT_GUI_HEADER = toRoutePath(GUI_HEADER, "ability-edit-gui");
     public static final Route ABILITY_EDIT_GUI_TITLE = Route.fromString(toRoutePath(ABILITY_EDIT_GUI_HEADER, "title"));

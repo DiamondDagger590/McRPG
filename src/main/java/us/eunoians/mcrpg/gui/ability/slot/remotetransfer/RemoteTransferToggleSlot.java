@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import dev.dejvokep.boostedyaml.route.Route;
+import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -20,6 +21,7 @@ import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
@@ -51,16 +53,66 @@ public class RemoteTransferToggleSlot implements McRPGSlot {
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
-        McRPGLocalizationManager mcRPGLocalizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
         boolean materialDisabled = isItemDisallowed();
-        Route localizationRoute = materialDisabled ? LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_DISABLED_DISPLAY_ITEM : LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_ENABLED_DISPLAY_ITEM;
-        ItemBuilder itemBuilder = ItemBuilder.from(mcRPGLocalizationManager.getLocalizedSection(mcRPGPlayer, localizationRoute));
-        itemBuilder.applyTagReplacements(mcRPGLocalizationManager.getPaletteReplacements());
-        customItemWrapper.customItem().ifPresentOrElse(itemBuilder::withCustomItem, () -> itemBuilder.withType(Objects.requireNonNull(customItemWrapper.material().get().asItemType())));
-        ItemBuilder builder = customItemWrapper.itemBuilder();
-        builder.withDisplayLore(RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION).getLocalizedMessages(mcRPGPlayer, Route.addTo(localizationRoute, "lore")));
-        builder.addPlaceholder("remote-transfer-category", remoteTransferCategory.getName(mcRPGPlayer));
-        return builder;
+        Route localizationRoute = materialDisabled
+                ? LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_DISABLED_DISPLAY_ITEM
+                : LocalizationKey.REMOTE_TRANSFER_GUI_CATEGORY_ITEM_OPTION_ENABLED_DISPLAY_ITEM;
+        ItemBuilder itemBuilder = ItemBuilder.from(Objects.requireNonNull(customItemWrapper.material().get().asItemType()));
+        customItemWrapper.customItem().ifPresent(itemBuilder::withCustomItem);
+
+        Map<String, String> placeholders = Map.of(
+                "item-type", resolveItemTypeDisplayName(customItemWrapper),
+                "remote-transfer-category", remoteTransferCategory.getName(mcRPGPlayer));
+        String displayName = localizationManager.resolvePaletteColors(localizationManager.getLocalizedMessage(
+                localizationManager.getLocalizedMessage(mcRPGPlayer, Route.addTo(localizationRoute, "name")),
+                placeholders));
+        itemBuilder.setDisplayName(displayName);
+        var resolvedLore = localizationManager.getLocalizedMessages(mcRPGPlayer, Route.addTo(localizationRoute, "lore")).stream()
+                .map(line -> localizationManager.resolvePaletteColors(
+                        localizationManager.getLocalizedMessage(line, placeholders)))
+                .toList();
+        itemBuilder.withDisplayLore(resolvedLore);
+        itemBuilder.setEnchantGlint(!materialDisabled);
+        return itemBuilder;
+    }
+
+    /**
+     * Resolves the human-readable label for the {@code <item-type>} placeholder in toggle-slot locale templates.
+     *
+     * @param wrapper The configured block or custom item for this slot.
+     * @return A display name for the item (custom item id or a title-cased material name).
+     */
+    @NotNull
+    private static String resolveItemTypeDisplayName(@NotNull CustomItemWrapper wrapper) {
+        return wrapper.customItem()
+                .orElseGet(() -> wrapper.material()
+                        .map(RemoteTransferToggleSlot::formatMaterialName)
+                        .orElse("Unknown"));
+    }
+
+    /**
+     * Converts a {@link Material} enum constant into a title-cased label (e.g. {@code DIAMOND_ORE} → {@code Diamond Ore}).
+     *
+     * @param material The material to format.
+     * @return A title-cased display name derived from the enum constant.
+     */
+    @NotNull
+    private static String formatMaterialName(@NotNull Material material) {
+        String[] parts = material.name().split("_");
+        StringBuilder label = new StringBuilder();
+        for (String part : parts) {
+            if (!label.isEmpty()) {
+                label.append(' ');
+            }
+            label.append(Character.toUpperCase(part.charAt(0)));
+            if (part.length() > 1) {
+                label.append(part.substring(1).toLowerCase());
+            }
+        }
+        return label.toString();
     }
 
     @NotNull
