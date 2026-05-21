@@ -82,9 +82,25 @@ public abstract class ConfigurableOnAttackLevelableComponent implements OnAttack
         Skill skill = getSkill();
         Entity damaged = entityDamageByEntityEvent.getEntity();
         int baseExperience = (int) (getDamageToAwardExperienceFor(entityDamageByEntityEvent) * getBaseExperienceForEntity(skillHolder, damaged));
+        if (isAtMaxLevel(skillHolder, skill)) {
+            return baseExperience;
+        }
         EntityDamageContext entityDamageContext = new EntityDamageContext(skillHolder, skill, baseExperience, entityDamageByEntityEvent);
         return (int) (baseExperience * McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER)
                 .calculateModifierForContext(entityDamageContext));
+    }
+
+    /**
+     * Returns whether the holder has reached the maximum level for this component's skill.
+     *
+     * @param skillHolder The holder gaining experience.
+     * @param skill       The skill being evaluated.
+     * @return {@code true} when the holder is at or above the skill's configured maximum level.
+     */
+    private boolean isAtMaxLevel(@NotNull SkillHolder skillHolder, @NotNull Skill skill) {
+        return skillHolder.getSkillHolderData(skill)
+                .map(data -> data.getCurrentLevel() >= skill.getMaxLevel())
+                .orElse(false);
     }
 
     @Override

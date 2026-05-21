@@ -77,10 +77,28 @@ public abstract class ConfigurableOnBlockBreakLevelableComponent implements OnBl
     public int calculateExperienceToGive(@NotNull SkillHolder skillHolder, @NotNull Event event) {
         BlockBreakEvent blockBreakEvent = (BlockBreakEvent) event; //Safe cast since can only be called after checks are done
         Block block = blockBreakEvent.getBlock();
+        Skill skill = getSkill();
         int baseExperience = getBaseExperienceForBlock(skillHolder, block);
-        BlockBreakContext blockBreakContext = new BlockBreakContext(skillHolder, getSkill(), baseExperience, blockBreakEvent);
+        int affectedBlocks = getTotalAffectedBlocks(block);
+        if (isAtMaxLevel(skillHolder, skill)) {
+            return baseExperience * affectedBlocks;
+        }
+        BlockBreakContext blockBreakContext = new BlockBreakContext(skillHolder, skill, baseExperience, blockBreakEvent);
         return (int) (baseExperience * McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.EXPERIENCE_MODIFIER)
-                .calculateModifierForContext(blockBreakContext)) * getTotalAffectedBlocks(block);
+                .calculateModifierForContext(blockBreakContext)) * affectedBlocks;
+    }
+
+    /**
+     * Returns whether the holder has reached the maximum level for this component's skill.
+     *
+     * @param skillHolder The holder gaining experience.
+     * @param skill       The skill being evaluated.
+     * @return {@code true} when the holder is at or above the skill's configured maximum level.
+     */
+    private boolean isAtMaxLevel(@NotNull SkillHolder skillHolder, @NotNull Skill skill) {
+        return skillHolder.getSkillHolderData(skill)
+                .map(data -> data.getCurrentLevel() >= skill.getMaxLevel())
+                .orElse(false);
     }
 
     @Override
