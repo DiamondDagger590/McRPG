@@ -552,6 +552,28 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 
 ---
 
+## Builder Pattern
+
+Use a builder when a class meets **any** of these criteria:
+- Constructor has **6+ total parameters**
+- Constructor has **3+ optional/nullable parameters** that lead to overloaded constructors or disambiguator hacks (e.g. `boolean ignored`)
+- The class is immutable and constructed in multiple callsites with varying subsets of optional fields
+
+**Required structure:**
+- `public static final class Builder` as an inner class on the target type
+- Required fields are parameters of the Builder constructor — no zero-arg builder constructors
+- Optional fields have sensible defaults and are set via fluent setters returning `this`
+- `build()` validates invariants and returns the constructed object
+- The target class's constructor is `private` — the builder is the only public construction path (deprecated constructors may remain temporarily during migration)
+
+**Do not use a builder when:**
+- Class has ≤5 parameters that are all required — a constructor is clear enough
+- Class is mutable with setters
+- Only one or two callsites construct the object — the ceremony isn't justified
+- Records with simple field lists — the canonical constructor is already self-documenting
+
+---
+
 ## Anti-Patterns to Avoid
 
 - **No reflection** — use attribute factory pattern (`attribute.create(value)`) instead of `Class.forName()` or `getDeclaredField()`
