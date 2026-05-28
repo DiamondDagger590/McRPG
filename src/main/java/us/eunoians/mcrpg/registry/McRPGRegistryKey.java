@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
 import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
+import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProviderRegistry;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
@@ -47,6 +48,8 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
     RegistryKey<RewardDistributionTypeRegistry> REWARD_DISTRIBUTION_TYPE = create(RewardDistributionTypeRegistry.class);
     RegistryKey<ScopedBoardAdapterRegistry> SCOPED_BOARD_ADAPTER = create(ScopedBoardAdapterRegistry.class);
     RegistryKey<TemplateConditionRegistry> TEMPLATE_CONDITION = create(TemplateConditionRegistry.class);
+    RegistryKey<QuestChainRegistry> QUEST_CHAIN = create(QuestChainRegistry.class);
+
     /**
      * Retrieves the {@link PlayerStatRegistry} containing all registered
      * {@link us.eunoians.mcrpg.stat.PlayerStat} definitions.
