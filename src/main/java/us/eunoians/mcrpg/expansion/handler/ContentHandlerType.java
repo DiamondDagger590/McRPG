@@ -5,8 +5,10 @@ import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.statistic.StatisticRegistry;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
+import us.eunoians.mcrpg.expansion.content.ChainAutoStartTriggerContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestChainContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestObjectiveTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestRarityContentPack;
@@ -22,6 +24,8 @@ import us.eunoians.mcrpg.expansion.content.StatisticContentPack;
 import us.eunoians.mcrpg.expansion.content.TemplateConditionContentPack;
 import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
+import us.eunoians.mcrpg.quest.chain.trigger.ChainAutoStartTriggerRegistry;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -186,6 +190,32 @@ public enum ContentHandlerType {
         if (mcRPGContent instanceof TemplateConditionContentPack conditionContent) {
             conditionContent.getContent().forEach(condition ->
                     mcRPG.registryAccess().registry(McRPGRegistryKey.TEMPLATE_CONDITION).register(condition));
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link QuestChainContentPack}s by registering
+     * each {@link us.eunoians.mcrpg.quest.chain.QuestChainDefinition} into the
+     * {@link QuestChainRegistry}.
+     */
+    QUEST_CHAIN((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof QuestChainContentPack chainContent) {
+            chainContent.getContent().forEach(definition ->
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.QUEST_CHAIN).register(definition));
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link ChainAutoStartTriggerContentPack}s by registering
+     * each {@link us.eunoians.mcrpg.quest.chain.trigger.ChainAutoStartTrigger} into the
+     * {@link ChainAutoStartTriggerRegistry}.
+     */
+    CHAIN_AUTO_START_TRIGGER((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof ChainAutoStartTriggerContentPack triggerContent) {
+            triggerContent.getContent().forEach(trigger ->
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.CHAIN_AUTO_START_TRIGGER).register(trigger));
             return true;
         }
         return false;
