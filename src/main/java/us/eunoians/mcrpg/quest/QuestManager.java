@@ -35,7 +35,12 @@ import us.eunoians.mcrpg.database.table.quest.QuestInstanceDAO;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.QuestChainConfigLoader;
 import us.eunoians.mcrpg.configuration.QuestConfigLoader;
+import us.eunoians.mcrpg.configuration.QuestLoadResult;
+import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
 import us.eunoians.mcrpg.quest.board.BoardOffering;
@@ -62,6 +67,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -123,6 +129,7 @@ public class QuestManager extends Manager<McRPG> {
     private final TemplateConditionRegistry conditionTypeRegistry;
     private final QuestScopeProviderRegistry scopeProviderRegistry;
     private final QuestConfigLoader configLoader;
+    private final QuestChainConfigLoader chainConfigLoader;
     private final QuestDefinitionRegistry questDefinitionRegistry;
     private final GeneratedQuestDefinitionCodec codec;
 
@@ -166,6 +173,7 @@ public class QuestManager extends Manager<McRPG> {
 
         this.codec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, rewardTypeRegistry, conditionTypeRegistry);
         this.configLoader = new QuestConfigLoader(new ConditionParser(this.conditionTypeRegistry));
+        this.chainConfigLoader = new QuestChainConfigLoader();
 
         YamlDocument mainConfig = registryAccess
                 .registry(RegistryKey.MANAGER)
@@ -1090,16 +1098,31 @@ public class QuestManager extends Manager<McRPG> {
         if (!questsDir.exists()) {
             questsDir.mkdirs();
         }
-        Map<NamespacedKey, QuestDefinition> allDefinitions = new LinkedHashMap<>(
-                configLoader.loadQuestsFromDirectory(questsDir));
+
+        // Phase A: load quest definitions, collecting chain file paths as a by-product
+        QuestLoadResult mainResult = configLoader.loadQuestsFromDirectory(questsDir);
+        Map<NamespacedKey, QuestDefinition> allDefinitions = new LinkedHashMap<>(mainResult.definitions());
+        List<Path> allChainFiles = new ArrayList<>(mainResult.chainFiles());
 
         File boardQuestsDir = new File(plugin().getDataFolder(), "quest-board/quests");
         if (boardQuestsDir.exists() && boardQuestsDir.isDirectory()) {
-            allDefinitions.putAll(configLoader.loadQuestsFromDirectory(boardQuestsDir));
+            QuestLoadResult boardResult = configLoader.loadQuestsFromDirectory(boardQuestsDir);
+            allDefinitions.putAll(boardResult.definitions());
+            allChainFiles.addAll(boardResult.chainFiles());
         }
 
         questDefinitionRegistry.replaceConfigDefinitions(allDefinitions);
         enforceTierableAbilityUpgradeQuestConfiguration();
+
+        // Phase B: load chain definitions (quest definitions are now in the registry)
+        QuestChainRegistry chainRegistry = plugin().registryAccess().registry(McRPGRegistryKey.QUEST_CHAIN);
+        chainRegistry.clear();
+        chainConfigLoader.loadChainsFromPaths(allChainFiles).values().forEach(chainRegistry::register);
+
+        // Re-resolve all online players' ACTIVE chain states against the updated definitions
+        QuestChainManager chainManager = plugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
+        chainManager.reResolveOnReload();
     }
 
     /**

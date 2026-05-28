@@ -85,20 +85,27 @@ public class QuestConfigLoader {
     }
 
     /**
-     * Recursively scans the given directory for {@code .yml}/{@code .yaml} files and parses
-     * all quest definitions found within them.
+     * Recursively scans the given directory for {@code .yml}/{@code .yaml} files, parses
+     * all quest definitions found within them, and collects paths of any files that are
+     * flagged as chain files via {@code quest-chain-file: true}.
+     * <p>
+     * Chain files are silently skipped by this loader — their paths are returned in
+     * {@link QuestLoadResult#chainFiles()} so the caller can pass them to
+     * {@link QuestChainConfigLoader} in a second phase, after all quest definitions are
+     * registered.
      *
      * @param questsDirectory the root directory to scan (e.g. {@code plugins/McRPG/quests/})
-     * @return an ordered map of quest key to parsed definition; iteration order matches load order
+     * @return the parsed quest definitions and the paths of any flagged chain files
      */
     @NotNull
-    public Map<NamespacedKey, QuestDefinition> loadQuestsFromDirectory(@NotNull File questsDirectory) {
+    public QuestLoadResult loadQuestsFromDirectory(@NotNull File questsDirectory) {
         Logger logger = McRPG.getInstance().getLogger();
         Map<NamespacedKey, QuestDefinition> definitions = new LinkedHashMap<>();
+        List<Path> chainFiles = new ArrayList<>();
 
         if (!questsDirectory.exists() || !questsDirectory.isDirectory()) {
             logger.warning("Quests directory does not exist: " + questsDirectory.getAbsolutePath());
-            return definitions;
+            return new QuestLoadResult(definitions, chainFiles);
         }
 
         try (Stream<Path> paths = Files.walk(questsDirectory.toPath())) {
@@ -108,28 +115,38 @@ public class QuestConfigLoader {
                         return name.endsWith(".yml") || name.endsWith(".yaml");
                     })
                     .sorted()
-                    .forEach(path -> loadQuestsFromFile(path.toFile(), definitions));
+                    .forEach(path -> loadQuestsFromFile(path.toFile(), definitions, chainFiles));
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to walk quests directory: " + questsDirectory.getAbsolutePath(), e);
         }
 
         logger.info("Loaded " + definitions.size() + " quest definition(s) from " + questsDirectory.getName() + "/");
-        return definitions;
+        return new QuestLoadResult(definitions, chainFiles);
     }
 
     /**
      * Parses all quest definitions from a single YAML file and adds them to the provided map.
+     * If the file carries the {@code quest-chain-file: true} marker it is added to
+     * {@code chainFilePaths} and skipped — chain files are handled by {@link QuestChainConfigLoader}.
      *
-     * @param file        the YAML file to parse
-     * @param definitions the accumulator map; duplicate keys are skipped with a warning
+     * @param file           the YAML file to parse
+     * @param definitions    the accumulator map; duplicate keys are skipped with a warning
+     * @param chainFilePaths the accumulator list for chain file paths
      */
-    private void loadQuestsFromFile(@NotNull File file, @NotNull Map<NamespacedKey, QuestDefinition> definitions) {
+    private void loadQuestsFromFile(@NotNull File file,
+                                    @NotNull Map<NamespacedKey, QuestDefinition> definitions,
+                                    @NotNull List<Path> chainFilePaths) {
         Logger logger = McRPG.getInstance().getLogger();
         YamlDocument yaml;
         try {
             yaml = YamlDocument.create(file);
         } catch (IOException e) {
             logger.log(Level.WARNING, "Failed to load YAML file " + file.getName(), e);
+            return;
+        }
+
+        if (yaml.getBoolean("quest-chain-file", false)) {
+            chainFilePaths.add(file.toPath());
             return;
         }
 
