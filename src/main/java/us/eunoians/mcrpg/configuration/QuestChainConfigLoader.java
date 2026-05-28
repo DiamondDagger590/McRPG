@@ -42,6 +42,28 @@ import java.util.stream.Stream;
 public class QuestChainConfigLoader {
 
     /**
+     * Loads chain definitions from an explicit list of file paths. Each path must point to a
+     * YAML file carrying {@code quest-chain-file: true}; files without the marker are skipped.
+     * <p>
+     * This overload is used for two-phase loading: {@link QuestConfigLoader} collects chain file
+     * paths during its directory walk, and this method processes only those flagged files after
+     * all quest definitions have been registered in the registry.
+     *
+     * @param chainFilePaths paths to YAML files identified as chain files
+     * @return ordered map of chain key to parsed chain definition
+     */
+    @NotNull
+    public Map<NamespacedKey, QuestChainDefinition> loadChainsFromPaths(@NotNull List<Path> chainFilePaths) {
+        Map<NamespacedKey, QuestChainDefinition> definitions = new LinkedHashMap<>();
+        for (Path path : chainFilePaths) {
+            loadChainsFromFile(path.toFile(), definitions);
+        }
+        McRPG.getInstance().getLogger().info("[QuestChainConfigLoader] Loaded " + definitions.size()
+                + " quest chain definition(s) from " + chainFilePaths.size() + " chain file(s)");
+        return definitions;
+    }
+
+    /**
      * Loads all chain definitions from the given directory recursively. Files without the
      * {@code quest-chain-file: true} marker are silently skipped.
      *
