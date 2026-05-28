@@ -182,6 +182,21 @@ public final class QuestChainDefinition implements McRPGContent {
     }
 
     /**
+     * Returns the step that references the given quest key, or empty if no step references it.
+     *
+     * @param questKey the quest definition key to search for
+     * @return the step referencing this quest key, or empty
+     */
+    @NotNull
+    public Optional<QuestChainStep> getStep(@NotNull NamespacedKey questKey) {
+        int index = getStepIndex(questKey);
+        if (index < 0) {
+            return Optional.empty();
+        }
+        return Optional.of(steps.get(index));
+    }
+
+    /**
      * Returns the step after the one referencing the given quest key,
      * or empty if this is the last step.
      *
