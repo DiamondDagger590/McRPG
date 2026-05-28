@@ -98,7 +98,7 @@ templates:
 
 ### Edge Cases
 
-- `ABANDONED` is always terminal regardless of repeat mode (player explicitly opted out)
+- `ABANDONED` is repeat-eligible (same as `COMPLETED`, `FAILED`, `EXPIRED`) — the repeat mode controls whether re-start is allowed, not the terminal state itself. For `ONCE` chains, all terminal states are permanently terminal. For non-`ONCE` chains, abandoned chains can be re-started.
 - Cooldown is computed from `last_completed_at`, not from when the chain was started
 - If a chain is `EXPIRED` due to window close and the window reopens, the repeat check fires on next login trigger — player restarts from step 1
 
@@ -259,7 +259,28 @@ Quest reward types from 'mcrpg':
 
 ---
 
-## 8. AbilityType Refactor Deferred Items
+## 8. Timestamp Refactor — `Long` epoch millis to `Instant`
+
+**Summary:** `QuestInstance` and `QuestChainPlayerState` both use `Long` (epoch millis) for all timestamps (`startTime`, `endTime`, `expirationTime`, `lastCompletedAt`). `Instant` is semantically clearer, self-documenting, and avoids null-vs-zero ambiguity. This ticket migrates all quest/chain timestamp fields from `Long` to `Instant`, including the DAO layer (`ResultSet.getLong` → `Instant.ofEpochMilli`), public API signatures, and any downstream comparisons.
+
+### Scope
+
+- `QuestInstance`: `startTime`, `endTime`, `expirationTime`
+- `QuestChainPlayerState`: `lastCompletedAt`, `complete(long)` → `complete(Instant)`
+- `QuestInstanceDAO`, `QuestChainStateDAO`: read/write conversions
+- `QuestChainCompletionLogDAO`: `completed_at` column
+- Backlog §2 cooldown math: `Duration.between(lastCompleted, now)` instead of raw subtraction
+- All callers that pass `System.currentTimeMillis()` or `TimeProvider.now().toEpochMilli()` → pass `Instant` directly
+
+### Implementation Notes
+
+- Non-breaking for third-party plugins if done before any external API consumers adopt the `Long` signatures
+- DAO layer stores `BIGINT` in SQL regardless — conversion happens at the Java boundary
+- `TimeProvider.now()` already returns `Instant`, so most callsites simplify
+
+---
+
+## 9. AbilityType Refactor Deferred Items
 
 **Summary:** Follow-up work identified during the AbilityType enum refactor audit (post Phase 1 quest engine extensions). Not regressions from the refactor itself.
 
@@ -268,6 +289,64 @@ Quest reward types from 'mcrpg':
 | **`LoadoutHolder.getAvailableDefaultAbilities()` partial migration** | Private method with semantically different intent (non-unlockable abilities). Migrating it to `AbilityType` would change behavior. Defer to a separate ticket. |
 | **`resolveAbilityName` SRP concern** | Name resolution lives on `AbilityObjectiveFilter` alongside filter matching, with global registry/logger access. Extracting to a dedicated collaborator would touch all three ability objective types. Defer. |
 | **New `LoadoutHolder`/filter tests** | `getAvailableActiveAbilities()`, `PassiveAbilityFilter`, and `ActiveAbilityFilter` lack dedicated tests. Coverage gaps for pre-existing untested code, not regressions from the refactor. Defer to a broader test coverage ticket. |
+
+---
+
+## 10. Quest Reload — Active Instance Reconciliation
+
+**Summary:** When `/mcrpg admin reload` rebuilds the `QuestDefinitionRegistry`, in-flight `QuestInstance` objects retain their original `requiredProgression` thresholds and stage/objective trees from the old definitions. Listeners re-fetch new definitions from the registry while active objectives complete against stale thresholds. This can cause premature completion, stuck objectives, or threshold mismatches.
+
+### Scope
+
+- `QuestManager.activeQuests` / `playerToQuestIndex` — not cleared on reload; active instances keep old structure
+- `QuestObjectiveInstance.requiredProgression` — set at creation, never resynced on reload
+- If a definition is removed from the registry, `QuestProgressListener` silently skips progress (`definition.isEmpty()` → continue) with no player feedback
+
+### Possible Approaches
+
+- **Reconcile on reload:** Walk all active instances, re-resolve their definitions, update thresholds and prune removed objectives. Complex but correct.
+- **Cancel stale instances:** On reload, cancel active instances whose definitions changed and notify affected players. Simpler but disruptive.
+- **Accept staleness:** Document as known behavior — active quests use the definition snapshot from when they started. Reload only affects new quests. Least disruptive, currently the implicit behavior.
+
+### Implementation Notes
+
+- Consider firing a `QuestDefinitionReloadEvent` that carries the old and new definition sets, enabling external plugins to react
+- If reconciling, guard against stage/phase structure changes that invalidate objective progress
+- This is cross-cutting with chain re-resolution: chains already re-resolve on reload, but their child quest instances do not
+
+---
+
+## 11. Quest Reload — Finished Quest Cache Invalidation
+
+**Summary:** `QuestManager.cachedFinishedQuests` (Caffeine/Guava cache) is not invalidated on `/mcrpg admin reload`. Recently finished quests may reference definition keys that were renamed or removed, causing stale data in the quest history GUI and `QuestDetailGui` until the cache TTL expires naturally.
+
+### Scope
+
+- `cachedFinishedQuests` cache — insert-only during quest completion, no `invalidateAll()` on reload
+- `QuestHistoryGui` / `QuestDetailGui` may show stale phase/objective structure for recently finished quests
+
+### Fix
+
+- Call `cachedFinishedQuests.invalidateAll()` at the start of `loadQuestDefinitions()`, before `replaceConfigDefinitions()`
+- Minimal risk — cache is a performance optimization; invalidation just forces a DB re-read on next access
+
+---
+
+## 12. Ability Unregistration Reversibility on Reload
+
+**Summary:** `QuestManager.enforceTierableAbilityUpgradeQuestConfiguration()` unregisters abilities from `AbilityRegistry` when their required upgrade quest definition is missing. This unregistration is one-way — fixing the YAML and running `/mcrpg admin reload` does **not** restore the ability because the reload path does not re-run `ContentExpansion` registration. The ability remains unavailable until a full server restart.
+
+### Scope
+
+- `AbilityRegistry.unregisterAbility()` called during `loadQuestDefinitions()` → `enforceTierableAbilityUpgradeQuestConfiguration()`
+- No corresponding re-register pass exists in the reload path
+- Player loadouts may retain keys for unregistered abilities — activation and progress silently fail
+
+### Possible Approaches
+
+- **Re-register pass:** After quest definitions reload, check all abilities that were previously unregistered due to missing quests. If their quest definition now exists, re-register them. Requires tracking which abilities were removed and why.
+- **Soft-disable instead of unregister:** Instead of removing from the registry, mark the ability as disabled (new `AbilityState` or attribute). Re-enable on reload when the quest definition reappears. Non-breaking for loadout persistence.
+- **Accept restart requirement:** Document that ability registration changes require a restart. Simplest but worst server owner experience.
 
 ---
 
@@ -284,3 +363,8 @@ Each numbered section above maps to one GitHub issue. Suggested labels and depen
 | 5 | Add chain lifecycle events (fail/expire/restart/retry) | `feature`, `quest-chain`, `extensibility` | #2, #3 |
 | 6 | Implement TimeGateChainCondition | `feature`, `quest-chain`, `extensibility` | Phase 2 complete |
 | 7 | Content expansion introspection commands | `feature`, `admin`, `extensibility` | None (independent) |
+| 8 | Refactor quest/chain timestamps from Long to Instant | `chore`, `refactor`, `quest` | Phase 2 complete |
+| 9 | AbilityType refactor deferred items | `chore`, `tech-debt`, `ability` | None (independent) |
+| 10 | Quest reload — active instance reconciliation | `bug`, `quest`, `reload` | None (independent) |
+| 11 | Quest reload — finished quest cache invalidation | `bug`, `quest`, `reload` | None (independent) |
+| 12 | Ability unregistration reversibility on reload | `bug`, `ability`, `reload` | None (independent) |
