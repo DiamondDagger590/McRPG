@@ -48,6 +48,7 @@ import us.eunoians.mcrpg.listener.quest.QuestStartAutoCompleteListener;
 import us.eunoians.mcrpg.listener.quest.QuestStartMessageListener;
 import us.eunoians.mcrpg.listener.quest.SkillLevelQuestProgressListener;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.board.distribution.DistributionCompletionService;
 import us.eunoians.mcrpg.quest.board.distribution.QuestContributionAggregator;
 import us.eunoians.mcrpg.quest.board.distribution.QuestRewardDistributionResolver;
@@ -55,6 +56,8 @@ import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionGranter;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.listener.quest.QuestCancelListener;
+import us.eunoians.mcrpg.listener.quest.QuestChainCancelListener;
+import us.eunoians.mcrpg.listener.quest.QuestChainProgressListener;
 import us.eunoians.mcrpg.listener.quest.QuestCompleteListener;
 import us.eunoians.mcrpg.quest.board.QuestBoardTerminator;
 import us.eunoians.mcrpg.listener.quest.QuestFeedbackListener;
@@ -125,6 +128,11 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         QuestManager questManager = plugin.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST);
+        QuestChainManager chainManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.QUEST_CHAIN);
+        Bukkit.getPluginManager().registerEvents(new QuestChainProgressListener(chainManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestChainCancelListener(chainManager), plugin);
         QuestBoardTerminator questBoardTerminator = new QuestBoardTerminator(plugin);
         var rarityRegistry = plugin.registryAccess().registry(McRPGRegistryKey.QUEST_RARITY);
         var distTypeRegistry = plugin.registryAccess().registry(McRPGRegistryKey.REWARD_DISTRIBUTION_TYPE);

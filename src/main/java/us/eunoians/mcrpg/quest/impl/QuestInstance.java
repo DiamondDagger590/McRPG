@@ -31,6 +31,7 @@ import us.eunoians.mcrpg.quest.impl.scope.QuestScope;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageState;
 import us.eunoians.mcrpg.quest.source.QuestSource;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
@@ -516,20 +517,43 @@ public class QuestInstance {
             return;
         }
         Bukkit.getPluginManager().callEvent(new QuestExpireEvent(this));
-        cancel();
+        cancelAsExpiration();
     }
 
     /**
      * Cancels this quest and all of its in-progress stages, then fires a {@link QuestCancelEvent}.
      */
     public void cancel() {
+        cancelInternal(false);
+    }
+
+    /**
+     * Cancels this quest as the result of expiration and fires a {@link QuestCancelEvent}
+     * with {@link QuestCancelEvent#isExpiration()} returning {@code true}.
+     */
+    public void cancelAsExpiration() {
+        cancelInternal(true);
+    }
+
+    /**
+     * Internal cancel implementation shared by {@link #cancel()} and {@link #cancelAsExpiration()}.
+     *
+     * @param isExpiration {@code true} if the cancellation was caused by expiry, {@code false} for manual abandon
+     */
+    private void cancelInternal(boolean isExpiration) {
         if (questState == QuestState.IN_PROGRESS || questState == QuestState.NOT_STARTED) {
             questState = QuestState.CANCELLED;
             endTime = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
             for (QuestStageInstance stage : questStageInstances) {
                 stage.cancel();
             }
-            Bukkit.getPluginManager().callEvent(new QuestCancelEvent(this));
+            var definitionOpt = McRPG.getInstance().registryAccess()
+                    .registry(McRPGRegistryKey.QUEST_DEFINITION).get(questKey);
+            if (definitionOpt.isPresent()) {
+                Bukkit.getPluginManager().callEvent(new QuestCancelEvent(this, definitionOpt.get(), isExpiration));
+            } else {
+                Bukkit.getPluginManager().callEvent(new QuestCancelEvent(this));
+            }
             saveAsync();
         }
     }
