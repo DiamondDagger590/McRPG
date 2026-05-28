@@ -15,6 +15,8 @@ import us.eunoians.mcrpg.localization.McRPGDisplayDecimalFormatter;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.ContributionThresholdDistributionType;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.MembershipDistributionType;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.ParticipatedDistributionType;
@@ -88,6 +90,8 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
         distTypeRegistry.register(new ParticipatedDistributionType());
         distTypeRegistry.register(new MembershipDistributionType());
         registryAccess.registry(RegistryKey.MANAGER).register(mock(QuestManager.class));
+        registryAccess.registry(RegistryKey.MANAGER).register(mock(QuestChainManager.class));
+        registryAccess.register(new QuestChainRegistry());
         registryAccess.register(new PlayerStatRegistry());
     }
 
