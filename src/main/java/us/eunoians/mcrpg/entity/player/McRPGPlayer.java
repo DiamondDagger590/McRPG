@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.display.impl.PlayerDisplay;
+import us.eunoians.mcrpg.quest.chain.QuestChainPlayerData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
@@ -69,6 +70,7 @@ public class McRPGPlayer extends CorePlayer {
     private final PlayerStatData playerStatData;
     private final PlayerComboState comboState = new PlayerComboState();
     private final Map<Class<? extends PlayerDisplay>, PlayerDisplay> displays = new HashMap<>();
+    private final QuestChainPlayerData questChainPlayerData = new QuestChainPlayerData();
     private boolean standingInSafeZone;
 
     public McRPGPlayer(@NotNull Player player, @NotNull McRPG mcRPG) {
@@ -131,6 +133,17 @@ public class McRPGPlayer extends CorePlayer {
     @NotNull
     public QuestHolder asQuestHolder() {
         return questHolder;
+    }
+
+    /**
+     * Returns this player's {@link QuestChainPlayerData}, which tracks per-chain state and
+     * provides a reverse index from the current quest key to the owning chain key.
+     *
+     * @return the player's quest chain data container
+     */
+    @NotNull
+    public QuestChainPlayerData getChainData() {
+        return questChainPlayerData;
     }
 
     /**
