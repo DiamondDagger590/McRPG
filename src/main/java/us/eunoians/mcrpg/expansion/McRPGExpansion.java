@@ -28,10 +28,12 @@ import us.eunoians.mcrpg.ability.impl.woodcutting.NymphsVitality;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
+import us.eunoians.mcrpg.expansion.content.ChainAutoStartTriggerContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestChainContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestObjectiveTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestRarityContentPack;
@@ -46,6 +48,8 @@ import us.eunoians.mcrpg.quest.board.distribution.builtin.QuestAcceptorDistribut
 import us.eunoians.mcrpg.quest.board.distribution.builtin.TopPlayersDistributionType;
 import us.eunoians.mcrpg.quest.board.template.condition.ChanceCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.CompletionPrerequisiteCondition;
+import us.eunoians.mcrpg.quest.chain.trigger.builtin.FirstJoinChainAutoStartTrigger;
+import us.eunoians.mcrpg.quest.chain.trigger.builtin.ManualChainAutoStartTrigger;
 import us.eunoians.mcrpg.quest.board.template.condition.CompoundCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.PermissionCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.RarityCondition;
@@ -153,7 +157,8 @@ public final class McRPGExpansion extends ContentExpansion {
                 getStatisticContent(skills, abilities), getPlayerSettingContent(), getLocalizationContent(),
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
-                getRewardDistributionTypeContent(), getTemplateConditionContent());
+                getRewardDistributionTypeContent(), getTemplateConditionContent(),
+                getChainAutoStartTriggerContent(), getQuestChainContent());
     }
 
     @NotNull
@@ -492,5 +497,32 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new PermissionCondition());
         pack.addContent(new CompletionPrerequisiteCondition());
         return pack;
+    }
+
+    /**
+     * Gets the native {@link ChainAutoStartTriggerContentPack} for McRPG, populated with the
+     * built-in trigger types ({@code manual} and {@code first_join}).
+     *
+     * @return The native {@link ChainAutoStartTriggerContentPack} for McRPG.
+     */
+    @NotNull
+    private ChainAutoStartTriggerContentPack getChainAutoStartTriggerContent() {
+        ChainAutoStartTriggerContentPack pack = new ChainAutoStartTriggerContentPack(this);
+        pack.addContent(new ManualChainAutoStartTrigger());
+        pack.addContent(new FirstJoinChainAutoStartTrigger());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link QuestChainContentPack} for McRPG. This pack is empty because native
+     * chain definitions are loaded from YAML via {@code QuestChainConfigLoader}, not through the
+     * expansion system. The pack signals that third-party plugins can contribute chain definitions
+     * programmatically.
+     *
+     * @return The native {@link QuestChainContentPack} for McRPG (empty).
+     */
+    @NotNull
+    private QuestChainContentPack getQuestChainContent() {
+        return new QuestChainContentPack(this);
     }
 }
