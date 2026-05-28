@@ -228,17 +228,12 @@ public class QuestInstanceTest extends McRPGBaseTest {
     public void constructor_setsExpirationTime_whenDefinitionHasExpiration() {
         QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
         QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-        QuestDefinition expiringDef = new QuestDefinition(
+        QuestDefinition expiringDef = new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", "expiring_quest"),
                 new NamespacedKey("mcrpg", "single_player"),
-                Duration.ofHours(24),
-                List.of(phase),
-                List.of(),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null
-        );
+                List.of(phase)
+        ).expiration(Duration.ofHours(24))
+                .build();
         QuestInstance instance = QuestTestHelper.newQuestInstance(expiringDef);
         assertTrue(instance.getExpirationTime().isPresent());
     }

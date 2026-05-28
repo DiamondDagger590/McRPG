@@ -1,26 +1,26 @@
 # Phase 1 LLD: Quest Engine Extensions + McCore Hook
 
 > **HLD Reference:** [docs/hld/tutorial/tutorial-quest-system.md](../../hld/tutorial/tutorial-quest-system.md)
-> **Status:** Pending implementation
+> **Status:** Implemented (Phases 2–3 pending)
 
 ## Scope
 
-Phase 1 delivers foundational quest engine extensions that unlock new objective and reward types independently of the chain system. It includes: McCore `KeyedGui` interface and `CoreGuiOpenEvent`, `PreQuestStartEvent` (cancellable gate in `QuestManager`), `on-start-messages` on `QuestDefinition` with a `QuestDefinition.Builder` refactor, four new reward types (Message, Boosted Experience, Redeemable Experience, Redeemable Levels), seven new objective types with progress listeners and auto-complete infrastructure for state-based objectives, `LoadoutAbilityEquipEvent`/`LoadoutAbilityUnequipEvent`/`LoadoutAbilitySwapEvent` on `Loadout` (raw mutation methods made private; DB loading via constructor), `KeyedGui` retrofit on all McRPG GUI classes, and `QuestStartEvent` augmentation with `QuestSource`.
+Phase 1 delivers foundational quest engine extensions that unlock new objective and reward types independently of the chain system. It includes: McCore `KeyedGui` interface and `CoreGuiOpenEvent` (consumed via McCore `1.0.0.17-SNAPSHOT`), `PreQuestStartEvent` (cancellable gate in `QuestManager` when the starting player is online), `on-start-messages` on `QuestDefinition` with a `QuestDefinition.Builder` refactor, four new reward types (Message, Boosted Experience, Redeemable Experience, Redeemable Levels), seven new objective types with progress listeners and auto-complete infrastructure for state-based objectives, `LoadoutAbilityChangeEvent` / `LoadoutPositionSwapEvent` on `Loadout` (raw mutation methods made private; DB loading via constructor), `AbilityType` + `AbilityObjectiveFilter`, `QuestMessageDeliverer`, objective index on `QuestDefinition`, `KeyedGui` retrofit on all McRPG GUI classes, and `QuestStartEvent` augmentation with `QuestSource` and `starterUUID`.
 
 **In scope:**
-- McCore: `KeyedGui` interface, `CoreGuiOpenEvent` fired from `GuiManager.trackPlayerGui()`
-- McCore: publish to Maven local, bump dependency in McRPG
-- `PreQuestStartEvent` (cancellable, from `QuestManager.startQuest()`)
-- `QuestDefinition.Builder` replacing constructor overloads
-- `on-start-messages` field on `QuestDefinition` + `QuestStartMessageListener`
-- `QuestStartEvent` augmented with `QuestSource`
-- Auto-complete infrastructure: `QuestObjectiveType.checkAutoComplete()` + `QuestStartAutoCompleteListener`
+- McCore: `KeyedGui` interface, `CoreGuiOpenEvent` fired from `GuiManager.trackPlayerGui()` (shipped in McCore `1.0.0.17-SNAPSHOT`)
+- `PreQuestStartEvent` (cancellable, from `QuestManager.startQuest()` when the initiating player is online)
+- `QuestDefinition.Builder` replacing constructor overloads; objective index built at `build()` time
+- `on-start-messages` field on `QuestDefinition` + `QuestStartMessageListener` + `QuestMessageDeliverer`
+- `QuestStartEvent` augmented with `QuestSource` and `starterUUID`
+- Auto-complete infrastructure: `QuestObjectiveType.checkAutoComplete()` + `QuestStartAutoCompleteListener` (starter-scoped, immediate — no delay)
+- `AbilityType` enum + `Ability.getAbilityType()`; `AbilityObjectiveFilter` shared by ability-based objective types
 - Retrofit all GUI classes to implement `KeyedGui` with `GUI_KEY` constants
-- `Loadout.equipAbility()` / `unequipAbility()` + events; raw `addAbility()`/`removeAbility()`/`replaceAbility()` made private; DB loading via `Loadout(UUID, int, Set<NamespacedKey>)` constructor
+- `Loadout.equipAbility()` / `unequipAbility()` / `swapAbility()` firing `LoadoutAbilityChangeEvent`; `LoadoutPositionSwapEvent` for combo-slot reorder; raw `addAbility()`/`removeAbility()`/`replaceAbility()` made private; DB loading via `Loadout(UUID, int, Set<NamespacedKey>)` constructor
 - 4 new reward types (Message, Boosted XP, Redeemable XP, Redeemable Levels)
 - 7 new objective types + progress listeners
 - Localization keys for new reward types and objective descriptions
-- Unit tests for all new types
+- Unit tests for all new types (see section 7)
 - Builder pattern rules added to `core.mdc` and `CLAUDE.md`
 
 **Out of scope (later phases):**
@@ -74,21 +74,18 @@ classDiagram
 
     class AbilityUnlockObjectiveType {
         ~new~
-        -abilityTypeFilter : Optional~String~
-        -abilityFilter : Optional~NamespacedKey~
+        -filter : AbilityObjectiveFilter
         +checkAutoComplete(UUID) OptionalLong
     }
 
     class AbilityActivateObjectiveType {
         ~new~
-        -abilityTypeFilter : Optional~String~
-        -abilityFilter : Optional~NamespacedKey~
+        -filter : AbilityObjectiveFilter
     }
 
     class LoadoutEquipObjectiveType {
         ~new~
-        -abilityTypeFilter : Optional~String~
-        -abilityFilter : Optional~NamespacedKey~
+        -filter : AbilityObjectiveFilter
         +checkAutoComplete(UUID) OptionalLong
     }
 
@@ -123,6 +120,7 @@ classDiagram
         -event : SkillGainLevelEvent
         +getSkillKey() NamespacedKey
         +getLevelsGained() int
+        +getNewLevel() int
     }
 
     class GuiOpenQuestContext {
@@ -147,7 +145,7 @@ classDiagram
 
     class LoadoutEquipQuestContext {
         ~new~
-        -event : LoadoutAbilityEquipEvent
+        -changeEvent : LoadoutAbilityChangeEvent
         +getAbilityKey() NamespacedKey
         +getPlayerUUID() UUID
     }
@@ -292,20 +290,26 @@ classDiagram
         +build() QuestDefinition
     }
 
+    class QuestMessageDeliverer {
+        ~new~
+        +deliver(Player, McRPGPlayer, Route, List) void
+    }
+
     class QuestStartMessageListener {
         ~new~
-        -mcRPG : McRPG
+        -messageDeliverer : QuestMessageDeliverer
         +onQuestStart(QuestStartEvent)
     }
 
     QuestDefinitionBuilder --> QuestDefinition : builds
     QuestDefinition o-- OnStartMessage : onStartMessages
     QuestStartMessageListener --> QuestDefinition : reads on-start messages
+    QuestStartMessageListener --> QuestMessageDeliverer : delivers messages
 ```
 
 ### Diagram 6: Quest Events
 
-`PreQuestStartEvent` is a cancellable gate fired from `QuestManager`. `QuestStartEvent` is augmented with `QuestSource`.
+`PreQuestStartEvent` is a cancellable gate fired from `QuestManager` when the initiating player is online. `QuestStartEvent` is fired from `QuestInstance.start()` with `QuestSource` and `starterUUID`.
 
 ```mermaid
 classDiagram
@@ -324,20 +328,28 @@ classDiagram
     class QuestStartEvent {
         ~modified~
         -questSource : QuestSource
+        -starterUUID : UUID
         +getQuestSource() QuestSource
+        +getStarterUUID() UUID
     }
 
     class QuestManager {
         ~modified~
-        +startQuest() fires PreQuestStartEvent
+        +startQuest() fires PreQuestStartEvent when player online
     }
 
-    QuestManager --> PreQuestStartEvent : fires before start
+    class QuestInstance {
+        ~modified~
+        +start() fires QuestStartEvent
+    }
+
+    QuestManager --> PreQuestStartEvent : fires before instance creation
+    QuestInstance --> QuestStartEvent : fires after phase-0 activation
 ```
 
 ### Diagram 7: Loadout Changes and Events
 
-Raw mutation methods made private. Public API is event-firing methods only. DB loading uses the constructor.
+Raw mutation methods made private. Public API is event-firing methods only. DB loading uses the constructor. Ability equip/unequip/swap share one change event distinguished by `ChangeReason`.
 
 ```mermaid
 classDiagram
@@ -345,39 +357,82 @@ classDiagram
 
     class Loadout {
         ~modified~
-        -addAbility(NamespacedKey) ~was public~
-        -removeAbility(NamespacedKey) ~was public~
-        -replaceAbility(NamespacedKey, NamespacedKey) ~was public~
+        -addAbility(NamespacedKey) private
+        -removeAbility(NamespacedKey) private
+        -replaceAbility(NamespacedKey, NamespacedKey) private
         +equipAbility(NamespacedKey) boolean
         +unequipAbility(NamespacedKey) boolean
         +swapAbility(NamespacedKey, NamespacedKey) boolean
     }
 
-    class LoadoutAbilityEquipEvent {
+    class LoadoutAbilityChangeEvent {
         ~new~
         -playerUUID : UUID
-        -abilityKey : NamespacedKey
+        -reason : ChangeReason
+        -previousAbility : NamespacedKey
+        -newAbility : NamespacedKey
         -loadoutSlot : int
     }
 
-    class LoadoutAbilityUnequipEvent {
+    class LoadoutPositionSwapEvent {
         ~new~
         -playerUUID : UUID
-        -abilityKey : NamespacedKey
-        -loadoutSlot : int
+        -fromComboSlot : int
+        -toComboSlot : int
     }
 
-    class LoadoutAbilitySwapEvent {
+    Loadout --> LoadoutAbilityChangeEvent : fires on equip unequip swap
+```
+
+### Diagram 9: Ability Classification and Filters
+
+`AbilityType` centralizes ability classification. `AbilityObjectiveFilter` encapsulates the shared key/type/any filter pattern for ability-based objective types.
+
+```mermaid
+classDiagram
+    direction TB
+
+    class AbilityType {
+        ~new enum~
+        ACTIVE
+        PASSIVE
+        INNATE
+        +fromString(String) Optional
+    }
+
+    class Ability {
+        ~modified interface~
+        +getAbilityType() AbilityType
+    }
+
+    class AbilityObjectiveFilter {
         ~new~
-        -playerUUID : UUID
-        -oldAbilityKey : NamespacedKey
-        -newAbilityKey : NamespacedKey
-        -loadoutSlot : int
+        -abilityFilter : NamespacedKey
+        -abilityTypeFilter : AbilityType
+        +matchesAbility(Ability) boolean
+        +EMPTY
+        +NEVER_MATCH
     }
 
-    Loadout --> LoadoutAbilityEquipEvent : fires on equip
-    Loadout --> LoadoutAbilityUnequipEvent : fires on unequip
-    Loadout --> LoadoutAbilitySwapEvent : fires on swap
+    class AbilityActivateObjectiveType {
+        ~new~
+        -filter : AbilityObjectiveFilter
+    }
+
+    class AbilityUnlockObjectiveType {
+        ~new~
+        -filter : AbilityObjectiveFilter
+    }
+
+    class LoadoutEquipObjectiveType {
+        ~new~
+        -filter : AbilityObjectiveFilter
+    }
+
+    Ability --> AbilityType : getAbilityType
+    AbilityActivateObjectiveType --> AbilityObjectiveFilter
+    AbilityUnlockObjectiveType --> AbilityObjectiveFilter
+    LoadoutEquipObjectiveType --> AbilityObjectiveFilter
 ```
 
 ### Diagram 8: McCore Changes
@@ -486,11 +541,9 @@ public <P extends CorePlayer> void trackPlayerGui(@NotNull UUID uuid, @NotNull G
 }
 ```
 
-### 1.4 McCore Release
+### 1.4 McCore Dependency
 
-After these three changes:
-1. Publish McCore to Maven local: `./gradlew publishToMavenLocal`
-2. Bump McCore version in McRPG's `build.gradle.kts`
+`KeyedGui` and `CoreGuiOpenEvent` ship in McCore `1.0.0.17-SNAPSHOT`, which McRPG already depends on via `build.gradle.kts`. No separate McRPG version bump was required for Phase 1 beyond consuming that artifact.
 
 ---
 
@@ -501,7 +554,7 @@ After these three changes:
 **Package:** `us.eunoians.mcrpg.event.quest`
 **File:** `src/main/java/us/eunoians/mcrpg/event/quest/PreQuestStartEvent.java`
 
-A cancellable Bukkit event fired from `QuestManager.startQuest()` before the quest instance is created. Enables third-party plugins (and future internal systems like the tutorial opt-out) to veto quest starts.
+A cancellable Bukkit event fired from `QuestManager.startQuest()` before the quest instance is created, **only when the initiating player is online** (`Bukkit.getPlayer(initialPlayerUUID) != null`). Offline or system-initiated starts skip this event and proceed through the normal scope pipeline. Enables third-party plugins (and future internal systems like the tutorial opt-out) to veto quest starts.
 
 ```java
 public class PreQuestStartEvent extends Event implements Cancellable {
@@ -538,7 +591,7 @@ public class PreQuestStartEvent extends Event implements Cancellable {
 }
 ```
 
-**Firing site:** `QuestManager.startQuest()`, before `new QuestInstance(...)` (see section 3.2).
+**Firing site:** `QuestManager.startQuest()`, before `new QuestInstance(...)`, when the initiating player is online (see section 3.2). On cancellation, the manager logs an info line and returns `Optional.empty()` with no player feedback from the quest system.
 
 ### 2.2 `QuestDefinition.Builder` — Replaces Constructor Overloads
 
@@ -633,21 +686,24 @@ public static final class Builder {
      */
     @NotNull
     public QuestDefinition build() {
+        // Builds objectiveIndex: Map<NamespacedKey, QuestObjectiveDefinition> for O(1) lookup.
+        // Duplicate objective keys across phases/stages throw IllegalStateException.
         return new QuestDefinition(questKey, scopeType, expiration, phases,
                 rewardEntries, onStartMessages, repeatMode, repeatCooldown,
-                repeatLimit, expansionKey, metadata, rewardDistribution, inlineDisplay);
+                repeatLimit, expansionKey, metadata, rewardDistribution, inlineDisplay,
+                objectiveIndex);
     }
 }
 ```
 
-**Migration:** Existing public constructors and `withEntries()` are **removed**. The private canonical constructor is updated to accept `onStartMessages`. `QuestConfigLoader` and all programmatic callsites are migrated to the builder in the same PR.
+**Migration:** Existing public constructors and `withEntries()` are **removed**. The private canonical constructor accepts `onStartMessages` and `objectiveIndex`. `QuestConfigLoader` and all programmatic callsites are migrated to the builder.
 
 ### 2.3 `OnStartMessage` — Quest Start Message Record
 
 **Package:** `us.eunoians.mcrpg.quest.definition`
 **File:** `src/main/java/us/eunoians/mcrpg/quest/definition/OnStartMessage.java`
 
-Immutable record holding a single message entry sent to players when a quest starts. Each entry is either a locale key (resolved via `McRPGLocalizationManager`) or a list of inline MiniMessage strings. Locale keys take priority — if present, inline messages are ignored.
+Immutable record holding a single message entry sent to players when a quest starts. Each entry is either a locale key (resolved via `QuestMessageDeliverer`) or a list of inline MiniMessage strings. At delivery time, locale resolution is attempted first; **inline messages are used as fallback** when resolution fails or no key is set.
 
 ```java
 /**
@@ -656,8 +712,8 @@ Immutable record holding a single message entry sent to players when a quest sta
  * without risking dropped tangible rewards.
  *
  * @param localeKey       optional locale route key resolved via the localization manager;
- *                        if present, {@code inlineMessages} is ignored
- * @param inlineMessages  fallback MiniMessage strings sent directly when no locale key is set
+ *                        inline messages are fallback when resolution fails
+ * @param inlineMessages  fallback MiniMessage strings when no locale key is set or resolution fails
  */
 public record OnStartMessage(
         @NotNull Optional<String> localeKey,
@@ -688,124 +744,72 @@ public record OnStartMessage(
 }
 ```
 
-### 2.4 `QuestStartMessageListener` — On-Start Message Delivery
+### 2.4 `QuestMessageDeliverer` — Shared Message Delivery
+
+**Package:** `us.eunoians.mcrpg.quest.message`
+**File:** `src/main/java/us/eunoians/mcrpg/quest/message/QuestMessageDeliverer.java`
+
+Delivers quest-related messages to players using locale resolution with inline MiniMessage fallback. Shared by `QuestStartMessageListener` and `MessageRewardType.grant()`.
+
+**Resolution order:**
+1. If a pre-parsed `Route` (or locale key string) is provided and `McRPGPlayer` is available, resolve via `McRPGLocalizationManager.getLocalizedMessageAsComponent`. On success, send and return.
+2. On resolution failure (logged at `WARNING`), or if no key/route, parse and send each inline MiniMessage string independently (malformed strings log `WARNING` but do not abort subsequent messages).
+
+**Hot-path overload:** `deliver(Player, McRPGPlayer, Route, List<String>)` accepts a pre-parsed `Route` so `QuestStartMessageListener` can call `Route.fromString()` once per message before the per-player loop.
+
+### 2.5 `QuestStartMessageListener` — On-Start Message Delivery
 
 **Package:** `us.eunoians.mcrpg.listener.quest`
 **File:** `src/main/java/us/eunoians/mcrpg/listener/quest/QuestStartMessageListener.java`
 
-Listens for `QuestStartEvent` and sends on-start messages to all online scope members. If the `OnStartMessage` has a `localeKey`, the message is resolved per-player via `McRPGLocalizationManager`. Otherwise, inline messages are parsed as MiniMessage and sent directly.
+Listens for `QuestStartEvent` and delivers on-start messages to all **online** players in the quest scope via `QuestMessageDeliverer`. Pre-parses locale routes once before the player loop. Uses `instance.getQuestScope().map(QuestScope::getCurrentPlayersInScope)`.
 
-```java
-public class QuestStartMessageListener implements Listener {
-
-    private final McRPG mcRPG;
-
-    public QuestStartMessageListener(@NotNull McRPG mcRPG) {
-        this.mcRPG = mcRPG;
-    }
-
-    /**
-     * Sends on-start messages from the quest definition to all online
-     * players in the quest's scope.
-     *
-     * @param event the quest start event
-     */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onQuestStart(@NotNull QuestStartEvent event) {
-        QuestDefinition definition = event.getQuestDefinition();
-        List<OnStartMessage> messages = definition.getOnStartMessages();
-        if (messages.isEmpty()) {
-            return;
-        }
-
-        McRPGLocalizationManager locManager = mcRPG.registryAccess()
-                .registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.LOCALIZATION);
-
-        QuestInstance instance = event.getQuestInstance();
-        for (UUID playerUUID : instance.getQuestScope().getPlayerUUIDs()) {
-            Player player = Bukkit.getPlayer(playerUUID);
-            if (player == null || !player.isOnline()) {
-                continue;
-            }
-            Optional<McRPGPlayer> mcRPGPlayerOpt = mcRPG.registryAccess()
-                    .registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.PLAYER)
-                    .getPlayer(playerUUID);
-            for (OnStartMessage msg : messages) {
-                if (msg.localeKey().isPresent() && mcRPGPlayerOpt.isPresent()) {
-                    Component resolved = locManager.getLocalizedMessageAsComponent(
-                            mcRPGPlayerOpt.get(), Route.fromString(msg.localeKey().get()));
-                    player.sendMessage(resolved);
-                } else {
-                    for (String inline : msg.inlineMessages()) {
-                        player.sendMessage(McRPGMethods.getMiniMessage().deserialize(inline));
-                    }
-                }
-            }
-        }
-    }
-}
-```
-
-### 2.5 `QuestStartAutoCompleteListener` — State-Based Objective Resolution
+### 2.6 `QuestStartAutoCompleteListener` — State-Based Objective Resolution
 
 **Package:** `us.eunoians.mcrpg.listener.quest`
 **File:** `src/main/java/us/eunoians/mcrpg/listener/quest/QuestStartAutoCompleteListener.java`
 
-Listens for `QuestStartEvent` and immediately completes any IN_PROGRESS objectives whose state-based auto-complete check passes. No delay in Phase 1 — both on-start messages and completion rewards fire. The chain cascade batching in Phase 3 will suppress on-start messages for auto-completed chain steps and send a configurable batch summary via the localization system instead.
+Listens for `QuestStartEvent` and immediately completes any IN_PROGRESS objectives whose state-based auto-complete check passes for the **quest starter only** (`event.getStarterUUID()`). Returns immediately when `starterUUID` is null (system-initiated starts). No delay in Phase 1 — both on-start messages and completion rewards fire. The chain cascade batching in Phase 3 will suppress on-start messages for auto-completed chain steps and send a configurable batch summary via the localization system instead.
 
 ```java
-public class QuestStartAutoCompleteListener implements Listener {
-
-    private final QuestManager questManager;
-
-    public QuestStartAutoCompleteListener(@NotNull QuestManager questManager) {
-        this.questManager = questManager;
+@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+public void onQuestStart(@NotNull QuestStartEvent event) {
+    UUID starterUUID = event.getStarterUUID();
+    if (starterUUID == null) {
+        return;
     }
-
-    /**
-     * Checks all IN_PROGRESS objectives in the newly started quest for
-     * auto-complete eligibility. State-based objectives that are already
-     * satisfied complete immediately.
-     *
-     * @param event the quest start event
-     */
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    public void onQuestStart(@NotNull QuestStartEvent event) {
-        QuestInstance instance = event.getQuestInstance();
-        QuestDefinition definition = event.getQuestDefinition();
-        Collection<UUID> scopePlayerUUIDs = instance.getQuestScope().getPlayerUUIDs();
-
-        for (var stage : instance.getActiveQuestStages()) {
-            for (var objective : stage.getQuestObjectives()) {
-                if (objective.getQuestObjectiveState() != QuestObjectiveState.IN_PROGRESS) {
-                    continue;
-                }
-                definition.findObjectiveDefinition(objective.getQuestObjectiveKey())
-                        .ifPresent(objDef -> {
-                            QuestObjectiveType type = objDef.getObjectiveType();
-                            for (UUID playerUUID : scopePlayerUUIDs) {
-                                OptionalLong autoProgress = type.checkAutoComplete(playerUUID);
-                                if (autoProgress.isPresent()) {
-                                    long progress = autoProgress.getAsLong();
-                                    if (progress >= objDef.getRequiredProgress()) {
-                                        objective.progress(objDef.getRequiredProgress(), playerUUID);
-                                    }
-                                }
-                            }
-                        });
-            }
-        }
-    }
+    // For each IN_PROGRESS objective: type.checkAutoComplete(starterUUID)
+    // If autoProgress >= requiredProgress → objective.progress(required, starterUUID)
 }
 ```
 
-### 2.6 Reward Types
+### 2.7 `AbilityType` — Ability Classification Enum
+
+**Package:** `us.eunoians.mcrpg.ability`
+**File:** `src/main/java/us/eunoians/mcrpg/ability/AbilityType.java`
+
+Enum: `ACTIVE` (implements `ComboActivatable`), `PASSIVE` (`PassiveAbility` + `UnlockableAbility`), `INNATE` (everything else). `Ability.getAbilityType()` provides the default classification; individual abilities may override. `AbilityType.fromString(String)` parses YAML `ability-type` config values case-insensitively.
+
+Replaces the removed `PassiveAbility.isPassive()` / `ActiveAbility.isPassive()` defaults — there is no `isPassive()` API on abilities.
+
+### 2.8 `AbilityObjectiveFilter` — Shared Ability Filter Logic
+
+**Package:** `us.eunoians.mcrpg.quest.objective.type.builtin`
+**File:** `src/main/java/us/eunoians/mcrpg/quest/objective/type/builtin/AbilityObjectiveFilter.java`
+
+Encapsulates the key / type / any filter priority used by `AbilityActivateObjectiveType`, `AbilityUnlockObjectiveType`, and `LoadoutEquipObjectiveType`:
+
+1. Specific `ability` key — matches only that ability
+2. `ability-type` (`AbilityType`) — matches abilities of that classification via `ability.getAbilityType()`
+3. No filter — matches any ability
+
+Sentinels: `EMPTY` (matches all), `NEVER_MATCH` (used when config parsing fails).
+
+### 2.9 Reward Types
 
 All four reward types follow the existing immutable configured-instance pattern established by `ExperienceRewardType`. Each has: an unconfigured base instance for registry registration, a private configured constructor, and `parseConfig()` returning a new configured instance.
 
-#### 2.5.1 `MessageRewardType`
+#### 2.9.1 `MessageRewardType`
 
 **Package:** `us.eunoians.mcrpg.quest.reward.builtin`
 **File:** `src/main/java/us/eunoians/mcrpg/quest/reward/builtin/MessageRewardType.java`
@@ -835,10 +839,7 @@ greeting:
 
 **Fields:** `@NotNull Optional<String> localeKey`, `@NotNull List<String> inlineMessages`
 
-**`grant(Player)`:** Resolution order:
-1. If `localeKey` is set, attempt locale route lookup via `McRPGLocalizationManager`. If lookup succeeds, send the resolved component(s) to the player.
-2. If lookup fails or `localeKey` is absent, iterate `inlineMessages`, apply palette resolution and MiniMessage parsing, send each as a component.
-3. Standard placeholders (`<player>`) are resolved.
+**`grant(Player)`:** Delegates to `QuestMessageDeliverer` with the same locale-first, inline-fallback resolution order as on-start messages.
 
 **`describeForDisplay()`:** Returns `"Message"` (or the locale key if set). Not the full message list — messages can be multi-line and aren't suitable for reward slot lore.
 
@@ -848,7 +849,7 @@ greeting:
 
 **`serializeConfig()` / `fromSerializedConfig()`:** Serializes `localeKey` and `inlineMessages` for pending reward queue. A message delivered to a player logging in after being offline is still useful (e.g., tutorial welcome message on delayed start).
 
-#### 2.5.2 `BoostedExperienceRewardType`
+#### 2.9.2 `BoostedExperienceRewardType`
 
 **Key:** `mcrpg:boosted_experience`
 
@@ -868,49 +869,47 @@ boosted_xp:
 
 **`describeForDisplay(McRPGPlayer)`:** Resolves `LocalizationKey.QUEST_REWARD_BOOSTED_EXPERIENCE_FORMAT` with `<amount>` placeholder. Fallback: `"<amount> Boosted XP"`.
 
-#### 2.5.3 `RedeemableExperienceRewardType`
+#### 2.9.3 `RedeemableExperienceRewardType`
 
 **Key:** `mcrpg:redeemable_experience`
 
 Identical pattern to `BoostedExperienceRewardType`. Calls `modifyRedeemableExperience(amount)`.
 
-#### 2.5.4 `RedeemableLevelsRewardType`
+#### 2.9.4 `RedeemableLevelsRewardType`
 
 **Key:** `mcrpg:redeemable_levels`
 
 Identical pattern. Calls `modifyRedeemableLevels(amount)`.
 
-### 2.7 Objective Types
+### 2.10 Objective Types
 
 All seven objective types follow the existing pattern established by `BlockBreakObjectiveType`: unconfigured base instance for registry, `parseConfig()` returns configured copy, `canProcess()` checks context type, `processProgress()` returns delta.
 
 State-based types additionally override `checkAutoComplete(UUID)` to return `OptionalLong.of(1)` when the player's current state satisfies the objective.
 
-#### 2.6.1 `SkillLevelUpObjectiveType`
+#### 2.10.1 `SkillLevelUpObjectiveType`
 
 **Key:** `mcrpg:skill_level_up` · **Kind:** Event-only
 **Trigger:** `SkillGainLevelEvent` via `SkillLevelQuestProgressListener`
 
 **Config filters:**
 - `skill` (optional `NamespacedKey`; omit for any skill)
-- `levels` (optional `int`, default 1; minimum levels per event to count)
+- `levels` (optional `int`, default 1; minimum levels gained **per event** to count)
 
-**`processProgress()`:** If skill matches filter and `event.getLevels() >= minLevelsPerEvent`, returns `event.getLevels()`. Otherwise 0.
+**`processProgress()`:** If skill matches filter and `context.getLevelsGained() >= minLevelsPerEvent`, returns `getLevelsGained()` as the delta. `required-progress` is the total levels to accumulate across events. Otherwise 0.
 
 **`describeObjective()`:** `"Level up <count> time(s)"` or `"Level up <skill> <count> time(s)"`.
 
-#### 2.6.2 `SkillTargetLevelObjectiveType`
+#### 2.10.2 `SkillTargetLevelObjectiveType`
 
 **Key:** `mcrpg:skill_target_level` · **Kind:** State + Event
 **Trigger:** `SkillGainLevelEvent` via `SkillLevelQuestProgressListener` · **Auto-complete:** Check player skill levels
 
 **Config filters:**
 - `skill` (optional `NamespacedKey`; omit for any skill)
-- `target-level` (required `int`)
+- `target-level` (optional `int`, default 1)
 
-**`processProgress()`:** After a level-up event, check if the player now has any skill (or the filtered skill) at or above `targetLevel`. If yes, return 1. Otherwise 0.
-
-The context must carry the `SkillHolder` reference (resolved from UUID within the listener) so that `processProgress` can check current levels. The `SkillLevelQuestContext` wraps the event and exposes the player UUID for holder resolution.
+**`processProgress()`:** After a level-up event, if `SkillLevelQuestContext.getNewLevel() >= targetLevel` (with optional skill filter), return 1. Otherwise 0.
 
 **`checkAutoComplete(UUID)`:** Resolves `McRPGPlayer`, iterates skill data. If any matching skill's level >= `targetLevel`, returns `OptionalLong.of(1)`. Otherwise empty.
 
@@ -918,7 +917,7 @@ The context must carry the `SkillHolder` reference (resolved from UUID within th
 
 **Note:** `required-progress` for this type is always `1` (binary: condition met or not).
 
-#### 2.6.3 `GuiOpenObjectiveType`
+#### 2.10.3 `GuiOpenObjectiveType`
 
 **Key:** `mcrpg:gui_open` · **Kind:** Event-only
 **Trigger:** `CoreGuiOpenEvent` (McCore) via `GuiOpenQuestProgressListener`
@@ -930,55 +929,48 @@ The context must carry the `SkillHolder` reference (resolved from UUID within th
 
 **`describeObjective()`:** `"Open the <gui-name>"`. The GUI display name is resolved from a localization route derived from the key: `gui.<namespace>.<key>.display-name`.
 
-#### 2.6.4 `AbilityUnlockObjectiveType`
+#### 2.10.4 `AbilityUnlockObjectiveType`
 
 **Key:** `mcrpg:ability_unlock` · **Kind:** State + Event
 **Trigger:** `AbilityUnlockEvent` via `AbilityUnlockQuestProgressListener` · **Auto-complete:** Check player's unlocked abilities
 
-**Config filters:**
-- `ability-type` (optional `String`: `"PASSIVE"`, `"ACTIVE"`; determines filter via `instanceof PassiveAbility` / `instanceof ComboActivatable`)
-- `ability` (optional `NamespacedKey`; specific ability key)
+**Config filters:** Parsed into `AbilityObjectiveFilter`:
+- `ability-type` (optional: `ACTIVE`, `PASSIVE`, `INNATE` via `AbilityType.fromString`)
+- `ability` (optional `NamespacedKey`; specific ability key — takes priority over type)
 
-**`processProgress()`:** If the unlocked ability matches the type and/or specific key filter, return 1. Otherwise 0.
+**`processProgress()`:** If the unlocked ability passes `filter.matchesAbility()`, return 1. Otherwise 0.
 
 **`checkAutoComplete(UUID)`:** Resolves `McRPGPlayer`, iterates ability data. Checks if any ability matching the filter has `ABILITY_UNLOCKED_ATTRIBUTE` set to `true`. If found, returns `OptionalLong.of(1)`.
 
 **`describeObjective()`:** `"Unlock a passive ability"`, `"Unlock an active ability"`, or `"Unlock <ability>"`.
 
-#### 2.6.5 `AbilityActivateObjectiveType`
+#### 2.10.5 `AbilityActivateObjectiveType`
 
 **Key:** `mcrpg:ability_activate` · **Kind:** Event-only
 **Trigger:** `AbilityActivateEvent` (polymorphic) via `AbilityActivateQuestProgressListener`
 
-**Config filters:**
-- `ability-type` (optional `String`: `"PASSIVE"`, `"ACTIVE"`, `"INNATE"`)
-- `ability` (optional `NamespacedKey`; specific ability key)
+**Config filters:** Parsed into `AbilityObjectiveFilter` (`ability-type`: `ACTIVE`, `PASSIVE`, or `INNATE`; optional specific `ability` key).
 
-**`processProgress()`:** Checks the `Ability` from the event. If `ability-type` is set:
-- `"ACTIVE"`: `ability instanceof ComboActivatable`
-- `"PASSIVE"`: `ability instanceof PassiveAbility`
-- `"INNATE"`: neither `ComboActivatable` nor `PassiveAbility` with `ABILITY_UNLOCKED_ATTRIBUTE`
+**`processProgress()`:** If `filter.matchesAbility(event.getAbility())`, return 1. Otherwise 0.
 
-If filter matches, return 1. Otherwise 0.
+Covers combo-activated active abilities (tutorial Q6 uses `ability-type: ACTIVE` instead of a separate `combo_activate` type).
 
 **`describeObjective()`:** `"Activate an active ability"`, `"Activate <ability>"`, etc.
 
-#### 2.6.6 `LoadoutEquipObjectiveType`
+#### 2.10.6 `LoadoutEquipObjectiveType`
 
 **Key:** `mcrpg:loadout_equip` · **Kind:** State + Event
-**Trigger:** `LoadoutAbilityEquipEvent` via `LoadoutEquipQuestProgressListener` · **Auto-complete:** Check player's current loadout
+**Trigger:** `LoadoutAbilityChangeEvent` (`EQUIP` or `SWAP`) via `LoadoutEquipQuestProgressListener` · **Auto-complete:** Check player's **active** loadout
 
-**Config filters:**
-- `ability-type` (optional `String`: `"PASSIVE"`, `"ACTIVE"`)
-- `ability` (optional `NamespacedKey`; specific ability key)
+**Config filters:** Parsed into `AbilityObjectiveFilter` (`ability-type`: `ACTIVE` or `PASSIVE`; optional specific `ability` key).
 
-**`processProgress()`:** If the equipped ability matches the filter, return 1. Otherwise 0.
+**`processProgress()`:** If the new ability in the change event passes `filter.matchesAbility()`, return 1. Otherwise 0. Progress listener only fires for the player's **currently active loadout** (`getCurrentLoadoutSlot() == event.getLoadoutSlot()`); edits to non-active presets do not count.
 
-**`checkAutoComplete(UUID)`:** Resolves `McRPGPlayer` as `LoadoutHolder`, checks current loadout for any ability matching the filter. If found, returns `OptionalLong.of(1)`.
+**`checkAutoComplete(UUID)`:** Resolves `McRPGPlayer` as `LoadoutHolder`, checks active loadout for any ability matching the filter. If found, returns `OptionalLong.of(1)`.
 
 **`describeObjective()`:** `"Equip a passive ability"`, `"Equip <ability>"`, etc.
 
-#### 2.6.7 `QuestBoardAcceptObjectiveType`
+#### 2.10.7 `QuestBoardAcceptObjectiveType`
 
 **Key:** `mcrpg:quest_board_accept` · **Kind:** Event-only
 **Trigger:** `BoardOfferingAcceptEvent` via `QuestBoardAcceptQuestProgressListener`
@@ -990,24 +982,24 @@ If filter matches, return 1. Otherwise 0.
 
 **`describeObjective()`:** `"Accept a quest from the quest board"`.
 
-### 2.8 Progress Context Classes
+### 2.11 Progress Context Classes
 
 Each context wraps the relevant event data. All extend `QuestObjectiveProgressContext`.
 
 | Context | File suffix | Wraps | Key accessors |
 |---|---|---|---|
-| `SkillLevelQuestContext` | `SkillLevelQuestContext.java` | `SkillGainLevelEvent` | `getSkillKey()`, `getLevelsGained()`, `getPlayerUUID()` |
+| `SkillLevelQuestContext` | `SkillLevelQuestContext.java` | `SkillGainLevelEvent` | `getSkillKey()`, `getLevelsGained()`, `getNewLevel()`, `getPlayerUUID()` |
 | `GuiOpenQuestContext` | `GuiOpenQuestContext.java` | `CoreGuiOpenEvent` | `getGuiKey()`, `getPlayerUUID()` |
 | `AbilityUnlockQuestContext` | `AbilityUnlockQuestContext.java` | `AbilityUnlockEvent` | `getAbility()`, `getAbilityHolder()` |
 | `AbilityActivateQuestContext` | `AbilityActivateQuestContext.java` | `AbilityActivateEvent` | `getAbility()`, `getAbilityHolder()` |
-| `LoadoutEquipQuestContext` | `LoadoutEquipQuestContext.java` | `LoadoutAbilityEquipEvent` | `getAbilityKey()`, `getPlayerUUID()` |
+| `LoadoutEquipQuestContext` | `LoadoutEquipQuestContext.java` | `LoadoutAbilityChangeEvent` | `getAbilityKey()` (new ability), `getPlayerUUID()` |
 | `QuestBoardAcceptQuestContext` | `QuestBoardAcceptQuestContext.java` | `BoardOfferingAcceptEvent` | `getBoardKey()`, `getPlayerUUID()` |
 
 All placed in `us.eunoians.mcrpg.quest.objective.type.builtin`.
 
 `SkillLevelQuestContext` is shared by both `SkillLevelUpObjectiveType` and `SkillTargetLevelObjectiveType` — both react to `SkillGainLevelEvent` and handle their own logic in `processProgress()`.
 
-### 2.9 Progress Listeners
+### 2.12 Progress Listeners
 
 All follow the `BlockBreakQuestProgressListener` pattern: implement `QuestProgressListener`, inject `QuestManager` in constructor, listen at `MONITOR` priority with `ignoreCancelled = true`, construct context, call `progressQuests(questManager, playerUUID, context)`.
 
@@ -1017,66 +1009,36 @@ All follow the `BlockBreakQuestProgressListener` pattern: implement `QuestProgre
 | `GuiOpenQuestProgressListener` | `CoreGuiOpenEvent` | `GuiOpenQuestContext` | `gui_open` |
 | `AbilityUnlockQuestProgressListener` | `AbilityUnlockEvent` | `AbilityUnlockQuestContext` | `ability_unlock` |
 | `AbilityActivateQuestProgressListener` | `AbilityActivateEvent` | `AbilityActivateQuestContext` | `ability_activate` |
-| `LoadoutEquipQuestProgressListener` | `LoadoutAbilityEquipEvent` | `LoadoutEquipQuestContext` | `loadout_equip` |
+| `LoadoutEquipQuestProgressListener` | `LoadoutAbilityChangeEvent` | `LoadoutEquipQuestContext` | `loadout_equip` |
 | `QuestBoardAcceptQuestProgressListener` | `BoardOfferingAcceptEvent` | `QuestBoardAcceptQuestContext` | `quest_board_accept` |
 
-**Player UUID resolution:** Each listener extracts the player UUID from the event. For `AbilityActivateEvent` and `AbilityUnlockEvent`, this comes from `event.getAbilityHolder().getUUID()`. For McCore's `CoreGuiOpenEvent`, directly from `event.getPlayerUUID()`.
+**Player UUID resolution:** Each listener extracts the player UUID from the event. For `AbilityActivateEvent` and `AbilityUnlockEvent`, from `event.getAbilityHolder().getUUID()`. For `CoreGuiOpenEvent`, from `event.getPlayerUUID()`. For `LoadoutAbilityChangeEvent`, from `event.getPlayerUUID()`.
 
-### 2.10 Loadout Events
+**Loadout equip listener:** Ignores `ChangeReason.UNEQUIP`. Only credits progress when the change affects the player's **active** loadout slot.
 
-Three new events in `us.eunoians.mcrpg.event.loadout`:
+### 2.13 Loadout Events
 
-#### `LoadoutAbilityEquipEvent`
+Two new events in `us.eunoians.mcrpg.event.loadout`:
 
-```java
-public class LoadoutAbilityEquipEvent extends Event {
+#### `LoadoutAbilityChangeEvent`
 
-    private static final HandlerList HANDLER_LIST = new HandlerList();
+Unified event for equip, unequip, and swap. Distinguished by `ChangeReason` enum (`EQUIP`, `UNEQUIP`, `SWAP`). Carries `previousAbility` and `newAbility` as nullable `Optional<NamespacedKey>` — present fields depend on reason (see class Javadoc).
 
-    private final UUID playerUUID;
-    private final NamespacedKey abilityKey;
-    private final int loadoutSlot;
+Fired from `Loadout.equipAbility()`, `unequipAbility()`, and `swapAbility()`.
 
-    /**
-     * @param playerUUID  the UUID of the player whose loadout changed
-     * @param abilityKey  the key of the ability that was equipped
-     * @param loadoutSlot the loadout slot index the ability was added to
-     */
-    public LoadoutAbilityEquipEvent(@NotNull UUID playerUUID,
-                                    @NotNull NamespacedKey abilityKey,
-                                    int loadoutSlot) { ... }
+#### `LoadoutPositionSwapEvent`
 
-    // getters, HandlerList boilerplate
-}
-```
-
-#### `LoadoutAbilityUnequipEvent`
-
-Same structure as equip, fired when an ability is removed from a loadout slot.
-
-#### `LoadoutAbilitySwapEvent`
-
-```java
-public class LoadoutAbilitySwapEvent extends Event {
-
-    private final UUID playerUUID;
-    private final NamespacedKey oldAbilityKey;
-    private final NamespacedKey newAbilityKey;
-    private final int loadoutSlot;
-
-    // ...
-}
-```
+Fired when combo-slot positions are reordered within the active loadout. No ability enters or leaves the loadout — only ordering changes. Not used by quest progress listeners in Phase 1.
 
 ---
 
 ## 3. Modifications to Existing Classes
 
-### 3.1 `QuestDefinition` — Add On-Start Messages, Builder, Deprecate Constructors
+### 3.1 `QuestDefinition` — Add On-Start Messages, Builder, Objective Index
 
-**New field:** `private final List<OnStartMessage> onStartMessages`
+**New fields:** `private final List<OnStartMessage> onStartMessages`, `private final Map<NamespacedKey, QuestObjectiveDefinition> objectiveIndex`
 
-**New accessor:**
+**New accessor for on-start messages:**
 
 ```java
 /**
@@ -1090,63 +1052,60 @@ public List<OnStartMessage> getOnStartMessages() {
 }
 ```
 
-**Private canonical constructor:** Updated to accept `onStartMessages` (between `rewardEntries` and `repeatMode`).
+**New accessor for objective lookup:**
 
-**Existing public constructors and `withEntries()`:** Removed. All callsites are migrated to the builder in the same PR.
+```java
+@NotNull
+public Optional<QuestObjectiveDefinition> findObjectiveDefinition(@NotNull NamespacedKey objectiveKey) {
+    return Optional.ofNullable(objectiveIndex.get(objectiveKey));
+}
+```
+
+**Private canonical constructor:** Updated to accept `onStartMessages` and `objectiveIndex`.
+
+**Builder `build()`:** Constructs `objectiveIndex` from all objectives across phases/stages. Duplicate objective keys throw `IllegalStateException`.
+
+**Existing public constructors and `withEntries()`:** Removed. All callsites are migrated to the builder.
 
 **Inner `Builder` class:** Added as described in section 2.2.
 
 ### 3.2 `QuestManager.startQuest()` — Fire PreQuestStartEvent
 
-The two-parameter overload delegates to the four-parameter version. The four-parameter version gains `PreQuestStartEvent` firing at the top, before `QuestInstance` construction:
+The four-parameter overload fires `PreQuestStartEvent` only when the initiating player is **online**. Offline players skip the pre-event; scope resolution and instance creation proceed normally.
 
 ```java
-@NotNull
-public Optional<QuestInstance> startQuest(@NotNull QuestDefinition definition,
-                                          @NotNull UUID initialPlayerUUID,
-                                          @NotNull Map<String, Object> variables,
-                                          @NotNull QuestSource questSource) {
-    Player player = Bukkit.getPlayer(initialPlayerUUID);
-    if (player == null) {
-        return Optional.empty();
-    }
-
+Player player = Bukkit.getPlayer(initialPlayerUUID);
+if (player != null) {
     PreQuestStartEvent preEvent = new PreQuestStartEvent(definition, player, questSource);
     Bukkit.getPluginManager().callEvent(preEvent);
     if (preEvent.isCancelled()) {
+        // logs info, returns Optional.empty()
         return Optional.empty();
     }
-
-    // ... existing scope resolution, instance creation, start, tracking ...
 }
+// ... scope resolution, new QuestInstance(...), instance.start(definition, initialPlayerUUID), track ...
 ```
 
-### 3.3 `QuestStartEvent` — Add QuestSource
+Note: `player == null` does **not** abort the start — only pre-event cancellation or scope provider failure returns empty.
 
-**New field:** `private final QuestSource questSource`
+### 3.3 `QuestStartEvent` — Add QuestSource and Starter UUID
 
-**Updated constructor:**
+**New fields:** `private final QuestSource questSource`, `@Nullable private final UUID starterUUID`
+
+**Constructors:**
 
 ```java
 public QuestStartEvent(@NotNull QuestInstance questInstance,
                        @NotNull QuestDefinition questDefinition,
-                       @NotNull QuestSource questSource) {
-    super(questInstance);
-    this.questDefinition = questDefinition;
-    this.questSource = questSource;
-}
+                       @NotNull QuestSource questSource,
+                       @Nullable UUID starterUUID);
+
+// Overload without starterUUID (system-initiated) delegates with null starter
 ```
 
-**New accessor:**
+**Accessors:** `getQuestSource()`, `getStarterUUID()` (nullable).
 
-```java
-@NotNull
-public QuestSource getQuestSource() {
-    return questSource;
-}
-```
-
-**Callsite update:** `QuestInstance.start()` must now receive and pass the `QuestSource`. Since `QuestInstance` already stores the source (constructor parameter), `start()` passes `this.questSource` to the event constructor.
+**Firing site:** `QuestInstance.start(definition, starterUUID)` — marked `@ApiStatus.Internal`. Passes `this.questSource` and the initiating player's UUID. `QuestStartAutoCompleteListener` uses `starterUUID` for auto-complete checks.
 
 ### 3.4 `QuestObjectiveType` — Add `checkAutoComplete` Default Method
 
@@ -1169,28 +1128,29 @@ default OptionalLong checkAutoComplete(@NotNull UUID playerUUID) {
 }
 ```
 
-### 3.5 `QuestConfigLoader` — Parse `on-start-messages` Section
+### 3.5 `Ability` — `getAbilityType()` and Removed `isPassive()`
 
-In the quest definition parsing method, after parsing `rewards:`, parse `on-start-messages:`. Each entry is either a `key:` (locale route) or a `messages:` list (inline MiniMessage strings). Pass the result to the builder:
+**`AbilityType` enum** (`ACTIVE`, `PASSIVE`, `INNATE`) with `fromString()` for YAML config.
+
+**Default on `Ability`:**
 
 ```java
-List<OnStartMessage> onStartMessages = List.of();
-if (section.contains("on-start-messages")) {
-    Section msgSection = section.getSection("on-start-messages");
-    List<OnStartMessage> parsed = new ArrayList<>();
-    for (String entryKey : msgSection.getKeys()) {
-        Section entry = msgSection.getSection(entryKey);
-        if (entry.contains("key")) {
-            parsed.add(OnStartMessage.fromLocaleKey(entry.getString("key")));
-        } else if (entry.contains("messages")) {
-            parsed.add(OnStartMessage.fromInline(entry.getStringList("messages")));
-        }
-    }
-    onStartMessages = List.copyOf(parsed);
+default AbilityType getAbilityType() {
+    if (this instanceof ComboActivatable) return AbilityType.ACTIVE;
+    if (this instanceof PassiveAbility && this instanceof UnlockableAbility) return AbilityType.PASSIVE;
+    return AbilityType.INNATE;
 }
+```
 
+**Removed:** `PassiveAbility.isPassive()` and `ActiveAbility.isPassive()` default methods — classification uses `getAbilityType()` exclusively.
+
+### 3.6 `QuestConfigLoader` — Parse `on-start-messages` Section
+
+Implemented via `parseOnStartMessages(Section)`: iterates `messagesSection.getRoutesAsStrings(false)`. Skips entries with blank `key` or empty `messages` list (logs warnings). Each entry is either `key:` (locale route) or `messages:` (inline MiniMessage strings).
+
+```java
 return new QuestDefinition.Builder(questKey, scopeType, phases)
-        .rewardEntries(completionRewards)
+        .rewards(rewards)
         .onStartMessages(onStartMessages)
         .expiration(expiration)
         .repeatMode(repeatMode)
@@ -1210,71 +1170,33 @@ on-start-messages:
       - "<body>Try breaking some blocks to see your Mining skill grow."
 ```
 
-### 3.6 `Loadout` — Private Raw Methods, Public Event-Firing Methods
+### 3.7 `Loadout` — Private Raw Methods, Public Event-Firing Methods
 
 The existing `addAbility()`, `removeAbility()`, and `replaceAbility()` are changed from `public` to `private`. They are now internal implementation details called only by the new event-firing methods. No external class needs direct access to raw mutations:
 
-- **DB loading** already has a constructor `Loadout(UUID, int, Set<NamespacedKey>)` that accepts initial abilities. `LoadoutAbilityDAO.getLoadout()` is updated to collect abilities into a `LinkedHashSet` first, then pass them to the constructor (see section 3.7).
+- **DB loading** already has a constructor `Loadout(UUID, int, Set<NamespacedKey>)` that accepts initial abilities. `LoadoutAbilityDAO.getLoadout()` is updated to collect abilities into a `LinkedHashSet` first, then pass them to the constructor (see section 3.8).
 - **`copyLoadout()`** accesses the `abilities` field directly (same class) — unaffected.
 - **`swapActivePositions()`** manipulates the `abilities` list directly — unaffected.
 
 New public methods wrap the now-private mutations and fire events:
 
 ```java
-/**
- * Equips an ability to this loadout and fires a {@link LoadoutAbilityEquipEvent}.
- *
- * @param key the ability to equip
- * @return {@code true} if the ability was successfully equipped
- */
-public boolean equipAbility(@NotNull NamespacedKey key) {
-    try {
-        addAbility(key);
-    } catch (LoadoutMaxSizeExceededException | InvalidAbilityForLoadoutException e) {
-        return false;
-    }
-    Bukkit.getPluginManager().callEvent(
-            new LoadoutAbilityEquipEvent(loadoutHolder, key, loadoutSlot));
-    return true;
-}
+Each public method fires `LoadoutAbilityChangeEvent` with the appropriate `ChangeReason`:
 
-/**
- * Unequips an ability from this loadout and fires a {@link LoadoutAbilityUnequipEvent}.
- *
- * @param key the ability to unequip
- * @return {@code true} if the ability was present and removed
- */
-public boolean unequipAbility(@NotNull NamespacedKey key) {
-    if (!abilities.contains(key)) {
-        return false;
-    }
-    removeAbility(key);
-    Bukkit.getPluginManager().callEvent(
-            new LoadoutAbilityUnequipEvent(loadoutHolder, key, loadoutSlot));
-    return true;
-}
+```java
+// EQUIP: previousAbility=null, newAbility=key
+new LoadoutAbilityChangeEvent(loadoutHolder, ChangeReason.EQUIP, null, key, loadoutSlot);
 
-/**
- * Swaps an ability in this loadout and fires a {@link LoadoutAbilitySwapEvent}.
- * If the new ability is already in the loadout, both swap positions.
- *
- * @param oldAbility the ability to replace
- * @param newAbility the replacement ability
- * @return {@code true} if the swap was successful
- */
-public boolean swapAbility(@NotNull NamespacedKey oldAbility, @NotNull NamespacedKey newAbility) {
-    try {
-        replaceAbility(oldAbility, newAbility);
-    } catch (InvalidAbilityForLoadoutException e) {
-        return false;
-    }
-    Bukkit.getPluginManager().callEvent(
-            new LoadoutAbilitySwapEvent(loadoutHolder, oldAbility, newAbility, loadoutSlot));
-    return true;
-}
+// UNEQUIP: previousAbility=key, newAbility=null
+new LoadoutAbilityChangeEvent(loadoutHolder, ChangeReason.UNEQUIP, key, null, loadoutSlot);
+
+// SWAP: previousAbility=oldAbility, newAbility=newAbility
+new LoadoutAbilityChangeEvent(loadoutHolder, ChangeReason.SWAP, oldAbility, newAbility, loadoutSlot);
 ```
 
-### 3.7 `LoadoutAbilityDAO` — Constructor-Based Loading
+`replaceAbility()` when both abilities are already in the loadout swaps their positions in the internal list (both remain in the loadout).
+
+### 3.8 `LoadoutAbilityDAO` — Constructor-Based Loading
 
 `LoadoutAbilityDAO.getLoadout()` currently creates an empty `Loadout` and calls `addAbility()` in a loop. Since `addAbility()` is now private, the DAO must collect abilities first and pass them to the existing `Loadout(UUID, int, Set<NamespacedKey>)` constructor:
 
@@ -1305,7 +1227,7 @@ public static Loadout getLoadout(@NotNull Connection connection, @NotNull UUID h
 
 `LinkedHashSet` preserves insertion order from the `ORDER BY slot_number ASC` query, so ability ordering is maintained. This also fixes the existing `e.printStackTrace()` anti-pattern in the DAO.
 
-### 3.8 Loadout Callsite Retrofits
+### 3.9 Loadout Callsite Retrofits
 
 All callsites that currently call `addAbility()`, `removeAbility()`, or `replaceAbility()` are updated to use the event-firing methods:
 
@@ -1315,11 +1237,11 @@ All callsites that currently call `addAbility()`, `removeAbility()`, or `replace
 | `LoadoutAbilitySlot.onClick()` (remove) | `loadout.removeAbility(key)` | `loadout.unequipAbility(key)` |
 | `OnAbilityUnlockListener` (auto-equip) | `loadout.addAbility(key)` | `loadout.equipAbility(key)` |
 | `ActiveAbilityComboSlot` (reorder) | `loadout.replaceAbility(old, new)` | `loadout.swapAbility(old, new)` |
-| `LoadoutAbilityDAO.getLoadout()` | `loadout.addAbility(key)` in loop | Constructor `new Loadout(uuid, slot, abilities)` (see section 3.7) |
+| `LoadoutAbilityDAO.getLoadout()` | `loadout.addAbility(key)` in loop | Constructor `new Loadout(uuid, slot, abilities)` (see section 3.8) |
 
 No external callsite retains access to the raw methods.
 
-### 3.9 GUI KeyedGui Retrofit
+### 3.10 GUI KeyedGui Retrofit
 
 All concrete GUI classes implement `KeyedGui` and declare a `public static final NamespacedKey GUI_KEY`. The interface implementation is a one-line method returning `Optional.of(GUI_KEY)`.
 
@@ -1366,7 +1288,7 @@ public class HomeGui extends BaseGui<McRPGPlayer> implements FillerItemGui, Keye
 }
 ```
 
-### 3.10 `McRPGExpansion` — Register New Types
+### 3.11 `McRPGExpansion` — Register New Types
 
 **`getQuestObjectiveTypeContent()`** — add 7 new types:
 
@@ -1389,7 +1311,7 @@ pack.addContent(new RedeemableExperienceRewardType());
 pack.addContent(new RedeemableLevelsRewardType());
 ```
 
-### 3.11 `McRPGListenerRegistrar` — Register New Listeners
+### 3.12 `McRPGListenerRegistrar` — Register New Listeners
 
 ```java
 // Quest progress listeners
@@ -1421,27 +1343,17 @@ Bukkit.getPluginManager().registerEvents(
 
 ```
 QuestManager.startQuest(definition, playerUUID, variables, questSource)
-  ├─> Resolve Player from Bukkit.getPlayer(playerUUID)
-  │   └─> If null → return empty
-  ├─> Fire PreQuestStartEvent(definition, player, questSource)
-  │   └─> If cancelled → return empty (third-party veto)
-  ├─> Resolve QuestScopeProvider from definition.getScopeType()
-  │   └─> If missing → log warning, return empty
-  ├─> new QuestInstance(definition, null, variables, questSource, null)
-  │   └─> Builds stage/objective tree, resolves expression-based required-progress
-  ├─> provider.createNewScope(instance.getQuestUUID())
-  │   └─> For SinglePlayerQuestScope: setPlayerInScope(playerUUID)
-  ├─> instance.setQuestScope(scope)
-  ├─> instance.start(definition)
-  │   ├─> activate() — NOT_STARTED → IN_PROGRESS, set startTime
-  │   ├─> Activate phase-0 stages
-  │   └─> Fire QuestStartEvent(this, definition, questSource)
-  │       ├─> [MONITOR] QuestStartMessageListener
-  │       │   └─> Send on-start messages to online scope members
-  │       ├─> [MONITOR] QuestStartAutoCompleteListener
-  │       │   └─> For each IN_PROGRESS objective:
-  │       │       ├─> type.checkAutoComplete(playerUUID)
-  │       │       └─> If satisfied → objective.progress(required, playerUUID)
+  ├─> If Bukkit.getPlayer(playerUUID) != null:
+  │   ├─> Fire PreQuestStartEvent(definition, player, questSource)
+  │   └─> If cancelled → return empty (log info)
+  ├─> Resolve QuestScopeProvider (return empty if missing)
+  ├─> new QuestInstance(...) — builds objective tree + objectiveIndex in definition
+  ├─> provider.createNewScope + setPlayerInScope (SinglePlayer)
+  ├─> instance.start(definition, initialPlayerUUID)
+  │   ├─> activate() + activate phase-0 stages
+  │   └─> Fire QuestStartEvent(this, definition, questSource, starterUUID)
+  │       ├─> [MONITOR] QuestStartMessageListener → QuestMessageDeliverer → online scope
+  │       ├─> [MONITOR] QuestStartAutoCompleteListener → checkAutoComplete(starterUUID) only
   │       └─> [MONITOR] QuestStartListener (existing)
   ├─> trackActiveQuest(instance)
   └─> return Optional.of(instance)
@@ -1465,20 +1377,15 @@ Bukkit event fires (SkillGainLevelEvent, CoreGuiOpenEvent, etc.)
 ### 4.3 Auto-Complete Flow (State-Based Objectives)
 
 ```
-QuestStartEvent fires
+QuestStartEvent fires (with starterUUID)
   └─> QuestStartAutoCompleteListener.onQuestStart()
-      └─> For each active stage in quest instance:
-          └─> For each IN_PROGRESS objective in stage:
-              ├─> Resolve objective definition from quest definition
-              └─> For each player UUID in quest scope:
-                  ├─> type.checkAutoComplete(playerUUID)
-                  │   └─> State-based types:
-                  │       ├─> SkillTargetLevel: resolve McRPGPlayer, check skill levels
-                  │       ├─> AbilityUnlock: check ABILITY_UNLOCKED_ATTRIBUTE
-                  │       └─> LoadoutEquip: check current loadout contents
-                  └─> If autoProgress >= requiredProgress:
-                      └─> objective.progress(requiredProgress, playerUUID)
-                          └─> Triggers normal objective completion pipeline
+      ├─> If starterUUID == null → return (no auto-complete)
+      └─> For each IN_PROGRESS objective in active stages:
+          ├─> definition.findObjectiveDefinition(objectiveKey)
+          ├─> type.checkAutoComplete(starterUUID)
+          │   └─> State-based types: skill level, unlock attribute, active loadout
+          └─> If autoProgress >= requiredProgress:
+              └─> objective.progress(required, starterUUID)
 ```
 
 ### 4.4 Loadout Equip Flow (Updated)
@@ -1488,8 +1395,9 @@ Player clicks ability in LoadoutAbilitySelectGui
   └─> LoadoutSelectAbilitySlot.onClick()
       ├─> loadout.equipAbility(key)  [was: loadout.addAbility(key)]
       │   ├─> addAbility(key) — private mutation
-      │   └─> Fire LoadoutAbilityEquipEvent(playerUUID, key, slot)
+      │   └─> Fire LoadoutAbilityChangeEvent(EQUIP, null, key, slot)
       │       └─> [MONITOR] LoadoutEquipQuestProgressListener
+      │           ├─> Skip if not player's active loadout
       │           └─> progressQuests(manager, playerUUID, LoadoutEquipQuestContext)
       └─> Open refreshed LoadoutGui
 ```
@@ -1571,38 +1479,31 @@ private static final String QUEST_OBJECTIVE_TYPE_HEADER = toRoutePath(QUEST_HEAD
 
 ## 6. Implementation Order
 
-1. **McCore: `KeyedGui` interface** — new interface in McCore `gui/` package
-2. **McCore: `CoreGuiOpenEvent`** — new event in McCore `event/gui/`
-3. **McCore: `GuiManager.trackPlayerGui()` update** — fire event after tracking
-4. **McCore: publish to Maven local** — `./gradlew publishToMavenLocal`
-5. **McRPG: bump McCore dependency** — update `build.gradle.kts`
-6. **`QuestDefinition.Builder`** — inner static class, remove existing constructors
-7. **`OnStartMessage` record** — new record in `quest/definition/`
-8. **`QuestDefinition` on-start messages field** — new field, accessor, builder integration
-9. **`QuestConfigLoader` update** — parse `on-start-messages:` section, migrate to builder
-10. **Migrate all `QuestConfigLoader` callsites** to builder (and `QuestTemplateEngine`, `GeneratedQuestDefinitionCodec`, etc.)
-11. **`PreQuestStartEvent`** — new cancellable event class
-12. **`QuestManager.startQuest()` update** — fire `PreQuestStartEvent` before instance creation
-13. **`QuestStartEvent` augmentation** — add `QuestSource` field, update `QuestInstance.start()` call
-14. **`QuestObjectiveType.checkAutoComplete()` default method** — add to interface
-15. **GUI KeyedGui retrofit** — implement `KeyedGui` + `GUI_KEY` on all 22 concrete GUI classes
-16. **Loadout events** — `LoadoutAbilityEquipEvent`, `LoadoutAbilityUnequipEvent`, `LoadoutAbilitySwapEvent`
-17. **`Loadout` raw methods → private** — `addAbility()`, `removeAbility()`, `replaceAbility()` made private
-18. **`Loadout` equip/unequip/swap methods** — public event-firing methods wrapping private mutations
-19. **`LoadoutAbilityDAO` update** — constructor-based loading with `LinkedHashSet` (section 3.7)
-20. **Retrofit loadout callsites** — GUI slots, commands, `OnAbilityUnlockListener`
-21. **4 reward types** — `MessageRewardType`, `BoostedExperienceRewardType`, `RedeemableExperienceRewardType`, `RedeemableLevelsRewardType`
-22. **7 objective types** — all types with `parseConfig()`, `processProgress()`, `checkAutoComplete()` (where applicable), `describeObjective()`
-23. **6 progress context classes** — `SkillLevelQuestContext`, `GuiOpenQuestContext`, etc.
-24. **6 progress listeners** — one per event source
-25. **`QuestStartMessageListener`** — sends on-start messages on `QuestStartEvent`
-26. **`QuestStartAutoCompleteListener`** — auto-completes state-based objectives on quest start
-27. **`McRPGExpansion` registration** — add new reward types and objective types to content packs
-28. **`McRPGListenerRegistrar`** — register all new listeners
-29. **`LocalizationKey` additions** — route constants for new locale keys
-30. **Locale YAML additions** — `en_quest.yml` entries for reward formats, objective descriptions, and on-start message keys
-31. **Builder pattern rules** — ✅ already added to `core.mdc` and `CLAUDE.md`
-32. **Unit tests**
+All steps below are **complete** in the current working tree unless noted.
+
+1. ✅ McCore: `KeyedGui`, `CoreGuiOpenEvent`, `GuiManager` update (McCore `1.0.0.17-SNAPSHOT`)
+2. ✅ `QuestDefinition.Builder` + objective index + removed constructors
+3. ✅ `OnStartMessage` record
+4. ✅ `QuestMessageDeliverer`
+5. ✅ `QuestConfigLoader` — `parseOnStartMessages()`, builder migration
+6. ✅ Migrate template codec, `QuestTemplateEngine`, test helpers to builder
+7. ✅ `PreQuestStartEvent` (online player only)
+8. ✅ `QuestManager.startQuest()` pre-event gate
+9. ✅ `QuestStartEvent` — `QuestSource` + `starterUUID`; `QuestInstance.start(definition, starterUUID)`
+10. ✅ `QuestObjectiveType.checkAutoComplete()` default method
+11. ✅ `AbilityType` enum + `Ability.getAbilityType()`
+12. ✅ `AbilityObjectiveFilter`
+13. ✅ GUI `KeyedGui` retrofit (22 classes)
+14. ✅ `LoadoutAbilityChangeEvent`, `LoadoutPositionSwapEvent`
+15. ✅ `Loadout` private mutations + public equip/unequip/swap
+16. ✅ `LoadoutAbilityDAO` constructor-based loading
+17. ✅ Loadout callsite retrofits
+18. ✅ 4 reward types
+19. ✅ 7 objective types + 6 contexts + 6 listeners
+20. ✅ `QuestStartMessageListener`, `QuestStartAutoCompleteListener`
+21. ✅ `McRPGExpansion`, `McRPGListenerRegistrar`, `LocalizationKey`, `en_quest.yml`
+22. ✅ Builder pattern rules in `core.mdc` and `CLAUDE.md`
+23. ✅ Unit tests (see section 7; `KeyedGuiRetrofitTest` / `CoreGuiOpenEventTest` deferred)
 
 ---
 
@@ -1614,46 +1515,42 @@ private static final String QUEST_OBJECTIVE_TYPE_HEADER = toRoutePath(QUEST_HEAD
 - Uncancelled event allows normal quest start
 - Multiple listeners can inspect and modify cancellation state
 
-### 7.2 `QuestStartEventSourceTest`
-- `QuestStartEvent` exposes `getQuestSource()` matching the source passed to `startQuest()`
-- Different source types (board, manual, ability upgrade) are correctly propagated
+### 7.2 `QuestStartEvent` source and starter coverage
+- `QuestInstanceTest` — `getQuestSource()` returns source from construction
+- `QuestStartAutoCompleteListenerTest` — null `starterUUID` skips auto-complete
+- `QuestStartMessageListenerTest` — passes `starterUUID` to event constructor
 
-### 7.3 `QuestDefinitionBuilderTest`
+### 7.3 `QuestDefinitionTest` / `QuestDefinitionObjectiveIndexTest`
 - Builder with required fields only produces valid definition
 - Builder with all optional fields produces definition with correct values
 - Builder with empty phases throws `IllegalArgumentException`
 - `rewards()` auto-wraps `QuestRewardType` list into `QuestRewardEntry` list
-- `rewardEntries()` preserves fallback conditions
 - `onStartMessages()` sets the on-start messages
-- Default values: `repeatMode` = `ONCE`, `rewardEntries` = empty, `onStartMessages` = empty
-- Old constructors are removed; only the builder can construct definitions
+- `findObjectiveDefinition()` returns correct definition by key
+- Duplicate objective keys in builder throw `IllegalStateException`
 
 ### 7.4 `OnStartMessageTest`
 - `fromLocaleKey()` creates record with non-null locale key and empty inline messages
 - `fromInline()` creates record with null locale key and provided inline messages
 - Record equality and immutability hold
 
-### 7.5 `QuestStartMessageListenerTest`
-- On-start messages with locale key are resolved via `McRPGLocalizationManager` and sent to the player
-- On-start messages with inline MiniMessage strings are parsed and sent when no locale key is set
-- Empty on-start messages list results in no messages sent
-- Multiple on-start messages are all sent in order
-- Messages are sent to all online scope members, not just the initiating player
-- Offline scope members receive no messages (no pending message queue)
+### 7.5 `QuestStartMessageListenerTest` / `QuestMessageDelivererTest`
+- `QuestMessageDeliverer` — locale resolution, inline fallback, malformed inline handling
+- Empty on-start messages → no delivery
+- Online scope members receive messages via injected deliverer
+- Offline scope members skipped
 
 ### 7.6 `QuestStartAutoCompleteListenerTest`
-- State-based objective auto-completes when condition is met at quest start
-- Event-based objective does NOT auto-complete (returns `OptionalLong.empty()`)
-- Mixed objectives: only state-based ones auto-complete, event-based ones remain IN_PROGRESS
-- Auto-complete fires normal objective completion pipeline (QuestObjectiveCompleteEvent, etc.)
-- Auto-complete with `checkAutoComplete` returning progress < required: no completion
+- State-based objective auto-completes for **starter UUID** when condition met
+- **Null `starterUUID`** → no objectives progressed
+- Event-based types skipped (`checkAutoComplete` empty)
 
 ### 7.7 Objective Type Tests (one per type)
 
 #### `SkillLevelUpObjectiveTypeTest`
 - `parseConfig` with `skill` filter produces configured instance matching only that skill
 - `parseConfig` without `skill` filter matches any skill level-up
-- `processProgress` returns `event.getLevels()` when skill matches
+- `processProgress` returns `getLevelsGained()` when skill matches and meets per-event floor
 - `processProgress` returns 0 when skill does not match
 - `levels` filter: events with fewer levels than `minLevelsPerEvent` return 0
 - `checkAutoComplete` returns empty (event-only type)
@@ -1672,19 +1569,17 @@ private static final String QUEST_OBJECTIVE_TYPE_HEADER = toRoutePath(QUEST_HEAD
 - `processProgress` returns 0 when GUI key is empty (non-keyed GUI)
 - `checkAutoComplete` returns empty (event-only type)
 
-#### `AbilityUnlockObjectiveTypeTest`
-- `processProgress` returns 1 when unlocked ability matches type filter
-- `processProgress` returns 0 when ability type does not match
-- `ability-type: PASSIVE` matches `PassiveAbility` with `ABILITY_UNLOCKED_ATTRIBUTE`
-- `ability-type: ACTIVE` matches `ComboActivatable`
+#### `AbilityUnlockObjectiveTypeTest` / `AbilityObjectiveFilterTest`
+- Filter priority: specific key > type > any
+- `AbilityType` parsing from config strings
+- Unlock auto-complete checks `ABILITY_UNLOCKED_ATTRIBUTE`
 - Specific `ability` key filter narrows to one ability
 - `checkAutoComplete` returns `OptionalLong.of(1)` when player has matching unlocked ability
 - `checkAutoComplete` returns empty when no matching unlocked ability exists
 
 #### `AbilityActivateObjectiveTypeTest`
-- `processProgress` returns 1 when activated ability matches type filter
-- `ability-type: ACTIVE` matches abilities where `instanceof ComboActivatable`
-- `ability-type: PASSIVE` matches abilities where `instanceof PassiveAbility`
+- `processProgress` returns 1 when activated ability matches `AbilityObjectiveFilter`
+- `ability-type: ACTIVE` matches `AbilityType.ACTIVE` via `getAbilityType()`
 - No filter: any activation counts
 - `checkAutoComplete` returns empty (event-only type)
 
@@ -1700,13 +1595,11 @@ private static final String QUEST_OBJECTIVE_TYPE_HEADER = toRoutePath(QUEST_HEAD
 - No filter: any board acceptance counts
 - `checkAutoComplete` returns empty (event-only type)
 
-### 7.8 Progress Listener Tests (one per listener)
+### 7.8 Progress Listener Tests
 
-Each test verifies:
-- Progress is applied when event fires for a player with an active matching objective
-- Progress is NOT applied when the player has no active quest with matching objectives
-- Progress is NOT applied when the objective is already COMPLETED
-- The correct context type is constructed from the Bukkit event
+- `QuestProgressListenerWiringTest` — all six listeners construct without error
+- `LoadoutEquipQuestProgressListenerTest` — progress on equip; active loadout filter
+- Per-type objective tests cover `canProcess` / `processProgress` with mocked contexts
 
 ### 7.9 Reward Type Tests
 
@@ -1733,33 +1626,14 @@ Each test verifies:
 
 ### 7.10 Loadout Event Tests
 
-#### `LoadoutEquipEventTest`
-- `equipAbility()` fires `LoadoutAbilityEquipEvent` with correct player UUID, ability key, and slot
-- `equipAbility()` returns `false` when loadout is full (no event fired)
-- `equipAbility()` returns `false` when ability is already present (no event fired)
+- `LoadoutAbilityChangeEventTest` — event fields per `ChangeReason`
+- `LoadoutPositionSwapEventTest` — combo slot reorder event
+- `LoadoutTest` — equip/unequip/swap fire change events; private methods not externally accessible; constructor loading without events
 
-#### `LoadoutUnequipEventTest`
-- `unequipAbility()` fires `LoadoutAbilityUnequipEvent`
-- `unequipAbility()` returns `false` when ability is not in loadout (no event fired)
+### 7.11 Deferred tests
 
-#### `LoadoutSwapEventTest`
-- `swapAbility()` fires `LoadoutAbilitySwapEvent` with old and new keys
-- `swapAbility()` returns `false` on invalid swap (no event fired)
-
-#### `LoadoutPrivateMethodsTest`
-- `addAbility()`, `removeAbility()`, `replaceAbility()` are not accessible from outside `Loadout` (reflection-based visibility check)
-- Constructor `Loadout(UUID, int, Set<NamespacedKey>)` correctly initializes abilities without events
-
-### 7.11 `KeyedGuiRetrofitTest`
-- Each concrete GUI class implements `KeyedGui`
-- Each `GUI_KEY` constant uses the `mcrpg` namespace
-- No duplicate `GUI_KEY` values across GUI classes
-
-### 7.12 `CoreGuiOpenEventTest`
-- `GuiManager.trackPlayerGui()` fires `CoreGuiOpenEvent` after tracking
-- Event carries correct player UUID and GUI instance
-- GUI implementing `KeyedGui` produces event with non-empty `guiKey`
-- GUI not implementing `KeyedGui` produces event with empty `guiKey`
+- **`KeyedGuiRetrofitTest`** — not implemented; manual verification via GUI retrofit
+- **`CoreGuiOpenEventTest`** — belongs in McCore test suite if added
 
 ---
 
@@ -1785,9 +1659,19 @@ Each test verifies:
 
 10. **On-start messages (not rewards) on `QuestDefinition`**: The original HLD used `on-start-rewards` with `MessageRewardType` entries. This was narrowed to `on-start-messages` — a dedicated message-only concept — to avoid the Phase 3 problem of chain cascade auto-complete suppressing tangible rewards. Every on-start "reward" in the tutorial is a message; by making this explicitly a message concept, Phase 3's chain cascade can cleanly skip messages for auto-completed steps without risking dropped rewards. `MessageRewardType` still exists as a general-purpose completion reward type.
 
-11. **On-start messages fire on `QuestStartEvent` via listener**: `QuestStartMessageListener` handles message delivery on `QuestStartEvent`, consistent with how completion rewards are granted via `QuestCompleteListener`. Separating message delivery from the quest start path keeps `QuestManager.startQuest()` focused on orchestration.
+11. **On-start messages fire on `QuestStartEvent` via listener + deliverer**: `QuestStartMessageListener` delegates to `QuestMessageDeliverer`, shared with `MessageRewardType`. Locale resolution falls back to inline messages on failure.
 
-12. **Builder pattern project guidelines codified**: Builder pattern rules have been added to `core.mdc` and `CLAUDE.md` as part of this phase. Thresholds: 6+ total params OR 3+ optional/nullable params. Required structure: static inner `Builder` class, required fields in Builder constructor, fluent optional setters, `build()` validates invariants, target constructor is private. Not used for: ≤5 all-required params, mutable classes, single-callsite construction, simple records.
+12. **Builder pattern project guidelines codified**: Builder pattern rules in `core.mdc` and `CLAUDE.md`.
+
+13. **`AbilityType` centralization**: Replaces per-type `instanceof` string checks and removed `isPassive()` API on `PassiveAbility`/`ActiveAbility`.
+
+14. **Unified loadout change event**: One `LoadoutAbilityChangeEvent` with `ChangeReason` instead of three separate event classes.
+
+15. **Starter-scoped auto-complete**: Only `event.getStarterUUID()` is checked — avoids completing scoped quests for all members based on one player's state.
+
+16. **Active-loadout-only equip progress**: `LoadoutEquipQuestProgressListener` ignores changes to non-active loadout presets.
+
+17. **PreQuestStartEvent only when player online**: Offline/system starts skip the cancellable gate; only cancellation or missing scope provider aborts the start.
 
 ---
 
@@ -1801,12 +1685,8 @@ Each test verifies:
 
 4. **`MessageRewardType` for offline players**: If a `MessageRewardType` completion reward is queued as a pending reward for an offline player, the message will be sent when they next log in. On-start messages (which are now a separate concept from rewards) are only sent to online players and are never queued.
 
-5. **HLD update needed**: The HLD should be updated to:
-   - Explicitly note that Phase 1 owns the `checkAutoComplete` infrastructure and Phase 3 owns the delay and cascade batching
-   - Replace `on-start-rewards` with `on-start-messages` throughout
-   - Mark the `combo_activate` type as merged into `ability_activate`, reducing the count from 8 to 7 objective types
-   - Note that the batch summary for chain cascade auto-complete must be configurable and use the localization system
+5. **Loadout swap edge case**: When `replaceAbility()` is called via `swapAbility()` and both abilities are already in the loadout, a `LoadoutAbilityChangeEvent` with `ChangeReason.SWAP` fires. `LoadoutEquipQuestProgressListener` credits the `newAbility` against the filter.
 
-6. **Loadout swap edge case**: When `replaceAbility()` (now private) is called via `swapAbility()` and both abilities are already in the loadout (positional swap), the `LoadoutAbilitySwapEvent` fires once. The `LoadoutEquipQuestProgressListener` should check the `newAbilityKey` field against the objective's filter — the "new" ability in the swap position counts as an equip for quest purposes.
+6. **`LoadoutAbilityDAO.getLoadout()` order preservation**: `LinkedHashSet` + constructor preserves `ORDER BY slot_number ASC` ordering (verified in `LoadoutTest`).
 
-7. **`LoadoutAbilityDAO.getLoadout()` order preservation**: The migration to `LinkedHashSet` + constructor preserves insertion order from the `ORDER BY slot_number ASC` query. The existing `Loadout(UUID, int, Set<NamespacedKey>)` constructor creates the internal `ArrayList` from the set, so `LinkedHashSet` ordering is maintained. Verify this in tests.
+7. **AbilityType refactor follow-ups**: See [chain-system-backlog.md](../../hld/tutorial/chain-system-backlog.md) section 8 (`LoadoutHolder.getAvailableDefaultAbilities`, `resolveAbilityName` SRP, additional filter tests).

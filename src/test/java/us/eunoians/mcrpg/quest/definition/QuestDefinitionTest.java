@@ -20,17 +20,11 @@ public class QuestDefinitionTest extends McRPGBaseTest {
     @DisplayName("Given empty phases list, when constructing, then it throws IllegalArgumentException")
     @Test
     public void constructor_throwsIllegalArgumentException_whenPhasesEmpty() {
-        assertThrows(IllegalArgumentException.class, () -> new QuestDefinition(
+        assertThrows(IllegalArgumentException.class, () -> new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", "test"),
                 new NamespacedKey("mcrpg", "single_player"),
-                null,
-                List.of(),
-                List.of(),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null
-        ));
+                List.of()
+        ).build());
     }
 
     @DisplayName("Given a valid definition, when getting phases, then returned list is immutable")
@@ -120,17 +114,12 @@ public class QuestDefinitionTest extends McRPGBaseTest {
     public void getExpiration_returnsDuration_whenSet() {
         QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
         QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-        QuestDefinition def = new QuestDefinition(
+        QuestDefinition def = new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", "expiry_test"),
                 new NamespacedKey("mcrpg", "single_player"),
-                Duration.ofHours(24),
-                List.of(phase),
-                List.of(),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null
-        );
+                List.of(phase)
+        ).expiration(Duration.ofHours(24))
+                .build();
         assertTrue(def.getExpiration().isPresent());
         assertEquals(Duration.ofHours(24), def.getExpiration().get());
     }
@@ -140,17 +129,13 @@ public class QuestDefinitionTest extends McRPGBaseTest {
     public void repeatFields_returnCorrectValues() {
         QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
         QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-        QuestDefinition def = new QuestDefinition(
+        QuestDefinition def = new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", "repeat_test"),
                 new NamespacedKey("mcrpg", "single_player"),
-                null,
-                List.of(phase),
-                List.of(),
-                QuestRepeatMode.COOLDOWN,
-                Duration.ofHours(1),
-                -1,
-                null
-        );
+                List.of(phase)
+        ).repeatMode(QuestRepeatMode.COOLDOWN)
+                .repeatCooldown(Duration.ofHours(1))
+                .build();
         assertEquals(QuestRepeatMode.COOLDOWN, def.getRepeatMode());
         assertTrue(def.getRepeatCooldown().isPresent());
         assertEquals(Duration.ofHours(1), def.getRepeatCooldown().get());
@@ -162,17 +147,13 @@ public class QuestDefinitionTest extends McRPGBaseTest {
     public void getRepeatLimit_returnsLimit_whenSet() {
         QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
         QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-        QuestDefinition def = new QuestDefinition(
+        QuestDefinition def = new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", "limited_test"),
                 new NamespacedKey("mcrpg", "single_player"),
-                null,
-                List.of(phase),
-                List.of(),
-                QuestRepeatMode.LIMITED,
-                null,
-                5,
-                null
-        );
+                List.of(phase)
+        ).repeatMode(QuestRepeatMode.LIMITED)
+                .repeatLimit(5)
+                .build();
         assertTrue(def.getRepeatLimit().isPresent());
         assertEquals(5, def.getRepeatLimit().getAsInt());
     }
@@ -190,17 +171,12 @@ public class QuestDefinitionTest extends McRPGBaseTest {
         QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
         QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
         NamespacedKey expansionKey = new NamespacedKey("mcrpg", "seasonal");
-        QuestDefinition def = new QuestDefinition(
+        QuestDefinition def = new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", "expansion_test"),
                 new NamespacedKey("mcrpg", "single_player"),
-                null,
-                List.of(phase),
-                List.of(),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                expansionKey
-        );
+                List.of(phase)
+        ).expansionKey(expansionKey)
+                .build();
         assertTrue(def.getExpansionKey().isPresent());
         assertEquals(expansionKey, def.getExpansionKey().get());
     }
@@ -225,17 +201,11 @@ public class QuestDefinitionTest extends McRPGBaseTest {
     public void getDisplayNameRoute_includesCustomNamespace() {
         QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
         QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-        QuestDefinition def = new QuestDefinition(
+        QuestDefinition def = new QuestDefinition.Builder(
                 new NamespacedKey("custom_ns", "my_quest"),
                 new NamespacedKey("mcrpg", "single_player"),
-                null,
-                List.of(phase),
-                List.of(),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null
-        );
+                List.of(phase)
+        ).build();
         Route expected = Route.fromString("quests.custom_ns.my_quest.display-name");
         assertEquals(expected, def.getDisplayNameRoute());
     }

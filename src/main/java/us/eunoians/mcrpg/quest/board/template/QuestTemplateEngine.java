@@ -236,20 +236,11 @@ public final class QuestTemplateEngine {
                 ? null
                 : remapInlineDisplayObjectiveKeys(template.getInlineDisplay(), filteredPhases, phases);
 
-        return new QuestDefinition(
-                questKey,
-                template.getScopeProviderKey(),
-                null,
-                phases,
-                rewards,
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null,
-                null,
-                template.getRewardDistribution().orElse(null),
-                inlineDisplay
-        );
+        return new QuestDefinition.Builder(questKey, template.getScopeProviderKey(), phases)
+                .rewards(rewards)
+                .rewardDistribution(template.getRewardDistribution().orElse(null))
+                .inlineDisplay(inlineDisplay)
+                .build();
     }
 
     /**

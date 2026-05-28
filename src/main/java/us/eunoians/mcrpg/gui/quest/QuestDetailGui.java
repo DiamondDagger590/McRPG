@@ -44,12 +44,16 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * Detail GUI showing the full phase/stage/objective breakdown of a quest.
  * Supports both active quest instances and completed quests from the history log.
  */
-public class QuestDetailGui extends McRPGPaginatedGui {
+public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "quest_detail");
 
     private static final int NAVIGATION_ROW_START_INDEX = 45;
     private static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
@@ -350,5 +354,11 @@ public class QuestDetailGui extends McRPGPaginatedGui {
     @Override
     public void unregisterListeners() {
         InventoryClickEvent.getHandlerList().unregister(this);
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

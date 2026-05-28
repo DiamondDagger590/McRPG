@@ -27,12 +27,18 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * Paginated GUI displaying a player's completed quest history with sort toggling.
  */
-public class QuestHistoryGui extends McRPGPaginatedGui {
+public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "quest_history");
 
     private static final int NAVIGATION_ROW_START_INDEX = 45;
     private static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
@@ -178,5 +184,11 @@ public class QuestHistoryGui extends McRPGPaginatedGui {
     @Override
     public void unregisterListeners() {
         InventoryClickEvent.getHandlerList().unregister(this);
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

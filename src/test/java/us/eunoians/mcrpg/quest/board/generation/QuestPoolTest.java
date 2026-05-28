@@ -80,19 +80,12 @@ public class QuestPoolTest extends McRPGBaseTest {
         Map<NamespacedKey, QuestDefinitionMetadata> metadata = Map.of(
                 BoardMetadata.METADATA_KEY, new BoardMetadata(boardEligible, supportedRarities, Set.of(), null, null)
         );
-        return new QuestDefinition(
+        return new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", questKey),
                 SINGLE_PLAYER_SCOPE,
-                null,
-                List.of(phase),
-                List.of(),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null,
-                metadata,
-                null
-        );
+                List.of(phase)
+        ).metadata(metadata)
+                .build();
     }
 
     @DisplayName("getEligibleDefinitions: returns only definitions with matching rarity in supportedRarities")

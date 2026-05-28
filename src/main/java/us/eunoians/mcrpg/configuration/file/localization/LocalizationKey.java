@@ -873,6 +873,40 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_REWARD_ITEM_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "item.format"));
     public static final Route QUEST_REWARD_ABILITY_UPGRADE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "ability-upgrade.format"));
     public static final Route QUEST_REWARD_ABILITY_UPGRADE_NEXT_TIER_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "ability-upgrade-next-tier.format"));
+    public static final Route QUEST_REWARD_BOOSTED_EXPERIENCE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "boosted-experience.format"));
+    public static final Route QUEST_REWARD_REDEEMABLE_EXPERIENCE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "redeemable-experience.format"));
+    public static final Route QUEST_REWARD_REDEEMABLE_LEVELS_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "redeemable-levels.format"));
+    public static final Route QUEST_REWARD_MESSAGE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "message.format"));
+
+    // New objective type description keys
+    private static final String QUEST_OBJECTIVE_SKILL_LEVEL_UP_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "skill-level-up");
+    public static final Route QUEST_OBJECTIVE_SKILL_LEVEL_UP_ANY = Route.fromString(toRoutePath(QUEST_OBJECTIVE_SKILL_LEVEL_UP_HEADER, "any"));
+    public static final Route QUEST_OBJECTIVE_SKILL_LEVEL_UP_SPECIFIC = Route.fromString(toRoutePath(QUEST_OBJECTIVE_SKILL_LEVEL_UP_HEADER, "specific"));
+    private static final String QUEST_OBJECTIVE_SKILL_TARGET_LEVEL_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "skill-target-level");
+    public static final Route QUEST_OBJECTIVE_SKILL_TARGET_LEVEL_ANY = Route.fromString(toRoutePath(QUEST_OBJECTIVE_SKILL_TARGET_LEVEL_HEADER, "any"));
+    public static final Route QUEST_OBJECTIVE_SKILL_TARGET_LEVEL_SPECIFIC = Route.fromString(toRoutePath(QUEST_OBJECTIVE_SKILL_TARGET_LEVEL_HEADER, "specific"));
+    private static final String QUEST_OBJECTIVE_GUI_OPEN_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "gui-open");
+    public static final Route QUEST_OBJECTIVE_GUI_OPEN_FORMAT = Route.fromString(toRoutePath(QUEST_OBJECTIVE_GUI_OPEN_HEADER, "format"));
+    private static final String QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "ability-unlock");
+    public static final Route QUEST_OBJECTIVE_ABILITY_UNLOCK_ANY = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER, "any"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_UNLOCK_PASSIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER, "passive"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_UNLOCK_ACTIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER, "active"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_UNLOCK_INNATE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER, "innate"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_UNLOCK_SPECIFIC = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER, "specific"));
+    private static final String QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "ability-activate");
+    public static final Route QUEST_OBJECTIVE_ABILITY_ACTIVATE_ANY = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER, "any"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_ACTIVATE_PASSIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER, "passive"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_ACTIVATE_ACTIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER, "active"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_ACTIVATE_INNATE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER, "innate"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_ACTIVATE_SPECIFIC = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER, "specific"));
+    private static final String QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "loadout-equip");
+    public static final Route QUEST_OBJECTIVE_LOADOUT_EQUIP_ANY = Route.fromString(toRoutePath(QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER, "any"));
+    public static final Route QUEST_OBJECTIVE_LOADOUT_EQUIP_PASSIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER, "passive"));
+    public static final Route QUEST_OBJECTIVE_LOADOUT_EQUIP_ACTIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER, "active"));
+    public static final Route QUEST_OBJECTIVE_LOADOUT_EQUIP_INNATE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER, "innate"));
+    public static final Route QUEST_OBJECTIVE_LOADOUT_EQUIP_SPECIFIC = Route.fromString(toRoutePath(QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER, "specific"));
+    private static final String QUEST_OBJECTIVE_QUEST_BOARD_ACCEPT_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "quest-board-accept");
+    public static final Route QUEST_OBJECTIVE_QUEST_BOARD_ACCEPT_FORMAT = Route.fromString(toRoutePath(QUEST_OBJECTIVE_QUEST_BOARD_ACCEPT_HEADER, "format"));
 
     // Mana feedback — under the existing ability section
     private static final String MANA_FEEDBACK_HEADER = toRoutePath(ABILITY_HEADER, "mana-feedback");

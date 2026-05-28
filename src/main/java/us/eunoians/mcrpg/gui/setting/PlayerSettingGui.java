@@ -24,11 +24,16 @@ import us.eunoians.mcrpg.setting.McRPGSetting;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * This gui is used to display all {@link PlayerSetting}s to a player.
  */
-public class PlayerSettingGui extends McRPGPaginatedGui {
+public class PlayerSettingGui extends McRPGPaginatedGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "settings");
 
     private static final int SETTING_DISPLAY_SIZE = 18;
     private static final int NAVIGATION_ROW_START_INDEX = SETTING_DISPLAY_SIZE;
@@ -189,5 +194,11 @@ public class PlayerSettingGui extends McRPGPaginatedGui {
     @NotNull
     public Player getPlayer() {
         return player;
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

@@ -7,7 +7,6 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveInstance;
-import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveState;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveProgressContext;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType;
@@ -48,11 +47,7 @@ public interface QuestProgressListener extends Listener {
             }
 
             for (QuestStageInstance stage : questInstance.getActiveQuestStages()) {
-                for (QuestObjectiveInstance objective : stage.getQuestObjectives()) {
-                    if (objective.getQuestObjectiveState() != QuestObjectiveState.IN_PROGRESS) {
-                        continue;
-                    }
-
+                for (QuestObjectiveInstance objective : stage.getActiveObjectives()) {
                     definition.flatMap(def -> def.findObjectiveDefinition(objective.getQuestObjectiveKey()))
                             .ifPresent(objDef -> {
                                 QuestObjectiveType type = objDef.getObjectiveType();

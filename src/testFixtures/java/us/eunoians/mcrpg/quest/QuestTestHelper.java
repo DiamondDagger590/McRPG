@@ -167,17 +167,11 @@ public final class QuestTestHelper {
     public static QuestDefinition singlePhaseQuest(@NotNull String questKey) {
         QuestStageDefinition stage = singleStageDef(questKey + "_stage", questKey + "_obj");
         QuestPhaseDefinition phase = singlePhaseDef(PhaseCompletionMode.ALL, stage);
-        return new QuestDefinition(
+        return new QuestDefinition.Builder(
                 new NamespacedKey(NAMESPACE, questKey),
                 SINGLE_PLAYER_SCOPE,
-                null,
-                List.of(phase),
-                List.of(),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null
-        );
+                List.of(phase)
+        ).build();
     }
 
     /**
@@ -190,17 +184,11 @@ public final class QuestTestHelper {
     @NotNull
     public static QuestDefinition multiPhaseQuest(@NotNull String questKey,
                                                   @NotNull QuestPhaseDefinition... phases) {
-        return new QuestDefinition(
+        return new QuestDefinition.Builder(
                 new NamespacedKey(NAMESPACE, questKey),
                 SINGLE_PLAYER_SCOPE,
-                null,
-                Arrays.asList(phases),
-                List.of(),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null
-        );
+                Arrays.asList(phases)
+        ).build();
     }
 
     /**
@@ -217,17 +205,13 @@ public final class QuestTestHelper {
                                            @NotNull List<QuestPhaseDefinition> phases,
                                            @NotNull List<QuestRewardType> rewards,
                                            @NotNull QuestRepeatMode repeatMode) {
-        return new QuestDefinition(
+        return new QuestDefinition.Builder(
                 new NamespacedKey(NAMESPACE, questKey),
                 SINGLE_PLAYER_SCOPE,
-                null,
-                phases,
-                rewards,
-                repeatMode,
-                null,
-                -1,
-                null
-        );
+                phases
+        ).rewards(rewards)
+                .repeatMode(repeatMode)
+                .build();
     }
 
     /**

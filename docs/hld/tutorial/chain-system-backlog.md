@@ -259,6 +259,18 @@ Quest reward types from 'mcrpg':
 
 ---
 
+## 8. AbilityType Refactor Deferred Items
+
+**Summary:** Follow-up work identified during the AbilityType enum refactor audit (post Phase 1 quest engine extensions). Not regressions from the refactor itself.
+
+| Item | Rationale |
+|------|-----------|
+| **`LoadoutHolder.getAvailableDefaultAbilities()` partial migration** | Private method with semantically different intent (non-unlockable abilities). Migrating it to `AbilityType` would change behavior. Defer to a separate ticket. |
+| **`resolveAbilityName` SRP concern** | Name resolution lives on `AbilityObjectiveFilter` alongside filter matching, with global registry/logger access. Extracting to a dedicated collaborator would touch all three ability objective types. Defer. |
+| **New `LoadoutHolder`/filter tests** | `getAvailableActiveAbilities()`, `PassiveAbilityFilter`, and `ActiveAbilityFilter` lack dedicated tests. Coverage gaps for pre-existing untested code, not regressions from the refactor. Defer to a broader test coverage ticket. |
+
+---
+
 ## Issue Cutting Guide
 
 Each numbered section above maps to one GitHub issue. Suggested labels and dependencies:

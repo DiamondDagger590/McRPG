@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
@@ -295,6 +296,47 @@ class GeneratedQuestDefinitionCodecTest {
     }
 
     @Test
+    @DisplayName("Round-trip with a locale-key on-start message preserves the locale key and returns empty inline list")
+    void roundTrip_preservesLocaleKeyOnStartMessage() {
+        QuestDefinition original = createDefinitionWithOnStartMessages(
+                List.of(OnStartMessage.fromLocaleKey("quest.tutorial.started")));
+
+        String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+        QuestDefinition deserialized = codec.deserialize(json);
+
+        assertEquals(1, deserialized.getOnStartMessages().size());
+        OnStartMessage msg = deserialized.getOnStartMessages().get(0);
+        assertTrue(msg.localeKey().isPresent());
+        assertEquals("quest.tutorial.started", msg.localeKey().get());
+        assertTrue(msg.inlineMessages().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Round-trip with an inline on-start message preserves all inline lines and returns empty locale key")
+    void roundTrip_preservesInlineOnStartMessage() {
+        List<String> lines = List.of("<primary>Quest started!", "<body>Collect 50 stone.");
+        QuestDefinition original = createDefinitionWithOnStartMessages(
+                List.of(OnStartMessage.fromInline(lines)));
+
+        String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+        QuestDefinition deserialized = codec.deserialize(json);
+
+        assertEquals(1, deserialized.getOnStartMessages().size());
+        OnStartMessage msg = deserialized.getOnStartMessages().get(0);
+        assertTrue(msg.localeKey().isEmpty());
+        assertEquals(lines, msg.inlineMessages());
+    }
+
+    @Test
+    @DisplayName("Round-trip without on-start messages keeps the list empty")
+    void roundTrip_noOnStartMessages_remainsEmpty() {
+        QuestDefinition original = createTestDefinition();
+        String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+        QuestDefinition deserialized = codec.deserialize(json);
+        assertTrue(deserialized.getOnStartMessages().isEmpty());
+    }
+
+    @Test
     @DisplayName("Round-trip without reward distribution keeps it empty")
     void roundTrip_noDistribution_remainsEmpty() {
         QuestDefinition original = createTestDefinition();
@@ -325,16 +367,9 @@ class GeneratedQuestDefinitionCodecTest {
         when(rewardType.serializeConfig()).thenReturn(
                 Map.of("skill", "MINING", "amount", 1654));
 
-        return new QuestDefinition(
-                QUEST_KEY,
-                SCOPE_KEY,
-                null,
-                List.of(phase),
-                List.of(rewardType),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null);
+        return new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
+                .rewards(List.of(rewardType))
+                .build();
     }
 
     private ResolvedVariableContext createTestContext() {
@@ -407,9 +442,10 @@ class GeneratedQuestDefinitionCodecTest {
         when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
         when(rewardType.serializeConfig()).thenReturn(Map.of("skill", "MINING", "amount", 1654));
 
-        return new QuestDefinition(
-                QUEST_KEY, SCOPE_KEY, null, List.of(phase), List.of(rewardType),
-                QuestRepeatMode.ONCE, null, -1, null, null, dist);
+        return new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
+                .rewards(List.of(rewardType))
+                .rewardDistribution(dist)
+                .build();
     }
 
     private QuestDefinition createDefinitionWithStageDistribution() {
@@ -427,9 +463,22 @@ class GeneratedQuestDefinitionCodecTest {
         when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
         when(rewardType.serializeConfig()).thenReturn(Map.of("skill", "MINING", "amount", 1654));
 
-        return new QuestDefinition(
-                QUEST_KEY, SCOPE_KEY, null, List.of(phase), List.of(rewardType),
-                QuestRepeatMode.ONCE, null, -1, null);
+        return new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
+                .rewards(List.of(rewardType))
+                .build();
+    }
+
+    private QuestDefinition createDefinitionWithOnStartMessages(@NotNull List<OnStartMessage> messages) {
+        QuestObjectiveType objType = mock(QuestObjectiveType.class);
+        when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
+
+        QuestObjectiveDefinition objective = new QuestObjectiveDefinition(OBJECTIVE_KEY, objType, 1L, List.of(), null);
+        QuestStageDefinition stage = new QuestStageDefinition(STAGE_KEY, List.of(objective), List.of(), null);
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage), List.of(), null);
+
+        return new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
+                .onStartMessages(messages)
+                .build();
     }
 
     private QuestDefinition createDefinitionWithPhaseDistribution() {
@@ -447,8 +496,8 @@ class GeneratedQuestDefinitionCodecTest {
         when(rewardType.getKey()).thenReturn(REWARD_TYPE_KEY);
         when(rewardType.serializeConfig()).thenReturn(Map.of("skill", "MINING", "amount", 1654));
 
-        return new QuestDefinition(
-                QUEST_KEY, SCOPE_KEY, null, List.of(phase), List.of(rewardType),
-                QuestRepeatMode.ONCE, null, -1, null);
+        return new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
+                .rewards(List.of(rewardType))
+                .build();
     }
 }

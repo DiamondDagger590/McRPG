@@ -56,6 +56,8 @@ import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.expansion.content.StatisticContent;
 import us.eunoians.mcrpg.expansion.content.StatisticContentPack;
 import us.eunoians.mcrpg.localization.DynamicLocale;
+import us.eunoians.mcrpg.quest.objective.type.builtin.AbilityActivateObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.AbilityUnlockObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.AdvancementCompleteObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.AnvilRepairObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.BlockBreakObjectiveType;
@@ -73,17 +75,26 @@ import us.eunoians.mcrpg.quest.objective.type.builtin.EnterBedObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.FertilizeBlockObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.FishCatchObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.GainExperienceObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.GuiOpenObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.HarvestCropObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.ItemPickupObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.LaunchProjectileObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.LoadoutEquipObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.MobKillObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.ProjectileHitObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.QuestBoardAcceptObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.ShearEntityObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.SkillLevelUpObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.SkillTargetLevelObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.SmeltItemObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.SmithingObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.TameAnimalObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.VillagerTradeObjectiveType;
 import us.eunoians.mcrpg.quest.reward.builtin.AbilityUpgradeNextTierRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.BoostedExperienceRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.MessageRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.RedeemableExperienceRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.RedeemableLevelsRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.ScalableCommandRewardType;
 import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
 import us.eunoians.mcrpg.quest.source.builtin.BoardLandQuestSource;
@@ -361,6 +372,13 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new EnterBedObjectiveType());
         pack.addContent(new AdvancementCompleteObjectiveType());
         pack.addContent(new DistanceTraveledObjectiveType());
+        pack.addContent(new SkillLevelUpObjectiveType());
+        pack.addContent(new SkillTargetLevelObjectiveType());
+        pack.addContent(new GuiOpenObjectiveType());
+        pack.addContent(new AbilityUnlockObjectiveType());
+        pack.addContent(new AbilityActivateObjectiveType());
+        pack.addContent(new LoadoutEquipObjectiveType());
+        pack.addContent(new QuestBoardAcceptObjectiveType());
         return pack;
     }
 
@@ -379,6 +397,10 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new AbilityUpgradeNextTierRewardType());
         pack.addContent(new ScalableCommandRewardType());
         pack.addContent(new ItemRewardType());
+        pack.addContent(new MessageRewardType());
+        pack.addContent(new BoostedExperienceRewardType());
+        pack.addContent(new RedeemableExperienceRewardType());
+        pack.addContent(new RedeemableLevelsRewardType());
         return pack;
     }
 

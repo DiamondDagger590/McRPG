@@ -19,8 +19,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * This DAO is used to store and access a {@link Loadout}'s ability contents
@@ -126,7 +129,7 @@ public class LoadoutAbilityDAO {
     @NotNull
     public static Loadout getLoadout(@NotNull Connection connection, @NotNull UUID holderUUID, int loadoutId) {
         AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
-        Loadout loadout = new Loadout(holderUUID, loadoutId);
+        Set<NamespacedKey> loadedAbilities = new LinkedHashSet<>();
         try (PreparedStatement preparedStatement = connection.prepareStatement(
                 "SELECT ability_id FROM " + TABLE_NAME + " WHERE holder_uuid = ? AND loadout_id = ? ORDER BY slot_number ASC;")) {
             preparedStatement.setString(1, holderUUID.toString());
@@ -136,14 +139,14 @@ public class LoadoutAbilityDAO {
                     String abilityId = resultSet.getString("ability_id");
                     NamespacedKey namespacedKey = new NamespacedKey(McRPG.getInstance(), abilityId);
                     if (abilityRegistry.registered(namespacedKey)) {
-                        loadout.addAbility(namespacedKey);
+                        loadedAbilities.add(namespacedKey);
                     }
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            McRPG.getInstance().getLogger().log(Level.SEVERE, "Failed to load loadout abilities for " + holderUUID, e);
         }
-        return loadout;
+        return new Loadout(holderUUID, loadoutId, loadedAbilities);
     }
 
     /**

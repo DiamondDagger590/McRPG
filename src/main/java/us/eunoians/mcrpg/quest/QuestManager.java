@@ -16,6 +16,7 @@ import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Player;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -48,6 +49,7 @@ import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.quest.impl.QuestState;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScope;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProvider;
+import us.eunoians.mcrpg.event.quest.PreQuestStartEvent;
 import us.eunoians.mcrpg.quest.source.QuestSource;
 import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProviderRegistry;
@@ -341,18 +343,37 @@ public class QuestManager extends Manager<McRPG> {
      * Creates, scopes, starts, and tracks a new quest instance from the given definition,
      * supplying variables used for resolving expression-based configuration (e.g. objective
      * {@code required-progress}).
+     * <p>
+     * If the player identified by {@code initialPlayerUUID} is currently online, a
+     * {@link PreQuestStartEvent} is fired before the instance is created. Third-party plugins
+     * can cancel this event to prevent the quest from starting. When the player is offline
+     * (e.g. system-initiated or test environments) the event is skipped and the quest proceeds
+     * unconditionally through the normal scope and tracker pipeline.
      *
      * @param definition         the quest definition to instantiate
      * @param initialPlayerUUID  the UUID of the player who initiates or is assigned to the quest
      * @param variables          variables available when instantiating this quest (e.g. {@code tier})
      * @param questSource        the source that originated this quest
      * @return the started quest instance, or empty if the scope provider could not be resolved
+     *         or the {@link PreQuestStartEvent} was cancelled
      */
     @NotNull
     public Optional<QuestInstance> startQuest(@NotNull QuestDefinition definition,
                                               @NotNull UUID initialPlayerUUID,
                                               @NotNull Map<String, Object> variables,
                                               @NotNull QuestSource questSource) {
+        Player player = Bukkit.getPlayer(initialPlayerUUID);
+        if (player != null) {
+            PreQuestStartEvent preEvent = new PreQuestStartEvent(definition, player, questSource);
+            Bukkit.getPluginManager().callEvent(preEvent);
+            if (preEvent.isCancelled()) {
+                plugin().getLogger().info("PreQuestStartEvent cancelled for quest "
+                        + definition.getQuestKey() + " (player: " + player.getName()
+                        + ", source: " + questSource.getClass().getSimpleName() + ")");
+                return Optional.empty();
+            }
+        }
+
         NamespacedKey scopeKey = definition.getScopeType();
         Optional<QuestScopeProvider<?>> providerOpt = scopeProviderRegistry.get(scopeKey);
         if (providerOpt.isEmpty()) {
@@ -381,7 +402,7 @@ public class QuestManager extends Manager<McRPG> {
             singleScope.setPlayerInScope(initialPlayerUUID);
         }
         instance.setQuestScope(scope);
-        instance.start(definition);
+        instance.start(definition, initialPlayerUUID);
         trackActiveQuest(instance);
         return Optional.of(instance);
     }

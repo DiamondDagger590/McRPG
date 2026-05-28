@@ -27,11 +27,16 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Optional;
 import java.util.Set;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * This GUI is used to allow players to input an item that they want to display
  */
-public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements ClosableGui<McRPGPlayer>, FillerItemGui {
+public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements ClosableGui<McRPGPlayer>, FillerItemGui, KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "loadout_display_input");
 
     private static final int INPUT_SLOT = 13;
     private static final Set<Integer> PURPLE_SLOTS = Set.of(INPUT_SLOT - 9, INPUT_SLOT - 1, INPUT_SLOT + 1, INPUT_SLOT + 9);
@@ -159,5 +164,11 @@ public class LoadoutDisplayItemInputGui extends BaseGui<McRPGPlayer> implements 
                 return itemBuilder;
             }
         };
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

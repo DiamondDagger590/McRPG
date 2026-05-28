@@ -25,12 +25,17 @@ import us.eunoians.mcrpg.gui.home.HomeGui;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Optional;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * This gui allows for players to view all the different kinds of experience that can
  * be "banked". This can include rested experience, redeemable experience, and boosted experience.
  */
-public final class ExperienceBankGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
+public final class ExperienceBankGui extends BaseGui<McRPGPlayer> implements FillerItemGui, KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "experience_bank");
 
     private static final int RESTED_EXPERIENCE_SLOT_INDEX = 10;
     private static final int REDEEMABLE_EXPERIENCE_SLOT_INDEX = 12;
@@ -107,5 +112,11 @@ public final class ExperienceBankGui extends BaseGui<McRPGPlayer> implements Fil
     @Override
     public void unregisterListeners() {
         InventoryClickEvent.getHandlerList().unregister(this);
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

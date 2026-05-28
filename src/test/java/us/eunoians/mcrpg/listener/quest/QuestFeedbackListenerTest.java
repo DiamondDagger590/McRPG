@@ -68,7 +68,7 @@ public class QuestFeedbackListenerTest extends McRPGBaseTest {
         QuestDefinition def = QuestTestHelper.singlePhaseQuest("feedback_start");
         QuestInstance quest = QuestTestHelper.startedQuestWithPlayer(def, mcRPGPlayer.getUUID());
 
-        server.getPluginManager().callEvent(new QuestStartEvent(quest, def));
+        server.getPluginManager().callEvent(new QuestStartEvent(quest, def, new us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource()));
 
         assertNotNull(playerMock.nextMessage());
     }
@@ -151,7 +151,7 @@ public class QuestFeedbackListenerTest extends McRPGBaseTest {
         // Create quest WITHOUT the player in scope; no start event fires for a non-started quest
         QuestInstance quest = QuestTestHelper.newQuestInstance(def);
 
-        server.getPluginManager().callEvent(new QuestStartEvent(quest, def));
+        server.getPluginManager().callEvent(new QuestStartEvent(quest, def, new us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource()));
 
         assertNull(playerMock.nextMessage());
     }

@@ -7,9 +7,4 @@ import us.eunoians.mcrpg.ability.Ability;
  * activate based on various conditions.
  */
 public interface PassiveAbility extends Ability {
-
-    @Override
-    default boolean isPassive() {
-        return true;
-    }
 }

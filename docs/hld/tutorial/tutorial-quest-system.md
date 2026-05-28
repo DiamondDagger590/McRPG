@@ -1,8 +1,9 @@
 # Tutorial Quest System
 
-> **Last Updated:** 2026-05-22
-> **Status:** Design complete, pending implementation
+> **Last Updated:** 2026-05-27
+> **Status:** Phase 1 implemented; Phases 2–3 (chain system, tutorial content) pending
 > **Scope:** First-class quest chain system, tutorial quest line, new objective/reward types, player onboarding flow
+> **Phase 1 LLD:** [phase-1-quest-engine-extensions.md](../../lld/tutorial-quest-system/phase-1-quest-engine-extensions.md)
 
 ---
 
@@ -37,9 +38,10 @@ flowchart TD
         Rewards[RewardSystem]
     end
 
-    subgraph newInfra [New Infrastructure]
+    subgraph newInfra [Phase 1 Infrastructure - Implemented]
         PQSE[PreQuestStartEvent]
-        OSR[On-Start Rewards]
+        OSM[OnStartMessage + QuestStartMessageListener]
+        QMD[QuestMessageDeliverer]
         MRT[MessageRewardType]
         BERT[BoostedExperienceRewardType]
         ObjTypes[7 New Objective Types]
@@ -60,9 +62,10 @@ flowchart TD
     QCM --> QCR
     QCPL -->|"QuestCompleteEvent"| QCM
     QCM -->|"start next step"| QM
-    QM -->|"fire PreQuestStartEvent"| PQSE
+    QM -->|"PreQuestStartEvent when player online"| PQSE
     QM -->|"create instance"| QI
-    QI -->|"fire QuestStartEvent"| OSR
+    QI -->|"QuestStartEvent"| OSM
+    OSM --> QMD
     Chain --> QCD
     Q1 --> QDR
     Q2 --> QDR
@@ -195,48 +198,48 @@ Trigger detection lives in dedicated listeners (`QuestChainFirstJoinListener`, `
 
 **Relationship to quest definitions:** Quest definitions stay independent and reusable. They do not know they are part of a chain. The chain is purely an orchestration/ordering concern.
 
-### 2. PreQuestStartEvent (general-purpose, cancellable)
+### 2. PreQuestStartEvent (general-purpose, cancellable) — **Implemented**
 
-A new cancellable Bukkit event fired before any quest starts, regardless of source. Gives third-party plugins a general-purpose hook to gate quest starts.
+A cancellable Bukkit event fired from `QuestManager.startQuest()` **when the initiating player is online** (`Bukkit.getPlayer(initialPlayerUUID) != null`). Offline or system-initiated starts skip the pre-event. Gives third-party plugins a general-purpose hook to gate quest starts.
 
 ```java
 public class PreQuestStartEvent extends Event implements Cancellable {
     private final QuestDefinition definition;
     private final Player player;
-    private final McRPGPlayer mcRPGPlayer;
     private final QuestSource source;
     // ...
 }
 ```
 
-**Event ownership:** Both `PreQuestStartEvent` and `QuestStartEvent` fire from `QuestManager.startQuest()`. `QuestInstance.start()` becomes a pure state mutation (sets state to `IN_PROGRESS`, activates phase-0 stages) without firing events directly. This avoids the dual-ownership problem where bypassing the manager would skip the pre-event.
+**Event ownership:** `PreQuestStartEvent` fires from `QuestManager.startQuest()` before instance creation. `QuestStartEvent` fires from `QuestInstance.start(definition, starterUUID)` after phase-0 activation — not from the manager. All quest starts must route through `QuestManager` so the pre-event gate cannot be bypassed (`QuestInstance.start()` is `@ApiStatus.Internal`).
 
-**Tutorial opt-out:** A `TutorialPreQuestStartListener` checks the player's `DisableTutorialSetting` and cancels `PreQuestStartEvent` when the source is `TutorialQuestSource`. This pattern is reusable by any plugin that wants to gate quest starts.
+**Tutorial opt-out (Phase 3):** A `TutorialPreQuestStartListener` will check `DisableTutorialSetting` and cancel starts for `TutorialQuestSource`. The event shape supports this today.
 
-### 3. On-Start Rewards on QuestDefinition
+### 3. On-Start Messages on QuestDefinition — **Implemented**
 
-Add an optional `on-start-rewards` section to `QuestDefinition` that mirrors the completion reward pipeline. These fire on `QuestStartEvent` via a new `QuestStartRewardListener`.
+Dedicated message-only concept on `QuestDefinition` — **not** completion rewards. Delivered on `QuestStartEvent` via `QuestStartMessageListener` and `QuestMessageDeliverer`.
 
-Schema addition to `QuestDefinition`:
-- `List<QuestRewardEntry> onStartRewardEntries` (optional, empty by default) -- uses `QuestRewardEntry` (not raw `QuestRewardType`) for consistency with completion rewards and future fallback support
+Schema:
+- `List<OnStartMessage> onStartMessages` (empty by default)
+- `QuestDefinition.Builder` is the only construction path (previous constructors removed)
 
-All existing `QuestDefinition` constructors are preserved with the new field defaulting to empty. New constructors/factory methods are added for callers that need on-start rewards.
-
-YAML format (map-based, consistent with quest reward format):
+YAML (`on-start-messages:`):
 
 ```yaml
-on-start-rewards:
-  welcome_message:
-    type: mcrpg:message
+on-start-messages:
+  welcome:
     key: tutorial.first-steps.welcome
+  explain_skills:
     messages:
-      - "<primary>Welcome to McRPG!</primary>"
-      - "<body>As you play, your skills will level up automatically."
+      - "<primary>As you play, your skills will level up automatically."
+      - "<body>Try breaking some blocks to see your Mining skill grow."
 ```
 
-### 4. MessageRewardType
+Locale keys are resolved per-player; inline `messages` are used when resolution fails or no key is set. See [`OBJECTIVES.md`](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md) / Phase 1 LLD for delivery details.
 
-New reward type (`mcrpg:message`) designed for sending player-facing messages. Supports both locale route lookup and inline MiniMessage strings with palette resolution.
+### 4. MessageRewardType — **Implemented**
+
+Completion reward type (`mcrpg:message`) for sending player-facing messages. `grant()` uses `QuestMessageDeliverer` (same locale-first, inline-fallback behavior as on-start messages). Supports both locale route lookup and inline MiniMessage strings with palette resolution.
 
 ```yaml
 # Route-based (preferred for translatable text)
@@ -280,24 +283,27 @@ New palette entry in `config.yml`:
 
 Non-abandonable quests show a `<body>Tutorial quests cannot be abandoned.` lore line and play a deny sound + action bar message on right-click attempt.
 
-### 6. Eight New Objective Types
+### 6. Seven New Objective Types — **Implemented**
 
-All new types follow the existing `QuestObjectiveType` pattern (base registered in registry, `parseConfig` produces configured copy with filter state). State-based objectives support auto-complete: on quest start, if the player's state already satisfies the objective, it completes after a short delay. Event-based objectives do not auto-complete (they require the event to fire while the objective is active).
+All types follow the `QuestObjectiveType` pattern. Ability-based types use `AbilityObjectiveFilter` and `AbilityType` (`Ability.getAbilityType()`). State-based objectives support **immediate** auto-complete on quest start via `QuestStartAutoCompleteListener` for the **quest starter only** (`QuestStartEvent.getStarterUUID()`).
 
-**Auto-complete delay:** When a quest starts and an objective's auto-complete check passes, completion is deferred by a 2-second delay (scheduled via `CoreTask`). This prevents the "instant spam" feeling for veterans and gives each quest a moment to visually exist before resolving. The chain manager's cascade batching (see Tutorial Quest Chain section) handles cases where multiple quests auto-complete in sequence.
+**Phase 1:** No auto-complete delay — completion is immediate when state checks pass.
+
+**Phase 3:** Optional delay and on-start message suppression during chain cascade batching (chain manager owns batch summary messaging).
 
 | Type Key | Kind | Trigger | Config Filters | Auto-Complete Check |
 |---|---|---|---|---|
-| `mcrpg:skill_level_up` | Event | `SkillGainLevelEvent` | `skill` (specific key or omit for any), `levels` (min per event, default 1) | N/A (event-based) |
-| `mcrpg:skill_target_level` | State | On quest start check | `skill` (specific key or omit for any), `target-level` (required) | Check if player already has a skill at or above `target-level` |
-| `mcrpg:gui_open` | Event | `CoreGuiOpenEvent` | `gui-type` (`NamespacedKey` matching the GUI's `getGuiKey()` -- e.g. `mcrpg:home`, `mcrpg:loadout_selection`, `mcrpg:board`) | N/A (event-based) |
-| `mcrpg:ability_unlock` | State | `AbilityUnlockEvent` | `ability-type` (`PASSIVE`, `ACTIVE`, `INNATE`), optional specific `ability` key | Check if player already has an unlocked ability matching the filter |
-| `mcrpg:ability_activate` | Event | Ability activation path | `ability-type` (`PASSIVE`, `ACTIVE`, `INNATE`), optional specific `ability` key | N/A (event-based) |
-| `mcrpg:combo_activate` | Event | Successful combo completion | Optional `ability` key, optional `combo-pattern` | N/A (event-based) |
-| `mcrpg:loadout_equip` | State | `LoadoutAbilityEquipEvent` | `ability-type` (`PASSIVE`, `ACTIVE`), optional specific `ability` key | Check if player's loadout already contains a matching ability |
-| `mcrpg:quest_board_accept` | Event | `BoardOfferingAcceptEvent` | Optional `board` key | N/A (event-based) |
+| `mcrpg:skill_level_up` | Event | `SkillGainLevelEvent` | `skill` (optional), `levels` (min levels per event, default 1) | N/A |
+| `mcrpg:skill_target_level` | State + Event | `SkillGainLevelEvent` | `skill` (optional), `target-level` (default 1) | Player skill level >= target |
+| `mcrpg:gui_open` | Event | `CoreGuiOpenEvent` | `gui-type` (required; e.g. `mcrpg:home`, `mcrpg:loadout_selection`, `mcrpg:board`) | N/A |
+| `mcrpg:ability_unlock` | State + Event | `AbilityUnlockEvent` | `ability-type` (`ACTIVE`, `PASSIVE`, `INNATE`), optional `ability` | Unlocked ability matching filter |
+| `mcrpg:ability_activate` | Event | `AbilityActivateEvent` | `ability-type`, optional `ability` | N/A (covers combo activations via `ACTIVE`) |
+| `mcrpg:loadout_equip` | State + Event | `LoadoutAbilityChangeEvent` (EQUIP/SWAP) | `ability-type`, optional `ability` | Active loadout contains matching ability |
+| `mcrpg:quest_board_accept` | Event | `BoardOfferingAcceptEvent` | Optional `board` | N/A |
 
-State-based objectives (`ability_unlock`, `loadout_equip`, `skill_target_level`) auto-complete because they check player state — if the condition is already met, there's no event to wait for. Event-based objectives require the triggering event to fire while the objective is active.
+`mcrpg:combo_activate` was **not** implemented — tutorial Q6 uses `mcrpg:ability_activate` with `ability-type: ACTIVE`.
+
+Detailed YAML and behavior: [`OBJECTIVES.md`](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md).
 
 **GUI Key System:**
 
@@ -336,14 +342,17 @@ public void trackPlayerGui(@NotNull UUID uuid, @NotNull Gui<P> gui) {
 
 `CoreGuiOpenEvent` carries the player UUID, the `Gui` instance, and `Optional<NamespacedKey>`. It is a McCore-level event — any plugin using the McCore GUI system gets it for free. McRPG's `GuiOpenQuestProgressListener` simply listens for `CoreGuiOpenEvent`.
 
-**New Bukkit events:**
-- `CoreGuiOpenEvent` (McCore) -- fired from `GuiManager.trackPlayerGui()`. "Open" means any GUI creation that goes through the manager -- back-button navigation counts (this is intentional for tutorial purposes; quest definitions can use `required-progress: 1` to only trigger once).
-- `LoadoutAbilityEquipEvent` -- fired from a new centralized `LoadoutManager.equipAbility()` method that wraps the `Loadout` mutation + event firing. Existing callsites (GUI slots, commands) are retrofitted to use this method.
+**New / updated events (Phase 1):**
+- `CoreGuiOpenEvent` (McCore) — from `GuiManager.trackPlayerGui()`. Back-button re-opens count intentionally.
+- `LoadoutAbilityChangeEvent` — unified equip/unequip/swap on `Loadout` (`ChangeReason` enum).
+- `LoadoutPositionSwapEvent` — combo-slot reorder only (not used by quest objectives).
 
-**Existing events leveraged (no creation needed):**
-- `AbilityUnlockEvent` -- already exists at `event/ability/AbilityUnlockEvent.java` and is already fired from `OnSkillLevelUpListener` when an ability is first unlocked. Only a new progress listener is needed.
+**Loadout API:** `Loadout.equipAbility()` / `unequipAbility()` / `swapAbility()` replace direct `addAbility()` / `removeAbility()` / `replaceAbility()` (now private). `LoadoutEquipQuestProgressListener` only credits the **active** loadout.
 
-### 7. BoostedExperienceRewardType
+**Existing events leveraged:**
+- `AbilityUnlockEvent` — progress listener added; event already fired from skill level-up path.
+
+### 7. BoostedExperienceRewardType — **Implemented**
 
 New reward type (`mcrpg:boosted_experience`) that adds to a player's boosted experience bank directly. State ownership: `grant()` resolves the `McRPGPlayer` and mutates `PlayerExperienceExtras.modifyBoostedExperience(amount)`.
 
@@ -353,7 +362,7 @@ boosted_xp:
   amount: 500
 ```
 
-### 8. RedeemableExperienceRewardType and RedeemableLevelsRewardType
+### 8. RedeemableExperienceRewardType and RedeemableLevelsRewardType — **Implemented**
 
 New reward types for adding to a player's redeemable XP and redeemable levels banks. State ownership: both mutate `PlayerExperienceExtras` (`modifyRedeemableExperience(amount)`, `modifyRedeemableLevels(amount)`).
 
@@ -428,51 +437,51 @@ flowchart LR
     Q6 -->|"chain advances"| Q7
 ```
 
-**Auto-complete pacing:** When multiple quests auto-complete in rapid succession (e.g., a returning player who already has unlocked abilities), on-start messages for auto-completed steps are suppressed. Only the final non-auto-completed step's on-start message is delivered. Completion notifications for auto-completed steps are batched into a single summary message.
+**Auto-complete pacing (Phase 3):** Phase 1 engine auto-completes immediately for the quest starter when state checks pass. When the chain system lands (Phase 3), cascade batching will suppress on-start messages for skipped chain steps and deliver a single configurable batch summary via the localization system.
 
 ### Quest 1: "First Steps"
 
-- **Auto-starts**: On first join via chain `auto-start: trigger: mcrpg:first_join`
-- **On-start rewards**: `MessageRewardType` welcoming player, explaining skills level up as they play
+- **Auto-starts**: On first join via chain `auto-start: trigger: mcrpg:first_join` (Phase 3)
+- **On-start messages**: Welcome text explaining skills level up as they play (`on-start-messages:` with locale key or inline)
 - **Objective**: Have any skill at level 1 or above (`mcrpg:skill_target_level`, `target-level: 1`)
 - **Completion rewards**: 1,000 boosted XP
-- **Auto-complete**: If player already has a skill level >= 1, completes after delay
+- **Auto-complete**: Immediate if player already has skill level >= 1 (Phase 1 engine)
 
 ### Quest 2: "The McRPG Menu"
 
-- **On-start rewards**: Message telling player to run `/mcrpg`
+- **On-start messages**: Tell player to run `/mcrpg`
 - **Objective**: Open the Home GUI (`mcrpg:gui_open`, `gui-type: mcrpg:home`)
 - **Completion rewards**: 1,000 boosted XP
 
 ### Quest 3: "Natural Talent"
 
-- **On-start rewards**: Message explaining passive abilities trigger automatically
+- **On-start messages**: Explain passive abilities trigger automatically
 - **Objective**: Unlock a passive ability (`mcrpg:ability_unlock`, `ability-type: PASSIVE`)
 - **Completion rewards**: 1,500 boosted XP + 1 redeemable level
-- **Auto-complete**: If player already has any unlocked passive, completes after delay
+- **Auto-complete**: Immediate if player already has a matching unlocked passive
 
 ### Quest 4: "Your Arsenal"
 
-- **On-start rewards**: Message about loadouts and how the unlocked ability was auto-equipped
+- **On-start messages**: Loadouts and auto-equip behavior
 - **Objective**: Open the Loadout GUI (`mcrpg:gui_open`, `gui-type: mcrpg:loadout_selection`)
 - **Completion rewards**: 1,000 boosted XP + 1,500 redeemable XP
 
 ### Quest 5: "Unleashed Power"
 
-- **On-start rewards**: Message about active abilities and how they use combo clicks
+- **On-start messages**: Active abilities and combo clicks
 - **Objective**: Unlock an active ability (`mcrpg:ability_unlock`, `ability-type: ACTIVE`)
 - **Completion rewards**: 2,000 boosted XP + 1 redeemable level
-- **Auto-complete**: If player already has an unlocked active ability, completes after delay
+- **Auto-complete**: Immediate if player already has a matching unlocked active ability
 
 ### Quest 6: "Combo Strike"
 
-- **On-start rewards**: Message explaining combo patterns (RRR, RRL, RLR), mana costs, and which tools work
-- **Objective**: Successfully cast any active ability via combo (`mcrpg:combo_activate`)
+- **On-start messages**: Combo patterns (RRR, RRL, RLR), mana costs, allowed items
+- **Objective**: Activate any active ability (`mcrpg:ability_activate`, `ability-type: ACTIVE`)
 - **Completion rewards**: 2,000 boosted XP + 1 redeemable level
 
 ### Quest 7: "The Quest Board"
 
-- **On-start rewards**: Message about the quest board offering rotating challenges with rewards
+- **On-start messages**: Quest board rotating challenges and rewards
 - **Objective**: Accept a quest from the quest board (`mcrpg:quest_board_accept`)
 - **Completion rewards**: 2,500 boosted XP + 2,500 redeemable XP + 1 redeemable level (graduation bonus)
 
@@ -619,22 +628,22 @@ All commands use tab-completion for online players and registered chain keys.
 
 ## Implementation Phases
 
-### Phase 1 — Quest Engine Extensions + McCore Hook
+### Phase 1 — Quest Engine Extensions + McCore Hook — **Implemented**
 
-McCore:
-- Add `KeyedGui` interface and `CoreGuiOpenEvent` fired from `GuiManager.trackPlayerGui()`
-- Release McCore, bump dependency in McRPG
+McCore (`1.0.0.17-SNAPSHOT`):
+- `KeyedGui`, `CoreGuiOpenEvent` from `GuiManager.trackPlayerGui()`
 
-McRPG new infrastructure:
-- `PreQuestStartEvent` (cancellable, from `QuestManager.startQuest()`)
-- `on-start-rewards` field on `QuestDefinition` + `QuestStartRewardListener`
-- Retrofit existing GUI classes to implement `KeyedGui` with `GUI_KEY` constants
-- `LoadoutManager` + `LoadoutAbilityEquipEvent` + retrofit callsites
-- 4 new reward types (Message, Boosted XP, Redeemable XP, Redeemable Levels)
-- 8 new objective types + progress listeners
-- Tests for all new types
+McRPG (implemented):
+- `PreQuestStartEvent` (online player only), `QuestDefinition.Builder`, `on-start-messages`, `OnStartMessage`
+- `QuestStartMessageListener`, `QuestMessageDeliverer`, `QuestStartAutoCompleteListener` (starter-scoped, immediate)
+- `QuestStartEvent` + `QuestSource` + `starterUUID`
+- `AbilityType`, `AbilityObjectiveFilter`, objective index on `QuestDefinition`
+- `Loadout` equip/unequip/swap + `LoadoutAbilityChangeEvent`, `LoadoutPositionSwapEvent`
+- 4 reward types, 7 objective types, 6 progress listeners
+- `KeyedGui` retrofit (22 GUI classes)
+- Tests (see Phase 1 LLD section 7)
 
-**Shippable value:** The quest system gains new objective/reward types usable by any quest definition immediately. Server owners can write custom quests using `mcrpg:gui_open`, `mcrpg:ability_unlock`, etc. without needing chain support.
+**Shippable value:** New objective/reward types work on any quest definition today. See [`REWARDS.md`](../../../src/main/java/us/eunoians/mcrpg/quest/REWARDS.md) and [`OBJECTIVES.md`](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md).
 
 ### Phase 2 — Quest Chain System
 
@@ -661,9 +670,9 @@ McRPG new infrastructure:
 - `DisableTutorialSetting` + confirmation GUI
 - `TutorialPreQuestStartListener`
 - `config.yml` tutorial toggle + permission nodes
-- 7 tutorial quest YAML definitions + `chain.yml`
+- 7 tutorial quest YAML definitions + `chain.yml` (using `on-start-messages:`, not `on-start-rewards`)
 - Locale entries in `en_quest.yml`
-- Auto-complete cascade batching in chain manager
+- Auto-complete cascade batching + optional delay in chain manager
 - Tests
 
 **Shippable value:** The tutorial goes live. Players get onboarded.
@@ -698,44 +707,51 @@ McRPG new infrastructure:
 - `gui/quest/QuestChainHistoryDetailGui.java`
 - `gui/quest/slot/QuestChainHistorySlot.java`
 
-### New Files -- Events
-- `event/quest/PreQuestStartEvent.java` (cancellable, general-purpose)
-- `event/quest/QuestChainStartEvent.java`
-- `event/quest/QuestChainStepAdvanceEvent.java`
-- `event/quest/QuestChainCompleteEvent.java`
-- `event/loadout/LoadoutAbilityEquipEvent.java`
+### New Files -- Phase 1 (implemented)
 
-### New Files -- Reward Types
+**Events:**
+- `event/quest/PreQuestStartEvent.java`
+- `event/loadout/LoadoutAbilityChangeEvent.java`
+- `event/loadout/LoadoutPositionSwapEvent.java`
+
+**Quest definition / messaging:**
+- `quest/definition/OnStartMessage.java`
+- `quest/message/QuestMessageDeliverer.java`
+
+**Ability classification:**
+- `ability/AbilityType.java`
+- `quest/objective/type/builtin/AbilityObjectiveFilter.java`
+
+**Reward types:**
 - `quest/reward/builtin/MessageRewardType.java`
 - `quest/reward/builtin/BoostedExperienceRewardType.java`
 - `quest/reward/builtin/RedeemableExperienceRewardType.java`
 - `quest/reward/builtin/RedeemableLevelsRewardType.java`
 
-### New Files -- Objective Types
-- `quest/objective/type/builtin/SkillLevelUpObjectiveType.java` + context
-- `quest/objective/type/builtin/SkillTargetLevelObjectiveType.java` + context
-- `quest/objective/type/builtin/GuiOpenObjectiveType.java` + context
-- `quest/objective/type/builtin/AbilityUnlockObjectiveType.java` + context
-- `quest/objective/type/builtin/AbilityActivateObjectiveType.java` + context
-- `quest/objective/type/builtin/ComboActivateObjectiveType.java` + context
-- `quest/objective/type/builtin/LoadoutEquipObjectiveType.java` + context
-- `quest/objective/type/builtin/QuestBoardAcceptObjectiveType.java` + context
+**Objective types + contexts:**
+- `SkillLevelUpObjectiveType`, `SkillTargetLevelObjectiveType`, `GuiOpenObjectiveType`
+- `AbilityUnlockObjectiveType`, `AbilityActivateObjectiveType`, `LoadoutEquipObjectiveType`, `QuestBoardAcceptObjectiveType`
+- Contexts: `SkillLevelQuestContext`, `GuiOpenQuestContext`, `AbilityUnlockQuestContext`, `AbilityActivateQuestContext`, `LoadoutEquipQuestContext`, `QuestBoardAcceptQuestContext`
 
-### New Files -- Quest Source + Settings
+**Progress listeners:**
+- `SkillLevelQuestProgressListener` (both skill types)
+- `GuiOpenQuestProgressListener`, `AbilityUnlockQuestProgressListener`, `AbilityActivateQuestProgressListener`
+- `LoadoutEquipQuestProgressListener`, `QuestBoardAcceptQuestProgressListener`
+- `QuestStartMessageListener`, `QuestStartAutoCompleteListener`
+
+**Tests:** Matching `*Test.java` under `src/test/java/...` (see Phase 1 LLD).
+
+### New Files -- Phase 2 (chain system, pending)
+
+- `event/quest/QuestChainStartEvent.java`, `QuestChainStepAdvanceEvent.java`, `QuestChainCompleteEvent.java`
+- `quest/chain/*` (definition, manager, registry, DAOs, triggers, listeners, commands, GUI)
+
+### New Files -- Phase 3 (tutorial content, pending)
+
 - `quest/source/builtin/TutorialQuestSource.java`
 - `setting/impl/DisableTutorialSetting.java`
 - `listener/quest/TutorialPreQuestStartListener.java`
-- `listener/quest/QuestStartRewardListener.java`
-
-### New Files -- Progress Listeners
-- `listener/quest/SkillLevelUpQuestProgressListener.java`
-- `listener/quest/SkillTargetLevelQuestProgressListener.java`
-- `listener/quest/GuiOpenQuestProgressListener.java`
-- `listener/quest/AbilityUnlockQuestProgressListener.java`
-- `listener/quest/AbilityActivateQuestProgressListener.java`
-- `listener/quest/ComboActivateQuestProgressListener.java`
-- `listener/quest/LoadoutEquipQuestProgressListener.java`
-- `listener/quest/QuestBoardAcceptQuestProgressListener.java`
+- `src/main/resources/quests/tutorial/*.yml`
 
 ### New Files -- Tutorial Content
 - `src/main/resources/quests/tutorial/chain.yml`
@@ -748,33 +764,41 @@ McRPG new infrastructure:
 - `src/main/resources/quests/tutorial/quest_board.yml`
 - Locale entries in `en_quest.yml` for all tutorial text
 
-### Modified Files
-- `QuestDefinition.java` -- add `onStartRewardEntries` field (existing constructors preserved, new ones added)
-- `QuestConfigLoader.java` -- parse `on-start-rewards` section
-- `QuestManager.java` -- fire `PreQuestStartEvent` before `QuestStartEvent`; `QuestInstance.start()` becomes pure state mutation
-- `McRPGExpansion.java` -- register new reward types, objective types, source, chain
-- `ContentHandlerType.java` -- add `QUEST_CHAIN`, `CHAIN_AUTO_START_TRIGGER`
-- `McRPGRegistryKey.java` -- add `QUEST_CHAIN`, `CHAIN_AUTO_START_TRIGGER` registry keys
-- `McRPGManagerKey.java` -- add `QUEST_CHAIN` manager key
-- `bootstrap/McRPGListenerRegistrar.java` -- register new listeners
-- `config.yml` -- add `tutorial.enabled` toggle
-- All GUI classes (`HomeGui`, `LoadoutGui`, etc.) -- implement `KeyedGui` interface, declare `GUI_KEY` constant
-- Loadout equip path -- introduce `LoadoutManager.equipAbility()` centralized method, fire `LoadoutAbilityEquipEvent`
-- `DatabaseManager` or equivalent -- create chain state + completion log tables via `UpdateTableFunction`
-- `QuestHistoryGui.java` -- integrate chain grouping (chain completions render as single grouped slots instead of individual quest entries)
-- `plugin.yml` -- add `mcrpg.tutorial.bypass`, `mcrpg.quest.admin.chain.*`, `.reset`, `.advance` permissions
+### Modified Files -- Phase 1 (implemented)
 
-### Modified Files -- McCore (separate release)
-- `GuiManager.java` -- fire `CoreGuiOpenEvent` from `trackPlayerGui(UUID, Gui)` after tracking completes
-- New `KeyedGui.java` interface (McCore `gui/` package)
-- New `CoreGuiOpenEvent.java` (McCore event package)
+- `QuestDefinition.java` — builder-only; `onStartMessages`; `objectiveIndex` / `findObjectiveDefinition()`
+- `QuestConfigLoader.java` — `parseOnStartMessages()`; builder migration
+- `QuestManager.java` — `PreQuestStartEvent` when player online
+- `QuestInstance.java` — `start(definition, starterUUID)` fires `QuestStartEvent`
+- `QuestObjectiveType.java` — `checkAutoComplete()` default
+- `Ability.java` — `getAbilityType()`; `PassiveAbility` / `ActiveAbility` — removed `isPassive()` defaults
+- `Loadout.java`, `LoadoutAbilityDAO.java` — private mutations; constructor-based DAO load
+- `McRPGExpansion.java`, `McRPGListenerRegistrar.java`, `LocalizationKey.java`, `en_quest.yml`
+- All 22 GUI classes — `KeyedGui` + `GUI_KEY`
+- `quest/OBJECTIVES.md`, `quest/REWARDS.md` — developer guides updated
+- Loadout GUI slots, `OnAbilityUnlockListener` — use `equipAbility()` / `swapAbility()`
+
+### Modified Files -- Phase 2+ (pending)
+
+- `ContentHandlerType.java`, `McRPGRegistryKey.java`, `McRPGManagerKey.java` — chain registry keys
+- `config.yml` — `tutorial.enabled` toggle
+- `DatabaseManager` — chain state + completion log tables
+- `QuestHistoryGui.java` — chain grouping
+- `plugin.yml` — tutorial and chain admin permissions
+
+### McCore (shipped in `1.0.0.17-SNAPSHOT`)
+
+- `KeyedGui`, `CoreGuiOpenEvent`, `GuiManager.trackPlayerGui()` event firing
 
 ---
 
 ## Related Documents
 
+- [Phase 1 LLD — Quest Engine Extensions](../../lld/tutorial-quest-system/phase-1-quest-engine-extensions.md) (implemented)
+- [Quest OBJECTIVES.md](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md) — YAML reference for objective types
+- [Quest REWARDS.md](../../../src/main/java/us/eunoians/mcrpg/quest/REWARDS.md) — YAML reference for reward types
 - [Quest System Architecture](../quest/quest-system-architecture.md)
 - [Quest Board Feature Design](../quest/quest-board.md)
 - [Mana & Ability Activation System](../mana/mana-ability-system.md)
 - [GUI/UX System & Color Palette](../gui-ux-system.md)
-- [Chain System Backlog](chain-system-backlog.md) -- deferred features (availability windows, repeatability, retry)
+- [Chain System Backlog](chain-system-backlog.md) — deferred features; section 8 covers post-Phase-1 AbilityType follow-ups

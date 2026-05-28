@@ -400,11 +400,6 @@ public class AbilitySlotLoreInjectionTest extends McRPGBaseTest {
         }
 
         @Override
-        public boolean isPassive() {
-            return false;
-        }
-
-        @Override
         @NotNull
         public Optional<NamespacedKey> getExpansionKey() {
             return Optional.empty();

@@ -37,6 +37,8 @@ import us.eunoians.mcrpg.listener.entity.player.PlayerSafeZoneStateChangeListene
 import us.eunoians.mcrpg.listener.entity.player.PlayerSettingChangeListener;
 import us.eunoians.mcrpg.listener.board.BoardRotationNotificationListener;
 import us.eunoians.mcrpg.listener.quest.AbilityUpgradeQuestListener;
+import us.eunoians.mcrpg.listener.quest.AbilityActivateQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.AbilityUnlockQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.AdvancementCompleteQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.AnvilRepairQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.BlockBreakQuestProgressListener;
@@ -54,12 +56,18 @@ import us.eunoians.mcrpg.listener.quest.EnterBedQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.FertilizeBlockQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.FishCatchQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.GainExperienceQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.GuiOpenQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.HarvestCropQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.ItemPickupQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.LaunchProjectileQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.LoadoutEquipQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.MobKillQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.ProjectileHitQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.QuestBoardAcceptQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.QuestStartAutoCompleteListener;
+import us.eunoians.mcrpg.listener.quest.QuestStartMessageListener;
 import us.eunoians.mcrpg.listener.quest.ShearEntityQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.SkillLevelQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.SmeltItemQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.SmithingQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.TameAnimalQuestProgressListener;
@@ -183,9 +191,17 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new EnterBedQuestProgressListener(questManager), plugin);
         Bukkit.getPluginManager().registerEvents(new AdvancementCompleteQuestProgressListener(questManager), plugin);
         Bukkit.getPluginManager().registerEvents(new DistanceTraveledQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new SkillLevelQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new GuiOpenQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new AbilityUnlockQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new AbilityActivateQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new LoadoutEquipQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestBoardAcceptQuestProgressListener(questManager), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestFeedbackListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestProgressNotificationListener(plugin), plugin);
         Bukkit.getPluginManager().registerEvents(new BoardRotationNotificationListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestStartMessageListener(plugin), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestStartAutoCompleteListener(questManager), plugin);
 
         // World listener
         Bukkit.getPluginManager().registerEvents(new FakeBlockBreakListener(), plugin);

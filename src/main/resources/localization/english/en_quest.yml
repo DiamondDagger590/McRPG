@@ -83,10 +83,10 @@ config-version: 1
 # Placeholders: <count> = required progress amount, <block>/<entity> = the target name.
 quest-objective-types:
   block-break:
-    any: "Break <count> blocks"
-    single: "Break <count> <block>"
-    multi-header: "Break <count> blocks"
-    multi-item: "  - <block>"
+    any: "<body>Break <primary><count></primary> blocks"
+    single: "<body>Break <primary><count></primary> <primary><block>"
+    multi-header: "<body>Break <primary><count></primary> blocks"
+    multi-item: "<body>  - <primary><block>"
   mob-kill:
     any: "Kill <count> mobs"
     single: "Kill <count> <entity>"
@@ -214,6 +214,34 @@ quest-objective-types:
     single: "Travel <count> blocks by <mode>"
     multi-header: "Travel <count> blocks by"
     multi-item: "  - <mode>"
+  skill-level-up:
+    any: "<body>Level up <primary><count></primary> time(s)"
+    specific: "<body>Level up <primary><skill></primary> <primary><count></primary> time(s)"
+  skill-target-level:
+    any: "<body>Reach level <primary><level></primary> in any skill"
+    specific: "<body>Reach level <primary><level></primary> in <primary><skill>"
+  gui-open:
+    format: "<body>Open the <primary><gui>"
+  ability-unlock:
+    any: "<body>Unlock any ability"
+    passive: "<body>Unlock a <ability-passive>passive</ability-passive> ability"
+    active: "<body>Unlock an <ability-active>active</ability-active> ability"
+    innate: "<body>Unlock an <ability-innate>innate</ability-innate> ability"
+    specific: "<body>Unlock <primary><ability>"
+  ability-activate:
+    any: "<body>Activate any ability"
+    passive: "<body>Activate a <ability-passive>passive</ability-passive> ability"
+    active: "<body>Activate an <ability-active>active</ability-active> ability"
+    innate: "<body>Activate an <ability-innate>innate</ability-innate> ability"
+    specific: "<body>Activate <primary><ability>"
+  loadout-equip:
+    any: "<body>Equip an ability to your loadout"
+    passive: "<body>Equip a <ability-passive>passive</ability-passive> ability"
+    active: "<body>Equip an <ability-active>active</ability-active> ability"
+    innate: "<body>Equip an <ability-innate>innate</ability-innate> ability"
+    specific: "<body>Equip <primary><ability>"
+  quest-board-accept:
+    format: "<body>Accept a quest from the quest board"
 
 # -----------------------------------------------------------------------
 # REWARD TYPE FORMAT TEMPLATES
@@ -293,6 +321,30 @@ quest-reward-types:
   ability-upgrade-next-tier:
     format: "<body>Upgrade: <ability> <body>(Next Tier)"
 
+  # mcrpg:message — sends a message to the player.
+  # No placeholders — used as a fallback description label in GUI when no
+  # locale key or inline messages are configured.
+  message:
+    format: "<body>Message"
+
+  # mcrpg:boosted_experience — grants boosted XP pool points.
+  # Placeholders:
+  #   <amount> — the amount of boosted experience granted
+  boosted-experience:
+    format: "<body><amount> <primary>Boosted XP"
+
+  # mcrpg:redeemable_experience — grants redeemable XP pool points.
+  # Placeholders:
+  #   <amount> — the amount of redeemable experience granted
+  redeemable-experience:
+    format: "<body><amount> <primary>Redeemable XP"
+
+  # mcrpg:redeemable_levels — grants redeemable level points.
+  # Placeholders:
+  #   <amount> — the number of redeemable levels granted
+  redeemable-levels:
+    format: "<body><amount> <primary>Redeemable Level(s)"
+
 # Display names for quest templates.
 # These are resolved via the 'display-name-route' field on each template definition.
 quest-templates:
@@ -359,7 +411,7 @@ quest-templates:
 quest-notifications:
   # Sent to all in-scope players when any quest starts.
   # Placeholder: <quest_name>
-  quest-started: '<primary>Quest Started: <skill><quest_name>'
+  quest-started: '<primary>Quest Started: <body><quest_name>'
   # Sent to all in-scope players when a quest is completed.
   # Placeholder: <quest_name>
   quest-completed: '<positive>Quest Completed: <primary><quest_name><positive>! Rewards have been granted.'

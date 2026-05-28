@@ -26,12 +26,17 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Map;
 import java.util.Optional;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * This GUI is used as an entry point for players to go through the workflow
  * of editing the item representing a loadout.
  */
-public class LoadoutDisplayHomeGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
+public class LoadoutDisplayHomeGui extends BaseGui<McRPGPlayer> implements FillerItemGui, KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "loadout_display");
 
     private static final int NAME_EDIT_SLOT = 10;
     private static final int ITEM_EDIT_SLOT = 13;
@@ -111,5 +116,11 @@ public class LoadoutDisplayHomeGui extends BaseGui<McRPGPlayer> implements Fille
     @Override
     public void unregisterListeners() {
         InventoryClickEvent.getHandlerList().unregister(this);
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

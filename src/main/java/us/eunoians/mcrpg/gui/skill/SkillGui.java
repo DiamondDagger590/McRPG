@@ -21,12 +21,17 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * This gui is the main gui for players to view all their skill from.
  */
-public class SkillGui extends PaginatedSortedSkillGui {
+public class SkillGui extends PaginatedSortedSkillGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "skills");
 
     protected static final int NAVIGATION_ROW_START_INDEX = 45;
     protected static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
@@ -121,5 +126,11 @@ public class SkillGui extends PaginatedSortedSkillGui {
     @Override
     public int getNavigationRowStartIndex() {
         return NAVIGATION_ROW_START_INDEX;
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

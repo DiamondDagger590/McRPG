@@ -6,6 +6,9 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.combo.ComboActivatable;
+import us.eunoians.mcrpg.ability.impl.type.PassiveAbility;
+import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemBuilder;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -140,11 +143,31 @@ public interface Ability extends McRPGContent {
     boolean isAbilityEnabled();
 
     /**
-     * Checks to see if this ability is passive or is active (requires user action to activate).
+     * Gets the {@link AbilityType} classification of this ability.
+     * <p>
+     * Classification priority:
+     * <ol>
+     *   <li>{@link AbilityType#ACTIVE} — this ability implements {@link ComboActivatable}</li>
+     *   <li>{@link AbilityType#PASSIVE} — this ability implements both {@link PassiveAbility}
+     *       and {@link UnlockableAbility} (fires on events and has an unlock gate)</li>
+     *   <li>{@link AbilityType#INNATE} — everything else, including always-on passives
+     *       that implement {@link PassiveAbility} without an unlock gate</li>
+     * </ol>
+     * Individual ability classes may override this if the interface-based default does not
+     * accurately represent their classification.
      *
-     * @return {@code true} if this ability is passive.
+     * @return the {@link AbilityType} of this ability
      */
-    boolean isPassive();
+    @NotNull
+    default AbilityType getAbilityType() {
+        if (this instanceof ComboActivatable) {
+            return AbilityType.ACTIVE;
+        }
+        if (this instanceof PassiveAbility && this instanceof UnlockableAbility) {
+            return AbilityType.PASSIVE;
+        }
+        return AbilityType.INNATE;
+    }
 
     /**
      * Gets the {@link AbilityItemBuilder} for this ability based off the provided
