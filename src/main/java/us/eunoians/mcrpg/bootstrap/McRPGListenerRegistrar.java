@@ -82,6 +82,8 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.listener.quest.QuestCancelListener;
 import us.eunoians.mcrpg.listener.quest.QuestChainCancelListener;
+import us.eunoians.mcrpg.listener.quest.QuestChainFirstJoinListener;
+import us.eunoians.mcrpg.listener.quest.QuestChainLoginListener;
 import us.eunoians.mcrpg.listener.quest.QuestChainProgressListener;
 import us.eunoians.mcrpg.listener.quest.QuestCompleteListener;
 import us.eunoians.mcrpg.quest.board.QuestBoardTerminator;
@@ -158,6 +160,10 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
                 .manager(McRPGManagerKey.QUEST_CHAIN);
         Bukkit.getPluginManager().registerEvents(new QuestChainProgressListener(chainManager), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestChainCancelListener(chainManager), plugin);
+        if (context.startupProfile() == StartupProfile.PROD) {
+            Bukkit.getPluginManager().registerEvents(new QuestChainLoginListener(chainManager), plugin);
+            Bukkit.getPluginManager().registerEvents(new QuestChainFirstJoinListener(chainManager), plugin);
+        }
         QuestBoardTerminator questBoardTerminator = new QuestBoardTerminator(plugin);
         var rarityRegistry = plugin.registryAccess().registry(McRPGRegistryKey.QUEST_RARITY);
         var distTypeRegistry = plugin.registryAccess().registry(McRPGRegistryKey.REWARD_DISTRIBUTION_TYPE);

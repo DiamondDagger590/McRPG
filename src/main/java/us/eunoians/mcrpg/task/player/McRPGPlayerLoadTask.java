@@ -50,6 +50,8 @@ import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
 import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainPlayerState;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -105,6 +107,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             updatePlayerDataSyncFunctions.add(loadPlayerStats(connection));
             updatePlayerDataSyncFunctions.add(awardRestedExperience(connection));
             updatePlayerDataSyncFunctions.add(loadBoardQuestCount(connection));
+            updatePlayerDataSyncFunctions.add(loadChainStates(connection));
             updatePlayerLoginTimes(connection, loginTime);
             // Jump to main thread to save the data
             new CoreTask(getPlugin()) {
@@ -482,6 +485,21 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         NamespacedKey boardKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "default_board");
         int count = PlayerBoardStateDAO.countActiveQuestsFromBoard(connection, getCorePlayer().getUUID(), boardKey);
         return () -> getCorePlayer().asQuestHolder().setActiveBoardQuestCount(count);
+    }
+
+    /**
+     * Loads all chain states for the player from the database.
+     * The states are applied on the main thread via {@link McRPGPlayer#getChainData()}.
+     *
+     * @param connection the database connection (DB executor thread)
+     * @return a function that applies the loaded states on the main thread
+     */
+    @NotNull
+    private UpdatePlayerDataSyncFunction loadChainStates(@NotNull Connection connection) {
+        QuestChainManager chainManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.QUEST_CHAIN);
+        List<QuestChainPlayerState> states = chainManager.loadChainStates(connection, getCorePlayer().getUUID());
+        return () -> states.forEach(state -> getCorePlayer().getChainData().putChainState(state));
     }
 
     /**
