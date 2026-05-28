@@ -58,7 +58,7 @@ public interface QuestObjectiveType extends McRPGContent {
 
 ## 3. Built-in Objective Types
 
-McRPG ships two objective types registered by [`McRPGExpansion`](../expansion/McRPGExpansion.java):
+McRPG ships nine objective types registered by [`McRPGExpansion`](../expansion/McRPGExpansion.java):
 
 ### `mcrpg:block_break`
 
@@ -98,6 +98,144 @@ config:
     - ZOMBIE
     - SKELETON
     - CREEPER
+```
+
+### `mcrpg:skill_level_up`
+
+Tracks when a player gains a level in any skill (or a specific skill). Completes once the player has gained the required number of levels during the life of the quest.
+
+**Config fields:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `skill` | namespaced key string | *(empty = any skill)* | Key of the McRPG skill to track (e.g. `mcrpg:mining`). Omit to accept any skill level-up. |
+| `levels` | int | `1` | Number of times the player must level up the skill. |
+
+**Example:**
+
+```yaml
+config:
+  skill: mcrpg:mining
+  levels: 3
+```
+
+### `mcrpg:skill_target_level`
+
+Tracks whether a player has reached a specific level in a skill. Auto-completes at quest start if the player's current level already meets the target.
+
+**Config fields:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `skill` | namespaced key string | *(empty = any skill)* | Key of the McRPG skill to track. |
+| `target-level` | int | `1` | The level the player must reach. |
+
+**Example:**
+
+```yaml
+config:
+  skill: mcrpg:swords
+  target-level: 50
+```
+
+### `mcrpg:gui_open`
+
+Tracks when a player opens a specific McRPG GUI identified by its `NamespacedKey`. Useful for tutorial quests that guide players through interfaces.
+
+**Config fields:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `gui-type` | namespaced key string | *(required)* | The `NamespacedKey` of the `KeyedGui` implementation to detect. Must be a valid, registered `KeyedGui` key. |
+
+**Example:**
+
+```yaml
+config:
+  gui-type: mcrpg:board
+```
+
+> **Note:** `gui-type` must be a valid `NamespacedKey` matching a registered `KeyedGui`. Invalid values are logged as warnings at load time.
+
+### `mcrpg:ability_unlock`
+
+Tracks when a player unlocks a specific ability (or any ability of a given type). Auto-completes at quest start if the player already has a matching ability unlocked (`ABILITY_UNLOCKED_ATTRIBUTE`).
+
+**Config fields:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `ability` | namespaced key string | *(empty = any ability)* | Key of the ability to track (e.g. `mcrpg:bleed`). |
+| `ability-type` | string | *(empty = any type)* | Filter by ability type: `ACTIVE`, `PASSIVE`, or `INNATE`. Ignored if `ability` is set. |
+
+**Example:**
+
+```yaml
+config:
+  ability: mcrpg:bleed
+
+# Or by type:
+config:
+  ability-type: ACTIVE
+```
+
+### `mcrpg:ability_activate`
+
+Tracks how many times a player activates an ability during the life of the quest. Counts each activation (combo trigger for active abilities, event trigger for passives).
+
+**Config fields:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `ability` | namespaced key string | *(empty = any ability)* | Key of the ability to count activations for. |
+| `ability-type` | string | *(empty = any type)* | Filter by ability type: `ACTIVE`, `PASSIVE`, or `INNATE`. Ignored if `ability` is set. |
+
+**Example:**
+
+```yaml
+required-progress: 25
+config:
+  ability: mcrpg:bleed
+
+# Or track any active ability:
+required-progress: 10
+config:
+  ability-type: ACTIVE
+```
+
+### `mcrpg:loadout_equip`
+
+Tracks when a player equips an ability into their **active** loadout (`LoadoutAbilityChangeEvent` with EQUIP or SWAP). Auto-completes at quest start if the active loadout already contains a matching ability. Progress is not credited for edits to non-active loadout presets.
+
+**Config fields:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `ability` | namespaced key string | *(empty = any ability)* | Key of the specific ability to watch for. |
+| `ability-type` | string | *(empty = any type)* | Filter by ability type: `ACTIVE`, `PASSIVE`, or `INNATE`. Ignored if `ability` is set. |
+
+**Example:**
+
+```yaml
+config:
+  ability: mcrpg:deeper_wound
+```
+
+### `mcrpg:quest_board_accept`
+
+Tracks when a player accepts a quest from the quest board. Useful for tutorial quests that guide new players to the board.
+
+**Config fields:**
+
+| Field | Type | Default | Description |
+|-------|------|---------|-------------|
+| `board` | namespaced key string | *(empty = any board)* | Key of the specific board to watch (e.g. `mcrpg:default`). Omit to accept from any board. |
+
+**Example:**
+
+```yaml
+config:
+  board: mcrpg:default
 ```
 
 ---
@@ -170,7 +308,11 @@ Each objective type defines its own `QuestObjectiveProgressContext` subclass tha
 ```
 QuestObjectiveProgressContext   (abstract base — marker class)
 ├── BlockBreakQuestContext      wraps BlockBreakEvent
-└── MobKillQuestContext         wraps EntityDeathEvent + CustomEntityWrapper
+├── MobKillQuestContext         wraps EntityDeathEvent + CustomEntityWrapper
+├── SkillLevelQuestContext      wraps SkillGainLevelEvent
+├── AbilityActivateQuestContext wraps ability activation
+├── LoadoutEquipQuestContext    wraps LoadoutAbilityChangeEvent (equip/swap)
+└── QuestBoardAcceptQuestContext wraps board acceptance
 ```
 
 The context is a simple data carrier. It does not perform any logic — its job is to give the objective type access to the event details it needs.
@@ -485,8 +627,18 @@ objectives:
 | [`QuestObjectiveTypeRegistry`](objective/type/QuestObjectiveTypeRegistry.java) | Type registry |
 | [`BlockBreakObjectiveType`](objective/type/builtin/BlockBreakObjectiveType.java) | Built-in block break type |
 | [`MobKillObjectiveType`](objective/type/builtin/MobKillObjectiveType.java) | Built-in mob kill type |
+| [`SkillLevelUpObjectiveType`](objective/type/builtin/SkillLevelUpObjectiveType.java) | Built-in skill level-up type |
+| [`SkillTargetLevelObjectiveType`](objective/type/builtin/SkillTargetLevelObjectiveType.java) | Built-in skill target level type |
+| [`GuiOpenObjectiveType`](objective/type/builtin/GuiOpenObjectiveType.java) | Built-in GUI open type |
+| [`AbilityUnlockObjectiveType`](objective/type/builtin/AbilityUnlockObjectiveType.java) | Built-in ability unlock type |
+| [`AbilityActivateObjectiveType`](objective/type/builtin/AbilityActivateObjectiveType.java) | Built-in ability activate type |
+| [`LoadoutEquipObjectiveType`](objective/type/builtin/LoadoutEquipObjectiveType.java) | Built-in loadout equip type |
+| [`QuestBoardAcceptObjectiveType`](objective/type/builtin/QuestBoardAcceptObjectiveType.java) | Built-in quest board accept type |
+| [`AbilityObjectiveFilter`](objective/type/builtin/AbilityObjectiveFilter.java) | Shared filter for ability-based objective types |
 | [`BlockBreakQuestContext`](objective/type/builtin/BlockBreakQuestContext.java) | Block break context |
 | [`MobKillQuestContext`](objective/type/builtin/MobKillQuestContext.java) | Mob kill context |
+| [`SkillLevelQuestContext`](objective/type/builtin/SkillLevelQuestContext.java) | Skill level-up context |
+| [`AbilityActivateQuestContext`](objective/type/builtin/AbilityActivateQuestContext.java) | Ability activation context |
 | [`QuestObjectiveDefinition`](definition/QuestObjectiveDefinition.java) | YAML definition frame + description resolution |
 | [`QuestObjectiveInstance`](impl/objective/QuestObjectiveInstance.java) | Runtime counter + completion logic |
 | [`QuestProgressListener`](../listener/quest/QuestProgressListener.java) | Fan-out routing interface |

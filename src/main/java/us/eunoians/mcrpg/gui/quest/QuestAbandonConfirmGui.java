@@ -20,12 +20,18 @@ import us.eunoians.mcrpg.gui.quest.slot.QuestAbandonConfirmSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestAbandonInfoSlot;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import java.util.Optional;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * Confirmation GUI shown before abandoning a quest.
  * Displays a confirm button, quest info, and cancel button in a 3-row layout.
  */
-public class QuestAbandonConfirmGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
+public class QuestAbandonConfirmGui extends BaseGui<McRPGPlayer> implements FillerItemGui, KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "quest_abandon_confirm");
 
     private static final int CONFIRM_SLOT_INDEX = 11;
     private static final int QUEST_INFO_SLOT_INDEX = 13;
@@ -86,5 +92,11 @@ public class QuestAbandonConfirmGui extends BaseGui<McRPGPlayer> implements Fill
     @Override
     public void unregisterListeners() {
         InventoryClickEvent.getHandlerList().unregister(this);
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

@@ -1,17 +1,21 @@
 package us.eunoians.mcrpg.loadout;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.combo.ComboActivatable;
-import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
+import us.eunoians.mcrpg.event.loadout.LoadoutAbilityChangeEvent;
+import us.eunoians.mcrpg.event.loadout.LoadoutAbilityChangeEvent.ChangeReason;
+import us.eunoians.mcrpg.event.loadout.LoadoutPositionSwapEvent;
 import us.eunoians.mcrpg.exception.loadout.InvalidAbilityForLoadoutException;
 import us.eunoians.mcrpg.exception.loadout.LoadoutMaxSizeExceededException;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -85,12 +89,13 @@ public final class Loadout {
 
     /**
      * Adds the {@link NamespacedKey} to this loadout at the next available position.
+     * Internal — callers outside this class must use {@link #equipAbility(NamespacedKey)}.
      *
      * @param key The {@link NamespacedKey} corresponding to the {@link Ability} to add to this loadout.
      * @throws LoadoutMaxSizeExceededException   If the loadout is at or above the {@link #getMaxLoadoutSize()}.
      * @throws InvalidAbilityForLoadoutException If the ability cannot be added (already present or exceeds the active ability limit).
      */
-    public void addAbility(@NotNull NamespacedKey key) {
+    private void addAbility(@NotNull NamespacedKey key) {
         if (abilities.size() >= getMaxLoadoutSize()) {
             throw new LoadoutMaxSizeExceededException(this, String.format("Loadout %d for user %s tried to exceed the maximum loadout size of %d. The current loadout size is %d",
                     loadoutSlot, loadoutHolder, getMaxLoadoutSize(), abilities.size()));
@@ -104,15 +109,17 @@ public final class Loadout {
 
     /**
      * Removes the provided {@link NamespacedKey} from this loadout.
+     * Internal — callers outside this class must use {@link #unequipAbility(NamespacedKey)}.
      *
      * @param key The {@link NamespacedKey} to remove.
      */
-    public void removeAbility(@NotNull NamespacedKey key) {
+    private void removeAbility(@NotNull NamespacedKey key) {
         abilities.remove(key);
     }
 
     /**
      * Replaces an existing ability in the loadout with a new one, preserving positions.
+     * Internal — callers outside this class must use {@link #swapAbility(NamespacedKey, NamespacedKey)}.
      * <p>
      * If {@code newAbility} is already present in the loadout at a different position, the two abilities
      * swap positions — both remain in the loadout. Otherwise, {@code newAbility} is inserted at the
@@ -123,7 +130,7 @@ public final class Loadout {
      * @throws InvalidAbilityForLoadoutException If {@link #canAbilityBeReplacedIntoLoadout(NamespacedKey, NamespacedKey)}
      *                                           returns {@code false} for the given pair.
      */
-    public void replaceAbility(@NotNull NamespacedKey oldAbility, @NotNull NamespacedKey newAbility) {
+    private void replaceAbility(@NotNull NamespacedKey oldAbility, @NotNull NamespacedKey newAbility) {
         if (!canAbilityBeReplacedIntoLoadout(oldAbility, newAbility)) {
             throw new InvalidAbilityForLoadoutException(this, newAbility, String.format("Loadout %d for user %s tried to replace %s with %s, but the replacement is not valid.",
                     loadoutSlot, loadoutHolder, oldAbility, newAbility));
@@ -138,6 +145,65 @@ public final class Loadout {
             // Normal replacement: put the new ability at the position previously held by the old one.
             abilities.set(oldIndex, newAbility);
         }
+    }
+
+    /**
+     * Equips an ability to this loadout and fires a {@link LoadoutAbilityChangeEvent}
+     * with {@link ChangeReason#EQUIP}.
+     * Prefer this over the internal {@code addAbility} for all external and GUI callsites.
+     *
+     * @param key the ability key to equip
+     * @return {@code true} if the ability was successfully equipped
+     */
+    public boolean equipAbility(@NotNull NamespacedKey key) {
+        try {
+            addAbility(key);
+        } catch (LoadoutMaxSizeExceededException | InvalidAbilityForLoadoutException e) {
+            return false;
+        }
+        Bukkit.getPluginManager().callEvent(
+                new LoadoutAbilityChangeEvent(loadoutHolder, ChangeReason.EQUIP, null, key, loadoutSlot));
+        return true;
+    }
+
+    /**
+     * Unequips an ability from this loadout and fires a {@link LoadoutAbilityChangeEvent}
+     * with {@link ChangeReason#UNEQUIP}.
+     * Prefer this over the internal {@code removeAbility} for all external and GUI callsites.
+     *
+     * @param key the ability key to unequip
+     * @return {@code true} if the ability was present and removed
+     */
+    public boolean unequipAbility(@NotNull NamespacedKey key) {
+        if (!abilities.contains(key)) {
+            return false;
+        }
+        removeAbility(key);
+        Bukkit.getPluginManager().callEvent(
+                new LoadoutAbilityChangeEvent(loadoutHolder, ChangeReason.UNEQUIP, key, null, loadoutSlot));
+        return true;
+    }
+
+    /**
+     * Swaps an ability in this loadout and fires a {@link LoadoutAbilityChangeEvent}
+     * with {@link ChangeReason#SWAP}.
+     * If both abilities are already in the loadout, their positions are exchanged.
+     * Otherwise, {@code oldAbility} is replaced by {@code newAbility}.
+     * Prefer this over the internal {@code replaceAbility} for all external and GUI callsites.
+     *
+     * @param oldAbility the ability key to replace
+     * @param newAbility the replacement ability key
+     * @return {@code true} if the swap was successful
+     */
+    public boolean swapAbility(@NotNull NamespacedKey oldAbility, @NotNull NamespacedKey newAbility) {
+        try {
+            replaceAbility(oldAbility, newAbility);
+        } catch (InvalidAbilityForLoadoutException e) {
+            return false;
+        }
+        Bukkit.getPluginManager().callEvent(
+                new LoadoutAbilityChangeEvent(loadoutHolder, ChangeReason.SWAP, oldAbility, newAbility, loadoutSlot));
+        return true;
     }
 
     /**
@@ -165,16 +231,16 @@ public final class Loadout {
             return false;
         }
         var abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
-        if (ability instanceof ActiveAbility) {
+        if (ability.getAbilityType() == AbilityType.ACTIVE) {
             long activeCount = abilities.stream()
                     .map(abilityRegistry::getRegisteredAbility)
-                    .filter(a -> a instanceof ActiveAbility)
+                    .filter(a -> a.getAbilityType() == AbilityType.ACTIVE)
                     .count();
             return activeCount < getMaxActiveLoadoutSize();
         }
         long passiveCount = abilities.stream()
                 .map(abilityRegistry::getRegisteredAbility)
-                .filter(a -> !(a instanceof ActiveAbility))
+                .filter(a -> a.getAbilityType() != AbilityType.ACTIVE)
                 .count();
         return passiveCount < getMaxPassiveLoadoutSize();
     }
@@ -219,8 +285,8 @@ public final class Loadout {
             return true;
         }
         // If both abilities are active abilities belonging to the same skill, allow the replacement (skill-slot swap).
-        if (oldAbility instanceof ActiveAbility && oldAbility instanceof SkillAbility oldSkillAbility
-                && newAbility instanceof ActiveAbility && newAbility instanceof SkillAbility newSkillAbility
+        if (oldAbility.getAbilityType() == AbilityType.ACTIVE && oldAbility instanceof SkillAbility oldSkillAbility
+                && newAbility.getAbilityType() == AbilityType.ACTIVE && newAbility instanceof SkillAbility newSkillAbility
                 && oldSkillAbility.getSkillKey().equals(newSkillAbility.getSkillKey())) {
             return true;
         }
@@ -357,6 +423,8 @@ public final class Loadout {
         NamespacedKey temp = abilities.get(fromListIndex);
         abilities.set(fromListIndex, abilities.get(toListIndex));
         abilities.set(toListIndex, temp);
+        Bukkit.getPluginManager().callEvent(
+                new LoadoutPositionSwapEvent(loadoutHolder, fromComboSlot, toComboSlot));
     }
 
     /**

@@ -2,7 +2,9 @@ package us.eunoians.mcrpg.ability.attribute;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -38,28 +40,28 @@ public abstract class AbilityAttribute<T> {
     private final NamespacedKey namespacedKey;
     @NotNull
     private final T content;
-    @NotNull
-    private final Optional<NamespacedKey> abilityType;
+    @Nullable
+    private final NamespacedKey abilityType;
 
     protected AbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey) {
         this.databaseKeyName = databaseKeyName;
         this.namespacedKey = namespacedKey;
         this.content = getDefaultContent();
-        this.abilityType = Optional.empty();
+        this.abilityType = null;
     }
 
     protected AbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey, @NotNull T content) {
         this.databaseKeyName = databaseKeyName;
         this.namespacedKey = namespacedKey;
         this.content = content;
-        this.abilityType = Optional.empty();
+        this.abilityType = null;
     }
 
     protected AbilityAttribute(@NotNull String databaseKeyName, @NotNull NamespacedKey namespacedKey, @NotNull T content, @NotNull NamespacedKey abilityType) {
         this.databaseKeyName = databaseKeyName;
         this.namespacedKey = namespacedKey;
         this.content = content;
-        this.abilityType = Optional.of(abilityType);
+        this.abilityType = abilityType;
     }
 
     /**
@@ -157,7 +159,7 @@ public abstract class AbilityAttribute<T> {
      */
     @NotNull
     public Optional<NamespacedKey> getAbilityType() {
-        return abilityType;
+        return Optional.ofNullable(abilityType);
     }
 
     /**
@@ -166,7 +168,10 @@ public abstract class AbilityAttribute<T> {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof AbilityAttribute<?> abilityAttribute) {
-            return abilityAttribute.getNamespacedKey().equals(this.getNamespacedKey()) && abilityAttribute.getDatabaseKeyName().equals(this.getDatabaseKeyName()) && abilityAttribute.getContent().equals(this.getContent()) && (abilityAttribute.getAbilityType().isPresent() == this.getAbilityType().isPresent());
+            return abilityAttribute.getNamespacedKey().equals(this.getNamespacedKey())
+                    && abilityAttribute.getDatabaseKeyName().equals(this.getDatabaseKeyName())
+                    && abilityAttribute.getContent().equals(this.getContent())
+                    && Objects.equals(abilityAttribute.abilityType, this.abilityType);
         }
         return false;
     }
@@ -184,7 +189,7 @@ public abstract class AbilityAttribute<T> {
 
     @Override
     public String toString() {
-        return "Ability Type: " + (abilityType.isPresent() ? abilityType.get() : "null")
+        return "Ability Type: " + (abilityType != null ? abilityType : "null")
                 + " Namespaced Key: " + getNamespacedKey() + " Content: " + getContent()
                 + " Database Key: " + getDatabaseKeyName();
     }

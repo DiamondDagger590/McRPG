@@ -292,11 +292,6 @@ public class AbilityUpgradeNextTierRewardTypeTest extends McRPGBaseTest {
         }
 
         @Override
-        public boolean isPassive() {
-            return true;
-        }
-
-        @Override
         public @NotNull Optional<NamespacedKey> getExpansionKey() {
             return Optional.empty();
         }

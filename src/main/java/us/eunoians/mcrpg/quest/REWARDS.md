@@ -75,7 +75,7 @@ public interface QuestRewardType extends McRPGContent {
 
 ## 3. Built-in Reward Types
 
-McRPG ships six reward types registered by `McRPGExpansion`.
+McRPG ships ten reward types registered by `McRPGExpansion`.
 
 | Class | Key | Config Fields | Scalable |
 |-------|-----|--------------|----------|
@@ -85,6 +85,10 @@ McRPG ships six reward types registered by `McRPGExpansion`.
 | `AbilityUpgradeRewardType` | `mcrpg:ability_upgrade` | `ability`, `tier` | No |
 | `AbilityUpgradeNextTierRewardType` | `mcrpg:ability_upgrade_next_tier` | `ability` | No |
 | `ItemRewardType` | `mcrpg:item` | `item` (map: material, amount, enchantments, name, lore, custom-model-data, glowing), top-level `amount` | Partial (top-level `amount` only) |
+| `MessageRewardType` | `mcrpg:message` | `key` (optional locale key), `messages` (inline MiniMessage list) | No |
+| `BoostedExperienceRewardType` | `mcrpg:boosted_experience` | `amount` (int, must be > 0) | No |
+| `RedeemableExperienceRewardType` | `mcrpg:redeemable_experience` | `amount` (int, must be > 0) | No |
+| `RedeemableLevelsRewardType` | `mcrpg:redeemable_levels` | `amount` (int, must be > 0) | No |
 
 **Scalable** means the type correctly implements `withAmountMultiplier` and `getNumericAmount`, making it safe to use in `SPLIT_EVEN` / `SPLIT_PROPORTIONAL` distribution tiers. Non-scalable types used in split tiers fall back to `ALL` behavior (every qualifier receives the full reward) and log a warning.
 
@@ -148,6 +152,44 @@ item-reward:
       efficiency: 3
       unbreaking: 2
     glowing: true
+```
+
+```yaml
+# mcrpg:message
+# Sends a localized or inline MiniMessage message to the player.
+# 'key' is an optional locale route; if present, inline 'messages' are ignored.
+# 'messages' is a fallback list of raw MiniMessage strings sent when no locale key is set.
+message-reward:
+  type: mcrpg:message
+  messages:
+    - "<primary>Congratulations on completing the quest!"
+    - "<body>You may now visit the quest board for new offerings."
+
+# Or using a locale key (preferred for multi-language servers):
+message-reward-localized:
+  type: mcrpg:message
+  key: "quest-complete-welcome"
+
+# mcrpg:boosted_experience
+# Grants McRPG boosted experience (subject to server-defined boost multipliers).
+# amount: positive integer — the raw boosted XP amount to grant.
+boosted-xp-reward:
+  type: mcrpg:boosted_experience
+  amount: 500
+
+# mcrpg:redeemable_experience
+# Grants redeemable experience that the player can bank and spend later.
+# amount: positive integer — the amount of redeemable XP to grant.
+redeemable-xp-reward:
+  type: mcrpg:redeemable_experience
+  amount: 250
+
+# mcrpg:redeemable_levels
+# Grants redeemable levels that the player can spend to upgrade abilities.
+# amount: positive integer — the number of redeemable levels to grant.
+redeemable-levels-reward:
+  type: mcrpg:redeemable_levels
+  amount: 2
 ```
 
 ---

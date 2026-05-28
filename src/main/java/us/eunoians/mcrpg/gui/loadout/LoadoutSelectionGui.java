@@ -25,12 +25,17 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * This gui displays all the player's {@link Loadout}s, where they can select individual loadouts
  * to edit.
  */
-public class LoadoutSelectionGui extends McRPGPaginatedGui {
+public class LoadoutSelectionGui extends McRPGPaginatedGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "loadout_selection");
 
     private static final int NAVIGATION_ROW_START_INDEX = 9;
     private static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
@@ -135,5 +140,11 @@ public class LoadoutSelectionGui extends McRPGPaginatedGui {
     @Override
     public void unregisterListeners() {
         InventoryClickEvent.getHandlerList().unregister(this);
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

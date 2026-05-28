@@ -245,19 +245,13 @@ public class TemplateGenerationIntegrationTest extends McRPGBaseTest {
                     List.of(),
                     QuestRepeatMode.ONCE);
 
-            // Wrap with distribution config using the full constructor
-            QuestDefinition defWithDist = new QuestDefinition(
+            // Wrap with distribution config using the builder
+            QuestDefinition defWithDist = new QuestDefinition.Builder(
                     def.getQuestKey(),
                     def.getScopeType(),
-                    null,
-                    def.getPhases(),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    distConfig);
+                    def.getPhases()
+            ).rewardDistribution(distConfig)
+                    .build();
 
             QuestInstance quest = QuestTestHelper.startedQuestWithPlayer(defWithDist, playerUUID);
 

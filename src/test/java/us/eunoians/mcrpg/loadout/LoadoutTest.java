@@ -23,8 +23,10 @@ import us.eunoians.mcrpg.configuration.file.skill.HerbalismConfigFile;
 import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
-import us.eunoians.mcrpg.exception.loadout.InvalidAbilityForLoadoutException;
-import us.eunoians.mcrpg.exception.loadout.LoadoutMaxSizeExceededException;
+import us.eunoians.mcrpg.event.loadout.LoadoutAbilityChangeEvent;
+import us.eunoians.mcrpg.event.loadout.LoadoutAbilityChangeEvent.ChangeReason;
+import us.eunoians.mcrpg.event.loadout.LoadoutPositionSwapEvent;
+import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
@@ -34,11 +36,8 @@ import java.util.List;
 import java.util.UUID;
 
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -109,57 +108,57 @@ public class LoadoutTest extends McRPGBaseTest {
         assertEquals(2, mcRPGPlayer.asSkillHolder().getLoadout(2).getLoadoutSlot());
     }
 
-    @DisplayName("Given a valid ability and available space, when adding an ability, then it is added to the loadout")
+    @DisplayName("Given a valid ability and available space, when equipping an ability, then it is added to the loadout")
     @Test
-    public void addAbility_addsAbility_whenValidAbility(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void equipAbility_addsAbility_whenValidAbility(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        assertDoesNotThrow(() -> loadout.addAbility(massHarvest.getAbilityKey()));
+        assertTrue(loadout.equipAbility(massHarvest.getAbilityKey()));
         assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
     }
 
-    @DisplayName("Given a loadout with max passive size of zero, when adding an active ability, then it succeeds because the active budget is separate")
+    @DisplayName("Given a loadout with max passive size of zero, when equipping an active ability, then it succeeds because the active budget is separate")
     @Test
-    public void addAbility_succeeds_whenPassiveBudgetZeroButActiveBudgetAvailable(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void equipAbility_succeeds_whenPassiveBudgetZeroButActiveBudgetAvailable(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(0);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        assertDoesNotThrow(() -> loadout.addAbility(massHarvest.getAbilityKey()));
+        assertTrue(loadout.equipAbility(massHarvest.getAbilityKey()));
         assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
     }
 
-    @DisplayName("Given an ability that is not valid for the loadout, when adding an ability, then it throws InvalidAbilityForLoadoutException")
+    @DisplayName("Given an ability that is not valid for the loadout, when equipping an ability, then it returns false")
     @Test
-    public void addAbility_throwsException_whenAbilityInvalidForLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void equipAbility_returnsFalse_whenAbilityInvalidForLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        assertThrows(InvalidAbilityForLoadoutException.class, () -> loadout.addAbility(instantIrrigation.getAbilityKey()));
+        assertFalse(loadout.equipAbility(instantIrrigation.getAbilityKey()));
     }
 
-    @DisplayName("Given an ability in the loadout, when removing the ability, then it is removed from the loadout")
+    @DisplayName("Given an ability in the loadout, when unequipping the ability, then it is removed from the loadout")
     @Test
-    public void removeAbility_removesAbility_whenAbilityInLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void unequipAbility_removesAbility_whenAbilityInLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
         assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
-        loadout.removeAbility(massHarvest.getAbilityKey());
+        assertTrue(loadout.unequipAbility(massHarvest.getAbilityKey()));
         assertTrue(loadout.getAbilities().isEmpty());
     }
 
-    @DisplayName("Given an existing ability in the loadout, when replacing it with another ability, then the old is removed and the new is added")
+    @DisplayName("Given an existing ability in the loadout, when swapping it with another ability, then the old is removed and the new is added")
     @Test
-    public void replaceAbility_replacesAbility_whenDifferentAbilityProvided(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void swapAbility_replacesAbility_whenDifferentAbilityProvided(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
         assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
         assertFalse(loadout.getAbilities().contains(verdantSurge.getAbilityKey()));
-        loadout.replaceAbility(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey());
+        assertTrue(loadout.swapAbility(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()));
         assertTrue(loadout.getAbilities().contains(verdantSurge.getAbilityKey()));
         assertFalse(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
     }
@@ -170,7 +169,7 @@ public class LoadoutTest extends McRPGBaseTest {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
         assertTrue(loadout.isAbilityInLoadout(massHarvest.getAbilityKey()));
     }
 
@@ -189,7 +188,7 @@ public class LoadoutTest extends McRPGBaseTest {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
         assertEquals(1, loadout.getAbilities().size());
         assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
     }
@@ -209,7 +208,7 @@ public class LoadoutTest extends McRPGBaseTest {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
         assertEquals(4, loadout.getRemainingLoadoutSize());
     }
 
@@ -219,7 +218,7 @@ public class LoadoutTest extends McRPGBaseTest {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
 
         UUID uuid = UUID.fromString("79734b2b-4323-44b7-a310-69065a5276c6");
         Loadout copy = loadout.copyLoadout(uuid, 1);
@@ -273,7 +272,7 @@ public class LoadoutTest extends McRPGBaseTest {
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout1 = mcRPGPlayer.asSkillHolder().getLoadout(1);
         Loadout loadout2 = mcRPGPlayer.asSkillHolder().getLoadout(2);
-        assertDoesNotThrow(() -> loadout1.addAbility(massHarvest.getAbilityKey()));
+        assertTrue(loadout1.equipAbility(massHarvest.getAbilityKey()));
         assertTrue(loadout1.canAbilityBeAddedToLoadout(verdantSurge.getAbilityKey()));
         assertTrue(loadout2.canAbilityBeAddedToLoadout(verdantSurge.getAbilityKey()));
     }
@@ -284,7 +283,7 @@ public class LoadoutTest extends McRPGBaseTest {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
         assertTrue(loadout.canAbilityBeReplacedIntoLoadout(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()));
     }
 
@@ -294,21 +293,21 @@ public class LoadoutTest extends McRPGBaseTest {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
         assertFalse(loadout.canAbilityBeReplacedIntoLoadout(massHarvest.getAbilityKey(), massHarvest.getAbilityKey()));
     }
 
-    @DisplayName("Given two active abilities from the same skill both in the loadout, when replacing one with the other, then both remain with their positions swapped")
+    @DisplayName("Given two active abilities from the same skill both in the loadout, when swapping one with the other, then both remain with their positions swapped")
     @Test
-    public void replaceAbility_swapsPositions_whenBothAbilitiesAlreadyInLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
+    public void swapAbility_swapsPositions_whenBothAbilitiesAlreadyInLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
-        loadout.addAbility(verdantSurge.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(verdantSurge.getAbilityKey());
         assertEquals(List.of(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()), loadout.getOrderedAbilities());
 
-        assertDoesNotThrow(() -> loadout.replaceAbility(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()));
+        assertTrue(loadout.swapAbility(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()));
 
         // Both abilities must still be present — the swap must not remove either one.
         assertTrue(loadout.getAbilities().contains(massHarvest.getAbilityKey()));
@@ -324,8 +323,8 @@ public class LoadoutTest extends McRPGBaseTest {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
-        loadout.addAbility(verdantSurge.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(verdantSurge.getAbilityKey());
         assertTrue(loadout.canAbilityBeReplacedIntoLoadout(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()));
     }
 
@@ -335,8 +334,123 @@ public class LoadoutTest extends McRPGBaseTest {
         when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
         when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
         Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-        loadout.addAbility(massHarvest.getAbilityKey());
-        loadout.addAbility(verdantSurge.getAbilityKey());
+        loadout.equipAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(verdantSurge.getAbilityKey());
         assertEquals(List.of(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()), loadout.getOrderedAbilities());
+    }
+
+    @DisplayName("Given a valid ability, when equipAbility succeeds, then LoadoutAbilityChangeEvent fires with EQUIP reason")
+    @Test
+    public void equipAbility_firesEquipEvent_whenSuccessful(@NotNull McRPGPlayer mcRPGPlayer) {
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
+        Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
+
+        java.util.concurrent.atomic.AtomicReference<LoadoutAbilityChangeEvent> captured = new java.util.concurrent.atomic.AtomicReference<>();
+        server.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void onEvent(LoadoutAbilityChangeEvent e) { captured.set(e); }
+        }, mcRPG);
+
+        loadout.equipAbility(massHarvest.getAbilityKey());
+
+        assertNotEquals(null, captured.get());
+        assertEquals(ChangeReason.EQUIP, captured.get().getReason());
+        assertTrue(captured.get().getNewAbility().isPresent());
+        assertEquals(massHarvest.getAbilityKey(), captured.get().getNewAbility().get());
+    }
+
+    @DisplayName("Given an ability in the loadout, when unequipAbility succeeds, then LoadoutAbilityChangeEvent fires with UNEQUIP reason")
+    @Test
+    public void unequipAbility_firesUnequipEvent_whenSuccessful(@NotNull McRPGPlayer mcRPGPlayer) {
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
+        Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
+        loadout.equipAbility(massHarvest.getAbilityKey());
+
+        java.util.concurrent.atomic.AtomicReference<LoadoutAbilityChangeEvent> captured = new java.util.concurrent.atomic.AtomicReference<>();
+        server.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void onEvent(LoadoutAbilityChangeEvent e) { captured.set(e); }
+        }, mcRPG);
+
+        loadout.unequipAbility(massHarvest.getAbilityKey());
+
+        assertNotEquals(null, captured.get());
+        assertEquals(ChangeReason.UNEQUIP, captured.get().getReason());
+        assertTrue(captured.get().getPreviousAbility().isPresent());
+        assertEquals(massHarvest.getAbilityKey(), captured.get().getPreviousAbility().get());
+    }
+
+    @DisplayName("Given an ability in the loadout, when swapAbility succeeds, then LoadoutAbilityChangeEvent fires with SWAP reason")
+    @Test
+    public void swapAbility_firesSwapEvent_whenSuccessful(@NotNull McRPGPlayer mcRPGPlayer) {
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
+        Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
+        loadout.equipAbility(massHarvest.getAbilityKey());
+
+        java.util.concurrent.atomic.AtomicReference<LoadoutAbilityChangeEvent> captured = new java.util.concurrent.atomic.AtomicReference<>();
+        server.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void onEvent(LoadoutAbilityChangeEvent e) { captured.set(e); }
+        }, mcRPG);
+
+        loadout.swapAbility(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey());
+
+        assertNotEquals(null, captured.get());
+        assertEquals(ChangeReason.SWAP, captured.get().getReason());
+        assertTrue(captured.get().getPreviousAbility().isPresent());
+        assertEquals(massHarvest.getAbilityKey(), captured.get().getPreviousAbility().get());
+        assertTrue(captured.get().getNewAbility().isPresent());
+        assertEquals(verdantSurge.getAbilityKey(), captured.get().getNewAbility().get());
+    }
+
+    @DisplayName("Given an ability not in the loadout, when unequipAbility is called, then it returns false")
+    @Test
+    public void unequipAbility_returnsFalse_whenAbilityNotInLoadout(@NotNull McRPGPlayer mcRPGPlayer) {
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
+        Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
+        assertFalse(loadout.unequipAbility(massHarvest.getAbilityKey()));
+    }
+
+    @DisplayName("Given two active abilities in the loadout, when swapActivePositions is called with valid slots, then LoadoutPositionSwapEvent fires")
+    @Test
+    public void swapActivePositions_firesPositionSwapEvent_whenBothSlotsValid(@NotNull McRPGPlayer mcRPGPlayer) {
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
+        Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
+        loadout.equipAbility(massHarvest.getAbilityKey());
+        loadout.equipAbility(verdantSurge.getAbilityKey());
+
+        java.util.concurrent.atomic.AtomicReference<LoadoutPositionSwapEvent> captured = new java.util.concurrent.atomic.AtomicReference<>();
+        server.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void onEvent(LoadoutPositionSwapEvent e) { captured.set(e); }
+        }, mcRPG);
+
+        loadout.swapActivePositions(1, 2);
+
+        assertNotEquals(null, captured.get());
+        assertEquals(1, captured.get().getFromComboSlot());
+        assertEquals(2, captured.get().getToComboSlot());
+    }
+
+    @DisplayName("Given an invalid ability, when equipAbility fails, then no LoadoutAbilityChangeEvent fires")
+    @Test
+    public void equipAbility_noEvent_whenFailed(@NotNull McRPGPlayer mcRPGPlayer) {
+        when(mainConfig.getInt(MainConfigFile.MAX_LOADOUT_AMOUNT)).thenReturn(5);
+        when(mainConfig.getInt(MainConfigFile.MAX_PASSIVE_LOADOUT_SIZE)).thenReturn(2);
+        Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
+
+        java.util.concurrent.atomic.AtomicReference<LoadoutAbilityChangeEvent> captured = new java.util.concurrent.atomic.AtomicReference<>();
+        server.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void onEvent(LoadoutAbilityChangeEvent e) { captured.set(e); }
+        }, mcRPG);
+
+        loadout.equipAbility(instantIrrigation.getAbilityKey());
+        assertEquals(null, captured.get());
     }
 }

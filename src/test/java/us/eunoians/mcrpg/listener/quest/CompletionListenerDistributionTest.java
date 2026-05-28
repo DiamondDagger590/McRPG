@@ -198,17 +198,11 @@ public class CompletionListenerDistributionTest extends McRPGBaseTest {
         QuestPhaseDefinition phase = new QuestPhaseDefinition(0,
                 PhaseCompletionMode.ALL,
                 List.of(stage), List.of(), null);
-        return new QuestDefinition(
+        return new QuestDefinition.Builder(
                 new NamespacedKey(NAMESPACE, key),
                 new NamespacedKey(NAMESPACE, "single_player"),
-                null,
-                List.of(phase),
-                List.of(),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null,
-                null,
-                distribution);
+                List.of(phase)
+        ).rewardDistribution(distribution)
+                .build();
     }
 }

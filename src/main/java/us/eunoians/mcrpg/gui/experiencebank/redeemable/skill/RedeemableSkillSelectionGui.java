@@ -19,11 +19,17 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
 import java.util.List;
+import java.util.Optional;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * This gui is used to select what {@link Skill} to redeem either experience or levels into.
  */
-public class RedeemableSkillSelectionGui extends SkillGui {
+public class RedeemableSkillSelectionGui extends SkillGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "redeemable_skill_selection");
 
     private final RedeemableType redeemableType;
 
@@ -74,5 +80,11 @@ public class RedeemableSkillSelectionGui extends SkillGui {
                 return LocalizationKey.REDEEMABLE_SKILL_SELECT_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM;
             }
         };
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

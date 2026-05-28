@@ -7,12 +7,14 @@ import com.diamonddagger590.mccore.util.Methods;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.event.quest.QuestCancelEvent;
 import us.eunoians.mcrpg.event.quest.QuestCompleteEvent;
 import us.eunoians.mcrpg.event.quest.QuestExpireEvent;
+import us.eunoians.mcrpg.event.quest.PreQuestStartEvent;
 import us.eunoians.mcrpg.event.quest.QuestStartEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
@@ -460,17 +462,33 @@ public class QuestInstance {
     }
 
     /**
-     * Starts this quest by activating it, activating all stages in phase 0, and firing
-     * a {@link QuestStartEvent}.
+     * Transitions this instance to {@link QuestState#IN_PROGRESS}, activates phase-0 stages,
+     * and fires {@link QuestStartEvent}.
+     * <p>
+     * Marked internal because all quest starts must route through {@link QuestManager#startQuest}
+     * so {@link PreQuestStartEvent} can gate the operation — direct external calls would bypass
+     * that gate.
      *
-     * @param definition the quest definition this instance was created from
+     * @param definition  the quest definition driving this instance
+     * @param starterUUID the UUID of the player who initiated the quest start, or {@code null} if system-initiated
      */
-    public void start(@NotNull QuestDefinition definition) {
+    @ApiStatus.Internal
+    public void start(@NotNull QuestDefinition definition, @org.jetbrains.annotations.Nullable UUID starterUUID) {
         activate();
         for (QuestStageInstance stage : getStagesForPhase(0)) {
             stage.activate();
         }
-        Bukkit.getPluginManager().callEvent(new QuestStartEvent(this, definition));
+        Bukkit.getPluginManager().callEvent(new QuestStartEvent(this, definition, questSource, starterUUID));
+    }
+
+    /**
+     * Overload for backward compatibility (system-initiated or test-driven starts without a specific starter).
+     *
+     * @param definition the quest definition driving this instance
+     */
+    @ApiStatus.Internal
+    public void start(@NotNull QuestDefinition definition) {
+        start(definition, null);
     }
 
     /**

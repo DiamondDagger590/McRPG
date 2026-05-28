@@ -49,8 +49,9 @@ public class OnAbilityUnlockListener implements Listener {
             Loadout loadout = loadoutHolder.getLoadout();
             if (loadout.getRemainingLoadoutSize() > 0) {
                 if (loadout.canAbilityBeAddedToLoadout(unlockableAbility.getAbilityKey())) {
-                    loadout.addAbility(unlockableAbility.getAbilityKey());
-                    player.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.ABILITY_ADDED_TO_LOADOUT_MESSAGE));
+                    if (loadout.equipAbility(unlockableAbility.getAbilityKey())) {
+                        player.sendMessage(localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, LocalizationKey.ABILITY_ADDED_TO_LOADOUT_MESSAGE));
+                    }
                 } else if (unlockableAbility instanceof SkillAbility skillAbility) {
                     Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(skillAbility.getSkillKey());
                     Component skillDisplayName = skill.getDisplayName(mcRPGPlayer);

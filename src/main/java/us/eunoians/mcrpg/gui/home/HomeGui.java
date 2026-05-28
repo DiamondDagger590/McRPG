@@ -24,11 +24,16 @@ import us.eunoians.mcrpg.gui.home.slot.HomeSkillsSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Optional;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * The main gui for players to interact with McRPG through
  */
-public class HomeGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
+public class HomeGui extends BaseGui<McRPGPlayer> implements FillerItemGui, KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "home");
 
     private static final int SETTINGS_SLOT_INDEX = 10;
     private static final int SKILLS_SLOT_INDEX = 12;
@@ -87,5 +92,11 @@ public class HomeGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
     @Override
     public void unregisterListeners() {
         InventoryClickEvent.getHandlerList().unregister(this);
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

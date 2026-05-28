@@ -66,13 +66,7 @@ public class MockAbility extends BaseAbility {
         return true;
     }
 
-    @Override
-    public boolean isPassive() {
-        return false;
-    }
-
-    @NotNull
-    @Override
+    @NotNull    @Override
     public AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
         return mock(AbilityItemBuilder.class);
     }

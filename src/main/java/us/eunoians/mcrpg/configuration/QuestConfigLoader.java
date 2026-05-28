@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.board.BoardMetadata;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
+import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionMetadata;
 import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
@@ -254,12 +255,20 @@ public class QuestConfigLoader {
         }
 
         Map<NamespacedKey, QuestDefinitionMetadata> metadata = parseBoardMetadata(section);
+        List<OnStartMessage> onStartMessages = parseOnStartMessages(section);
 
-        return new QuestDefinition(questKey, scopeType, expiration, phases, rewards,
-                repeatMode, repeatCooldown, repeatLimit, expansionKey,
-                metadata.isEmpty() ? null : metadata,
-                parseRewardDistribution(section, fileName, questKey.toString(), conditionParser).orElse(null),
-                inlineDisplay.isEmpty() ? null : inlineDisplay);
+        return new QuestDefinition.Builder(questKey, scopeType, phases)
+                .rewards(rewards)
+                .expiration(expiration)
+                .repeatMode(repeatMode)
+                .repeatCooldown(repeatCooldown)
+                .repeatLimit(repeatLimit)
+                .expansionKey(expansionKey)
+                .metadata(metadata.isEmpty() ? null : metadata)
+                .rewardDistribution(parseRewardDistribution(section, fileName, questKey.toString(), conditionParser).orElse(null))
+                .inlineDisplay(inlineDisplay.isEmpty() ? null : inlineDisplay)
+                .onStartMessages(onStartMessages)
+                .build();
     }
 
     /**
@@ -362,6 +371,52 @@ public class QuestConfigLoader {
             }
         }
         return display;
+    }
+
+    /**
+     * Parses the optional {@code on-start-messages} section from a quest definition.
+     * Each child entry is either locale-backed ({@code key:}) or inline ({@code messages:}).
+     *
+     * @param section the quest definition section
+     * @return the parsed on-start messages, empty if the section is absent
+     */
+    @NotNull
+    private List<OnStartMessage> parseOnStartMessages(@NotNull Section section) {
+        if (!section.contains("on-start-messages")) {
+            return List.of();
+        }
+        Section messagesSection = section.getSection("on-start-messages");
+        if (messagesSection == null) {
+            return List.of();
+        }
+        List<OnStartMessage> messages = new ArrayList<>();
+        for (String entryLabel : messagesSection.getRoutesAsStrings(false)) {
+            Section entrySection = messagesSection.getSection(entryLabel);
+            if (entrySection == null) {
+                continue;
+            }
+            if (entrySection.contains("key")) {
+                String keyValue = entrySection.getString("key");
+                if (keyValue == null || keyValue.isBlank()) {
+                    McRPG.getInstance().getLogger().warning(
+                            "on-start-messages entry '" + entryLabel + "' has a blank 'key' — skipping");
+                    continue;
+                }
+                messages.add(OnStartMessage.fromLocaleKey(keyValue));
+            } else if (entrySection.contains("messages")) {
+                List<String> inlineMessages = entrySection.getStringList("messages");
+                if (inlineMessages.isEmpty()) {
+                    McRPG.getInstance().getLogger().warning(
+                            "on-start-messages entry '" + entryLabel + "' has an empty 'messages' list — skipping");
+                    continue;
+                }
+                messages.add(OnStartMessage.fromInline(inlineMessages));
+            } else {
+                McRPG.getInstance().getLogger().warning(
+                        "on-start-messages entry '" + entryLabel + "' has no 'key' or 'messages' — skipping");
+            }
+        }
+        return messages;
     }
 
     /**
