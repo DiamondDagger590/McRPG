@@ -19,6 +19,8 @@ import us.eunoians.mcrpg.database.table.board.BoardOfferingDAO;
 import us.eunoians.mcrpg.database.table.board.BoardRotationDAO;
 import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
 import us.eunoians.mcrpg.database.table.board.ScopedBoardStateDAO;
+import us.eunoians.mcrpg.database.table.quest.QuestChainCompletionLogDAO;
+import us.eunoians.mcrpg.database.table.quest.QuestChainStateDAO;
 import us.eunoians.mcrpg.database.table.quest.PendingRewardDAO;
 import us.eunoians.mcrpg.database.table.quest.QuestCompletionLogDAO;
 import us.eunoians.mcrpg.database.table.quest.QuestInstanceDAO;
@@ -127,6 +129,10 @@ public class McRPGDatabase extends Database {
                             + (BoardCooldownDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     logger.log(Level.INFO, "Database Creation - Scoped Board State DAO "
                             + (ScopedBoardStateDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Quest Chain State DAO "
+                            + (QuestChainStateDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Quest Chain Completion Log DAO "
+                            + (QuestChainCompletionLogDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {
@@ -164,6 +170,8 @@ public class McRPGDatabase extends Database {
                     PlayerBoardStateDAO.updateTable(connection);
                     BoardCooldownDAO.updateTable(connection);
                     ScopedBoardStateDAO.updateTable(connection);
+                    QuestChainStateDAO.updateTable(connection);
+                    QuestChainCompletionLogDAO.updateTable(connection);
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {
