@@ -1,0 +1,38 @@
+# example_chain.yml — Example quest chain definition
+# This file demonstrates how to define a quest chain.
+# Place chain files in the quests/ directory alongside quest files.
+
+# Required: marks this file as a chain file (not parsed as a quest file)
+quest-chain-file: true
+
+chains:
+  # Chain key — must be a valid NamespacedKey (namespace:value)
+  mcrpg:example_chain:
+    # Optional: player-facing name shown in GUIs and messages.
+    # Falls back to "example_chain" if omitted.
+    display-name: "Example Chain"
+
+    # Required: the quest source key used for chain-managed quests.
+    # mcrpg:manual means the chain is only started via API/command.
+    source: mcrpg:manual
+
+    # Required: determines when the chain system evaluates starting this chain.
+    # mcrpg:manual = only via command/API, mcrpg:first_join = new player join,
+    # mcrpg:login = every login
+    auto-start:
+      trigger: mcrpg:manual
+
+    # Optional: controls whether the chain can be repeated after completion.
+    # Values: once (default), unlimited, cooldown, limited, cooldown-limited
+    # Only "once" is functional initially.
+    repeat-mode: once
+
+    # Required: ordered list of steps. Each step references a quest definition.
+    # Step order is determined by YAML map key order.
+    steps:
+      example_step:
+        # Required: quest definition key that this step starts
+        quest: mcrpg:example_quest
+        # Optional: what happens when this step's quest expires
+        # Values: fail-chain (default). Other values reserved for future use.
+        # on-quest-expire: fail-chain
