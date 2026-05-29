@@ -4,7 +4,7 @@
 **Date:** 2026-05-29
 **Last Updated:** 2026-05-29
 **HLD Reference:** [Riptide Guardian HLD](../../hld/riptide-guardian/riptide_guardian.md), Section 7
-**Scope:** Registry-backed `UnlockConditionType` system, configured `UnlockCondition` instances, built-in types, content-pack extensibility, `UnlockableAbility` refactor, config-driven composition, current-progress display, GUI integration, login-time sweep
+**Scope:** Registry-backed `UnlockConditionType` system (unified prototype + configured instance, matching `QuestObjectiveType`), built-in types shipped via McRPG's native `ContentExpansion`, third-party-extensible content pack, `UnlockableAbility` refactor, config-driven composition, current-progress display, rendered-lore contract, GUI integration, login-time sweep
 
 ---
 
@@ -13,10 +13,10 @@
 1. [Overview](#1-overview)
 2. [Existing Infrastructure](#2-existing-infrastructure)
 3. [Design Decisions](#3-design-decisions)
-4. [Type / Instance Model](#4-type--instance-model)
+4. [UnlockConditionType Interface](#4-unlockconditiontype-interface)
 5. [Registry and Resolution Manager](#5-registry-and-resolution-manager)
 6. [Built-In Types](#6-built-in-types)
-7. [Config Shape](#7-config-shape)
+7. [Config Shape and Rendered Lore](#7-config-shape-and-rendered-lore)
 8. [UnlockableAbility Refactor](#8-unlockableability-refactor)
 9. [TierableAbility Boundary](#9-tierableability-boundary)
 10. [Auto-Unlock Semantics](#10-auto-unlock-semantics)
@@ -49,9 +49,9 @@ These bake in the assumption that the only way to unlock an ability is to reach 
 
 This LLD replaces the skill-coupled methods with a **registry-backed, content-pack-extensible condition type system**, modeled directly on the existing `QuestObjectiveType` / `QuestRewardType` pattern. The shape:
 
-- **`UnlockConditionType`** is a registered prototype (`McRPGContent`, keyed by `NamespacedKey`). It knows how to parse its type-specific YAML into a configured instance. McRPG ships built-in types; `ContentExpansion`s register their own.
-- **`UnlockCondition`** is the configured instance produced by `parseConfig`. It answers `isMet(holder)`, renders a localized description (including the player's **current** progress), and reports a progress fraction.
-- **`UnlockableAbility.getUnlockConditions()`** returns a `List<UnlockCondition>`. The top-level list is **OR** — meeting *any* path unlocks the ability. AND is expressed by wrapping children in the `mcrpg:all_of` composite.
+- **`UnlockConditionType`** is a single interface that serves *both* as the registered prototype (parses YAML into a configured copy of itself) and as the configured, evaluable instance (`isMet`, `getDisplayDescription`, `getProgress`). This is the exact pattern `QuestObjectiveType` uses — see [Section 3.2](#32-one-interface-not-two-matching-questobjectivetype). The registered no-arg instance carries empty defaults; `parseConfig(Section)` returns a new instance of the same type with the parsed fields set.
+- **McRPG ships the six built-in types through its own native `ContentExpansion`** — `McRPGExpansion` — using a `UnlockConditionTypeContentPack`, the exact same path third-party expansions use. There is no internal back door: the native built-ins are registered the same way someone else's `MyCoolPlugin` registers its types ([Section 18](#18-bootstrap-registration--content-pack)).
+- **`UnlockableAbility.getUnlockConditions()`** returns a `List<UnlockConditionType>`. The top-level list is **OR** — meeting *any* path unlocks the ability. AND is expressed by wrapping children in the `mcrpg:all_of` composite.
 
 Server owners compose conditions in YAML like building blocks, using **hard-coded, named paths** (friendly to non-technical owners) rather than typed arrays:
 
@@ -104,8 +104,8 @@ The quest system already implements exactly the shape this LLD needs. We copy it
 
 | Class | Location | Role in LLD-5 |
 |---|---|---|
-| `UnlockableAbility` | `ability/impl/type/` | Refactored — `getUnlockLevel()` / `checkIfAbilityCanBeUnlocked()` removed, replaced by `getUnlockConditions()` + `getDefaultUnlockConditions()` |
-| `TierableAbility` | `ability/impl/type/` | Default `getDefaultUnlockConditions()` derives a single `mcrpg:skill_level` condition from the tier-1 unlock level for `SkillAbility` tierables |
+| `UnlockableAbility` | `ability/impl/type/` | Refactored — `getUnlockLevel()` / `checkIfAbilityCanBeUnlocked()` removed, replaced by `getUnlockConditions()` + `getDefaultUnlockConditions()` returning `List<UnlockConditionType>` |
+| `TierableAbility` | `ability/impl/type/` | Default `getDefaultUnlockConditions()` derives a single configured `SkillLevelUnlockConditionType` from the tier-1 unlock level for `SkillAbility` tierables |
 | `ConfigurableTierableAbility` | `ability/impl/type/configurable/` | Provides the tier-1 unlock level the default derives from |
 | `AbilityUnlockedAttribute` | `ability/attribute/` | Canonical "is unlocked" source of truth — unchanged. Conditions answer *eligibility*; this answers *achieved* |
 | `AbilityUnlockEvent` | `event/ability/` | Still fired the same way after the refactor |
@@ -131,11 +131,13 @@ The quest system already implements exactly the shape this LLD needs. We copy it
 
 **Rationale.** The previous draft hard-coded conditions in Java and explicitly forbade a registry. That made the common server-owner request — "unlock this from my crate plugin," "gate it behind a PAPI stat" — impossible without a code change. The quest system already proved the registry idiom works and is understood by the team and third-party developers. Reusing it gives unlock conditions the same extensibility for free and keeps one mental model in the codebase.
 
-### 3.2 Two interfaces: `UnlockConditionType` (prototype) and `UnlockCondition` (instance)
+### 3.2 One interface, not two — matching `QuestObjectiveType`
 
-`QuestObjectiveType` unifies prototype and configured instance into one interface. We **split** them here: `UnlockConditionType` is the registered, config-parsing prototype; `UnlockCondition` is the evaluated, rendered instance.
+`UnlockConditionType` is a **single** interface carrying both the prototype concerns (`getKey`, `parseConfig`, `serializeConfig`, `getExpansionKey`) and the instance concerns (`isMet`, `getDisplayDescription`, `getDisplayLabel`, `getProgress`, `isDisplayOnly`). The registered no-arg instance is the "base prototype" with empty defaults; `parseConfig(Section)` returns a new instance of the same type with its fields populated. Java-authored defaults construct configured instances directly via a public constructor that takes the same fields `parseConfig` would set. Composites hold `List<UnlockConditionType>` of already-configured children.
 
-**Rationale.** An ability holds a *list* of already-configured conditions that are evaluated on every GUI render and every login. A clean `UnlockCondition` instance type (with no `parseConfig`/registry concerns on it) keeps the evaluation surface small and makes composites (`all_of`/`any_of`) natural — a composite instance just holds a `List<UnlockCondition>`. The prototype keeps the parsing/registry concerns. Java-authored defaults construct `UnlockCondition` instances directly without touching the prototype. The split costs one extra interface and buys a much cleaner instance contract.
+**Rationale.** This is the pattern `QuestObjectiveType` already uses across the codebase (see `BlockBreakObjectiveType` — no-arg base ctor, private configured ctor, `parseConfig` returns a new configured copy of itself), and unifying gives us the same idiom for free. An earlier draft of this LLD split prototype and configured instance into two interfaces for a "cleaner contract." On review the split bought nothing concrete: composites work the same with `List<UnlockConditionType>` of configured children, Java defaults work the same with a public constructor, and the only real upside — preventing `isMet()` from being callable on the unconfigured registry prototype — is solved trivially by each impl returning `false` when its config fields are empty (the same way `BlockBreakObjectiveType.processProgress` handles an empty `validBlocks`). The split's cost (an extra interface, a parallel `condition/` directory, a `getType()` method on every instance) wasn't worth it. One interface, one registry, one content-pack type — same shape as quest objectives.
+
+**Implication for the unconfigured base.** Every built-in's `isMet` checks for its key fields being empty/null and returns `false` if so. Calling `isMet` on the registry prototype is harmless: it reports "not met" and renders a degraded but stable label. No footgun, but also no spurious unlocks.
 
 ### 3.3 Top-level list is OR; AND is a composite
 
@@ -163,7 +165,7 @@ Rather than a book-specific type, McRPG ships a single `mcrpg:display_hint` type
 
 ### 3.7 Conditions are pure read-only views over `AbilityHolder` state
 
-A condition owns no per-player state and never writes to the database. `isMet(holder)` and `getProgress(holder)` derive everything from the holder's existing state. Configured `UnlockCondition` instances are immutable and shared across all holders.
+A condition owns no per-player state and never writes to the database. `isMet(holder)` and `getProgress(holder)` derive everything from the holder's existing state. Configured `UnlockConditionType` instances are immutable and shared across all holders.
 
 **Rationale.** Ability objects are shared singletons (CLAUDE.md: "No ability state stored on the ability object"). The configured condition list is *config*, not per-holder state — it lives on the resolution manager's cache, exactly like other reloadable config. This keeps conditions trivially thread-safe to evaluate against any stable holder reference.
 
@@ -185,125 +187,93 @@ A condition reports current state only. There is no `onMet` callback. The login 
 
 ---
 
-## 4. Type / Instance Model
+## 4. UnlockConditionType Interface
 
-### 4.1 UnlockConditionType (the registered prototype)
+**New file:** `src/main/java/us/eunoians/mcrpg/ability/unlock/UnlockConditionType.java`
 
-**New file:** `src/main/java/us/eunoians/mcrpg/ability/unlock/type/UnlockConditionType.java`
+One interface, both prototype and configured instance — exactly the `QuestObjectiveType` pattern. The registered no-arg instance carries empty/default fields; `parseConfig(Section)` returns a new instance of the same concrete type with its fields populated. Java-authored defaults bypass `parseConfig` via a public configured constructor on each impl.
 
 ```java
-package us.eunoians.mcrpg.ability.unlock.type;
+package us.eunoians.mcrpg.ability.unlock;
 
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.unlock.UnlockCondition;
+import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 
 /**
- * A registered, content-pack-distributable prototype that knows how to parse a
- * section of unlock-condition config into a configured {@link UnlockCondition}.
+ * A type of unlock condition that gates an {@link us.eunoians.mcrpg.ability.impl.type.UnlockableAbility}.
  * <p>
- * Modeled on {@link us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType}:
- * a base (unconfigured) instance is registered in the
- * {@link UnlockConditionTypeRegistry}; {@link #parseConfig(Section)} is called
- * once per config entry to produce an immutable configured instance.
+ * Mirrors the {@link us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType} pattern: a base
+ * (unconfigured) instance is registered in the {@link UnlockConditionTypeRegistry};
+ * {@link #parseConfig(Section)} is called once per config entry to produce a new immutable
+ * configured instance of the same concrete type. Java-authored defaults skip {@code parseConfig}
+ * and use a public constructor that accepts the same fields the YAML would set.
  * <p>
- * Extends {@link McRPGContent} so types can be distributed via the
- * {@link us.eunoians.mcrpg.expansion.ContentExpansion} system.
+ * A configured instance answers three independent questions:
+ * <ul>
+ *   <li>{@link #isMet(AbilityHolder)} — is the holder currently eligible? Drives the login
+ *       sweep and the skill level-up flow.</li>
+ *   <li>{@link #getDisplayDescription(McRPGPlayer)} / {@link #getDisplayLabel(McRPGPlayer)} —
+ *       how is the requirement rendered, including the player's current progress?</li>
+ *   <li>{@link #getProgress(AbilityHolder)} — what fraction is satisfied, for progress bars?</li>
+ * </ul>
+ * <p>
+ * Calling {@code isMet} on the unconfigured registry prototype is harmless: every built-in
+ * checks for empty config fields and returns {@code false} ({@code getDisplayDescription}
+ * renders a degraded but stable label). The prototype is never expected to be evaluated; this
+ * defensive contract simply prevents accidents.
+ * <p>
+ * Extends {@link McRPGContent} so types are distributable through the
+ * {@link us.eunoians.mcrpg.expansion.ContentExpansion} system — McRPG's built-ins are
+ * registered through the native {@code McRPGExpansion} via a
+ * {@link us.eunoians.mcrpg.expansion.content.UnlockConditionTypeContentPack}, the same path
+ * third-party expansions use.
  */
 public interface UnlockConditionType extends McRPGContent {
 
     /**
-     * The unique key identifying this condition type (e.g. {@code mcrpg:skill_level}).
+     * Unique key identifying this condition type (e.g. {@code mcrpg:skill_level}).
      *
-     * @return the namespaced key for this type
+     * @return the namespaced key
      */
     @NotNull
     NamespacedKey getKey();
 
     /**
-     * Parses one condition's type-specific config into a configured, immutable
-     * {@link UnlockCondition}. The section is the body under a single named
-     * condition entry — the {@code type} key has already been consumed by the
-     * resolution manager and is guaranteed to match {@link #getKey()}.
-     * <p>
-     * Composite types (all-of / any-of) recurse by resolving the
-     * {@link UnlockConditionTypeRegistry} via {@code RegistryAccess} and parsing
-     * their child entries.
+     * Parses one condition's type-specific config into a new configured instance of this
+     * concrete type. The section is the body under a single named condition entry — the
+     * {@code type} key has already been consumed by the resolution manager and is guaranteed
+     * to match {@link #getKey()}. Composite types ({@code mcrpg:all_of} / {@code mcrpg:any_of})
+     * recurse via the {@link UnlockConditionManager}.
      *
-     * @param section the config section for this condition entry
-     * @return a configured condition instance
-     * @throws us.eunoians.mcrpg.ability.unlock.UnlockConditionParseException if the
-     *         section is missing required keys or contains invalid values
+     * @param section the config section for this entry
+     * @return a configured instance of the same concrete type
+     * @throws UnlockConditionParseException if the section is missing required keys or
+     *         contains invalid values
      */
     @NotNull
-    UnlockCondition parseConfig(@NotNull Section section);
+    UnlockConditionType parseConfig(@NotNull Section section);
 
     /**
-     * Inverse of {@link #parseConfig(Section)} — writes a configured condition
-     * back into a config section. Default implementation throws; types that
-     * support admin-tool serialization (the groundwork for config-authored
-     * abilities) override it.
+     * Inverse of {@link #parseConfig(Section)} — writes this configured instance back into a
+     * config section. Default implementation throws; types that support admin-tool
+     * serialization (the groundwork for config-authored abilities) override it.
      *
-     * @param condition the condition to serialize
-     * @param section   the destination section to populate
+     * @param section the destination section to populate
      */
-    default void serializeConfig(@NotNull UnlockCondition condition, @NotNull Section section) {
+    default void serializeConfig(@NotNull Section section) {
         throw new UnsupportedOperationException(
                 "UnlockConditionType " + getKey() + " does not support serializeConfig");
     }
-}
-```
-
-### 4.2 UnlockCondition (the configured instance)
-
-**New file:** `src/main/java/us/eunoians/mcrpg/ability/unlock/UnlockCondition.java`
-
-```java
-package us.eunoians.mcrpg.ability.unlock;
-
-import net.kyori.adventure.text.Component;
-import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.ability.unlock.type.UnlockConditionType;
-import us.eunoians.mcrpg.entity.holder.AbilityHolder;
-import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-
-/**
- * An immutable, configured requirement produced by
- * {@link UnlockConditionType#parseConfig}. Shared across every holder; carries
- * no per-holder state.
- * <p>
- * Answers three independent questions:
- * <ul>
- *   <li>{@link #isMet(AbilityHolder)} — is the holder currently eligible to
- *       unlock through this path? Drives the login sweep and level-up flow.</li>
- *   <li>{@link #getDisplayDescription(McRPGPlayer)} /
- *       {@link #getDisplayLabel(McRPGPlayer)} — how is the requirement rendered,
- *       including the player's current progress?</li>
- *   <li>{@link #getProgress(AbilityHolder)} — what fraction is satisfied, for
- *       progress-bar surfaces?</li>
- * </ul>
- * <p>
- * Conditions never themselves cause an unlock. Side-effects are owned by the
- * listeners that observe state changes (level-up, login sweep, book consume).
- */
-public interface UnlockCondition {
 
     /**
-     * The type that produced this instance. Lets callers do type-aware work
-     * (e.g. sort hints, the legacy "what level?" query) without {@code instanceof}
-     * against concrete classes.
-     *
-     * @return the originating condition type
-     */
-    @NotNull
-    UnlockConditionType getType();
-
-    /**
-     * Whether the holder currently satisfies this condition. Must be pure —
-     * calling it must not mutate holder state or schedule side-effects. Never
-     * throws; failure modes (missing skill, PAPI absent) return {@code false}.
+     * Whether the holder currently satisfies this configured condition. Must be pure — must
+     * not mutate holder state or schedule side-effects. Never throws; failure modes (missing
+     * skill, PAPI absent, called on the unconfigured registry prototype) return {@code false}.
      *
      * @param holder the holder to evaluate against
      * @return {@code true} if the holder meets the requirement
@@ -311,9 +281,9 @@ public interface UnlockCondition {
     boolean isMet(@NotNull AbilityHolder holder);
 
     /**
-     * Full localized description for lore / tooltip rendering, resolved through
-     * the player's locale chain and interpolating the player's current progress
-     * via the {@code <current>} placeholder where the type supports it.
+     * Full localized description for lore / tooltip rendering, resolved through the player's
+     * locale chain and interpolating the player's current progress via the {@code <current>}
+     * placeholder where the type supports it.
      *
      * @param player the player whose locale chain and state drive rendering
      * @return the localized description component
@@ -322,7 +292,8 @@ public interface UnlockCondition {
     Component getDisplayDescription(@NotNull McRPGPlayer player);
 
     /**
-     * A short label for compact rendering. Defaults to the description.
+     * Short label for compact rendering (sidebar entries, sort hints). Defaults to the
+     * description.
      *
      * @param player the player whose locale chain and state drive rendering
      * @return the localized label component
@@ -333,8 +304,8 @@ public interface UnlockCondition {
     }
 
     /**
-     * Progress toward the requirement in {@code [0.0, 1.0]}. Binary conditions
-     * return {@code 0.0} until met, then {@code 1.0}. Rendering-only.
+     * Progress toward the requirement in {@code [0.0, 1.0]}. Binary conditions return
+     * {@code 0.0} until met, {@code 1.0} when met. Rendering-only.
      *
      * @param holder the holder to evaluate against
      * @return progress fraction
@@ -344,9 +315,9 @@ public interface UnlockCondition {
     }
 
     /**
-     * Whether this condition is purely informational — it can never be met by
-     * McRPG (e.g. {@code mcrpg:display_hint}). Used by the empty-display warning
-     * and by the GUI to avoid drawing a progress bar on a hint.
+     * Whether this condition is purely informational — it can never be met by McRPG
+     * (e.g. {@code mcrpg:display_hint}). Used by the empty-display startup warning and by
+     * the GUI to suppress the progress bar on a hint.
      *
      * @return {@code true} if this condition is display-only
      */
@@ -356,7 +327,7 @@ public interface UnlockCondition {
 }
 ```
 
-### 4.3 UnlockConditionParseException
+### 4.1 UnlockConditionParseException
 
 **New file:** `src/main/java/us/eunoians/mcrpg/ability/unlock/UnlockConditionParseException.java`
 
@@ -368,7 +339,7 @@ A `RuntimeException` thrown by `parseConfig` when a section is malformed (missin
 
 ### 5.1 UnlockConditionTypeRegistry
 
-**New file:** `src/main/java/us/eunoians/mcrpg/ability/unlock/type/UnlockConditionTypeRegistry.java`
+**New file:** `src/main/java/us/eunoians/mcrpg/ability/unlock/UnlockConditionTypeRegistry.java`
 
 A direct analogue of `QuestObjectiveTypeRegistry` — `implements com.diamonddagger590.mccore.registry.Registry<UnlockConditionType>` with `register` / `get(NamespacedKey)` / `getOrThrow(NamespacedKey)` / `isRegistered(NamespacedKey)` / `getRegisteredKeys()` / `registered(UnlockConditionType)`. Registered under a new `McRPGRegistryKey.UNLOCK_CONDITION_TYPE`.
 
@@ -423,16 +394,16 @@ A `Manager` registered under `McRPGManagerKey.UNLOCK_CONDITION`. It owns:
 
 - **Resolution.** `resolve(UnlockableAbility)` reads the ability's `unlock-conditions` config section. If present and non-empty → parse it (logging the Java-default override warning, [3.4](#34-java-defaults-are-replaced-by-config-and-the-replacement-is-logged)). Otherwise → use `ability.getDefaultUnlockConditions()`.
 - **Caching.** Results are cached by ability `NamespacedKey`. The cache is the home for the resolved config-state (keeping ability singletons stateless per CLAUDE.md). `reload()` clears it.
-- **Recursive parsing.** `parseSection(Section)` turns one `unlock-conditions` (or composite `conditions`) section into a `List<UnlockCondition>`, used both at the top level and by the composite types.
+- **Recursive parsing.** `parseSection(Section)` turns one `unlock-conditions` (or composite `conditions`) section into a `List<UnlockConditionType>`, used both at the top level and by the composite types.
 - **Startup validation.** `resolveAll()` is called once during bootstrap (after types are registered, abilities are registered, and configs are loaded) to populate the cache and emit the [empty-display warning](#13-empty-display-startup-warning).
 
 ```java
 @NotNull
-public List<UnlockCondition> resolve(@NotNull UnlockableAbility ability) {
+public List<UnlockConditionType> resolve(@NotNull UnlockableAbility ability) {
     return cache.computeIfAbsent(ability.getAbilityKey(), key -> {
         Optional<Section> sectionOptional = getUnlockConditionsSection(ability);
         if (sectionOptional.isPresent() && !sectionOptional.get().getRoutesAsStrings(false).isEmpty()) {
-            List<UnlockCondition> fromConfig = parseSection(sectionOptional.get());
+            List<UnlockConditionType> fromConfig = parseSection(sectionOptional.get());
             if (!ability.getDefaultUnlockConditions().isEmpty()) {
                 logger.warning(() -> "Ability " + key + " declares unlock-conditions in config; "
                         + "this REPLACES its " + ability.getDefaultUnlockConditions().size()
@@ -445,8 +416,8 @@ public List<UnlockCondition> resolve(@NotNull UnlockableAbility ability) {
 }
 
 @NotNull
-public List<UnlockCondition> parseSection(@NotNull Section parent) {
-    List<UnlockCondition> conditions = new ArrayList<>();
+public List<UnlockConditionType> parseSection(@NotNull Section parent) {
+    List<UnlockConditionType> conditions = new ArrayList<>();
     for (Object rawId : parent.getRoutesAsStrings(false)) {
         String conditionId = String.valueOf(rawId);
         Optional<Section> entryOptional = parent.getOptionalSection(conditionId);
@@ -482,7 +453,7 @@ public List<UnlockCondition> parseSection(@NotNull Section parent) {
 
 ## 6. Built-In Types
 
-Each built-in is a `UnlockConditionType` (no-arg base ctor for registry) that produces a small immutable `UnlockCondition`. All live under `ability/unlock/type/builtin/`; their instance classes under `ability/unlock/condition/`.
+All six built-ins live under `ability/unlock/builtin/`. Each is a single class — the prototype + configured form combined — following the exact shape of `BlockBreakObjectiveType`: a no-arg base ctor (for registry registration), a private configured ctor (used by `parseConfig` and by `Java-author` callers via a sibling public constructor), and pure-function `isMet` / `getDisplayDescription` / `getProgress` that safely no-op when the type's config fields are empty.
 
 ### 6.1 `mcrpg:skill_level` — SkillLevelUnlockConditionType
 
@@ -499,7 +470,19 @@ public final class SkillLevelUnlockConditionType implements UnlockConditionType 
     public static final NamespacedKey KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "skill_level");
 
-    public SkillLevelUnlockConditionType() { } // registry base instance
+    private final NamespacedKey skillKey;
+    private final int requiredLevel;
+
+    /** Registry base instance — unconfigured prototype. */
+    public SkillLevelUnlockConditionType() {
+        this(null, 0);
+    }
+
+    /** Public configured constructor — used by Java-authored defaults (e.g. TierableAbility). */
+    public SkillLevelUnlockConditionType(@Nullable NamespacedKey skillKey, int requiredLevel) {
+        this.skillKey = skillKey;
+        this.requiredLevel = requiredLevel;
+    }
 
     @NotNull
     @Override
@@ -509,15 +492,33 @@ public final class SkillLevelUnlockConditionType implements UnlockConditionType 
 
     @NotNull
     @Override
-    public UnlockCondition parseConfig(@NotNull Section section) {
-        NamespacedKey skillKey = McRPGMethods.parseNamespacedKey(section.getString("skill"));
-        if (skillKey == null) {
+    public UnlockConditionType parseConfig(@NotNull Section section) {
+        NamespacedKey skill = McRPGMethods.parseNamespacedKey(section.getString("skill"));
+        if (skill == null) {
             throw new UnlockConditionParseException("mcrpg:skill_level requires a 'skill' key");
         }
         if (!section.contains("level")) {
             throw new UnlockConditionParseException("mcrpg:skill_level requires a 'level' key");
         }
-        return new SkillLevelUnlockCondition(this, skillKey, section.getInt("level"));
+        return new SkillLevelUnlockConditionType(skill, section.getInt("level"));
+    }
+
+    @Override
+    public boolean isMet(@NotNull AbilityHolder holder) {
+        if (skillKey == null || !(holder instanceof SkillHolder skillHolder)) {
+            return false;
+        }
+        Skill skill = resolveSkill();
+        if (skill == null) {
+            return false;
+        }
+        return skillHolder.getSkillHolderData(skill)
+                .map(data -> data.getCurrentLevel() >= requiredLevel)
+                .orElse(false);
+    }
+
+    public int getRequiredLevel() {
+        return requiredLevel; // exposed for the legacy "what level?" query path
     }
 
     @NotNull
@@ -528,7 +529,7 @@ public final class SkillLevelUnlockConditionType implements UnlockConditionType 
 }
 ```
 
-`SkillLevelUnlockCondition` stores `skillKey` + `requiredLevel`, resolves the skill lazily from `McRPGRegistryKey.SKILL` (degrades to the raw key string and `isMet = false` if unregistered), and exposes `getRequiredLevel()` for the legacy "what level?" query path ([Section 14](#14-migration)).
+Notice the `skillKey == null` guard in `isMet` — calling `isMet` on the registry base prototype simply returns `false`, exactly as `BlockBreakObjectiveType.processProgress` returns `0` for an empty `validBlocks`. No footgun.
 
 ### 6.2 `mcrpg:statistic` — StatisticUnlockConditionType
 
@@ -574,47 +575,134 @@ PAPI is a soft dependency; `applyPapi` returns the input unchanged when PAPI is 
 
 ### 6.4 `mcrpg:display_hint` — DisplayHintUnlockConditionType
 
-The single display-only type. Covers book sources and arbitrary server-owner advertising.
+The single display-only type. Covers book sources, crate plugins, achievement systems, and any other unlock route McRPG has no programmatic hook for.
 
-**Config keys:** exactly one of `locale-key` (a `Route` string, translatable) **or** `text` (inline MiniMessage, single-language, palette-resolved).
-**Met when:** never (`isMet` always `false`, `isDisplayOnly()` `true`).
+**Config keys:** exactly one of —
+- **`locale-key`** (a `Route` string, **translatable through the player's locale chain** — the preferred form for bundled / multi-language content like book sources), **or**
+- **`text`** (inline MiniMessage, single-language, palette-resolved — the right tool for one-server-only advertising like "Epic Crates!").
+
+**Met when:** never (`isMet` always `false`, `isDisplayOnly()` returns `true`).
 **Progress:** always `0.0`.
+**Display:** the resolved `locale-key` or parsed `text` verbatim. No `<current>` — a hint has no live state.
 
 ```java
-@Override
-public UnlockCondition parseConfig(@NotNull Section section) {
-    boolean hasKey = section.contains("locale-key");
-    boolean hasText = section.contains("text");
-    if (hasKey == hasText) {
-        throw new UnlockConditionParseException(
-                "mcrpg:display_hint requires exactly one of 'locale-key' or 'text'");
+public final class DisplayHintUnlockConditionType implements UnlockConditionType {
+
+    public static final NamespacedKey KEY =
+            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "display_hint");
+
+    private final Route localeKey;   // exactly one of these is non-null on a configured instance
+    private final String inlineText;
+
+    public DisplayHintUnlockConditionType() {
+        this(null, null);
     }
-    return hasKey
-            ? DisplayHintUnlockCondition.fromLocaleKey(this, Route.fromString(section.getString("locale-key")))
-            : DisplayHintUnlockCondition.fromInlineText(this, section.getString("text"));
+
+    /** Configured via locale key — preferred for translatable sources. */
+    public static DisplayHintUnlockConditionType fromLocaleKey(@NotNull Route localeKey) {
+        return new DisplayHintUnlockConditionType(localeKey, null);
+    }
+
+    /** Configured via inline text — for server-owner-specific advertising. */
+    public static DisplayHintUnlockConditionType fromInlineText(@NotNull String text) {
+        return new DisplayHintUnlockConditionType(null, text);
+    }
+
+    private DisplayHintUnlockConditionType(@Nullable Route localeKey, @Nullable String inlineText) {
+        this.localeKey = localeKey;
+        this.inlineText = inlineText;
+    }
+
+    @NotNull
+    @Override
+    public UnlockConditionType parseConfig(@NotNull Section section) {
+        boolean hasKey = section.contains("locale-key");
+        boolean hasText = section.contains("text");
+        if (hasKey == hasText) {
+            throw new UnlockConditionParseException(
+                    "mcrpg:display_hint requires exactly one of 'locale-key' or 'text'");
+        }
+        return hasKey
+                ? fromLocaleKey(Route.fromString(section.getString("locale-key")))
+                : fromInlineText(section.getString("text"));
+    }
+
+    @Override
+    public boolean isMet(@NotNull AbilityHolder holder) {
+        return false;
+    }
+
+    @Override
+    public boolean isDisplayOnly() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public Component getDisplayDescription(@NotNull McRPGPlayer player) {
+        if (localeKey != null) {
+            return localization().getLocalizedMessageAsComponent(player, localeKey);
+        }
+        if (inlineText != null) {
+            return McRPG.getInstance().getMiniMessage()
+                    .deserialize(inlineText, paletteTagResolver());
+        }
+        return Component.empty(); // unconfigured prototype
+    }
 }
 ```
 
-`getDisplayDescription` resolves a `locale-key` through the localization manager (full locale chain) or parses inline `text` through MiniMessage with the palette tag resolver. Neither form interpolates `<current>` — a hint has no current state.
+The `locale-key` form is the natural fit for the "Obtain from Riptide Guardian" book source case — the bundled English file translates `ability.unlock-condition.source.riptide-guardian`, and other locale packs translate it without touching ability config. The `text` form is for the "Can be unlocked from Epic Crates!" case where the server owner wants their own wording on their own server and translation isn't a concern.
 
 ### 6.5 `mcrpg:all_of` / `mcrpg:any_of` — composites
 
 **Config key:** `conditions` — a nested keyed map in the same shape as the top-level `unlock-conditions`.
 **`all_of` met when:** every child is met; **progress** = min child progress.
 **`any_of` met when:** any child is met; **progress** = max child progress.
+**Children:** `List<UnlockConditionType>` of already-configured children, parsed once and held immutably.
 
 ```java
-@Override
-public UnlockCondition parseConfig(@NotNull Section section) {
-    Section children = section.getOptionalSection("conditions").orElseThrow(() ->
-            new UnlockConditionParseException("mcrpg:all_of requires a 'conditions' section"));
-    UnlockConditionManager manager = RegistryAccess.registryAccess()
-            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.UNLOCK_CONDITION);
-    List<UnlockCondition> parsed = manager.parseSection(children);
-    if (parsed.isEmpty()) {
-        throw new UnlockConditionParseException("mcrpg:all_of requires at least one child condition");
+public final class AllOfUnlockConditionType implements UnlockConditionType {
+
+    public static final NamespacedKey KEY =
+            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "all_of");
+
+    private final List<UnlockConditionType> children;
+
+    public AllOfUnlockConditionType() {
+        this(List.of());
     }
-    return new AllOfUnlockCondition(this, parsed);
+
+    public AllOfUnlockConditionType(@NotNull List<UnlockConditionType> children) {
+        this.children = List.copyOf(children);
+    }
+
+    @NotNull
+    @Override
+    public UnlockConditionType parseConfig(@NotNull Section section) {
+        Section nested = section.getOptionalSection("conditions").orElseThrow(() ->
+                new UnlockConditionParseException("mcrpg:all_of requires a 'conditions' section"));
+        UnlockConditionManager manager = McRPG.getInstance().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.UNLOCK_CONDITION);
+        List<UnlockConditionType> parsed = manager.parseSection(nested);
+        if (parsed.isEmpty()) {
+            throw new UnlockConditionParseException("mcrpg:all_of requires at least one child");
+        }
+        return new AllOfUnlockConditionType(parsed);
+    }
+
+    @Override
+    public boolean isMet(@NotNull AbilityHolder holder) {
+        if (children.isEmpty()) {
+            return false;
+        }
+        for (UnlockConditionType child : children) {
+            if (!child.isMet(holder)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }
 ```
 
@@ -622,15 +710,15 @@ public UnlockCondition parseConfig(@NotNull Section section) {
 
 ---
 
-## 7. Config Shape
+## 7. Config Shape and Rendered Lore
 
 ### 7.1 Named-path map, not typed array
 
-Each condition is a **named child** under `unlock-conditions.<id>`, where `<id>` is a server-owner-chosen identifier. The body carries a `type` plus type-specific keys. This is the hard-coded-path shape the product owner requested — `ability-configuration.vampire.unlock-conditions.swords-mastery.type` — which reads naturally and lets owners reference and reason about individual entries by name.
+Each condition is a **named child** under `unlock-conditions.<id>`, where `<id>` is a server-owner-chosen identifier. The body carries a `type` plus type-specific keys. This is the hard-coded-path shape — `ability-configuration.vampire.unlock-conditions.swords-mastery.type` — which reads naturally and lets owners reference and reason about individual entries by name.
 
-### 7.2 Worked example — Vampire (Swords)
+### 7.2 Vampire default (OR with two paths)
 
-Vampire is a tierable Swords passive that unlocks at **Swords level 250** (its tier-1 `unlock-level`). With no config, the Java default applies (a single `mcrpg:skill_level` condition derived from that level — [Section 9](#9-tierableability-boundary)). A server owner who also sells Vampire from a crate adds an OR path and an advertising hint:
+Vampire is a tierable Swords passive that unlocks at **Swords level 250** (its tier-1 `unlock-level`). With no config, the Java default applies (one `SkillLevelUnlockConditionType` at level 250 — [Section 9](#9-tierableability-boundary)). A server owner who *also* sells Vampire from a crate adds an OR path and an advertising hint:
 
 ```yaml
 ability-configuration:
@@ -642,7 +730,7 @@ ability-configuration:
         unlock-level: 250
       # ... existing tier config unchanged ...
     unlock-conditions:
-      # Path A: the original skill-level gate (now explicit in config).
+      # Path A: the original skill-level gate, now explicit in config.
       swords-mastery:
         type: mcrpg:skill_level
         skill: mcrpg:swords
@@ -654,15 +742,63 @@ ability-configuration:
         text: "<body>Can be unlocked from <primary>Epic Crates<body>!"
 ```
 
-Because this section is present, it **replaces** Vampire's Java default and McRPG logs:
+Because this section is present, it **replaces** Vampire's Java default and McRPG logs at startup:
 
 ```
 [McRPG] Ability mcrpg:vampire declares unlock-conditions in config; this REPLACES its 1 programmatic default condition(s).
 ```
 
-### 7.3 Nested composite example
+### 7.3 Hint with `locale-key` (translatable book source)
 
-"Reach Swords level 250 **and** get 50 player kills, OR buy from a crate":
+When the hint is something McRPG ships bundled — a book source like "Riptide Guardian" — the `locale-key` form is the right choice. The text lives in `en_abilities.yml` (and any other locale pack the server runs), so French players see "Obtenu auprès du Gardien des Marées" without ability config changes:
+
+```yaml
+ability-configuration:
+  whirlpool:        # an LLD-6 book-only ability
+    unlock-conditions:
+      book-source:
+        type: mcrpg:display_hint
+        locale-key: ability.unlock-condition.source.riptide-guardian
+```
+
+…and in `en_abilities.yml`:
+
+```yaml
+ability:
+  unlock-condition:
+    source:
+      riptide-guardian: "<body>Obtain from <primary>Riptide Guardian"
+```
+
+The locale chain resolves `riptide-guardian` per-player; French / Spanish / etc. locale packs translate it independently. Compare to inline `text:` (§7.2 above), which is the right form when the source is server-specific and translation isn't a concern.
+
+### 7.4 Standalone `mcrpg:all_of` (AND-only path)
+
+Sometimes a single AND path is the whole unlock — no OR, no hints. Example: a server owner gates a tier-2-derived custom ability behind "Swords level 250 AND 50 player kills" with nothing else:
+
+```yaml
+ability-configuration:
+  vampire:
+    unlock-conditions:
+      mastery:
+        type: mcrpg:all_of
+        conditions:
+          level:
+            type: mcrpg:skill_level
+            skill: mcrpg:swords
+            level: 250
+          kills:
+            type: mcrpg:statistic
+            statistic: mcrpg:player_kills
+            threshold: 50
+            text: "<body>Defeat <primary><required><body> players <hint>(<primary><current><hint>/<primary><required><hint>)"
+```
+
+The top-level list has one entry (`mastery`). That entry is an `all_of` whose two children must *both* be met. There is no OR — the player must satisfy both children to unlock.
+
+### 7.5 Nested AND inside OR (the previous mixed example)
+
+The richer pattern from §7.4 in an OR context — "earn it via level+kills, OR buy from a crate":
 
 ```yaml
     unlock-conditions:
@@ -677,13 +813,67 @@ Because this section is present, it **replaces** Vampire's Java default and McRP
             type: mcrpg:statistic
             statistic: mcrpg:player_kills
             threshold: 50
-            text: "<body>Defeat <primary><required><body> players (<primary><current><body>/<primary><required><body>)"
+            text: "<body>Defeat <primary><required><body> players <hint>(<primary><current><hint>/<primary><required><hint>)"
       epic-crates:
         type: mcrpg:display_hint
         text: "<body>Can be unlocked from <primary>Epic Crates<body>!"
 ```
 
 `earned` and `epic-crates` are OR-ed (top level); inside `earned`, `level` and `kills` are AND-ed.
+
+### 7.6 What the player actually sees — rendered lore
+
+The locked-state lore is built by `AbilityLoreAppender` from the `{ability-unlock-condition}` placeholder ([Section 15.1](#151-locked-ability-lore)). Below: the exact lore lines a player sees for each config shape above, assuming the player is at Swords level **187** with **12** player kills (so neither met-able condition is satisfied yet). Lore lines wrap at the GUI's standard width; bullets are MiniMessage list markers from the bundled template.
+
+**Default — single skill-level (Vampire vanilla, no config)**
+
+One condition, no OR header:
+
+```
+Reach Swords level 250 (currently 187)
+```
+
+**OR with two paths (§7.2 — level + crates hint)**
+
+Multiple entries → an OR header + one bullet per path:
+
+```
+Unlock via any of:
+  · Reach Swords level 250 (currently 187)
+  · Can be unlocked from Epic Crates!
+```
+
+**Standalone all_of (§7.4 — AND-only, level + kills)**
+
+One top-level entry, but that entry is a composite → no OR header, one nested AND group:
+
+```
+All of:
+  · Reach Swords level 250 (currently 187)
+  · Defeat 50 players (12/50)
+```
+
+**Nested AND inside OR (§7.5 — full mixed example)**
+
+Top-level OR header; the `earned` composite renders as an indented "All of:" group; the hint renders as a sibling:
+
+```
+Unlock via any of:
+  · All of:
+      · Reach Swords level 250 (currently 187)
+      · Defeat 50 players (12/50)
+  · Can be unlocked from Epic Crates!
+```
+
+**Rendering rules.**
+
+- One top-level condition that is *not* a composite → render its `getDisplayDescription` as a single line, no header.
+- One top-level condition that *is* a composite (`all_of`/`any_of`) → render the composite's own header + indented children, no OR header above it.
+- Two or more top-level conditions → render `ability.unlock-condition.list-header` ("Unlock via any of:") followed by one bulleted line per entry.
+- A composite child of a composite → indent one further level, repeating the composite's header + bullets.
+- Each bullet line is one component returned by the child's `getDisplayLabel(player)` (or `getDisplayDescription` for a composite, since labels collapse multi-line shapes).
+
+Composite descriptions are produced by joining child labels via the localized header keys (`ability.unlock-condition.all-of.header`, `ability.unlock-condition.any-of.header`) — server owners customize the prefixes in YAML.
 
 ---
 
@@ -701,7 +891,7 @@ public interface UnlockableAbility extends Ability {
      * no config is "undiscoverable" and triggers the startup warning (Section 13).
      */
     @NotNull
-    default List<UnlockCondition> getDefaultUnlockConditions() {
+    default List<UnlockConditionType> getDefaultUnlockConditions() {
         return List.of();
     }
 
@@ -712,7 +902,7 @@ public interface UnlockableAbility extends Ability {
      * {@link UnlockConditionManager}.
      */
     @NotNull
-    default List<UnlockCondition> getUnlockConditions() {
+    default List<UnlockConditionType> getUnlockConditions() {
         return McRPG.getInstance().registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.UNLOCK_CONDITION)
@@ -724,7 +914,7 @@ public interface UnlockableAbility extends Ability {
      * the skill level-up unlock flow. Display-only conditions never contribute.
      */
     default boolean isAnyConditionMet(@NotNull AbilityHolder holder) {
-        for (UnlockCondition condition : getUnlockConditions()) {
+        for (UnlockConditionType condition : getUnlockConditions()) {
             if (condition.isMet(holder)) {
                 return true;
             }
@@ -753,7 +943,7 @@ public interface UnlockableAbility extends Ability {
 
 | Member | Replacement |
 |---|---|
-| `int getUnlockLevel()` | `getUnlockConditions()`; callers needing the number find the first `SkillLevelUnlockCondition` and read `getRequiredLevel()` |
+| `int getUnlockLevel()` | `getUnlockConditions()`; callers needing the number find the first `SkillLevelUnlockConditionType` and read `getRequiredLevel()` |
 | `boolean checkIfAbilityCanBeUnlocked(SkillHolder, Skill)` | `isAnyConditionMet(holder)` |
 
 ---
@@ -767,12 +957,10 @@ The only change: `TierableAbility` provides the default *first*-tier unlock cond
 ```java
 @Override
 @NotNull
-default List<UnlockCondition> getDefaultUnlockConditions() {
+default List<UnlockConditionType> getDefaultUnlockConditions() {
     if (this instanceof SkillAbility skillAbility) {
-        return List.of(new SkillLevelUnlockCondition(
-                resolveType(SkillLevelUnlockConditionType.KEY),
-                skillAbility.getSkillKey(),
-                getUnlockLevelForTier(1)));
+        return List.of(new SkillLevelUnlockConditionType(
+                skillAbility.getSkillKey(), getUnlockLevelForTier(1)));
     }
     // Non-skill tierables fall back to "config or undiscoverable" — the empty
     // list triggers the Section 13 warning unless config supplies conditions.
@@ -780,7 +968,7 @@ default List<UnlockCondition> getDefaultUnlockConditions() {
 }
 ```
 
-For Vampire (a `SkillAbility` tierable), this yields exactly one `mcrpg:skill_level` condition at Swords level 250 — behavior-identical to the old `getUnlockLevel()` path. Non-`SkillAbility` tierables previously threw `UnsupportedOperationException`; the new model returns an empty list and relies on config + the startup warning, which is gentler and config-overridable.
+For Vampire (a `SkillAbility` tierable), this yields exactly one configured `SkillLevelUnlockConditionType` at Swords level 250 — behavior-identical to the old `getUnlockLevel()` path, constructed directly via the public configured constructor without touching `parseConfig`. Non-`SkillAbility` tierables previously threw `UnsupportedOperationException`; the new model returns an empty list and relies on config + the startup warning, which is gentler and config-overridable.
 
 ### 9.1 Why per-tier methods stay
 
@@ -833,7 +1021,7 @@ Hints — and the optional display text on `statistic` / `papi` — carry text t
 
 | Form | Resolution | When to use |
 |---|---|---|
-| `locale-key: ability.skill-book.source.riptide-guardian` | Through the full locale chain — translatable | Bundled / multi-language sources |
+| `locale-key: ability.unlock-condition.source.riptide-guardian` | Through the full locale chain — translatable | Bundled / multi-language sources |
 | `text: "<body>Can be unlocked from <primary>Epic Crates<body>!"` | MiniMessage parse with the palette tag resolver — single language | Server-owner-specific advertising |
 
 Exactly one is allowed per entry (`parseConfig` throws if both or neither). Inline `text` is **not** routed through the locale chain (it is the owner's literal string) but **is** palette-resolved, so `<primary>`, `<body>`, etc. obey the server's configured colors. This is the "Can be unlocked from Epic Crates!" path: an unlock route with no programmatic backing that the owner advertises in their own words.
@@ -1001,11 +1189,12 @@ public final class UnlockConditionTypeContentPack extends McRPGContentPack<Unloc
 }
 ```
 
-### 18.2 McRPGExpansion wiring
+### 18.2 McRPGExpansion wiring — built-ins ship through the native ContentExpansion
 
-`McRPGExpansion.getExpansionContent()` adds a `UnlockConditionTypeContentPack` populated with the six built-ins:
+McRPG ships the six built-in types **through its own `ContentExpansion`** — the native `McRPGExpansion` — using the exact same `UnlockConditionTypeContentPack` mechanism a third-party expansion would use. There is no special internal back door: McRPG's built-ins are just the first registered pack, alongside `AbilityContentPack`, `SkillContentPack`, `QuestObjectiveTypeContentPack`, and the rest. A new expansion shipping its own `mcrpg:my_quest_complete` condition type follows the same three lines:
 
 ```java
+// In McRPGExpansion.getExpansionContent():
 UnlockConditionTypeContentPack unlockConditionTypes = new UnlockConditionTypeContentPack(this);
 unlockConditionTypes.addContent(new SkillLevelUnlockConditionType());
 unlockConditionTypes.addContent(new StatisticUnlockConditionType());
@@ -1013,7 +1202,10 @@ unlockConditionTypes.addContent(new PapiUnlockConditionType());
 unlockConditionTypes.addContent(new DisplayHintUnlockConditionType());
 unlockConditionTypes.addContent(new AllOfUnlockConditionType());
 unlockConditionTypes.addContent(new AnyOfUnlockConditionType());
+expansionContent.addContentPack(unlockConditionTypes);
 ```
+
+A third-party expansion's `getExpansionContent()` does the same with its own types — the registry doesn't distinguish "native" from "third-party" packs at all. Each type's `getExpansionKey()` returns the key of the pack that registered it, which is how the rest of the system knows where each came from (and how a misconfigured expansion's unknown-type error message can point at the right plugin).
 
 ### 18.3 Registration order
 
@@ -1051,7 +1243,7 @@ The condition treats an unchanged string (still containing `%...%`) as "not met,
 |---|---|
 | Config references an unknown `type` | `parseSection` logs a warning naming the entry + type, skips that one entry, keeps the rest. |
 | Condition section malformed (missing `skill`/`level`, both `text`+`locale-key`, etc.) | `parseConfig` throws `UnlockConditionParseException`; manager logs and skips that entry. |
-| Referenced skill not registered | `SkillLevelUnlockCondition.isMet` returns `false`; label degrades to the raw key; ability stays locked. |
+| Referenced skill not registered | `SkillLevelUnlockConditionType.isMet` returns `false`; label degrades to the raw key; ability stays locked. |
 | Holder is not an `McRPGPlayer` (statistic/papi need player state) | `isMet` returns `false`, progress `0.0`. |
 | `all_of`/`any_of` with empty `conditions` | `parseConfig` throws → entry skipped with a warning. |
 | Config `unlock-conditions` present but empty map | Treated as "no override" → Java default used (avoids accidentally wiping the default to nothing). |
@@ -1106,24 +1298,17 @@ The condition treats an unchanged string (still containing `%...%`) as "not met,
 
 | File | Type | Description |
 |---|---|---|
-| `ability/unlock/UnlockCondition.java` | Interface | Configured, evaluated instance contract |
-| `ability/unlock/UnlockConditionParseException.java` | Exception | Thrown by `parseConfig` on malformed config |
+| `ability/unlock/UnlockConditionType.java` | Interface | Unified prototype + configured instance — registered, content-pack-distributable, evaluable |
+| `ability/unlock/UnlockConditionTypeRegistry.java` | Registry | `Registry<UnlockConditionType>` |
 | `ability/unlock/UnlockConditionManager.java` | Manager | Resolution, caching, override + empty-display warnings, recursive parse |
-| `ability/unlock/type/UnlockConditionType.java` | Interface | Registered, content-pack-distributable prototype |
-| `ability/unlock/type/UnlockConditionTypeRegistry.java` | Registry | `Registry<UnlockConditionType>` |
-| `ability/unlock/type/builtin/SkillLevelUnlockConditionType.java` | Type | `mcrpg:skill_level` |
-| `ability/unlock/type/builtin/StatisticUnlockConditionType.java` | Type | `mcrpg:statistic` |
-| `ability/unlock/type/builtin/PapiUnlockConditionType.java` | Type | `mcrpg:papi` |
-| `ability/unlock/type/builtin/DisplayHintUnlockConditionType.java` | Type | `mcrpg:display_hint` |
-| `ability/unlock/type/builtin/AllOfUnlockConditionType.java` | Type | `mcrpg:all_of` |
-| `ability/unlock/type/builtin/AnyOfUnlockConditionType.java` | Type | `mcrpg:any_of` |
-| `ability/unlock/condition/SkillLevelUnlockCondition.java` | Instance | Skill-level condition |
-| `ability/unlock/condition/StatisticUnlockCondition.java` | Instance | Statistic condition |
-| `ability/unlock/condition/PapiUnlockCondition.java` | Instance | PAPI condition |
-| `ability/unlock/condition/DisplayHintUnlockCondition.java` | Instance | Display-only hint |
-| `ability/unlock/condition/AllOfUnlockCondition.java` | Instance | Conjunction composite |
-| `ability/unlock/condition/AnyOfUnlockCondition.java` | Instance | Disjunction composite |
-| `expansion/content/UnlockConditionTypeContentPack.java` | Content pack | `McRPGContentPack<UnlockConditionType>` |
+| `ability/unlock/UnlockConditionParseException.java` | Exception | Thrown by `parseConfig` on malformed config |
+| `ability/unlock/builtin/SkillLevelUnlockConditionType.java` | Type | `mcrpg:skill_level` |
+| `ability/unlock/builtin/StatisticUnlockConditionType.java` | Type | `mcrpg:statistic` |
+| `ability/unlock/builtin/PapiUnlockConditionType.java` | Type | `mcrpg:papi` |
+| `ability/unlock/builtin/DisplayHintUnlockConditionType.java` | Type | `mcrpg:display_hint` (locale-key **or** inline text) |
+| `ability/unlock/builtin/AllOfUnlockConditionType.java` | Type | `mcrpg:all_of` composite |
+| `ability/unlock/builtin/AnyOfUnlockConditionType.java` | Type | `mcrpg:any_of` composite |
+| `expansion/content/UnlockConditionTypeContentPack.java` | Content pack | `McRPGContentPack<UnlockConditionType>` — McRPG's built-ins ship through `McRPGExpansion`, third parties register their own through the same class |
 | `listener/ability/OnPlayerLoadUnlockSweepListener.java` | Listener | Login OR-sweep |
 
 Test files mirror the structure under `src/test/java/.../ability/unlock/` and `.../listener/ability/`.
@@ -1144,7 +1329,7 @@ Test files mirror the structure under `src/test/java/.../ability/unlock/` and `.
 | `registry/manager/McRPGManagerKey.java` | Add `UNLOCK_CONDITION` |
 | `bootstrap/McRPGRegistryRegistrar.java` (or equivalent) | Register registry + manager; call `resolveAll()` after content + config load |
 | `bootstrap/McRPGListenerRegistrar.java` | Register `OnPlayerLoadUnlockSweepListener` |
-| `CLAUDE.md` | Add `UnlockConditionType`/`UnlockCondition` to Domain Terminology + Quest-style extensibility list; note the `<ability-unlock-level>` migration |
+| `CLAUDE.md` | Add `UnlockConditionType` to Domain Terminology + Quest-style extensibility list; note the `<ability-unlock-level>` migration |
 
 ### Not modified (used as-is)
 
@@ -1158,7 +1343,7 @@ Test files mirror the structure under `src/test/java/.../ability/unlock/` and `.
 
 - **`mcrpg:quest_complete` / `mcrpg:achievement` types.** Additive: register a new `UnlockConditionType`. The login sweep already fires for any condition that becomes met. Achievement requires the achievement system to exist first.
 
-- **Per-tier conditions (`getUnlockConditionsForTier(int)`).** If the tier-upgrade flow ever needs non-level preconditions, add the method to `TierableAbility` additively without touching `UnlockCondition`.
+- **Per-tier conditions (`getUnlockConditionsForTier(int)`).** If the tier-upgrade flow ever needs non-level preconditions, add the method to `TierableAbility` additively without touching `UnlockConditionType`.
 
 - **Clickable / hover hints.** If display hints ever need interactivity (e.g. "where do books drop?"), register a richer hint type alongside `mcrpg:display_hint` — the registry makes it non-breaking.
 
