@@ -5,11 +5,15 @@ import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 
+import org.bukkit.NamespacedKey;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -187,5 +191,123 @@ public class QuestChainCompletionLogDAO {
                     "[QuestChainCompletionLogDAO] Failed to delete all log entries for player " + playerUUID, e);
         }
         return 0;
+    }
+
+    /**
+     * Returns all completed chain runs for a player, ordered newest-first.
+     * <p>
+     * Each row in the result represents a distinct {@code (chain_key, completion_number)} pair
+     * with the timestamp of the last step that completed in that run.
+     *
+     * @param connection the database connection
+     * @param playerUUID the player UUID
+     * @return list of chain completion run summaries, newest-first
+     */
+    @NotNull
+    public static List<ChainCompletionRun> getChainCompletionRuns(@NotNull Connection connection,
+                                                                   @NotNull UUID playerUUID) {
+        List<ChainCompletionRun> runs = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT chain_key, completion_number, MAX(completed_at) AS last_step_at, COUNT(DISTINCT quest_key) AS step_count"
+                        + " FROM " + TABLE_NAME
+                        + " WHERE player_uuid = ?"
+                        + " GROUP BY chain_key, completion_number"
+                        + " ORDER BY last_step_at DESC")) {
+            statement.setString(1, playerUUID.toString());
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    String chainKeyStr = rs.getString("chain_key");
+                    NamespacedKey chainKey = NamespacedKey.fromString(chainKeyStr);
+                    if (chainKey == null) {
+                        McRPG.getInstance().getLogger().warning(
+                                "[QuestChainCompletionLogDAO] Invalid chain key in completion log: " + chainKeyStr);
+                        continue;
+                    }
+                    runs.add(new ChainCompletionRun(
+                            chainKey,
+                            rs.getInt("completion_number"),
+                            rs.getLong("last_step_at"),
+                            rs.getInt("step_count")
+                    ));
+                }
+            }
+        } catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING,
+                    "[QuestChainCompletionLogDAO] Failed to load chain completion runs for player " + playerUUID, e);
+        }
+        return runs;
+    }
+
+    /**
+     * Returns the set of all quest definition keys (as strings) that appear in any chain
+     * completion log entry for this player. Used to filter chain-managed quests out of the
+     * individual quest history view.
+     *
+     * @param connection the database connection
+     * @param playerUUID the player UUID
+     * @return set of quest definition key strings belonging to chain completions
+     */
+    @NotNull
+    public static Set<String> getChainParticipantQuestKeys(@NotNull Connection connection,
+                                                            @NotNull UUID playerUUID) {
+        Set<String> keys = new HashSet<>();
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT DISTINCT quest_key FROM " + TABLE_NAME + " WHERE player_uuid = ?")) {
+            statement.setString(1, playerUUID.toString());
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    keys.add(rs.getString("quest_key"));
+                }
+            }
+        } catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING,
+                    "[QuestChainCompletionLogDAO] Failed to load chain participant keys for player " + playerUUID, e);
+        }
+        return keys;
+    }
+
+    /**
+     * Returns step-level completion entries for a specific chain run, ordered by step position
+     * (ascending completion timestamp as a proxy for step order).
+     *
+     * @param connection       the database connection
+     * @param playerUUID       the player UUID
+     * @param chainKey         the chain definition key (string form)
+     * @param completionNumber the specific chain completion run number
+     * @return list of (quest_key, completed_at) records for the run, in step order
+     */
+    @NotNull
+    public static List<ChainStepRecord> getStepsForRun(@NotNull Connection connection,
+                                                        @NotNull UUID playerUUID,
+                                                        @NotNull String chainKey,
+                                                        int completionNumber) {
+        List<ChainStepRecord> steps = new ArrayList<>();
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT quest_key, completed_at FROM " + TABLE_NAME
+                        + " WHERE player_uuid = ? AND chain_key = ? AND completion_number = ?"
+                        + " ORDER BY completed_at ASC")) {
+            statement.setString(1, playerUUID.toString());
+            statement.setString(2, chainKey);
+            statement.setInt(3, completionNumber);
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    steps.add(new ChainStepRecord(rs.getString("quest_key"), rs.getLong("completed_at")));
+                }
+            }
+        } catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING,
+                    "[QuestChainCompletionLogDAO] Failed to load steps for chain run " + chainKey
+                            + " completion #" + completionNumber + " for player " + playerUUID, e);
+        }
+        return steps;
+    }
+
+    /**
+     * A single step's completion within a chain run.
+     *
+     * @param questKey    the quest definition key (string form)
+     * @param completedAt the completion timestamp in epoch millis
+     */
+    public record ChainStepRecord(@NotNull String questKey, long completedAt) {
     }
 }

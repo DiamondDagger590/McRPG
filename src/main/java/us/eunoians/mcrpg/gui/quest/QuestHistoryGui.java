@@ -14,20 +14,26 @@ import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.database.table.quest.ChainCompletionRun;
 import us.eunoians.mcrpg.database.table.quest.CompletionRecord;
+import us.eunoians.mcrpg.database.table.quest.QuestChainCompletionLogDAO;
 import us.eunoians.mcrpg.database.table.quest.QuestCompletionLogDAO;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.quest.slot.CompletedQuestSlot;
+import us.eunoians.mcrpg.gui.quest.slot.QuestChainHistorySlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestHistorySortSlot;
+import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import com.diamonddagger590.mccore.gui.KeyedGui;
 import org.bukkit.NamespacedKey;
@@ -48,43 +54,95 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
 
     private final Player player;
     private boolean sortAscending = false;
-    private List<CompletionRecord> completionRecords;
+
+    /**
+     * Merged display list combining {@link QuestChainHistorySlot} entries for chain runs and
+     * {@link CompletedQuestSlot} entries for standalone quests, sorted by completion timestamp.
+     */
+    private List<McRPGSlot> displayItems;
 
     public QuestHistoryGui(@NotNull McRPGPlayer mcRPGPlayer) {
         super(mcRPGPlayer);
         this.player = mcRPGPlayer.getAsBukkitPlayer()
                 .orElseThrow(() -> new CorePlayerOfflineException(mcRPGPlayer));
-        this.completionRecords = new ArrayList<>();
+        this.displayItems = new ArrayList<>();
         loadCompletionRecords();
     }
 
     /**
-     * Submits a DB query on the database executor thread to load completion records for this player,
-     * then refreshes the GUI on the main thread when the query completes.
+     * Submits two DB queries on the database executor thread — one for individual quest completions
+     * and one for chain completion runs — then merges the results on the main thread and refreshes.
      * <p>
-     * The {@code sortAscending} flag is captured at submission time so that a rapid
-     * toggle does not race with an in-flight query.
+     * Quests that appear in a chain completion run are excluded from the individual slot list so
+     * they are represented by the chain slot instead. The {@code sortAscending} flag is captured
+     * at submission time to avoid races with a rapid sort toggle.
      */
     private void loadCompletionRecords() {
         boolean ascending = sortAscending;
         Database database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
-            List<CompletionRecord> records;
+            List<CompletionRecord> questRecords;
+            List<ChainCompletionRun> chainRuns;
+            Set<String> chainQuestKeys;
             try (Connection connection = database.getConnection()) {
-                records = QuestCompletionLogDAO.getCompletionHistory(
+                questRecords = QuestCompletionLogDAO.getCompletionHistory(
                         connection, getCreatingPlayer().getUUID(), ascending);
+                chainRuns = QuestChainCompletionLogDAO.getChainCompletionRuns(
+                        connection, getCreatingPlayer().getUUID());
+                chainQuestKeys = QuestChainCompletionLogDAO.getChainParticipantQuestKeys(
+                        connection, getCreatingPlayer().getUUID());
             } catch (SQLException e) {
                 McRPG.getInstance().getLogger().log(Level.SEVERE,
                         "Failed to load quest completion history for player " + getCreatingPlayer().getUUID(), e);
-                records = new ArrayList<>();
+                questRecords = new ArrayList<>();
+                chainRuns = new ArrayList<>();
+                chainQuestKeys = Set.of();
             }
-            List<CompletionRecord> finalRecords = records;
+
+            List<McRPGSlot> merged = buildDisplayItems(questRecords, chainRuns, chainQuestKeys, ascending);
             Bukkit.getScheduler().runTask(McRPG.getInstance(), () -> {
-                completionRecords = finalRecords;
+                displayItems = merged;
                 refreshGUI();
             });
         });
+    }
+
+    /**
+     * Merges quest completion records and chain completion runs into a unified display list.
+     * Chain-managed quest entries are excluded from the individual quest list.
+     *
+     * @param questRecords   all individual quest completions from the log
+     * @param chainRuns      all chain completion run summaries
+     * @param chainQuestKeys the set of quest definition keys that belong to any chain completion
+     * @param ascending      sort direction
+     * @return merged sorted list of display slots
+     */
+    @NotNull
+    private List<McRPGSlot> buildDisplayItems(@NotNull List<CompletionRecord> questRecords,
+                                               @NotNull List<ChainCompletionRun> chainRuns,
+                                               @NotNull Set<String> chainQuestKeys,
+                                               boolean ascending) {
+        record TimestampedSlot(McRPGSlot slot, long timestamp) {
+        }
+
+        List<TimestampedSlot> entries = new ArrayList<>();
+
+        for (CompletionRecord record : questRecords) {
+            if (!chainQuestKeys.contains(record.definitionKey())) {
+                entries.add(new TimestampedSlot(new CompletedQuestSlot(record), record.completedAt()));
+            }
+        }
+        for (ChainCompletionRun run : chainRuns) {
+            entries.add(new TimestampedSlot(new QuestChainHistorySlot(run), run.completedAt()));
+        }
+
+        Comparator<TimestampedSlot> comparator = ascending
+                ? Comparator.comparingLong(TimestampedSlot::timestamp)
+                : Comparator.comparingLong(TimestampedSlot::timestamp).reversed();
+        entries.sort(comparator);
+
+        return entries.stream().map(TimestampedSlot::slot).toList();
     }
 
     public void toggleSort() {
@@ -129,10 +187,10 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
     }
 
     private void paintCompletedQuests(int page) {
-        List<CompletionRecord> pageRecords = getRecordsForPage(page);
+        List<McRPGSlot> pageSlots = getSlotsForPage(page);
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
-            if (i < pageRecords.size()) {
-                setSlot(i, new CompletedQuestSlot(pageRecords.get(i)));
+            if (i < pageSlots.size()) {
+                setSlot(i, pageSlots.get(i));
             } else {
                 removeSlot(i);
             }
@@ -140,18 +198,18 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
     }
 
     @NotNull
-    private List<CompletionRecord> getRecordsForPage(int page) {
+    private List<McRPGSlot> getSlotsForPage(int page) {
         int start = (page - 1) * NAVIGATION_ROW_START_INDEX;
-        int end = Math.min(start + NAVIGATION_ROW_START_INDEX, completionRecords.size());
-        if (start >= completionRecords.size()) {
+        int end = Math.min(start + NAVIGATION_ROW_START_INDEX, displayItems.size());
+        if (start >= displayItems.size()) {
             return List.of();
         }
-        return completionRecords.subList(start, end);
+        return displayItems.subList(start, end);
     }
 
     @Override
     public int getMaximumPage() {
-        return Math.max(1, (int) Math.ceil((double) completionRecords.size() / NAVIGATION_ROW_START_INDEX));
+        return Math.max(1, (int) Math.ceil((double) displayItems.size() / NAVIGATION_ROW_START_INDEX));
     }
 
     @NotNull
