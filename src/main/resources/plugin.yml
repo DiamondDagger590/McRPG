@@ -17,3 +17,38 @@ soft-depend:
   - Nexo
   - MythicMobs
   - Citizens
+permissions:
+  mcrpg.*:
+    description: Grants all McRPG permissions
+    children:
+      mcrpg.admin.*: true
+  mcrpg.admin.*:
+    description: Grants all McRPG admin permissions
+    children:
+      mcrpg.quest.admin.*: true
+  mcrpg.quest.admin.*:
+    description: Grants all quest admin permissions
+    children:
+      mcrpg.quest.admin.chain.*: true
+  mcrpg.quest.admin.chain.*:
+    description: Grants all chain admin subcommands
+    children:
+      mcrpg.quest.admin.chain.status: true
+      mcrpg.quest.admin.chain.advance: true
+      mcrpg.quest.admin.chain.restart: true
+      mcrpg.quest.admin.chain.reset: true
+  mcrpg.quest.admin.chain.status:
+    description: View a player's quest chain status
+    default: op
+  mcrpg.quest.admin.chain.advance:
+    description: Force-advance a player's quest chain to the next step
+    default: op
+  mcrpg.quest.admin.chain.restart:
+    description: Restart a player's quest chain from step 1
+    default: op
+  mcrpg.quest.admin.chain.reset:
+    description: Hard-reset a player's quest chain state and history
+    default: op
+  mcrpg.tutorial.bypass:
+    description: Bypass tutorial quest chains
+    default: op

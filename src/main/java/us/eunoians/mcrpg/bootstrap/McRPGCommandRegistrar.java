@@ -27,6 +27,10 @@ import us.eunoians.mcrpg.command.admin.board.BoardAdminRewardsCommand;
 import us.eunoians.mcrpg.command.admin.board.BoardAdminRotateCommand;
 import us.eunoians.mcrpg.command.admin.board.BoardAdminScopedCommand;
 import us.eunoians.mcrpg.command.ability.AbilityGuiCommand;
+import us.eunoians.mcrpg.command.admin.chain.ChainAdvanceCommand;
+import us.eunoians.mcrpg.command.admin.chain.ChainResetCommand;
+import us.eunoians.mcrpg.command.admin.chain.ChainRestartCommand;
+import us.eunoians.mcrpg.command.admin.chain.ChainStatusCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutCopyCommand;
@@ -103,6 +107,12 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         QuestAdminCompleteCommand.registerCommand();
         QuestAdminSetProgressCommand.registerCommand();
         QuestAdminRegistryCommand.registerCommand();
+
+        // Chain Admin Commands
+        ChainStatusCommand.registerCommand();
+        ChainAdvanceCommand.registerCommand();
+        ChainRestartCommand.registerCommand();
+        ChainResetCommand.registerCommand();
 
         // Board Commands
         BoardCommand.registerCommand();
