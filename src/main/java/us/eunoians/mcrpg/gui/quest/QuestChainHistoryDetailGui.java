@@ -28,10 +28,12 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 
@@ -102,13 +104,10 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
 
         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-        String rawTitle = "<gui-title>" + chainName + " Details";
-        String resolvedTitle = rawTitle;
-        for (var entry : localizationManager.getPaletteReplacements().entrySet()) {
-            resolvedTitle = resolvedTitle.replace(entry.getKey(), entry.getValue());
-        }
         return Bukkit.createInventory(player, 54,
-                McRPG.getInstance().getMiniMessage().deserialize(resolvedTitle));
+                localizationManager.getLocalizedMessageAsComponent(
+                        getCreatingPlayer(), LocalizationKey.QUEST_CHAIN_HISTORY_GUI_TITLE,
+                        Map.of("chain", chainName)));
     }
 
     @Override
@@ -181,7 +180,7 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
             @Override
             @NotNull
             public Route getSpecificDisplayItemRoute() {
-                return LocalizationKey.QUEST_HISTORY_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM;
+                return LocalizationKey.QUEST_CHAIN_HISTORY_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM;
             }
         };
     }

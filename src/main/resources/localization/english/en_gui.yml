@@ -1539,3 +1539,42 @@ gui:
           - '<body>redeemable levels you want to redeem into <primary><skill></primary>.'
       prompt: '<body>Please type in chat how many redeemable levels you would like to redeem. You have <primary><redeemable-levels></primary> redeemable levels to spend.'
       invalid-input: '<negative>The input provided not a valid number. Please try redeeming again.'
+  quest-chain-history-gui:
+    # Placeholders: <chain> = chain display name
+    title: "<gui-title><chain> Details"
+    # Shown when the chain has no completed steps to display
+    empty-state: "<body>No steps completed yet."
+    chain-slot:
+      display-item:
+        material: BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        # Placeholders: <chain_name> = chain display name
+        name: "<primary><chain_name>"
+        lore:
+          # Placeholders: <completed_date> = formatted date
+          - "<body>Completed: <primary><completed_date>"
+          # Placeholders: <step_count> = number of steps
+          - "<body>Steps: <primary><step_count>/<step_count>"
+          - ""
+          - "<hint>Click <body>to view details."
+    step-slot:
+      display-item:
+        material: MAP
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        # Placeholders: <quest_name> = quest display name, <step_number> = 1-based step index
+        name: "<primary><quest_name> <body>(Step <primary><step_number>)"
+        lore:
+          # Placeholders: <completed_date> = formatted date
+          - "<body>Completed: <primary><completed_date>"
+          - ""
+          - "<hint>Click <body>to view quest details."
+    previous-gui-button:
+      display-item:
+        material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<primary>Back to History"
+        lore:
+          - "<hint>Click <body>to return to quest history."

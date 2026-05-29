@@ -1332,3 +1332,48 @@ quests:
           description: "Chop mixed logs"
         land_weekly_break_crops:
           description: "Harvest mixed crops"
+
+quest-chain:
+  events:
+    # Placeholders: <chain> = chain display name
+    chain-start: "<primary><chain> <body>quest chain started!"
+    # Placeholders: <chain> = chain display name, <step> = next step quest name, <total> = total step count
+    chain-advance: "<body>Quest chain <primary><chain> <body>advanced to step <primary><step>/<total>"
+    # Placeholders: <chain> = chain display name
+    chain-complete: "<positive>Congratulations! <body>You've completed the <primary><chain> <body>quest chain!"
+  admin:
+    status:
+      # Placeholders: <chain> = chain key
+      header: "<primary>Chain Status: <body><chain>"
+      # Placeholders: <state> = chain state name
+      state: "<body>State: <primary><state>"
+      # Placeholders: <step> = current quest name, <step_number> = 1-based index, <total> = total steps
+      current-step: "<body>Current Step: <primary><step> <body>(<primary><step_number>/<total>)"
+      # Placeholders: <count> = completion count
+      completions: "<body>Completions: <primary><count>"
+      # Placeholders: <time> = formatted timestamp
+      last-completed: "<body>Last Completed: <primary><time>"
+      # Placeholders: <chain> = chain key
+      no-state: "<body>Player has no state for chain '<primary><chain><body>'."
+    advance:
+      # Placeholders: <player> = player name, <chain> = chain key, <step> = next step quest name
+      success: "<positive>Advanced <primary><player><body>'s chain <primary><chain> <body>to step <primary><step>"
+      # Placeholders: <player> = player name, <chain> = chain key
+      complete: "<positive>Completed <primary><player><body>'s chain <primary><chain><body>!"
+      # Placeholders: <chain> = chain key
+      error-no-state: "<negative>Player has no active state for chain '<primary><chain><body>'."
+      # Placeholders: <chain> = chain key, <state> = current state name
+      error-terminal: "<negative>Player's chain '<primary><chain><body>' is in state <primary><state><body>. Use reset to clear it."
+      # Placeholders: <chain> = chain key
+      error-no-chain: "<negative>No chain definition found for '<primary><chain><body>'."
+      error-offline: "<negative>Player must be online."
+    restart:
+      # Placeholders: <player> = player name, <chain> = chain key, <step> = step quest name
+      success: "<positive>Restarted <primary><player><body>'s chain <primary><chain> <body>from step <primary><step>"
+      all-completed: "<body>All steps already completed; chain marked complete."
+      forced: "<warning>Force-restarting chain — all steps will be replayed."
+    reset:
+      # Placeholders: <player> = player name, <chain> = chain key
+      success: "<positive>Hard reset <primary><player><body>'s chain <primary><chain><body>. All state and history cleared."
+      # Placeholders: <chain> = chain key
+      no-state: "<body>Player has no state for chain '<primary><chain><body>' — nothing to reset."

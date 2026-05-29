@@ -3,12 +3,11 @@ package us.eunoians.mcrpg.gui.quest.slot;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.database.table.quest.CompletionRecord;
 import us.eunoians.mcrpg.database.table.quest.QuestChainCompletionLogDAO;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -23,7 +22,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -84,17 +83,15 @@ public class ChainStepCompletionSlot implements McRPGSlot {
         String questName = defOpt.map(def -> def.getDisplayName(mcRPGPlayer)).orElse(stepRecord.questKey());
         String completedDate = DATE_FORMAT.format(new Date(stepRecord.completedAt()));
 
-        var paletteReplacements = localizationManager.getPaletteReplacements();
-
-        ItemBuilder builder = ItemBuilder.from(new ItemStack(Material.MAP))
-                .setDisplayName("<primary>" + questName + " <body>(Step <primary>" + stepNumber + ")")
-                .addDisplayLore(List.of(
-                        "<body>Completed: <primary>" + completedDate,
-                        "",
-                        "<hint>Click <body>to view quest details."
-                ))
-                .applyTagReplacements(paletteReplacements);
-        return builder;
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(
+                mcRPGPlayer, LocalizationKey.QUEST_CHAIN_HISTORY_GUI_STEP_SLOT_DISPLAY_ITEM))
+                .addPlaceholders(Map.of(
+                        "quest_name", questName,
+                        "step_number", String.valueOf(stepNumber),
+                        "completed_date", completedDate
+                ));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @Override

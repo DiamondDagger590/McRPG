@@ -3,12 +3,11 @@ package us.eunoians.mcrpg.gui.quest.slot;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.inventory.ClickType;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.database.table.quest.ChainCompletionRun;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.quest.QuestChainHistoryDetailGui;
@@ -22,7 +21,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -65,18 +64,15 @@ public class QuestChainHistorySlot implements McRPGSlot {
                 .orElse(run.chainKey().getKey());
         String completedDate = DATE_FORMAT.format(new Date(run.completedAt()));
 
-        var paletteReplacements = localizationManager.getPaletteReplacements();
-
-        ItemBuilder builder = ItemBuilder.from(new ItemStack(Material.BOOK))
-                .setDisplayName("<primary>" + chainName)
-                .addDisplayLore(List.of(
-                        "<body>Completed: <primary>" + completedDate,
-                        "<body>Steps: <primary>" + run.stepCount() + "/" + run.stepCount(),
-                        "",
-                        "<hint>Click <body>to view details."
-                ))
-                .applyTagReplacements(paletteReplacements);
-        return builder;
+        ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(
+                mcRPGPlayer, LocalizationKey.QUEST_CHAIN_HISTORY_GUI_CHAIN_SLOT_DISPLAY_ITEM))
+                .addPlaceholders(Map.of(
+                        "chain_name", chainName,
+                        "completed_date", completedDate,
+                        "step_count", String.valueOf(run.stepCount())
+                ));
+        itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
+        return itemBuilder;
     }
 
     @Override
