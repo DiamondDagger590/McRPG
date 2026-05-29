@@ -1,0 +1,35 @@
+#
+# Riptide Guardian Drop Tables — McRPG Fishing Mob
+#
+# Each skill book has two tables: full rate (ability not unlocked)
+# and reduced rate (ability already unlocked). The
+# mcrpg_ability_unlocked condition checks the killer's McRPG
+# unlock state.
+#
+# If McRPG is removed, mcrpg_skillbook and mcrpg_ability_unlocked
+# are unknown to MM — drop tables silently produce no items.
+#
+
+WhirlpoolBookDrop:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} false
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.12
+
+WhirlpoolBookDropReduced:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:whirlpool} true
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:whirlpool} 1 0.02
+
+PhaseShiftBookDrop:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:phase_shift} false
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.05
+
+PhaseShiftBookDropReduced:
+  TriggerConditions:
+  - mcrpg_ability_unlocked{ability=mcrpg:phase_shift} true
+  Drops:
+  - mcrpg_skillbook{ability=mcrpg:phase_shift} 1 0.01

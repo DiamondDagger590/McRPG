@@ -15,6 +15,7 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
 import us.eunoians.mcrpg.display.hud.ActionBarHudTask;
+import us.eunoians.mcrpg.external.mythicmobs.MythicMobsConfigExtractor;
 import us.eunoians.mcrpg.external.mythicmobs.MythicMobsListener;
 import us.eunoians.mcrpg.fishing.ReloadableMobPool;
 import us.eunoians.mcrpg.listener.fishing.FishingMobSpawnListener;
@@ -34,6 +35,7 @@ import us.eunoians.mcrpg.listener.ability.OnBlockDropItemListener;
 import us.eunoians.mcrpg.listener.ability.OnExtraOreActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnFoodLevelChangeAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
+import us.eunoians.mcrpg.listener.ability.OnMobAbilityTriggerListener;
 import us.eunoians.mcrpg.listener.ability.OnPlayerMoveAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnSneakAbilityListener;
 import us.eunoians.mcrpg.listener.entity.EntitySpawnListener;
@@ -42,6 +44,7 @@ import us.eunoians.mcrpg.listener.entity.player.CorePlayerUnloadListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerJoinListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerPickupItemListener;
+import us.eunoians.mcrpg.listener.item.SkillBookConsumeListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerSafeZoneStateChangeListener;
 import us.eunoians.mcrpg.listener.entity.player.PlayerSettingChangeListener;
 import us.eunoians.mcrpg.listener.board.BoardRotationNotificationListener;
@@ -160,6 +163,9 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new PlayerSettingChangeListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new PlayerPickupItemListener(), plugin);
 
+        // Skill book listener (always registered — books can come from any source)
+        Bukkit.getPluginManager().registerEvents(new SkillBookConsumeListener(), plugin);
+
         // Statistic listeners
         Bukkit.getPluginManager().registerEvents(new SkillStatisticListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new AbilityStatisticListener(), plugin);
@@ -170,7 +176,9 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         // MythicMobs integration (conditional)
         if (plugin.registryAccess().registry(RegistryKey.PLUGIN_HOOK).pluginHook(McRPGPluginHookKey.MYTHIC_MOBS).isPresent()) {
+            new MythicMobsConfigExtractor(plugin).extractBundledConfigs();
             Bukkit.getPluginManager().registerEvents(new MythicMobsListener(), plugin);
+            Bukkit.getPluginManager().registerEvents(new OnMobAbilityTriggerListener(), plugin);
 
             // Fishing mob spawn listener (requires MythicMobs + enabled in config)
             YamlDocument fishingConfig = plugin.registryAccess()

@@ -1,0 +1,42 @@
+#
+# Riptide Guardian — McRPG Fishing Mob
+#
+# This file is auto-extracted by McRPG on first startup.
+# Customize freely — McRPG will not overwrite your changes.
+#
+# Requires: MythicMobs 5.7+, McRPG (for mcrpg_skillbook drop type,
+# mcrpg_ability mechanic, and mcrpg_ability_unlocked condition)
+#
+# If McRPG is removed, the mob still spawns and melees but
+# mcrpg_ability skills become no-ops and skill book drops
+# silently fail.
+#
+
+RiptideGuardian:
+  Type: DROWNED
+  Display: "&3Riptide Guardian"
+  Health: 80
+  Damage: 6
+  Armor: 8
+  Options:
+    MovementSpeed: 0.3
+    FollowRange: 24
+    KnockbackResistance: 0.4
+    PreventOtherDrops: true
+    PreventRandomEquipment: true
+    PreventSunburn: true
+    Silent: false
+  Faction: mcrpg_fishing_mob
+  ThreatTable: true
+  Drops:
+  - WhirlpoolBookDrop
+  - WhirlpoolBookDropReduced
+  - PhaseShiftBookDrop
+  - PhaseShiftBookDropReduced
+  Skills:
+  - skill:PhaseShift
+  - skill:WaterloggedStrike
+  - skill:Whirlpool
+  - skill:TsunamiWall
+  - skill:DespawnSelf ~onTimer:6000
+  - skill:DespawnSelf ~onCombat:600

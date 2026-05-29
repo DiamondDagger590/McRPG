@@ -101,6 +101,7 @@ dependencies {
 
     val mythicMobsVersion = "5.7.2"
     compileOnly("io.lumine:Mythic-Dist:$mythicMobsVersion")
+    testImplementation("io.lumine:Mythic-Dist:$mythicMobsVersion")
 
     // Test deps
     val mockBukkitVersion = "4.100.0"
