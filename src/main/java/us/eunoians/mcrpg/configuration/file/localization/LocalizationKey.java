@@ -848,6 +848,23 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route STAT_MANA_DISPLAY_NAME = Route.fromString(toRoutePath(STAT_MANA_HEADER, "display-name"));
     public static final Route STAT_MANA_DISPLAY_SYMBOL = Route.fromString(toRoutePath(STAT_MANA_HEADER, "display-symbol"));
 
+    // Chain admin commands
+    private static final String CHAIN_ADMIN_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "chain-admin");
+    public static final Route CHAIN_ADMIN_NO_STATE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "no-state"));
+    public static final Route CHAIN_ADMIN_STATUS_HEADER = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-header"));
+    public static final Route CHAIN_ADMIN_STATUS_STATE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-state"));
+    public static final Route CHAIN_ADMIN_STATUS_CURRENT_STEP = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-current-step"));
+    public static final Route CHAIN_ADMIN_STATUS_COMPLETIONS = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-completions"));
+    public static final Route CHAIN_ADMIN_STATUS_LAST_COMPLETED = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-last-completed"));
+    public static final Route CHAIN_ADMIN_STATUS_TOTAL_STEPS = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-total-steps"));
+    public static final Route CHAIN_ADMIN_ADVANCE_SUCCESS = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "advance-success"));
+    public static final Route CHAIN_ADMIN_ADVANCE_FAILURE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "advance-failure"));
+    public static final Route CHAIN_ADMIN_RESTART_SUCCESS = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "restart-success"));
+    public static final Route CHAIN_ADMIN_RESTART_SUCCESS_FORCE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "restart-success-force"));
+    public static final Route CHAIN_ADMIN_RESTART_FAILURE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "restart-failure"));
+    public static final Route CHAIN_ADMIN_RESET_SUCCESS = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "reset-success"));
+    public static final Route CHAIN_ADMIN_RESET_FAILURE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "reset-failure"));
+
     // Statistic commands
     private static final String STATISTIC_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "statistic");
     public static final Route STATISTIC_VIEW_MESSAGE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "view-message"));

@@ -15,10 +15,15 @@ import org.incendo.cloud.parser.standard.StringParser;
 import org.incendo.cloud.permission.Permission;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import us.eunoians.mcrpg.command.CommandPlaceholders;
+
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -64,21 +69,25 @@ public class ChainRestartCommand extends ChainAdminCommandBase {
                     Player target = ctx.get(PLAYER_KEY);
                     QuestChainDefinition chain = ctx.get(CHAIN_KEY);
                     boolean force = isForceFlag(ctx);
+                    McRPGLocalizationManager lm = RegistryAccess.registryAccess()
+                            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
 
                     QuestChainManager chainManager = RegistryAccess.registryAccess()
                             .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
 
+                    Map<String, String> placeholders = Map.of(
+                            CommandPlaceholders.TARGET.getPlaceholder(), target.getName(),
+                            CommandPlaceholders.CHAIN_DISPLAY_NAME.getPlaceholder(), chain.getDisplayName(),
+                            CommandPlaceholders.CHAIN_KEY.getPlaceholder(), chain.getChainKey().toString());
+
                     chainManager.restartChain(target.getUniqueId(), chain.getChainKey(), force, success -> {
                         if (success) {
-                            sender.sendMessage(mm.deserialize(
-                                    "<green>Restarted chain <white>" + chain.getChainKey()
-                                    + "</white> for <white>" + target.getName()
-                                    + "</white>" + (force ? " (force)" : "") + "."));
+                            var key = force ? LocalizationKey.CHAIN_ADMIN_RESTART_SUCCESS_FORCE
+                                    : LocalizationKey.CHAIN_ADMIN_RESTART_SUCCESS;
+                            sender.sendMessage(lm.getLocalizedMessageAsComponent(sender, key, placeholders));
                         } else {
-                            sender.sendMessage(mm.deserialize(
-                                    "<red>Could not restart chain <white>" + chain.getChainKey()
-                                    + "</white> for <white>" + target.getName()
-                                    + "</white>. Player may have no state for this chain."));
+                            sender.sendMessage(lm.getLocalizedMessageAsComponent(sender,
+                                    LocalizationKey.CHAIN_ADMIN_RESTART_FAILURE, placeholders));
                         }
                     });
                 }));

@@ -504,3 +504,34 @@ commands:
     lookup-error-message: "<negative>Failed to look up statistics. Please try again."
     # The message shown when an invalid value is provided for the set command.
     invalid-value: "<negative>Invalid value <body><statistic-value></body> for statistic <body><statistic-name></body>."
+  # Configure chain admin commands
+  # Placeholders: <target>, <chain_key>, <chain_name> (plus per-message extras noted inline)
+  chain-admin:
+    # Shown when the target player has no chain state for the specified chain.
+    no-state: "<warning><target> <body>has no state for chain <primary><chain_name></primary>."
+    # Header line for the status output.
+    status-header: "<primary>Chain status for <body><target> <body>— <primary><chain_name></primary>"
+    # Placeholders: <chain_state>
+    status-state: "<body>State: <primary><chain_state>"
+    # Placeholders: <current_step>
+    status-current-step: "<body>Current step: <primary><current_step>"
+    # Placeholders: <completion_count>
+    status-completions: "<body>Completions: <primary><completion_count>"
+    # Placeholders: <last_completed>
+    status-last-completed: "<body>Last completed: <primary><last_completed>"
+    # Placeholders: <total_steps>
+    status-total-steps: "<body>Total steps: <primary><total_steps>"
+    # Shown when a force-advance succeeds.
+    advance-success: "<positive>Advanced chain <primary><chain_name></primary> <body>for <primary><target></primary>."
+    # Shown when a force-advance fails (player offline, no active state, or terminal state).
+    advance-failure: "<negative>Could not advance chain <primary><chain_name></primary> <body>for <primary><target></primary>. <body>Player may have no active state or the chain is in a terminal state."
+    # Shown when a restart (non-forced) succeeds.
+    restart-success: "<positive>Restarted chain <primary><chain_name></primary> <body>for <primary><target></primary>."
+    # Shown when a force-restart succeeds.
+    restart-success-force: "<positive>Force-restarted chain <primary><chain_name></primary> <body>for <primary><target></primary>."
+    # Shown when a restart fails (player has no state for the chain).
+    restart-failure: "<negative>Could not restart chain <primary><chain_name></primary> <body>for <primary><target></primary>. <body>Player may have no state for this chain."
+    # Shown when a hard reset succeeds.
+    reset-success: "<positive>Reset chain <primary><chain_name></primary> <body>for <primary><target></primary>."
+    # Shown when a hard reset fails (player offline or chain not found).
+    reset-failure: "<negative>Could not reset chain <primary><chain_name></primary> <body>for <primary><target></primary>. <body>Player may be offline or the chain was not found."

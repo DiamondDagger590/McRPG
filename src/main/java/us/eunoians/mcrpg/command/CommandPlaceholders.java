@@ -58,6 +58,13 @@ public enum CommandPlaceholders {
     STATISTIC_NAME("statistic-name"),
     STATISTIC_VALUE("statistic-value"),
     SKIPPED_ABILITIES("skipped-abilities"),
+    CHAIN_KEY("chain_key"),
+    CHAIN_DISPLAY_NAME("chain_name"),
+    CHAIN_STATE("chain_state"),
+    CHAIN_CURRENT_STEP("current_step"),
+    CHAIN_COMPLETION_COUNT("completion_count"),
+    CHAIN_LAST_COMPLETED("last_completed"),
+    CHAIN_TOTAL_STEPS("total_steps"),
     ;
 
     private final String placeholder;
