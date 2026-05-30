@@ -61,13 +61,13 @@ public class QuestChainLoginListener implements Listener {
             return;
         }
 
-        chainManager.reResolveOnLogin(player.getUniqueId());
-
-        NamespacedKey loginKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "login");
-        QuestChainRegistry chainRegistry = McRPG.getInstance().registryAccess()
-                .registry(McRPGRegistryKey.QUEST_CHAIN);
-        for (QuestChainDefinition chain : chainRegistry.getChainsForTrigger(loginKey)) {
-            chainManager.tryStartChain(player, chain.getChainKey());
-        }
+        chainManager.reResolveOnLogin(player.getUniqueId(), () -> {
+            NamespacedKey loginKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "login");
+            QuestChainRegistry chainRegistry = McRPG.getInstance().registryAccess()
+                    .registry(McRPGRegistryKey.QUEST_CHAIN);
+            for (QuestChainDefinition chain : chainRegistry.getChainsForTrigger(loginKey)) {
+                chainManager.tryStartChain(player, chain.getChainKey());
+            }
+        });
     }
 }

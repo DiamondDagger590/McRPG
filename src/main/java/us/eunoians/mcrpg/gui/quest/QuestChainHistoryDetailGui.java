@@ -55,6 +55,13 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
     private final Player player;
     private final NamespacedKey chainKey;
     private final int completionNumber;
+    /**
+     * Monotonically increasing counter used to discard stale async load results.
+     * Incremented on every {@link #loadStepRecords()} call; captured in the async
+     * lambda and compared against the current value before applying results on the main
+     * thread.
+     */
+    private int loadGeneration = 0;
     private List<QuestChainCompletionLogDAO.ChainStepRecord> stepRecords;
 
     public QuestChainHistoryDetailGui(@NotNull McRPGPlayer mcRPGPlayer,
@@ -73,6 +80,7 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
      * Loads chain step completion records from the database asynchronously and refreshes the GUI.
      */
     private void loadStepRecords() {
+        int generation = ++loadGeneration;
         Database database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
@@ -87,6 +95,9 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
             }
             List<QuestChainCompletionLogDAO.ChainStepRecord> finalSteps = steps;
             Bukkit.getScheduler().runTask(McRPG.getInstance(), () -> {
+                if (generation != loadGeneration) {
+                    return;
+                }
                 stepRecords = finalSteps;
                 refreshGUI();
             });

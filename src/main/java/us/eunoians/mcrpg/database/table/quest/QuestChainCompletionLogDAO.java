@@ -12,8 +12,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -147,6 +149,37 @@ public class QuestChainCompletionLogDAO {
                             ", chain " + chainKey, e);
         }
         return keys;
+    }
+
+    /**
+     * Returns all completed quest keys for a player grouped by chain key in a single query.
+     * Used during login re-resolution to avoid N separate per-chain queries.
+     *
+     * @param connection the database connection
+     * @param playerUUID the player UUID
+     * @return map of chain key → set of completed quest key strings for that chain
+     */
+    @NotNull
+    public static Map<NamespacedKey, Set<NamespacedKey>> getAllCompletedQuestKeysByChain(
+            @NotNull Connection connection, @NotNull UUID playerUUID) {
+        Map<NamespacedKey, Set<NamespacedKey>> result = new HashMap<>();
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT DISTINCT chain_key, quest_key FROM " + TABLE_NAME + " WHERE player_uuid = ?")) {
+            statement.setString(1, playerUUID.toString());
+            try (ResultSet rs = statement.executeQuery()) {
+                while (rs.next()) {
+                    NamespacedKey chainKey = NamespacedKey.fromString(rs.getString("chain_key"));
+                    NamespacedKey questKey = NamespacedKey.fromString(rs.getString("quest_key"));
+                    if (chainKey != null && questKey != null) {
+                        result.computeIfAbsent(chainKey, k -> new HashSet<>()).add(questKey);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING,
+                    "[QuestChainCompletionLogDAO] Failed to load all completed quest keys for player " + playerUUID, e);
+        }
+        return result;
     }
 
     /**

@@ -56,6 +56,15 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
     private boolean sortAscending = false;
 
     /**
+     * Monotonically increasing counter used to discard stale async load results.
+     * Incremented on every {@link #loadCompletionRecords()} call; captured in the async
+     * lambda and compared against the current value before applying results on the main
+     * thread. Stale results (from a previous load that completed after a newer one
+     * started) are discarded if the captured generation differs from the current value.
+     */
+    private int loadGeneration = 0;
+
+    /**
      * Merged display list combining {@link QuestChainHistorySlot} entries for chain runs and
      * {@link CompletedQuestSlot} entries for standalone quests, sorted by completion timestamp.
      */
@@ -79,6 +88,7 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
      */
     private void loadCompletionRecords() {
         boolean ascending = sortAscending;
+        int generation = ++loadGeneration;
         Database database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
@@ -102,6 +112,9 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
 
             List<McRPGSlot> merged = buildDisplayItems(questRecords, chainRuns, chainQuestKeys, ascending);
             Bukkit.getScheduler().runTask(McRPG.getInstance(), () -> {
+                if (generation != loadGeneration) {
+                    return;
+                }
                 displayItems = merged;
                 refreshGUI();
             });

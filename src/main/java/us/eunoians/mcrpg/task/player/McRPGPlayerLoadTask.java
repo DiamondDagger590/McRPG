@@ -499,7 +499,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         QuestChainManager chainManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST_CHAIN);
         List<QuestChainPlayerState> states = chainManager.loadChainStates(connection, getCorePlayer().getUUID());
-        return () -> states.forEach(state -> getCorePlayer().getChainData().putChainState(state));
+        return () -> getCorePlayer().getChainData().putChainStateBatch(states);
     }
 
     /**

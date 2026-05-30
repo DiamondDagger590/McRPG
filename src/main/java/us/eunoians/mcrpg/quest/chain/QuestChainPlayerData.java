@@ -82,23 +82,54 @@ public class QuestChainPlayerData {
     }
 
     /**
-     * Adds or replaces a chain state and rebuilds the quest key index.
+     * Adds or replaces a chain state and incrementally updates the quest key index.
      *
      * @param state the chain state to add
      */
     public void putChainState(@NotNull QuestChainPlayerState state) {
         chainStates.put(state.getChainKey(), state);
+        updateQuestKeyIndex(state);
+    }
+
+    /**
+     * Inserts all states from the list and rebuilds the quest key index once at the end.
+     * Use this during the login load pipeline to avoid O(N²) repeated rebuilds.
+     *
+     * @param states the list of chain states to insert
+     */
+    public void putChainStateBatch(@NotNull List<QuestChainPlayerState> states) {
+        for (QuestChainPlayerState state : states) {
+            chainStates.put(state.getChainKey(), state);
+        }
         rebuildQuestKeyIndex();
     }
 
     /**
-     * Removes a chain state and rebuilds the quest key index.
+     * Removes a chain state and incrementally updates the quest key index.
      *
      * @param chainKey the chain key to remove
      */
     public void removeChainState(@NotNull NamespacedKey chainKey) {
-        chainStates.remove(chainKey);
-        rebuildQuestKeyIndex();
+        QuestChainPlayerState removed = chainStates.remove(chainKey);
+        if (removed != null) {
+            removed.getCurrentQuestKey().ifPresent(questKeyToChainKey::remove);
+        }
+    }
+
+    /**
+     * Incrementally updates the {@code questKeyToChainKey} reverse index for a single
+     * changed chain state. Removes any old entry for this chain and adds the new current
+     * quest key if the state is still ACTIVE. Prefer this over {@link #rebuildQuestKeyIndex()}
+     * for single-state mutations.
+     *
+     * @param state the chain state that was just mutated
+     */
+    public void updateQuestKeyIndex(@NotNull QuestChainPlayerState state) {
+        questKeyToChainKey.values().removeIf(chainKey -> chainKey.equals(state.getChainKey()));
+        if (state.isActive()) {
+            state.getCurrentQuestKey().ifPresent(questKey ->
+                    questKeyToChainKey.put(questKey, state.getChainKey()));
+        }
     }
 
     /**
