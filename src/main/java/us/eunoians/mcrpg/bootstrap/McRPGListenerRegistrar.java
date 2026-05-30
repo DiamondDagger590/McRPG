@@ -28,6 +28,7 @@ import us.eunoians.mcrpg.listener.ability.OnComboInputListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityCooldownExpireListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityPutOnCooldownListener;
 import us.eunoians.mcrpg.listener.ability.OnAbilityUnlockListener;
+import us.eunoians.mcrpg.listener.ability.OnPlayerLoadUnlockSweepListener;
 import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnBlockBreakListener;
@@ -124,6 +125,7 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new OnAbilityUnlockListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new OnAbilityCooldownExpireListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new OnAbilityPutOnCooldownListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnPlayerLoadUnlockSweepListener(), plugin);
 
         // Quest Listeners
         QuestManager questManager = plugin.registryAccess()

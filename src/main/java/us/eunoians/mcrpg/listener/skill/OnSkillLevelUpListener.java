@@ -79,13 +79,11 @@ public class OnSkillLevelUpListener implements Listener {
     public void handlePostLevelEvent(PostSkillGainLevelEvent postSkillGainLevelEvent) {
         SkillHolder skillHolder = postSkillGainLevelEvent.getSkillHolder();
         Skill skill = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.SKILL).getRegisteredSkill(postSkillGainLevelEvent.getSkillKey());
-        var skillHolderDataOptional = skillHolder.getSkillHolderData(skill);
-        if (skillHolderDataOptional.isPresent()) {
-            var skillHolderData = skillHolderDataOptional.get();
+        if (skillHolder.getSkillHolderData(skill).isPresent()) {
             AbilityRegistry abilityRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY);
             for (NamespacedKey abilityKey : abilityRegistry.getAbilitiesBelongingToSkill(skill)) {
                 Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
-                if (ability instanceof UnlockableAbility unlockableAbility && unlockableAbility.getUnlockLevel() <= skillHolderData.getCurrentLevel()) {
+                if (ability instanceof UnlockableAbility unlockableAbility && unlockableAbility.isAnyConditionMet(skillHolder)) {
                     var abilityDataOptional = skillHolder.getAbilityData(abilityKey);
                     if (abilityDataOptional.isPresent()) {
                         AbilityData abilityData = abilityDataOptional.get();

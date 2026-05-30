@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
+import us.eunoians.mcrpg.ability.unlock.UnlockConditionType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
@@ -93,7 +94,9 @@ public enum AbilitySortType {
                 }
 
                 if (ability instanceof UnlockableAbility unlockableAbility && ability1 instanceof UnlockableAbility unlockableAbility1) {
-                    return Integer.compare(unlockableAbility.getUnlockLevel(), unlockableAbility1.getUnlockLevel());
+                    // Closest-to-unlock first: higher best-condition progress sorts earlier.
+                    return Double.compare(bestProgress(unlockableAbility, mcRPGPlayer),
+                            bestProgress(unlockableAbility1, mcRPGPlayer)) * -1;
                 }
                 return 0;
             })),
@@ -137,6 +140,19 @@ public enum AbilitySortType {
     private final Route displayItemRoute;
     private final McRPGPlayerContextFilter<Ability> filter;
     private final McRPGPlayerContextComparator<Ability> abilityComparator;
+
+    /**
+     * Best (max) progress of any condition on the ability for the given player. Used by the
+     * unlocked-abilities sort to put closest-to-unlock entries first. Display-only-only
+     * abilities collapse to 0 and sort to the end.
+     */
+    private static double bestProgress(@NotNull UnlockableAbility ability, @NotNull McRPGPlayer player) {
+        double max = 0.0;
+        for (UnlockConditionType condition : ability.getUnlockConditions()) {
+            max = Math.max(max, condition.getProgress(player.asSkillHolder()));
+        }
+        return max;
+    }
 
     AbilitySortType(@NotNull Route displayItemRoute, @Nullable McRPGPlayerContextFilter<Ability> filter, @NotNull McRPGPlayerContextComparator<Ability> abilityComparator) {
         this.displayItemRoute = displayItemRoute;

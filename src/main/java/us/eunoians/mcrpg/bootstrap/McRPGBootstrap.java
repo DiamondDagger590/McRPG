@@ -12,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.ability.unlock.UnlockConditionManager;
+import us.eunoians.mcrpg.ability.unlock.UnlockConditionTypeRegistry;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
@@ -78,6 +80,8 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.registry(RegistryKey.MANAGER).register(new ContentExpansionManager(mcRPG));
         registryAccess.register(new AbilityRegistry(mcRPG));
         registryAccess.register(new AbilityAttributeRegistry());
+        registryAccess.register(new UnlockConditionTypeRegistry());
+        registryAccess.registry(RegistryKey.MANAGER).register(new UnlockConditionManager(mcRPG));
         registryAccess.register(new SkillRegistry());
         registryAccess.register(new QuestDefinitionRegistry());
         registryAccess.register(new QuestScopeProviderRegistry());
@@ -135,6 +139,11 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         }
 
         registryAccess.registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).reloadAllContent();
+
+        // Warm the unlock-condition cache and emit the empty-display startup warnings
+        // (see UnlockConditionManager). Runs after abilities, configs, and built-in types
+        // are all registered.
+        registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.UNLOCK_CONDITION).resolveAll();
     }
 
     @Override
