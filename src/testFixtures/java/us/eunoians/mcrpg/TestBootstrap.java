@@ -8,6 +8,8 @@ import com.diamonddagger590.mccore.util.TimeProvider;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.unlock.UnlockConditionManager;
+import us.eunoians.mcrpg.ability.unlock.UnlockConditionTypeRegistry;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.gui.McRPGGuiManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -89,6 +91,8 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
         distTypeRegistry.register(new MembershipDistributionType());
         registryAccess.registry(RegistryKey.MANAGER).register(mock(QuestManager.class));
         registryAccess.register(new PlayerStatRegistry());
+        registryAccess.register(new UnlockConditionTypeRegistry());
+        registryAccess.registry(RegistryKey.MANAGER).register(mock(UnlockConditionManager.class));
     }
 
     /**
