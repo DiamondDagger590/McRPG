@@ -37,15 +37,15 @@ public class QuestChainDefinitionTest extends McRPGBaseTest {
                 .build();
     }
 
-    @DisplayName("Given valid steps, When build is called, Then chain definition is created with step index")
     @Test
+    @DisplayName("Given valid steps, When build is called, Then chain definition is created with step index")
     public void build_createsDefinition_whenStepsAreValid() {
         var def = buildThreeStepChain();
         assertEquals(3, def.getSteps().size());
     }
 
-    @DisplayName("Given configured display name, When getDisplayName is called, Then it returns the configured name")
     @Test
+    @DisplayName("Given configured display name, When getDisplayName is called, Then it returns the configured name")
     public void getDisplayName_returnsConfiguredName_whenSet() {
         var def = new QuestChainDefinition.Builder(chainKey, sourceKey, triggerKey, List.of(QuestChainStep.simple(questKeyA)))
                 .displayName("My Display Name")
@@ -53,16 +53,16 @@ public class QuestChainDefinitionTest extends McRPGBaseTest {
         assertEquals("My Display Name", def.getDisplayName());
     }
 
-    @DisplayName("Given no display name, When getDisplayName is called, Then it falls back to chain key value portion")
     @Test
+    @DisplayName("Given no display name, When getDisplayName is called, Then it falls back to chain key value portion")
     public void getDisplayName_fallsBackToKeyValue_whenNotSet() {
         var def = new QuestChainDefinition.Builder(chainKey, sourceKey, triggerKey, List.of(QuestChainStep.simple(questKeyA)))
                 .build();
         assertEquals("test_chain", def.getDisplayName());
     }
 
-    @DisplayName("Given a quest key in the steps, When getStep is called, Then it returns the correct step")
     @Test
+    @DisplayName("Given a quest key in the steps, When getStep is called, Then it returns the correct step")
     public void getStep_returnsStep_whenKeyExists() {
         var def = buildThreeStepChain();
         var result = def.getStep(questKeyB);
@@ -70,15 +70,15 @@ public class QuestChainDefinitionTest extends McRPGBaseTest {
         assertEquals(questKeyB, result.get().questKey());
     }
 
-    @DisplayName("Given a quest key not in the steps, When getStep is called, Then it returns empty")
     @Test
+    @DisplayName("Given a quest key not in the steps, When getStep is called, Then it returns empty")
     public void getStep_returnsEmpty_whenKeyNotFound() {
         var def = buildThreeStepChain();
         assertTrue(def.getStep(new NamespacedKey("mcrpg", "unknown_quest")).isEmpty());
     }
 
-    @DisplayName("Given a quest key in the steps, When getStepIndex is called, Then it returns the correct index")
     @Test
+    @DisplayName("Given a quest key in the steps, When getStepIndex is called, Then it returns the correct index")
     public void getStepIndex_returnsCorrectIndex_whenKeyExists() {
         var def = buildThreeStepChain();
         assertEquals(0, def.getStepIndex(questKeyA));
@@ -86,15 +86,15 @@ public class QuestChainDefinitionTest extends McRPGBaseTest {
         assertEquals(2, def.getStepIndex(questKeyC));
     }
 
-    @DisplayName("Given a quest key not in the steps, When getStepIndex is called, Then it returns -1")
     @Test
+    @DisplayName("Given a quest key not in the steps, When getStepIndex is called, Then it returns -1")
     public void getStepIndex_returnsNegativeOne_whenKeyNotFound() {
         var def = buildThreeStepChain();
         assertEquals(-1, def.getStepIndex(new NamespacedKey("mcrpg", "unknown")));
     }
 
-    @DisplayName("Given a quest key for a non-last step, When getNextStep is called, Then it returns the next step")
     @Test
+    @DisplayName("Given a quest key for a non-last step, When getNextStep is called, Then it returns the next step")
     public void getNextStep_returnsNextStep_whenNotLastStep() {
         var def = buildThreeStepChain();
         var next = def.getNextStep(questKeyA);
@@ -102,22 +102,22 @@ public class QuestChainDefinitionTest extends McRPGBaseTest {
         assertEquals(questKeyB, next.get().questKey());
     }
 
-    @DisplayName("Given a quest key for the last step, When getNextStep is called, Then it returns empty")
     @Test
+    @DisplayName("Given a quest key for the last step, When getNextStep is called, Then it returns empty")
     public void getNextStep_returnsEmpty_whenLastStep() {
         var def = buildThreeStepChain();
         assertTrue(def.getNextStep(questKeyC).isEmpty());
     }
 
-    @DisplayName("Given an empty steps list, When build is called, Then it throws IllegalArgumentException")
     @Test
+    @DisplayName("Given an empty steps list, When build is called, Then it throws IllegalArgumentException")
     public void build_throwsIllegalArgumentException_whenStepsEmpty() {
         assertThrows(IllegalArgumentException.class, () ->
                 new QuestChainDefinition.Builder(chainKey, sourceKey, triggerKey, List.of()).build());
     }
 
-    @DisplayName("Given duplicate quest keys in steps, When build is called, Then it throws IllegalStateException")
     @Test
+    @DisplayName("Given duplicate quest keys in steps, When build is called, Then it throws IllegalStateException")
     public void build_throwsIllegalStateException_whenDuplicateQuestKeys() {
         assertThrows(IllegalStateException.class, () ->
                 new QuestChainDefinition.Builder(chainKey, sourceKey, triggerKey,

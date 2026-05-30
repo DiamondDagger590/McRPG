@@ -7,6 +7,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.TestFileUtils;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
@@ -85,115 +86,96 @@ public class QuestChainReloadTest extends McRPGBaseTest {
         chainRegistry.clear();
     }
 
-    @DisplayName("Given a chain file, when QuestConfigLoader scans the directory, then chain file path is returned in QuestLoadResult")
     @Test
+    @DisplayName("Given a chain file, when QuestConfigLoader scans the directory, then chain file path is returned in QuestLoadResult")
     void loadQuestsFromDirectory_chainFile_flaggedInResult() throws IOException {
         Path tempDir = Files.createTempDirectory("reload_chain_flag");
         tempDir.toFile().deleteOnExit();
         try {
-            writeFile(tempDir, "example_chain.yml", CHAIN_YAML);
+            TestFileUtils.writeFile(tempDir, "example_chain.yml", CHAIN_YAML);
 
             QuestLoadResult result = questLoader.loadQuestsFromDirectory(tempDir.toFile());
 
             assertTrue(result.definitions().isEmpty(), "Chain file should not contribute quest definitions");
             assertEquals(1, result.chainFiles().size(), "Chain file path should be collected");
         } finally {
-            deleteRecursively(tempDir.toFile());
+            TestFileUtils.deleteRecursively(tempDir.toFile());
         }
     }
 
-    @DisplayName("Given a non-chain file, when QuestConfigLoader scans the directory, then it is not flagged as a chain file")
     @Test
+    @DisplayName("Given a non-chain file, when QuestConfigLoader scans the directory, then it is not flagged as a chain file")
     void loadQuestsFromDirectory_questFile_notFlaggedAsChain() throws IOException {
         Path tempDir = Files.createTempDirectory("reload_quest_flag");
         tempDir.toFile().deleteOnExit();
         try {
-            writeFile(tempDir, "example_quest.yml", QUEST_YAML);
+            TestFileUtils.writeFile(tempDir, "example_quest.yml", QUEST_YAML);
 
             QuestLoadResult result = questLoader.loadQuestsFromDirectory(tempDir.toFile());
 
             assertTrue(result.chainFiles().isEmpty(), "Quest file should not be collected as a chain file");
         } finally {
-            deleteRecursively(tempDir.toFile());
+            TestFileUtils.deleteRecursively(tempDir.toFile());
         }
     }
 
-    @DisplayName("Given both a chain file and a quest file in the same directory, when scanned, each is routed to the correct result slot")
     @Test
+    @DisplayName("Given both a chain file and a quest file in the same directory, when scanned, each is routed to the correct result slot")
     void loadQuestsFromDirectory_mixedFiles_routedCorrectly() throws IOException {
         Path tempDir = Files.createTempDirectory("reload_mixed");
         tempDir.toFile().deleteOnExit();
         try {
-            writeFile(tempDir, "example_quest.yml", QUEST_YAML);
-            writeFile(tempDir, "example_chain.yml", CHAIN_YAML);
+            TestFileUtils.writeFile(tempDir, "example_quest.yml", QUEST_YAML);
+            TestFileUtils.writeFile(tempDir, "example_chain.yml", CHAIN_YAML);
 
             QuestLoadResult result = questLoader.loadQuestsFromDirectory(tempDir.toFile());
 
             assertFalse(result.definitions().isEmpty(), "Quest definitions should be loaded");
             assertEquals(1, result.chainFiles().size(), "One chain file should be collected");
         } finally {
-            deleteRecursively(tempDir.toFile());
+            TestFileUtils.deleteRecursively(tempDir.toFile());
         }
     }
 
-    @DisplayName("Given flagged chain file paths, when loadChainsFromPaths is called, then chain definitions are parsed")
     @Test
+    @DisplayName("Given flagged chain file paths, when loadChainsFromPaths is called, then chain definitions are parsed")
     void loadChainsFromPaths_validPaths_loadsChains() throws IOException {
         Path tempDir = Files.createTempDirectory("reload_chain_paths");
         tempDir.toFile().deleteOnExit();
         try {
-            Path chainFile = writeFile(tempDir, "example_chain.yml", CHAIN_YAML);
+            Path chainFile = TestFileUtils.writeFile(tempDir, "example_chain.yml", CHAIN_YAML);
 
             Map<NamespacedKey, QuestChainDefinition> chains = chainLoader.loadChainsFromPaths(List.of(chainFile));
 
             assertEquals(1, chains.size());
             assertTrue(chains.containsKey(new NamespacedKey("mcrpg", "reload_chain")));
         } finally {
-            deleteRecursively(tempDir.toFile());
+            TestFileUtils.deleteRecursively(tempDir.toFile());
         }
     }
 
-    @DisplayName("Given an empty path list, when loadChainsFromPaths is called, then no chains are returned")
     @Test
+    @DisplayName("Given an empty path list, when loadChainsFromPaths is called, then no chains are returned")
     void loadChainsFromPaths_emptyList_returnsEmpty() {
         Map<NamespacedKey, QuestChainDefinition> chains = chainLoader.loadChainsFromPaths(List.of());
         assertTrue(chains.isEmpty());
     }
 
-    @DisplayName("Given two chain files sharing a chain key, when loadChainsFromPaths is called, then only the first is loaded")
     @Test
+    @DisplayName("Given two chain files sharing a chain key, when loadChainsFromPaths is called, then only the first is loaded")
     void loadChainsFromPaths_duplicateKey_firstWins() throws IOException {
         Path tempDir = Files.createTempDirectory("reload_chain_dup");
         tempDir.toFile().deleteOnExit();
         try {
-            Path first = writeFile(tempDir, "a_chain.yml", CHAIN_YAML);
-            Path second = writeFile(tempDir, "b_chain.yml", CHAIN_YAML);
+            Path first = TestFileUtils.writeFile(tempDir, "a_chain.yml", CHAIN_YAML);
+            Path second = TestFileUtils.writeFile(tempDir, "b_chain.yml", CHAIN_YAML);
 
             Map<NamespacedKey, QuestChainDefinition> chains = chainLoader.loadChainsFromPaths(List.of(first, second));
 
             assertEquals(1, chains.size(), "Duplicate chain key should be skipped");
         } finally {
-            deleteRecursively(tempDir.toFile());
+            TestFileUtils.deleteRecursively(tempDir.toFile());
         }
     }
 
-    private static Path writeFile(Path dir, String filename, String content) throws IOException {
-        Path path = dir.resolve(filename);
-        Files.writeString(path, content);
-        path.toFile().deleteOnExit();
-        return path;
-    }
-
-    @SuppressWarnings("ResultOfMethodCallIgnored")
-    private static void deleteRecursively(File file) {
-        if (file.isDirectory()) {
-            File[] children = file.listFiles();
-            if (children != null) {
-                for (File child : children) {
-                    deleteRecursively(child);
-                }
-            }
-        }
-        file.delete();
-    }
 }

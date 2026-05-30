@@ -23,8 +23,8 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         questKeyB = new NamespacedKey("mcrpg", "quest_b");
     }
 
-    @DisplayName("Given chain and first quest key, When newActive is called, Then state is ACTIVE with 0 completions")
     @Test
+    @DisplayName("Given chain and first quest key, When newActive is called, Then state is ACTIVE with 0 completions")
     public void newActive_createsActiveState_withZeroCompletions() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
 
@@ -37,8 +37,8 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertFalse(state.isDirty());
     }
 
-    @DisplayName("Given active state, When advance is called, Then currentQuestKey updates and state is dirty")
     @Test
+    @DisplayName("Given active state, When advance is called, Then currentQuestKey updates and state is dirty")
     public void advance_updatesCurrentQuestKey_andMarksDirty() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
         state.advance(questKeyB);
@@ -47,8 +47,8 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertTrue(state.isDirty());
     }
 
-    @DisplayName("Given active state, When complete is called, Then state is COMPLETED with incremented count")
     @Test
+    @DisplayName("Given active state, When complete is called, Then state is COMPLETED with incremented count")
     public void complete_setsCompleted_andIncrementsCount() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
         long timestamp = 1_000_000L;
@@ -61,8 +61,8 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertTrue(state.isDirty());
     }
 
-    @DisplayName("Given active state, When abandon is called, Then state is ABANDONED with null currentQuestKey")
     @Test
+    @DisplayName("Given active state, When abandon is called, Then state is ABANDONED with null currentQuestKey")
     public void abandon_setsAbandoned_andNullsCurrentQuestKey() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
         state.abandon();
@@ -72,8 +72,8 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertTrue(state.isDirty());
     }
 
-    @DisplayName("Given active state, When fail is called, Then state is FAILED with null currentQuestKey")
     @Test
+    @DisplayName("Given active state, When fail is called, Then state is FAILED with null currentQuestKey")
     public void fail_setsFailed_andNullsCurrentQuestKey() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
         state.fail();
@@ -83,8 +83,8 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertTrue(state.isDirty());
     }
 
-    @DisplayName("Given terminal state, When resetToStep is called, Then state is ACTIVE at given step")
     @Test
+    @DisplayName("Given terminal state, When resetToStep is called, Then state is ACTIVE at given step")
     public void resetToStep_setsActive_atGivenStep() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
         state.fail();
@@ -95,8 +95,8 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertTrue(state.isDirty());
     }
 
-    @DisplayName("Given completed state with history, When hardReset is called, Then count is cleared and state is ACTIVE")
     @Test
+    @DisplayName("Given completed state with history, When hardReset is called, Then count is cleared and state is ACTIVE")
     public void hardReset_clearsCountAndTimestamp_andSetsActive() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
         state.complete(999L);
@@ -111,8 +111,8 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertTrue(state.isDirty());
     }
 
-    @DisplayName("Given dirty state, When clearDirty is called, Then isDirty returns false")
     @Test
+    @DisplayName("Given dirty state, When clearDirty is called, Then isDirty returns false")
     public void clearDirty_clearsDirtyFlag() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
         state.advance(questKeyB);
