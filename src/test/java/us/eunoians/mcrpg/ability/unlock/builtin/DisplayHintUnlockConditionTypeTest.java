@@ -61,7 +61,7 @@ public class DisplayHintUnlockConditionTypeTest extends McRPGBaseTest {
         when(section.getString("locale-key")).thenReturn("ability.unlock-condition.source.riptide-guardian");
         DisplayHintUnlockConditionType parsed = (DisplayHintUnlockConditionType)
                 new DisplayHintUnlockConditionType().parseConfig(section);
-        assertEquals(Route.fromString("ability.unlock-condition.source.riptide-guardian"), parsed.getLocaleKey());
+        assertEquals(Route.fromString("ability.unlock-condition.source.riptide-guardian"), parsed.getLocaleKey().orElseThrow());
     }
 
     @DisplayName("Given a section with only text, when parsing, then an inline instance is returned")
@@ -73,7 +73,7 @@ public class DisplayHintUnlockConditionTypeTest extends McRPGBaseTest {
         when(section.getString("text")).thenReturn("<body>Buy me");
         DisplayHintUnlockConditionType parsed = (DisplayHintUnlockConditionType)
                 new DisplayHintUnlockConditionType().parseConfig(section);
-        assertEquals("<body>Buy me", parsed.getInlineText());
+        assertEquals("<body>Buy me", parsed.getInlineText().orElseThrow());
     }
 
     @DisplayName("Given a section with blank text, when parsing, then it throws")

@@ -6,7 +6,6 @@ import dev.dejvokep.boostedyaml.route.Route;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.exception.UnlockConditionParseException;
 import us.eunoians.mcrpg.ability.unlock.UnlockConditionType;
@@ -111,14 +110,26 @@ public final class DisplayHintUnlockConditionType implements UnlockConditionType
         return Component.empty();
     }
 
-    @Nullable
-    public Route getLocaleKey() {
-        return localeKey;
+    /**
+     * The locale-chain key this hint resolves through. Empty when the hint was configured
+     * with inline text instead, or on the unconfigured registry prototype.
+     *
+     * @return the locale key, or empty
+     */
+    @NotNull
+    public Optional<Route> getLocaleKey() {
+        return Optional.ofNullable(localeKey);
     }
 
-    @Nullable
-    public String getInlineText() {
-        return inlineText;
+    /**
+     * The inline MiniMessage text used when no {@code locale-key} was configured. Empty when
+     * the hint resolves through a locale key instead, or on the unconfigured registry prototype.
+     *
+     * @return the inline text, or empty
+     */
+    @NotNull
+    public Optional<String> getInlineText() {
+        return Optional.ofNullable(inlineText);
     }
 
     @NotNull

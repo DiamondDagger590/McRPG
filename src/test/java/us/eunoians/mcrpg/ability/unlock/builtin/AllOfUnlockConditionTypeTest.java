@@ -47,12 +47,12 @@ public class AllOfUnlockConditionTypeTest extends McRPGBaseTest {
         assertFalse(all.isMet(mock(SkillHolder.class)));
     }
 
-    @DisplayName("Given children with mixed progress, when getProgress, then it returns the min")
+    @DisplayName("Given children with mixed progress, when getProgress, then it returns the average")
     @Test
-    public void getProgress_returnsMinChildProgress() {
+    public void getProgress_returnsAverageChildProgress() {
         AllOfUnlockConditionType all = new AllOfUnlockConditionType(List.of(
                 fixedProgress(0.8), fixedProgress(0.3), fixedProgress(0.7)));
-        assertEquals(0.3, all.getProgress(mock(SkillHolder.class)), 0.001);
+        assertEquals(0.6, all.getProgress(mock(SkillHolder.class)), 0.001);
     }
 
     @DisplayName("Given a section missing 'conditions', when parsing, then it throws")

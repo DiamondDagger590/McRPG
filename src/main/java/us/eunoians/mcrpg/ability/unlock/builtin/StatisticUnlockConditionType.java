@@ -126,13 +126,13 @@ public final class StatisticUnlockConditionType implements UnlockConditionType {
     }
 
     /**
-     * Statistic key this condition targets, or {@code null} on the unconfigured prototype.
+     * Statistic key this condition targets. Empty on the unconfigured registry prototype.
      *
-     * @return the statistic key, or {@code null}
+     * @return the statistic key, or empty if unconfigured
      */
-    @Nullable
-    public NamespacedKey getStatisticKey() {
-        return statisticKey;
+    @NotNull
+    public Optional<NamespacedKey> getStatisticKey() {
+        return Optional.ofNullable(statisticKey);
     }
 
     /**

@@ -115,7 +115,7 @@ public class SkillLevelUnlockConditionTypeTest extends McRPGBaseTest {
         when(section.getInt("level")).thenReturn(250);
         SkillLevelUnlockConditionType parsed = (SkillLevelUnlockConditionType)
                 new SkillLevelUnlockConditionType().parseConfig(section);
-        assertEquals(SWORDS, parsed.getSkillKey());
+        assertEquals(SWORDS, parsed.getSkillKey().orElseThrow());
         assertEquals(250, parsed.getRequiredLevel());
     }
 
@@ -128,7 +128,7 @@ public class SkillLevelUnlockConditionTypeTest extends McRPGBaseTest {
         when(section.getInt("level")).thenReturn(100);
         SkillLevelUnlockConditionType parsed = (SkillLevelUnlockConditionType)
                 new SkillLevelUnlockConditionType().parseConfig(section);
-        assertEquals(SWORDS, parsed.getSkillKey());
+        assertEquals(SWORDS, parsed.getSkillKey().orElseThrow());
     }
 
     @DisplayName("Given the type, when calling getExpansionKey, then it returns McRPGExpansion key")

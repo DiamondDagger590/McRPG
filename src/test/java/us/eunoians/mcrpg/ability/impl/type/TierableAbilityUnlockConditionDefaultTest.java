@@ -37,7 +37,7 @@ public class TierableAbilityUnlockConditionDefaultTest extends McRPGBaseTest {
         List<UnlockConditionType> defaults = ability.getDefaultUnlockConditions();
         assertEquals(1, defaults.size());
         SkillLevelUnlockConditionType condition = assertInstanceOf(SkillLevelUnlockConditionType.class, defaults.get(0));
-        assertEquals(SWORDS, condition.getSkillKey());
+        assertEquals(SWORDS, condition.getSkillKey().orElseThrow());
         assertEquals(250, condition.getRequiredLevel());
     }
 

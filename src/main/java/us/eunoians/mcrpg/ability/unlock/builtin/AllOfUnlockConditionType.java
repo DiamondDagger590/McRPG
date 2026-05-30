@@ -77,11 +77,11 @@ public final class AllOfUnlockConditionType implements UnlockConditionType {
         if (children.isEmpty()) {
             return 0.0;
         }
-        double min = 1.0;
+        double sum = 0.0;
         for (UnlockConditionType child : children) {
-            min = Math.min(min, child.getProgress(holder));
+            sum += child.getProgress(holder);
         }
-        return min;
+        return sum / children.size();
     }
 
     @NotNull

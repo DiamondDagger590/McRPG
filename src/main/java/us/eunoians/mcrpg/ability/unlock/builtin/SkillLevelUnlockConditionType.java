@@ -109,13 +109,13 @@ public final class SkillLevelUnlockConditionType implements UnlockConditionType 
     }
 
     /**
-     * The skill key this condition targets, or {@code null} on the unconfigured prototype.
+     * The skill key this condition targets. Empty on the unconfigured registry prototype.
      *
-     * @return the skill key, or {@code null}
+     * @return the skill key, or empty if unconfigured
      */
-    @Nullable
-    public NamespacedKey getSkillKey() {
-        return skillKey;
+    @NotNull
+    public Optional<NamespacedKey> getSkillKey() {
+        return Optional.ofNullable(skillKey);
     }
 
     @NotNull

@@ -32,11 +32,11 @@ import java.util.logging.Logger;
  *       programmatic default}. The override is logged.</li>
  *   <li><b>Caching:</b> resolved lists are cached by ability {@link NamespacedKey}. The cache
  *       is the home for resolved config-state — ability singletons stay stateless.
- *       {@link #reload()} clears the cache; {@link #resolveAll()} repopulates it.</li>
+ *       {@link #reload()} clears and repopulates the cache.</li>
  *   <li><b>Recursive parsing:</b> {@link #parseSection(Section)} parses a single named-keyed
  *       map into a {@code List<UnlockConditionType>}. Used both at the top level and by
  *       composite types ({@code mcrpg:all_of} / {@code mcrpg:any_of}).</li>
- *   <li><b>Startup validation:</b> {@link #resolveAll()} runs once after types, abilities, and
+ *   <li><b>Startup validation:</b> {@link #reload()} runs once after types, abilities, and
  *       configs are loaded; abilities that resolve to zero met-able conditions <i>and</i> zero
  *       hints log a warning so server owners know the ability is undiscoverable.</li>
  * </ul>
@@ -44,8 +44,8 @@ import java.util.logging.Logger;
  * This is intentionally a manager-level cache rather than a {@code ReloadableContent} field on
  * each ability. {@code ReloadableContent} models a single {@code (YamlDocument, Route, callback)}
  * triple, but unlock-condition resolution is cross-cutting: it aggregates named sections from
- * multiple skill config files with per-ability Java-default fallbacks. The manager's
- * {@code reload()} / {@code resolveAll()} pair is the correct granularity.
+ * multiple skill config files with per-ability Java-default fallbacks. A single manager-level
+ * {@link #reload()} entry point is the correct granularity.
  */
 public class UnlockConditionManager extends Manager<McRPG> {
 
@@ -145,9 +145,11 @@ public class UnlockConditionManager extends Manager<McRPG> {
     /**
      * Clears the cache and then eagerly resolves every registered {@link UnlockableAbility},
      * repopulating the cache and emitting the empty-display startup warning for any ability
-     * whose resolved list is entirely empty (no real conditions and no hints).
+     * whose resolved list is entirely empty (no real conditions and no hints). Called once
+     * at bootstrap after types, abilities, and configs are registered, and again from the
+     * reload command after the file manager re-reads YAML.
      */
-    public void resolveAll() {
+    public void reload() {
         cache.clear();
         AbilityRegistry abilityRegistry = plugin().registryAccess()
                 .registry(McRPGRegistryKey.ABILITY);
@@ -164,15 +166,6 @@ public class UnlockConditionManager extends Manager<McRPG> {
                         + " a programmatic default.");
             }
         }
-    }
-
-    /**
-     * Clears the resolved-condition cache. Call from the reload flow so edited
-     * {@code unlock-conditions} sections take effect without restart. Callers that want the
-     * cache repopulated immediately should also call {@link #resolveAll()}.
-     */
-    public void reload() {
-        cache.clear();
     }
 
     /**

@@ -143,7 +143,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         // Warm the unlock-condition cache and emit the empty-display startup warnings
         // (see UnlockConditionManager). Runs after abilities, configs, and built-in types
         // are all registered.
-        registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.UNLOCK_CONDITION).resolveAll();
+        registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.UNLOCK_CONDITION).reload();
     }
 
     @Override

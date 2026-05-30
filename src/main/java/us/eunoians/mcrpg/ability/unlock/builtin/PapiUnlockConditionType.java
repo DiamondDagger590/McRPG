@@ -10,24 +10,24 @@ import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.exception.UnlockConditionParseException;
 import us.eunoians.mcrpg.ability.unlock.UnlockConditionType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.exception.UnlockConditionParseException;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
+import us.eunoians.mcrpg.util.compare.ComparisonOperator;
 
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
 /**
  * Unlock condition met when a PlaceholderAPI placeholder, resolved against the holder,
- * satisfies the configured comparison. Numeric placeholders use numeric comparison; otherwise
- * the comparison falls back to string equality.
+ * satisfies the configured comparison. Uses {@link ComparisonOperator} for the actual
+ * comparison logic, which is shared with other scripting surfaces.
  * <p>
  * PAPI is a soft dependency: when PAPI is absent, {@link McRPGMethods#applyPapi} returns the
  * input unchanged, and an unchanged-still-contains-{@code %} string is treated as "not met"
@@ -37,40 +37,8 @@ public final class PapiUnlockConditionType implements UnlockConditionType {
 
     public static final NamespacedKey KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "papi");
 
-    /** Supported comparison operators for the {@code operator} config key. */
-    public enum Operator {
-        GREATER_THAN_OR_EQUAL(">="),
-        GREATER_THAN(">"),
-        EQUAL("=="),
-        LESS_THAN_OR_EQUAL("<="),
-        LESS_THAN("<"),
-        NOT_EQUAL("!=");
-
-        private final String symbol;
-
-        Operator(@NotNull String symbol) {
-            this.symbol = symbol;
-        }
-
-        @NotNull
-        public String getSymbol() {
-            return symbol;
-        }
-
-        @NotNull
-        public static Operator fromSymbol(@NotNull String symbol) {
-            for (Operator op : values()) {
-                if (op.symbol.equals(symbol)) {
-                    return op;
-                }
-            }
-            throw new UnlockConditionParseException("Unknown PAPI operator '" + symbol
-                    + "'. Valid operators: >=, >, ==, <=, <, !=");
-        }
-    }
-
     private final String placeholder;
-    private final Operator operator;
+    private final ComparisonOperator operator;
     private final String value;
     private final Route localeKey;
     private final String inlineText;
@@ -79,7 +47,7 @@ public final class PapiUnlockConditionType implements UnlockConditionType {
         this(null, null, null, null, null);
     }
 
-    public PapiUnlockConditionType(@Nullable String placeholder, @Nullable Operator operator,
+    public PapiUnlockConditionType(@Nullable String placeholder, @Nullable ComparisonOperator operator,
                                    @Nullable String value, @Nullable Route localeKey,
                                    @Nullable String inlineText) {
         this.placeholder = placeholder;
@@ -109,6 +77,9 @@ public final class PapiUnlockConditionType implements UnlockConditionType {
         if (!section.contains("value")) {
             throw new UnlockConditionParseException("mcrpg:papi requires a 'value' key");
         }
+        ComparisonOperator parsedOperator = ComparisonOperator.fromSymbol(operatorRaw).orElseThrow(() ->
+                new UnlockConditionParseException("Unknown PAPI operator '" + operatorRaw
+                        + "'. Valid operators: >=, >, ==, <=, <, !="));
         String valueRaw = String.valueOf(section.get("value"));
         boolean hasKey = section.contains("locale-key");
         boolean hasText = section.contains("text");
@@ -118,8 +89,7 @@ public final class PapiUnlockConditionType implements UnlockConditionType {
         }
         Route customKey = hasKey ? Route.fromString(section.getString("locale-key")) : null;
         String customText = hasText ? section.getString("text") : null;
-        return new PapiUnlockConditionType(placeholderRaw, Operator.fromSymbol(operatorRaw),
-                valueRaw, customKey, customText);
+        return new PapiUnlockConditionType(placeholderRaw, parsedOperator, valueRaw, customKey, customText);
     }
 
     @Override
@@ -132,7 +102,7 @@ public final class PapiUnlockConditionType implements UnlockConditionType {
         if (resolved.equals(placeholder)) {
             return false;
         }
-        return compare(resolved, value, operator);
+        return operator.compare(resolved, value);
     }
 
     @NotNull
@@ -165,41 +135,5 @@ public final class PapiUnlockConditionType implements UnlockConditionType {
     @Override
     public Optional<NamespacedKey> getExpansionKey() {
         return Optional.of(McRPGExpansion.EXPANSION_KEY);
-    }
-
-    /**
-     * Compares two strings according to the operator. Numeric when both parse as numbers;
-     * otherwise string-based (only {@link Operator#EQUAL} and {@link Operator#NOT_EQUAL} are
-     * meaningful for non-numeric comparisons — other operators on non-numeric values return
-     * {@code false}).
-     */
-    private boolean compare(@NotNull String left, @NotNull String right, @NotNull Operator op) {
-        Double leftNum = tryParseDouble(left);
-        Double rightNum = tryParseDouble(right);
-        if (leftNum != null && rightNum != null) {
-            return switch (op) {
-                case GREATER_THAN_OR_EQUAL -> leftNum >= rightNum;
-                case GREATER_THAN -> leftNum > rightNum;
-                case EQUAL -> leftNum.doubleValue() == rightNum.doubleValue();
-                case LESS_THAN_OR_EQUAL -> leftNum <= rightNum;
-                case LESS_THAN -> leftNum < rightNum;
-                case NOT_EQUAL -> leftNum.doubleValue() != rightNum.doubleValue();
-            };
-        }
-        return switch (op) {
-            case EQUAL -> left.equalsIgnoreCase(right);
-            case NOT_EQUAL -> !left.equalsIgnoreCase(right);
-            default -> false;
-        };
-    }
-
-    @Nullable
-    private Double tryParseDouble(@NotNull String raw) {
-        try {
-            // Locale-independent parse; PAPI placeholder values are typically machine-formatted
-            return Double.parseDouble(raw.replace(",", "").trim().toLowerCase(Locale.ROOT));
-        } catch (NumberFormatException e) {
-            return null;
-        }
     }
 }
