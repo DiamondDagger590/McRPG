@@ -48,6 +48,7 @@ import us.eunoians.mcrpg.command.loadout.LoadoutCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutEditCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutSetCommand;
 import us.eunoians.mcrpg.command.quest.QuestCancelCommand;
+import us.eunoians.mcrpg.command.quest.QuestHistoryCommand;
 import us.eunoians.mcrpg.command.quest.QuestInfoCommand;
 import us.eunoians.mcrpg.command.quest.QuestListCommand;
 import us.eunoians.mcrpg.command.quest.QuestStartCommand;
@@ -104,6 +105,7 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         QuestCancelCommand.registerCommand();
         QuestListCommand.registerCommand();
         QuestInfoCommand.registerCommand();
+        QuestHistoryCommand.registerCommand();
         QuestAdminCompleteCommand.registerCommand();
         QuestAdminSetProgressCommand.registerCommand();
         QuestAdminRegistryCommand.registerCommand();

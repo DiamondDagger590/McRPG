@@ -19,9 +19,12 @@ import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -30,8 +33,6 @@ import java.util.Set;
  * Slot representing a single completed quest in the {@link QuestHistoryGui}.
  */
 public class CompletedQuestSlot implements McRPGSlot {
-
-    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("MMM dd, yyyy");
 
     private final CompletionRecord record;
 
@@ -70,9 +71,11 @@ public class CompletedQuestSlot implements McRPGSlot {
             displayRoute = LocalizationKey.QUEST_HISTORY_GUI_UNKNOWN_QUEST_SLOT_DISPLAY_ITEM;
         }
 
-        placeholders.put("completed_date", DATE_FORMAT.format(new Date(record.completedAt())));
-
         var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        Locale locale = localizationManager.getLocaleChain(mcRPGPlayer).getNodeValue();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+                .withLocale(locale).withZone(ZoneOffset.UTC);
+        placeholders.put("completed_date", dateFormatter.format(Instant.ofEpochMilli(record.completedAt())));
         ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, displayRoute))
                 .addPlaceholders(placeholders);
         itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());
