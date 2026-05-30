@@ -25,7 +25,7 @@ public class QuestChainPlayerState {
     private QuestChainState state;
     private int completionCount;
     private Long lastCompletedAt;
-    private boolean dirty;
+    private volatile boolean dirty;
 
     /**
      * Constructs a player chain state from database values. Nullable parameters are

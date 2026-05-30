@@ -21,7 +21,8 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
  * <p>
  * Hard-wipes all chain state and completion log for the target player. The player will
  * experience the chain as if for the first time. Delegates to
- * {@link QuestChainManager#resetChain(java.util.UUID, org.bukkit.NamespacedKey)}.
+ * {@link QuestChainManager#resetChain(java.util.UUID, org.bukkit.NamespacedKey, java.util.function.Consumer)},
+ * which reports success asynchronously via callback.
  */
 public class ChainResetCommand extends ChainAdminCommandBase {
 
@@ -59,17 +60,18 @@ public class ChainResetCommand extends ChainAdminCommandBase {
                     QuestChainManager chainManager = RegistryAccess.registryAccess()
                             .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
 
-                    boolean success = chainManager.resetChain(target.getUniqueId(), chain.getChainKey());
-                    if (success) {
-                        sender.sendMessage(mm.deserialize(
-                                "<green>Reset chain <white>" + chain.getChainKey()
-                                + "</white> for <white>" + target.getName() + "</white>."));
-                    } else {
-                        sender.sendMessage(mm.deserialize(
-                                "<red>Could not reset chain <white>" + chain.getChainKey()
-                                + "</white> for <white>" + target.getName()
-                                + "</white>. Player may be offline or the chain is currently active."));
-                    }
+                    chainManager.resetChain(target.getUniqueId(), chain.getChainKey(), success -> {
+                        if (success) {
+                            sender.sendMessage(mm.deserialize(
+                                    "<green>Reset chain <white>" + chain.getChainKey()
+                                    + "</white> for <white>" + target.getName() + "</white>."));
+                        } else {
+                            sender.sendMessage(mm.deserialize(
+                                    "<red>Could not reset chain <white>" + chain.getChainKey()
+                                    + "</white> for <white>" + target.getName()
+                                    + "</white>. Player may be offline or the chain was not found."));
+                        }
+                    });
                 }));
     }
 }

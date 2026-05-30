@@ -7,6 +7,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
@@ -50,6 +51,14 @@ public final class McRPGPlayerUnloadTask extends PlayerUnloadTask {
                  so we update it externally here.
                  */
                 mcRPGPlayer.savePlayerLogoutTime(connection);
+
+                // Flush any dirty chain states that haven't been persisted asynchronously yet.
+                // This runs synchronously on the DB executor thread (inside unloadPlayer) so
+                // we can safely open a connection and write before the player object is discarded.
+                QuestChainManager chainManager = getPlugin().registryAccess()
+                        .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
+                chainManager.getPersistenceService().flushChainStatesSync(
+                        connection, mcRPGPlayer.getUUID(), mcRPGPlayer.getChainData());
 
                 return true;
             } catch (SQLException e) {
