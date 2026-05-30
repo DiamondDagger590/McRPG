@@ -47,8 +47,27 @@ import java.util.stream.Collectors;
  */
 public class QuestChainManager extends Manager<McRPG> {
 
+    private final ChainPersistenceService persistenceService;
+
+    /**
+     * Creates a new chain manager.
+     *
+     * @param plugin the McRPG plugin instance
+     */
     public QuestChainManager(@NotNull McRPG plugin) {
         super(plugin);
+        this.persistenceService = new ChainPersistenceService(plugin);
+    }
+
+    /**
+     * Returns the persistence service used by this manager. Exposed for unload tasks
+     * that need to flush dirty states synchronously at logout.
+     *
+     * @return the chain persistence service
+     */
+    @NotNull
+    public ChainPersistenceService getPersistenceService() {
+        return persistenceService;
     }
 
     /**
@@ -115,8 +134,6 @@ public class QuestChainManager extends Manager<McRPG> {
         QuestChainPlayerState newState = QuestChainPlayerState.newActive(chainKey, firstStep.questKey());
         chainData.putChainState(newState);
 
-        Bukkit.getPluginManager().callEvent(new QuestChainStartEvent(definition, player, firstStep));
-
         QuestManager questManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST);
         Optional<QuestInstance> instance = questManager.startQuest(firstQuestDefOpt.get(),
@@ -129,9 +146,10 @@ public class QuestChainManager extends Manager<McRPG> {
             return false;
         }
 
-        plugin().getLogger().info("[QuestChainManager] Started chain '" + chainKey
+        Bukkit.getPluginManager().callEvent(new QuestChainStartEvent(definition, player, firstStep));
+        plugin().getLogger().fine("[QuestChainManager] Started chain '" + chainKey
                 + "' for player " + player.getUniqueId() + " at step '" + firstStep.questKey() + "'");
-        saveChainStateAsync(player.getUniqueId(), newState);
+        persistenceService.saveChainStateAsync(player.getUniqueId(), newState);
         return true;
     }
 
@@ -209,8 +227,7 @@ public class QuestChainManager extends Manager<McRPG> {
                 return;
             }
 
-            logCompletedStepAsync(playerUUID, chainKey, completedQuestKey, state.getCompletionCount() + 1);
-
+            int completionNumber = state.getCompletionCount() + 1;
             QuestChainStep completedStep = definition.getStep(completedQuestKey).orElse(
                     QuestChainStep.simple(completedQuestKey));
             state.advance(nextStep.questKey());
@@ -219,21 +236,20 @@ public class QuestChainManager extends Manager<McRPG> {
                 Bukkit.getPluginManager().callEvent(
                         new QuestChainStepAdvanceEvent(definition, player, completedStep, nextStep));
             }
-            plugin().getLogger().info("[QuestChainManager] Advanced chain '" + chainKey
+            plugin().getLogger().fine("[QuestChainManager] Advanced chain '" + chainKey
                     + "' for player " + playerUUID + " to step '" + nextStep.questKey() + "'");
-            saveChainStateAsync(playerUUID, state);
+            persistenceService.persistAdvancementAsync(playerUUID, state, chainKey, completedQuestKey, completionNumber);
 
         } else {
-            logCompletedStepAsync(playerUUID, chainKey, completedQuestKey, state.getCompletionCount() + 1);
-
-            state.complete(System.currentTimeMillis());
+            int completionNumber = state.getCompletionCount() + 1;
+            state.complete(plugin().getTimeProvider().now().toEpochMilli());
             if (player != null) {
                 Bukkit.getPluginManager().callEvent(
                         new QuestChainCompleteEvent(definition, player, state.getCompletionCount()));
             }
-            plugin().getLogger().info("[QuestChainManager] Completed chain '" + chainKey
+            plugin().getLogger().fine("[QuestChainManager] Completed chain '" + chainKey
                     + "' for player " + playerUUID + " (completion #" + state.getCompletionCount() + ")");
-            saveChainStateAsync(playerUUID, state);
+            persistenceService.persistAdvancementAsync(playerUUID, state, chainKey, completedQuestKey, completionNumber);
         }
     }
 
@@ -308,7 +324,7 @@ public class QuestChainManager extends Manager<McRPG> {
             QuestChainStep firstStep = definition.getSteps().get(0);
             Player player = Bukkit.getPlayer(playerUUID);
             if (player != null && startStepForPlayer(definition, firstStep, player, stateOpt.get())) {
-                saveChainStateAsync(playerUUID, stateOpt.get());
+                persistenceService.saveChainStateAsync(playerUUID, stateOpt.get());
                 callback.accept(true);
             } else {
                 callback.accept(false);
@@ -342,12 +358,12 @@ public class QuestChainManager extends Manager<McRPG> {
                 if (firstUncompleted.isPresent()) {
                     boolean started = player != null && startStepForPlayer(definition, firstUncompleted.get(), player, state);
                     if (started) {
-                        saveChainStateAsync(playerUUID, state);
+                        persistenceService.saveChainStateAsync(playerUUID, state);
                     }
                     callback.accept(started);
                 } else {
-                    state.complete(System.currentTimeMillis());
-                    saveChainStateAsync(playerUUID, state);
+                    state.complete(plugin().getTimeProvider().now().toEpochMilli());
+                    persistenceService.saveChainStateAsync(playerUUID, state);
                     callback.accept(false);
                 }
             });
@@ -357,40 +373,56 @@ public class QuestChainManager extends Manager<McRPG> {
     /**
      * Hard-resets a player's chain state — clears chain state and completion log entries.
      * The player experiences the chain as if they have never started it.
+     * The result is delivered asynchronously via {@code callback} on the main thread
+     * once the DB delete has completed.
      *
      * @param playerUUID the player UUID
      * @param chainKey   the chain definition key
-     * @return {@code true} if the reset succeeded
+     * @param callback   invoked on the main thread with {@code true} if the reset succeeded
      */
-    public boolean resetChain(@NotNull UUID playerUUID, @NotNull NamespacedKey chainKey) {
+    public void resetChain(@NotNull UUID playerUUID, @NotNull NamespacedKey chainKey,
+                           @NotNull Consumer<Boolean> callback) {
         Optional<McRPGPlayer> mcRPGPlayerOpt = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.PLAYER).getPlayer(playerUUID);
         if (mcRPGPlayerOpt.isEmpty()) {
-            return false;
+            callback.accept(false);
+            return;
         }
         McRPGPlayer mcRPGPlayer = mcRPGPlayerOpt.get();
         QuestChainPlayerData chainData = mcRPGPlayer.getChainData();
         Optional<QuestChainPlayerState> stateOpt = chainData.getChainState(chainKey);
         if (stateOpt.isEmpty()) {
-            return false;
+            callback.accept(false);
+            return;
         }
         cancelActiveChainQuestIfExists(playerUUID, stateOpt.get());
         chainData.removeChainState(chainKey);
 
+        persistenceService.cancelPendingSave(playerUUID);
+
         var database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
+            boolean success;
             try (Connection connection = database.getConnection()) {
                 QuestChainStateDAO.deleteChainState(connection, playerUUID, chainKey);
                 QuestChainCompletionLogDAO.deleteForChain(connection, playerUUID, chainKey.toString());
+                success = true;
             } catch (SQLException e) {
                 plugin().getLogger().log(Level.SEVERE,
                         "[QuestChainManager] Failed to reset chain '" + chainKey
                                 + "' for player " + playerUUID, e);
+                success = false;
             }
+            boolean finalSuccess = success;
+            Bukkit.getScheduler().runTask(plugin(), () -> {
+                if (finalSuccess) {
+                    plugin().getLogger().fine("[QuestChainManager] Reset chain '" + chainKey
+                            + "' for player " + playerUUID);
+                }
+                callback.accept(finalSuccess);
+            });
         });
-        plugin().getLogger().info("[QuestChainManager] Reset chain '" + chainKey + "' for player " + playerUUID);
-        return true;
     }
 
     /**
@@ -414,10 +446,10 @@ public class QuestChainManager extends Manager<McRPG> {
         NamespacedKey chainKey = chainKeyOpt.get();
         chainData.getChainState(chainKey).ifPresent(state -> {
             state.abandon();
-            plugin().getLogger().info("[QuestChainManager] Chain '" + chainKey
+            plugin().getLogger().fine("[QuestChainManager] Chain '" + chainKey
                     + "' abandoned for player " + playerUUID
                     + " — quest '" + cancelledQuestKey + "' was cancelled");
-            saveChainStateAsync(playerUUID, state);
+            persistenceService.saveChainStateAsync(playerUUID, state);
         });
     }
 
@@ -458,10 +490,10 @@ public class QuestChainManager extends Manager<McRPG> {
                         + expireAction + "' — defaulting to fail-chain");
             }
             state.fail();
-            plugin().getLogger().info("[QuestChainManager] Chain '" + chainKey
+            plugin().getLogger().fine("[QuestChainManager] Chain '" + chainKey
                     + "' failed for player " + playerUUID + " — quest '" + expiredQuestKey
                     + "' expired (on-quest-expire: fail-chain)");
-            saveChainStateAsync(playerUUID, state);
+            persistenceService.saveChainStateAsync(playerUUID, state);
         });
     }
 
@@ -586,15 +618,15 @@ public class QuestChainManager extends Manager<McRPG> {
                     continue;
                 }
                 state.resetToStep(step.questKey());
-                plugin().getLogger().info("[QuestChainManager] Re-resolved chain '" + chainKey
+                plugin().getLogger().fine("[QuestChainManager] Re-resolved chain '" + chainKey
                         + "' for player " + playerUUID + ": advanced to step '" + step.questKey()
                         + "' (previous step removed)");
-                saveChainStateAsync(playerUUID, state);
+                persistenceService.saveChainStateAsync(playerUUID, state);
             } else {
-                state.complete(System.currentTimeMillis());
-                plugin().getLogger().info("[QuestChainManager] Re-resolved chain '" + chainKey
+                state.complete(plugin().getTimeProvider().now().toEpochMilli());
+                plugin().getLogger().fine("[QuestChainManager] Re-resolved chain '" + chainKey
                         + "' for player " + playerUUID + ": all steps completed, marking COMPLETED");
-                saveChainStateAsync(playerUUID, state);
+                persistenceService.saveChainStateAsync(playerUUID, state);
             }
         }
         chainData.rebuildQuestKeyIndex();
@@ -625,39 +657,15 @@ public class QuestChainManager extends Manager<McRPG> {
     }
 
     /**
-     * Persists a chain state asynchronously via the database executor. Snapshots the current
-     * state values before submitting to avoid read/write races. Only clears the dirty flag
-     * on successful write.
+     * Persists a chain state asynchronously. Delegates to {@link ChainPersistenceService}
+     * which serializes writes per-player and clears the dirty flag on the main thread after
+     * a successful write.
      *
      * @param playerUUID the player UUID
      * @param state      the chain state to persist
      */
     public void saveChainStateAsync(@NotNull UUID playerUUID, @NotNull QuestChainPlayerState state) {
-        NamespacedKey chainKey = state.getChainKey();
-        QuestChainState chainState = state.getState();
-        int completionCount = state.getCompletionCount();
-        Optional<NamespacedKey> currentQuestKey = state.getCurrentQuestKey();
-        Optional<Long> lastCompletedAt = state.getLastCompletedAt();
-
-        QuestChainPlayerState snapshot = new QuestChainPlayerState(
-                chainKey,
-                currentQuestKey.orElse(null),
-                chainState,
-                completionCount,
-                lastCompletedAt.orElse(null));
-
-        var database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.DATABASE).getDatabase();
-        database.getDatabaseExecutorService().submit(() -> {
-            try (Connection connection = database.getConnection()) {
-                QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot);
-                state.clearDirty();
-            } catch (SQLException e) {
-                plugin().getLogger().log(Level.SEVERE,
-                        "[QuestChainManager] Failed to save chain state for player " + playerUUID +
-                                ", chain " + chainKey, e);
-            }
-        });
+        persistenceService.saveChainStateAsync(playerUUID, state);
     }
 
     /**
@@ -747,30 +755,4 @@ public class QuestChainManager extends Manager<McRPG> {
         return false;
     }
 
-    /**
-     * Logs a completed chain step asynchronously via the database executor.
-     *
-     * @param playerUUID       the player UUID
-     * @param chainKey         the chain key
-     * @param completedQuestKey the quest key that was completed
-     * @param completionNumber the completion number (1 = first run)
-     */
-    private void logCompletedStepAsync(@NotNull UUID playerUUID,
-                                        @NotNull NamespacedKey chainKey,
-                                        @NotNull NamespacedKey completedQuestKey,
-                                        int completionNumber) {
-        long completedAt = System.currentTimeMillis();
-        var database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.DATABASE).getDatabase();
-        database.getDatabaseExecutorService().submit(() -> {
-            try (Connection connection = database.getConnection()) {
-                QuestChainCompletionLogDAO.logCompletion(connection, playerUUID,
-                        chainKey.toString(), completedQuestKey.toString(), completedAt, completionNumber);
-            } catch (SQLException e) {
-                plugin().getLogger().log(Level.SEVERE,
-                        "[QuestChainManager] Failed to log completed step '" + completedQuestKey
-                                + "' for chain '" + chainKey + "', player " + playerUUID, e);
-            }
-        });
-    }
 }
