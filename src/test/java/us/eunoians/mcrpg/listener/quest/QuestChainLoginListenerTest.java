@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -67,7 +69,7 @@ public class QuestChainLoginListenerTest extends McRPGBaseTest {
 
         server.getPluginManager().callEvent(new PlayerLoadEvent(mcRPGPlayer));
 
-        verify(mockChainManager).reResolveOnLogin(eq(uuid));
+        verify(mockChainManager).reResolveOnLogin(eq(uuid), any(Runnable.class));
     }
 
     @DisplayName("Given a login chain registered, when PlayerLoadEvent fires, then tryStartChain is called for that chain")
@@ -85,6 +87,13 @@ public class QuestChainLoginListenerTest extends McRPGBaseTest {
         McRPGPlayer mcRPGPlayer = mock(McRPGPlayer.class);
         when(mcRPGPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(playerMock));
         when(mcRPGPlayer.getUUID()).thenReturn(playerMock.getUniqueId());
+
+        // Invoke the completion callback so the login trigger evaluation runs
+        doAnswer(invocation -> {
+            Runnable onComplete = invocation.getArgument(1);
+            onComplete.run();
+            return null;
+        }).when(mockChainManager).reResolveOnLogin(eq(playerMock.getUniqueId()), any(Runnable.class));
 
         server.getPluginManager().callEvent(new PlayerLoadEvent(mcRPGPlayer));
 

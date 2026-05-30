@@ -49,7 +49,26 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
     RegistryKey<RewardDistributionTypeRegistry> REWARD_DISTRIBUTION_TYPE = create(RewardDistributionTypeRegistry.class);
     RegistryKey<ScopedBoardAdapterRegistry> SCOPED_BOARD_ADAPTER = create(ScopedBoardAdapterRegistry.class);
     RegistryKey<TemplateConditionRegistry> TEMPLATE_CONDITION = create(TemplateConditionRegistry.class);
+    /**
+     * Retrieves the {@link QuestChainRegistry} containing all registered
+     * {@link us.eunoians.mcrpg.quest.chain.QuestChainDefinition} blueprints.
+     * <p>
+     * Chain definitions are loaded from YAML via {@code QuestChainConfigLoader} and registered
+     * during startup. Third-party chains can be registered via
+     * {@link us.eunoians.mcrpg.expansion.content.QuestChainContentPack} in a
+     * {@link us.eunoians.mcrpg.expansion.ContentExpansion}.
+     */
     RegistryKey<QuestChainRegistry> QUEST_CHAIN = create(QuestChainRegistry.class);
+
+    /**
+     * Retrieves the {@link ChainAutoStartTriggerRegistry} containing all registered
+     * {@link us.eunoians.mcrpg.quest.chain.trigger.ChainAutoStartTrigger} types.
+     * <p>
+     * Built-in triggers: {@code mcrpg:manual}, {@code mcrpg:first_join}, {@code mcrpg:login}.
+     * Third-party triggers can be registered via
+     * {@link us.eunoians.mcrpg.expansion.content.ChainAutoStartTriggerContentPack} in a
+     * {@link us.eunoians.mcrpg.expansion.ContentExpansion}.
+     */
     RegistryKey<ChainAutoStartTriggerRegistry> CHAIN_AUTO_START_TRIGGER = create(ChainAutoStartTriggerRegistry.class);
 
     /**

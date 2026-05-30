@@ -48,5 +48,12 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
     ManagerKey<ComboManager> COMBO = create(ComboManager.class);
     /** Retrieves the {@link McRPGStatisticCacheManager} used to cache offline player statistic lookups. */
     ManagerKey<McRPGStatisticCacheManager> STATISTIC_CACHE = create(McRPGStatisticCacheManager.class);
+    /**
+     * Retrieves the {@link QuestChainManager} responsible for the full quest chain lifecycle:
+     * starting, advancing, completing, abandoning, failing, restarting, and resetting chains.
+     * <p>
+     * All state-mutating operations run on the main Bukkit thread; DAO reads run on the database
+     * executor thread and deliver results back to the main thread via the Bukkit scheduler.
+     */
     ManagerKey<QuestChainManager> QUEST_CHAIN = create(QuestChainManager.class);
 }

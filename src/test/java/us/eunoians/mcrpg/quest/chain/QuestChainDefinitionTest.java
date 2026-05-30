@@ -61,20 +61,20 @@ public class QuestChainDefinitionTest extends McRPGBaseTest {
         assertEquals("test_chain", def.getDisplayName());
     }
 
-    @DisplayName("Given a quest key in the steps, When findStepByQuestKey is called, Then it returns the correct step")
+    @DisplayName("Given a quest key in the steps, When getStep is called, Then it returns the correct step")
     @Test
-    public void findStepByQuestKey_returnsStep_whenKeyExists() {
+    public void getStep_returnsStep_whenKeyExists() {
         var def = buildThreeStepChain();
-        var result = def.findStepByQuestKey(questKeyB);
+        var result = def.getStep(questKeyB);
         assertTrue(result.isPresent());
         assertEquals(questKeyB, result.get().questKey());
     }
 
-    @DisplayName("Given a quest key not in the steps, When findStepByQuestKey is called, Then it returns empty")
+    @DisplayName("Given a quest key not in the steps, When getStep is called, Then it returns empty")
     @Test
-    public void findStepByQuestKey_returnsEmpty_whenKeyNotFound() {
+    public void getStep_returnsEmpty_whenKeyNotFound() {
         var def = buildThreeStepChain();
-        assertTrue(def.findStepByQuestKey(new NamespacedKey("mcrpg", "unknown_quest")).isEmpty());
+        assertTrue(def.getStep(new NamespacedKey("mcrpg", "unknown_quest")).isEmpty());
     }
 
     @DisplayName("Given a quest key in the steps, When getStepIndex is called, Then it returns the correct index")

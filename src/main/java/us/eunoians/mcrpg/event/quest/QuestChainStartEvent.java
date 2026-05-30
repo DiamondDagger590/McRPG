@@ -58,6 +58,17 @@ public class QuestChainStartEvent extends Event {
     }
 
     /**
+     * Gets the UUID of the player for whom the chain started.
+     * Convenience accessor for cases where the UUID is needed without the live {@link Player} reference.
+     *
+     * @return the player UUID
+     */
+    @NotNull
+    public java.util.UUID getPlayerUUID() {
+        return player.getUniqueId();
+    }
+
+    /**
      * Gets the first step of the started chain.
      *
      * @return the first chain step
