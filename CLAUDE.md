@@ -244,6 +244,27 @@ src/main/java/us/eunoians/mcrpg/
 | **QuestRewardType** | Extensible interface defining how a specific reward is granted (e.g., `CommandRewardType`, `ExperienceRewardType`, `AbilityUpgradeRewardType`). Registered in `QuestRewardTypeRegistry`. Extensible via `QuestRewardTypeContentPack`. |
 | **PendingReward** | A serialized reward queued for a player who was offline at the time of grant. Stored in the DB and granted at next login; expires after a configurable duration. |
 
+### Quest Chain System
+
+| Term | Meaning |
+|------|---------|
+| **QuestChainDefinition** | Immutable blueprint for an ordered sequence of quests. Holds steps, auto-start trigger, repeat mode, optional expiration, and display metadata. Registered in `QuestChainRegistry`. |
+| **QuestChainStep** | A single step in a chain — pairs a `questKey` with an `on-quest-expire` behavior string. Constructed via `QuestChainStep.simple(key)` or the YAML config loader. |
+| **QuestChainPlayerState** | Mutable per-player runtime state for a single chain: current quest key, `QuestChainState`, completion count, and last-completed-at timestamp. Carries a dirty flag for async flush. |
+| **QuestChainPlayerData** | Container on `McRPGPlayer` holding all `QuestChainPlayerState` instances. Maintains a reverse index (`questKey → chainKey`) for O(1) chain lookup on quest completion. |
+| **QuestChainState** | Enum: `ACTIVE`, `COMPLETED`, `ABANDONED`, `FAILED`, `EXPIRED`. Terminal states (`isTerminal()`) and repeat-eligible states (`isRepeatEligible()`) are disjoint groups. |
+| **QuestChainRepeatMode** | Enum: `ONCE`, `UNLIMITED`, `LIMITED`, `COOLDOWN`, `COOLDOWN_LIMITED`. Only `ONCE` is currently enforced — see `chain-system-backlog.md` for the others. |
+| **QuestChainManager** | Central manager: starts, advances, force-advances, restarts, and resets chains. Delegates persistence to `ChainPersistenceService` and quest starts to `ChainQuestStarter`. Accessed via `McRPGManagerKey.QUEST_CHAIN`. |
+| **ChainPersistenceService** | Collaborator owned by `QuestChainManager` that serializes async DB writes per player using a `CompletableFuture` chain. Prevents concurrent mutations to the same player's chain rows. |
+| **ChainQuestStarter** | Collaborator owned by `QuestChainManager` that resolves a `QuestDefinition` from the registry and delegates to `QuestManager` to start the step's quest instance. |
+| **ChainAutoStartTrigger** | Extensible interface defining when a chain should auto-start for a player. Registered in `ChainAutoStartTriggerRegistry`. Built-in: `LoginChainAutoStartTrigger`. |
+| **QuestChainStartCondition** | `@ApiStatus.Experimental` interface for gating chain start. Not yet wired into `QuestChainManager` — see backlog. |
+| **QuestChainAbandonEvent** | Fired when a chain is abandoned (player cancelled the current step quest). Non-cancellable; `player` may be null if offline. |
+| **QuestChainFailEvent** | Fired when a chain fails (current step expired with `fail-chain` behavior). Non-cancellable; `player` may be null if offline. |
+| **QuestChainCompleteEvent** | Fired when all chain steps complete. Includes `completionCount` for repeat tracking. |
+| **QuestChainStartEvent** | Fired when a chain starts for a player and the first step quest is launched. |
+| **QuestChainStepAdvanceEvent** | Fired when a chain advances from one step to the next (intermediate completion). |
+
 ---
 
 ## Architecture Overview
@@ -631,6 +652,9 @@ Use a builder when a class meets **any** of these criteria:
 - New utility classes and non-Bukkit logic belong in `src/test/java/` (mirrors main package structure)
 - Extend `McRPGBaseTest` for any test that requires Bukkit or MockBukkit setup
 - Shared test helpers and fixtures go in `src/testFixtures/java/`
+- **Annotation ordering:** always place `@Test` before `@DisplayName` on test methods — not the reverse
+- **Filesystem helpers:** use `TestFileUtils.writeFile(Path, String, String)` and `TestFileUtils.deleteRecursively(File)` (in `src/testFixtures/`) instead of duplicating these helpers in individual test classes
+- **DAO tests:** mock the JDBC `Connection`, `PreparedStatement`, and `ResultSet` via Mockito — do not embed real database connections in unit tests
 - **The entire test suite must pass before a task is considered complete** — run `./gradlew verifiedShadowJar` (or `./gradlew test`) and verify zero failures across all test classes, not just tests related to the current change. Regressions in unrelated tests still block completion.
 
 ---
@@ -847,6 +871,7 @@ After any commit or PR that introduces one of the following, **update `CLAUDE.md
 | New concurrency anti-pattern found (thread boundary, race, future handling) | `persona-concurrency.mdc` + `.claude/commands/review-concurrency.md` + `core.mdc` |
 | CI review file-pattern for a new domain | `.github/workflows/pr-review.yml` detect-changes step |
 | Quest board system changed (new condition, distribution type, template feature) | `CLAUDE.md` Quest Board System section + `quest-board-system.mdc` |
+| Quest chain system changed (new trigger type, repeat mode enforced, chain event added) | `CLAUDE.md` Quest Chain System terminology + `chain-system-backlog.md` |
 | Mana balance parameters changed (pool size, regen rate, bucket ranges) | `CLAUDE.md` Mana Balance Philosophy section + `mana-balance-philosophy.mdc` + `core.mdc` |
 | GUI color palette changed (new role, hex value, usage rule) | `PALETTE.md` + `core.mdc` GUI Color Palette section + `docs/hld/gui-ux-system.md` |
 
