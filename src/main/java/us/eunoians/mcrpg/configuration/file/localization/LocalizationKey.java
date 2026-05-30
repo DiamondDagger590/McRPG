@@ -431,6 +431,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_CHAIN_HISTORY_GUI_EMPTY_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "empty-state"));
     public static final Route QUEST_CHAIN_HISTORY_GUI_CHAIN_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "chain-slot.display-item"));
     public static final Route QUEST_CHAIN_HISTORY_GUI_STEP_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "step-slot.display-item"));
+    public static final Route QUEST_CHAIN_HISTORY_GUI_UNKNOWN_STEP_MESSAGE = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "unknown-step-message"));
     public static final Route QUEST_CHAIN_HISTORY_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "previous-gui-button.display-item"));
 
     // Quest History GUI

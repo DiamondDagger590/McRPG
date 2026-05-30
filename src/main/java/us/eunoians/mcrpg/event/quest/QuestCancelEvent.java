@@ -92,12 +92,17 @@ public class QuestCancelEvent extends QuestEvent {
 
     /**
      * Gets the key of the quest definition that was cancelled.
+     * Falls back to the quest instance's key if the definition reference is {@code null}
+     * (i.e. the event was created via the deprecated single-argument constructor).
      *
      * @return the quest definition key
      */
     @NotNull
     public NamespacedKey getQuestDefinitionKey() {
-        return questDefinition.getQuestKey();
+        if (questDefinition != null) {
+            return questDefinition.getQuestKey();
+        }
+        return getQuestInstance().getQuestKey();
     }
 
     @NotNull

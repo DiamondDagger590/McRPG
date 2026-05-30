@@ -1570,6 +1570,8 @@ gui:
           - "<body>Completed: <primary><completed_date>"
           - ""
           - "<hint>Click <body>to view quest details."
+    # Shown when a step's quest definition is no longer registered
+    unknown-step-message: "<warning>This quest is no longer available."
     previous-gui-button:
       display-item:
         material: BARRIER
