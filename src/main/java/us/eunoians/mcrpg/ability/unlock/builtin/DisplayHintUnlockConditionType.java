@@ -8,7 +8,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.ability.unlock.UnlockConditionParseException;
+import us.eunoians.mcrpg.exception.UnlockConditionParseException;
 import us.eunoians.mcrpg.ability.unlock.UnlockConditionType;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;

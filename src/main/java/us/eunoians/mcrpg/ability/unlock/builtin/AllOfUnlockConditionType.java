@@ -7,7 +7,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.unlock.UnlockConditionManager;
-import us.eunoians.mcrpg.ability.unlock.UnlockConditionParseException;
+import us.eunoians.mcrpg.exception.UnlockConditionParseException;
 import us.eunoians.mcrpg.ability.unlock.UnlockConditionType;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;

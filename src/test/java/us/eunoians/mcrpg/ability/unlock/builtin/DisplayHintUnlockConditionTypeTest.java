@@ -5,7 +5,7 @@ import dev.dejvokep.boostedyaml.route.Route;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
-import us.eunoians.mcrpg.ability.unlock.UnlockConditionParseException;
+import us.eunoians.mcrpg.exception.UnlockConditionParseException;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 

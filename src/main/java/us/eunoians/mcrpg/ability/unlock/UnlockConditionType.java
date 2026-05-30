@@ -56,7 +56,7 @@ public interface UnlockConditionType extends McRPGContent {
      *
      * @param section the config section for this entry
      * @return a configured instance of the same concrete type
-     * @throws UnlockConditionParseException if the section is missing required keys or
+     * @throws us.eunoians.mcrpg.exception.UnlockConditionParseException if the section is missing required keys or
      *         contains invalid values
      */
     @NotNull

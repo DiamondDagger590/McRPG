@@ -11,11 +11,11 @@ import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
+import us.eunoians.mcrpg.exception.UnlockConditionParseException;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,6 +72,18 @@ public class UnlockConditionManager extends Manager<McRPG> {
         return cache.computeIfAbsent(ability.getAbilityKey(), key -> resolveUncached(ability, key));
     }
 
+    /**
+     * Performs the actual resolution for a single ability without consulting the cache.
+     * Checks the ability's YAML config for an {@code unlock-conditions} section first; if
+     * present and non-empty it fully replaces the programmatic default (with a warning when
+     * a default existed). Otherwise falls back to
+     * {@link UnlockableAbility#getDefaultUnlockConditions()}.
+     *
+     * @param ability the ability to resolve conditions for
+     * @param key     the ability's namespaced key (passed separately because
+     *                {@code computeIfAbsent} already extracted it)
+     * @return an immutable list of resolved conditions
+     */
     @NotNull
     private List<UnlockConditionType> resolveUncached(@NotNull UnlockableAbility ability, @NotNull NamespacedKey key) {
         Optional<Section> sectionOptional = getUnlockConditionsSection(ability);
@@ -131,11 +143,12 @@ public class UnlockConditionManager extends Manager<McRPG> {
     }
 
     /**
-     * Eagerly resolves every registered {@link UnlockableAbility}, populating the cache and
-     * emitting the empty-display startup warning for any ability whose resolved list is
-     * entirely empty (no real conditions and no hints).
+     * Clears the cache and then eagerly resolves every registered {@link UnlockableAbility},
+     * repopulating the cache and emitting the empty-display startup warning for any ability
+     * whose resolved list is entirely empty (no real conditions and no hints).
      */
     public void resolveAll() {
+        cache.clear();
         AbilityRegistry abilityRegistry = plugin().registryAccess()
                 .registry(McRPGRegistryKey.ABILITY);
         for (NamespacedKey abilityKey : abilityRegistry.getAllAbilities()) {
@@ -162,6 +175,16 @@ public class UnlockConditionManager extends Manager<McRPG> {
         cache.clear();
     }
 
+    /**
+     * Looks up the {@code unlock-conditions} YAML section for the given ability. Only
+     * {@link ConfigurableAbility} instances have a YAML document to query; non-configurable
+     * abilities return empty. The ability key's underscores are replaced with hyphens to
+     * match the YAML convention used by all skill config files (e.g. ability key
+     * {@code deeper_wound} maps to config section {@code deeper-wound}).
+     *
+     * @param ability the ability whose config section to locate
+     * @return the section if it exists, otherwise empty
+     */
     @NotNull
     private Optional<Section> getUnlockConditionsSection(@NotNull UnlockableAbility ability) {
         if (!(ability instanceof ConfigurableAbility configurable)) {
