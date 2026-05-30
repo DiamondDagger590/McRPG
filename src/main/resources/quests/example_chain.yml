@@ -24,15 +24,17 @@ chains:
 
     # Optional: controls whether the chain can be repeated after completion.
     # Values: once (default), unlimited, cooldown, limited, cooldown-limited
-    # Only "once" is functional initially.
+    # Note: only 'once' is currently enforced. Other modes are reserved for future use.
     repeat-mode: once
 
     # Required: ordered list of steps. Each step references a quest definition.
     # Step order is determined by YAML map key order.
     steps:
       example_step:
-        # Required: quest definition key that this step starts
-        quest: mcrpg:example_quest
+        # Required: quest definition key that this step starts.
+        # Must match a quest key defined in a quest file (quests/ directory).
+        # The quest 'mcrpg:example_mining' is defined in example_quest.yml.
+        quest: mcrpg:example_mining
         # Optional: what happens when this step's quest expires
         # Values: fail-chain (default). Other values reserved for future use.
         # on-quest-expire: fail-chain

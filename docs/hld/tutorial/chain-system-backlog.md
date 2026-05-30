@@ -350,6 +350,24 @@ Quest reward types from 'mcrpg':
 
 ---
 
+## 13. Tutorial Chain Bypass Permission (`mcrpg.tutorial.bypass`)
+
+**Summary:** `plugin.yml` declares the `mcrpg.tutorial.bypass` permission (default: op) but it is not yet wired to any behavior. The intent is that players or groups with this permission should skip or bypass tutorial chains that fire via the `mcrpg:first_join` trigger (and optionally `mcrpg:login` trigger). Granting this permission currently has no effect.
+
+### Design
+
+- `QuestChainFirstJoinListener` checks `player.hasPermission("mcrpg.tutorial.bypass")` before evaluating first-join chains. If the player has the permission, the listener skips chain evaluation for chains whose `auto-start.trigger` is `mcrpg:first_join`.
+- Optionally, a chain YAML flag `bypassable: true` gates whether the bypass permission applies. Chains not marked `bypassable` are evaluated regardless of the bypass permission — this allows mandatory onboarding chains to coexist with optional tutorial chains.
+- A second approach: tag chains via `bypass-permission: mcrpg.tutorial.bypass` in YAML, which is more flexible but requires schema additions.
+
+### Implementation Notes
+
+- Change `QuestChainFirstJoinListener` to check `player.hasPermission("mcrpg.tutorial.bypass")` before iterating first-join chains.
+- Consider a `QuestChainDefinition.isBypassable()` flag (default: false) so server owners control which chains respect the bypass permission.
+- Update `plugin.yml` description to remove the "unimplemented" note once wired.
+
+---
+
 ## Issue Cutting Guide
 
 Each numbered section above maps to one GitHub issue. Suggested labels and dependencies:
@@ -368,3 +386,4 @@ Each numbered section above maps to one GitHub issue. Suggested labels and depen
 | 10 | Quest reload — active instance reconciliation | `bug`, `quest`, `reload` | None (independent) |
 | 11 | Quest reload — finished quest cache invalidation | `bug`, `quest`, `reload` | None (independent) |
 | 12 | Ability unregistration reversibility on reload | `bug`, `ability`, `reload` | None (independent) |
+| 13 | Wire `mcrpg.tutorial.bypass` permission into first-join chain logic | `feature`, `quest-chain`, `permissions` | Phase 2 complete |
