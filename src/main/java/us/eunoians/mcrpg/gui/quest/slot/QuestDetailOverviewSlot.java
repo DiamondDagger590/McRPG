@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.database.table.quest.CompletionRecord;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.quest.QuestDetailGui;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
@@ -21,6 +22,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -32,9 +34,6 @@ import java.util.Set;
  * showing quest name, state, and timing information.
  */
 public class QuestDetailOverviewSlot implements McRPGSlot {
-
-    private static final DateTimeFormatter DATE_FORMAT =
-            DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm", Locale.ROOT).withZone(ZoneOffset.UTC);
 
     private final NamespacedKey questKey;
     @Nullable
@@ -65,10 +64,34 @@ public class QuestDetailOverviewSlot implements McRPGSlot {
         return true;
     }
 
+    /**
+     * Builds the overview display item for this quest.
+     *
+     * <p>Placeholders resolved:
+     * <ul>
+     *   <li>{@code quest_name} — quest display name, or the raw key if the definition is not registered</li>
+     *   <li>{@code quest_state} — localized state label (e.g. "Completed", "In Progress", "Preview")</li>
+     *   <li>{@code start_time} — locale-aware formatted start timestamp (active quest only)</li>
+     *   <li>{@code end_time} — locale-aware formatted end timestamp (active quest only)</li>
+     *   <li>{@code expiration_time} — locale-aware formatted expiration timestamp (active quest only)</li>
+     *   <li>{@code completed_date} — locale-aware formatted completion date (history view only)</li>
+     *   <li>{@code phase_total} — total phase count in the quest definition</li>
+     * </ul>
+     *
+     * @param mcRPGPlayer the player viewing the slot; used for locale resolution
+     * @return the item builder populated with all placeholders and palette replacements applied
+     */
     @NotNull
     @Override
     public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
         Map<String, String> placeholders = new HashMap<>();
+
+        McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+
+        Locale locale = localizationManager.getLocaleChain(mcRPGPlayer).getNodeValue();
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM, FormatStyle.SHORT)
+                .withLocale(locale).withZone(ZoneOffset.UTC);
 
         Optional<QuestDefinition> defOpt;
         if (resolvedDefinition != null) {
@@ -86,21 +109,17 @@ public class QuestDetailOverviewSlot implements McRPGSlot {
         if (questInstance != null) {
             placeholders.put("quest_state", questInstance.getQuestState().name());
             questInstance.getStartTime().ifPresent(t ->
-                    placeholders.put("start_time", DATE_FORMAT.format(Instant.ofEpochMilli(t))));
+                    placeholders.put("start_time", dateFormat.format(Instant.ofEpochMilli(t))));
             questInstance.getEndTime().ifPresent(t ->
-                    placeholders.put("end_time", DATE_FORMAT.format(Instant.ofEpochMilli(t))));
+                    placeholders.put("end_time", dateFormat.format(Instant.ofEpochMilli(t))));
             questInstance.getExpirationTime().ifPresent(t ->
-                    placeholders.put("expiration_time", DATE_FORMAT.format(Instant.ofEpochMilli(t))));
+                    placeholders.put("expiration_time", dateFormat.format(Instant.ofEpochMilli(t))));
         } else if (completionRecord != null) {
-            placeholders.put("quest_state", RegistryAccess.registryAccess()
-                    .registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION)
+            placeholders.put("quest_state", localizationManager
                     .getLocalizedMessage(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_STATE_COMPLETED));
-            placeholders.put("completed_date", DATE_FORMAT.format(Instant.ofEpochMilli(completionRecord.completedAt())));
+            placeholders.put("completed_date", dateFormat.format(Instant.ofEpochMilli(completionRecord.completedAt())));
         } else {
-            String previewLabel = RegistryAccess.registryAccess()
-                    .registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION)
+            String previewLabel = localizationManager
                     .getLocalizedMessage(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_STATE_PREVIEW);
             placeholders.put("quest_state", previewLabel);
         }
@@ -108,7 +127,6 @@ public class QuestDetailOverviewSlot implements McRPGSlot {
         int phaseCount = defOpt.map(QuestDefinition::getPhaseCount).orElse(0);
         placeholders.put("phase_total", String.valueOf(phaseCount));
 
-        var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_OVERVIEW_SLOT_DISPLAY_ITEM))
                 .addPlaceholders(placeholders);
         itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());

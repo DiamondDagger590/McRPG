@@ -1549,13 +1549,13 @@ gui:
         material: BOOK
         item-flags:
           - 'HIDE_ATTRIBUTES'
-        # Placeholders: <chain_name> = chain display name
-        name: "<primary><chain_name>"
+        # Placeholders: <chain_name> = chain display name, <completion_number> = 1-based run index
+        name: "<primary><chain_name> <body>(Run #<primary><completion_number>)"
         lore:
           # Placeholders: <completed_date> = formatted date
           - "<body>Completed: <primary><completed_date>"
-          # Placeholders: <step_count> = number of steps
-          - "<body>Steps: <primary><step_count>/<step_count>"
+          # Placeholders: <step_count> = recorded steps, <total_steps> = steps in chain definition
+          - "<body>Steps: <primary><step_count>/<total_steps>"
           - ""
           - "<hint>Click <body>to view details."
     step-slot:

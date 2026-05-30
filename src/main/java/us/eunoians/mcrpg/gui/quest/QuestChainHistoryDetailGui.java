@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.database.table.quest.QuestChainCompletionLogDAO;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
+import us.eunoians.mcrpg.gui.quest.slot.ChainHistoryEmptySlot;
 import us.eunoians.mcrpg.gui.quest.slot.ChainStepCompletionSlot;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
@@ -143,6 +144,13 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
 
     private void paintStepSlots(int page) {
         List<QuestChainCompletionLogDAO.ChainStepRecord> pageRecords = getRecordsForPage(page);
+        if (stepRecords.isEmpty()) {
+            for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
+                removeSlot(i);
+            }
+            setSlot(22, new ChainHistoryEmptySlot());
+            return;
+        }
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < pageRecords.size()) {
                 // stepNumber is global 1-based index, not page-relative

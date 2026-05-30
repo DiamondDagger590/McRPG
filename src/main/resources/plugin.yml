@@ -22,6 +22,7 @@ permissions:
     description: Grants all McRPG permissions
     children:
       mcrpg.admin.*: true
+      mcrpg.quest.history: true
   mcrpg.admin.*:
     description: Grants all McRPG admin permissions
     children:
@@ -49,6 +50,9 @@ permissions:
   mcrpg.quest.admin.chain.reset:
     description: Hard-reset a player's quest chain state and history
     default: op
+  mcrpg.quest.history:
+    description: Open the quest history GUI
+    default: true
   mcrpg.tutorial.bypass:
     description: Bypass tutorial quest chains
     default: op
