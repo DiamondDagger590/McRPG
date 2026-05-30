@@ -231,7 +231,7 @@ public class QuestChainManager extends Manager<McRPG> {
             QuestChainStep completedStep = definition.getStep(completedQuestKey).orElse(
                     QuestChainStep.simple(completedQuestKey));
             state.advance(nextStep.questKey());
-            chainData.rebuildQuestKeyIndex();
+            chainData.updateQuestKeyIndex(state);
             if (player != null) {
                 Bukkit.getPluginManager().callEvent(
                         new QuestChainStepAdvanceEvent(definition, player, completedStep, nextStep));
@@ -243,6 +243,7 @@ public class QuestChainManager extends Manager<McRPG> {
         } else {
             int completionNumber = state.getCompletionCount() + 1;
             state.complete(plugin().getTimeProvider().now().toEpochMilli());
+            chainData.updateQuestKeyIndex(state);
             if (player != null) {
                 Bukkit.getPluginManager().callEvent(
                         new QuestChainCompleteEvent(definition, player, state.getCompletionCount()));
@@ -446,6 +447,7 @@ public class QuestChainManager extends Manager<McRPG> {
         NamespacedKey chainKey = chainKeyOpt.get();
         chainData.getChainState(chainKey).ifPresent(state -> {
             state.abandon();
+            chainData.updateQuestKeyIndex(state);
             plugin().getLogger().fine("[QuestChainManager] Chain '" + chainKey
                     + "' abandoned for player " + playerUUID
                     + " — quest '" + cancelledQuestKey + "' was cancelled");
@@ -490,6 +492,7 @@ public class QuestChainManager extends Manager<McRPG> {
                         + expireAction + "' — defaulting to fail-chain");
             }
             state.fail();
+            chainData.updateQuestKeyIndex(state);
             plugin().getLogger().fine("[QuestChainManager] Chain '" + chainKey
                     + "' failed for player " + playerUUID + " — quest '" + expiredQuestKey
                     + "' expired (on-quest-expire: fail-chain)");
@@ -500,14 +503,19 @@ public class QuestChainManager extends Manager<McRPG> {
     /**
      * Re-resolves chain state for a player on login. Handles any definition changes that
      * occurred while the player was offline (removed steps, renamed quest keys, etc.).
-     * Runs a single batched DB read, then returns to the main thread for state mutations.
+     * Runs a single batched DB read for all chains, then returns to the main thread for
+     * state mutations. Once resolution completes, {@code onComplete} is invoked on the
+     * main thread so callers can sequence login-triggered chain starts after resolution.
      *
      * @param playerUUID the player UUID
+     * @param onComplete callback invoked on the main thread after re-resolution finishes
+     *                   (including the fast path when no resolution is needed)
      */
-    public void reResolveOnLogin(@NotNull UUID playerUUID) {
+    public void reResolveOnLogin(@NotNull UUID playerUUID, @NotNull Runnable onComplete) {
         Optional<McRPGPlayer> mcRPGPlayerOpt = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.PLAYER).getPlayer(playerUUID);
         if (mcRPGPlayerOpt.isEmpty()) {
+            onComplete.run();
             return;
         }
         McRPGPlayer mcRPGPlayer = mcRPGPlayerOpt.get();
@@ -528,31 +536,40 @@ public class QuestChainManager extends Manager<McRPG> {
                 .toList();
 
         if (chainsNeedingReResolution.isEmpty()) {
+            onComplete.run();
             return;
         }
 
         var database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
-            Map<NamespacedKey, Set<NamespacedKey>> completionsByChain = new HashMap<>();
+            Map<NamespacedKey, Set<NamespacedKey>> completionsByChain;
             try (Connection connection = database.getConnection()) {
-                for (QuestChainPlayerState state : chainsNeedingReResolution) {
-                    Set<String> rawKeys = QuestChainCompletionLogDAO.getCompletedQuestKeys(
-                            connection, playerUUID, state.getChainKey().toString());
-                    completionsByChain.put(state.getChainKey(),
-                            rawKeys.stream()
-                                    .map(NamespacedKey::fromString)
-                                    .filter(k -> k != null)
-                                    .collect(Collectors.toSet()));
-                }
+                completionsByChain = QuestChainCompletionLogDAO.getAllCompletedQuestKeysByChain(connection, playerUUID);
             } catch (SQLException e) {
                 plugin().getLogger().log(Level.SEVERE,
                         "[QuestChainManager] Failed to read completion logs for reResolveOnLogin, player "
                                 + playerUUID, e);
+                Bukkit.getScheduler().runTask(plugin(), onComplete);
                 return;
             }
-            Bukkit.getScheduler().runTask(plugin(), () ->
-                    applyReResolution(playerUUID, chainData, chainsNeedingReResolution, completionsByChain));
+            Map<NamespacedKey, Set<NamespacedKey>> finalCompletionsByChain = completionsByChain;
+            Bukkit.getScheduler().runTask(plugin(), () -> {
+                applyReResolution(playerUUID, chainData, chainsNeedingReResolution, finalCompletionsByChain);
+                onComplete.run();
+            });
+        });
+    }
+
+    /**
+     * Re-resolves chain state for a player on login without a completion callback.
+     * Equivalent to {@link #reResolveOnLogin(UUID, Runnable)} with a no-op callback.
+     * Used by {@link #reResolveOnReload()} where trigger evaluation is not needed.
+     *
+     * @param playerUUID the player UUID
+     */
+    public void reResolveOnLogin(@NotNull UUID playerUUID) {
+        reResolveOnLogin(playerUUID, () -> {
         });
     }
 
@@ -634,6 +651,7 @@ public class QuestChainManager extends Manager<McRPG> {
 
     /**
      * Re-resolves chain state for all online players after a reload.
+     * Uses the no-callback overload since reload doesn't need to sequence trigger evaluation.
      * Delegates to {@link #reResolveOnLogin(UUID)} for each online player.
      */
     public void reResolveOnReload() {
