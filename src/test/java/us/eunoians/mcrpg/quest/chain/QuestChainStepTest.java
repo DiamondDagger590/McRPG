@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class QuestChainStepTest extends McRPGBaseTest {
 
-    @DisplayName("Given a quest key, When simple() factory is called, Then step has correct questKey and defaults")
     @Test
+    @DisplayName("Given a quest key, When simple() factory is called, Then step has correct questKey and defaults")
     public void simple_createsStepWithDefaults_whenGivenQuestKey() {
         var questKey = new NamespacedKey("mcrpg", "my_quest");
         var step = QuestChainStep.simple(questKey);
@@ -24,8 +24,8 @@ public class QuestChainStepTest extends McRPGBaseTest {
         assertEquals(-1, step.maxRetries());
     }
 
-    @DisplayName("Given two steps with same questKey, When compared, Then they are equal")
     @Test
+    @DisplayName("Given two steps with same questKey, When compared, Then they are equal")
     public void questChainStep_isEqualToOtherWithSameData() {
         var questKey = new NamespacedKey("mcrpg", "quest_a");
         var step1 = new QuestChainStep(questKey, List.of(), "fail-chain", -1);

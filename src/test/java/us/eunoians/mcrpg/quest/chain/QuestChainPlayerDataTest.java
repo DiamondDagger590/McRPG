@@ -27,8 +27,8 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         questKeyB = new NamespacedKey("mcrpg", "quest_b");
     }
 
-    @DisplayName("Given a chain state, When putChainState is called, Then it is retrievable via getChainState")
     @Test
+    @DisplayName("Given a chain state, When putChainState is called, Then it is retrievable via getChainState")
     public void putChainState_addsState_retrievableViaGet() {
         var state = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
         data.putChainState(state);
@@ -37,14 +37,14 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         assertEquals(state, data.getChainState(chainKeyA).get());
     }
 
-    @DisplayName("Given an unknown chain key, When getChainState is called, Then it returns empty")
     @Test
+    @DisplayName("Given an unknown chain key, When getChainState is called, Then it returns empty")
     public void getChainState_returnsEmpty_whenKeyNotFound() {
         assertTrue(data.getChainState(chainKeyA).isEmpty());
     }
 
-    @DisplayName("Given a state, When removeChainState is called, Then it is no longer retrievable")
     @Test
+    @DisplayName("Given a state, When removeChainState is called, Then it is no longer retrievable")
     public void removeChainState_removesState_subsequentGetReturnsEmpty() {
         data.putChainState(QuestChainPlayerState.newActive(chainKeyA, questKeyA));
         data.removeChainState(chainKeyA);
@@ -52,8 +52,8 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         assertTrue(data.getChainState(chainKeyA).isEmpty());
     }
 
-    @DisplayName("Given active and completed states, When getActiveChains is called, Then only ACTIVE state returned")
     @Test
+    @DisplayName("Given active and completed states, When getActiveChains is called, Then only ACTIVE state returned")
     public void getActiveChains_returnsOnlyActiveStates() {
         var active = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
         var completed = QuestChainPlayerState.newActive(chainKeyB, questKeyB);
@@ -67,8 +67,8 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         assertEquals(chainKeyA, activeChains.get(0).getChainKey());
     }
 
-    @DisplayName("Given dirty and clean states, When getDirtyStates is called, Then only dirty states returned")
     @Test
+    @DisplayName("Given dirty and clean states, When getDirtyStates is called, Then only dirty states returned")
     public void getDirtyStates_returnsOnlyDirtyStates() {
         var stateA = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
         stateA.advance(questKeyB);
@@ -83,8 +83,8 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         assertEquals(chainKeyA, dirty.get(0).getChainKey());
     }
 
-    @DisplayName("Given active chain with currentQuestKey, When putChainState, Then questKeyToChainKey index is updated")
     @Test
+    @DisplayName("Given active chain with currentQuestKey, When putChainState, Then questKeyToChainKey index is updated")
     public void putChainState_updatesQuestKeyIndex_forActiveState() {
         data.putChainState(QuestChainPlayerState.newActive(chainKeyA, questKeyA));
 
@@ -92,8 +92,8 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         assertEquals(chainKeyA, data.getChainKeyForCurrentQuest(questKeyA).get());
     }
 
-    @DisplayName("Given terminal state, When putChainState, Then questKeyToChainKey index is not populated")
     @Test
+    @DisplayName("Given terminal state, When putChainState, Then questKeyToChainKey index is not populated")
     public void putChainState_doesNotPopulateIndex_forTerminalState() {
         var state = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
         state.complete(1000L);
@@ -102,8 +102,8 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         assertTrue(data.getChainKeyForCurrentQuest(questKeyA).isEmpty());
     }
 
-    @DisplayName("Given chain with a currentQuestKey in index, When removeChainState, Then index no longer contains it")
     @Test
+    @DisplayName("Given chain with a currentQuestKey in index, When removeChainState, Then index no longer contains it")
     public void removeChainState_rebuildsIndex_removedChainQuestKeyNoLongerPresent() {
         data.putChainState(QuestChainPlayerState.newActive(chainKeyA, questKeyA));
         data.removeChainState(chainKeyA);
@@ -111,8 +111,8 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         assertTrue(data.getChainKeyForCurrentQuest(questKeyA).isEmpty());
     }
 
-    @DisplayName("Given two active chains, When rebuildQuestKeyIndex, Then each questKey maps to correct chainKey")
     @Test
+    @DisplayName("Given two active chains, When rebuildQuestKeyIndex, Then each questKey maps to correct chainKey")
     public void rebuildQuestKeyIndex_mapsEachQuestKeyToCorrectChainKey() {
         data.putChainState(QuestChainPlayerState.newActive(chainKeyA, questKeyA));
         data.putChainState(QuestChainPlayerState.newActive(chainKeyB, questKeyB));
@@ -123,8 +123,8 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         assertEquals(chainKeyB, data.getChainKeyForCurrentQuest(questKeyB).orElseThrow());
     }
 
-    @DisplayName("Given state with advanced questKey, When rebuildQuestKeyIndex, Then index reflects new key")
     @Test
+    @DisplayName("Given state with advanced questKey, When rebuildQuestKeyIndex, Then index reflects new key")
     public void rebuildQuestKeyIndex_updatesIndex_afterManualAdvance() {
         var state = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
         data.putChainState(state);
