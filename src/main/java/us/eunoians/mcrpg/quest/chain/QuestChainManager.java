@@ -15,18 +15,12 @@ import us.eunoians.mcrpg.event.quest.QuestChainCompleteEvent;
 import us.eunoians.mcrpg.event.quest.QuestChainStartEvent;
 import us.eunoians.mcrpg.event.quest.QuestChainStepAdvanceEvent;
 import us.eunoians.mcrpg.quest.QuestManager;
-import us.eunoians.mcrpg.quest.definition.QuestDefinition;
-import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
-import us.eunoians.mcrpg.quest.source.QuestSource;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,6 +42,7 @@ import java.util.stream.Collectors;
 public class QuestChainManager extends Manager<McRPG> {
 
     private final ChainPersistenceService persistenceService;
+    private final ChainQuestStarter chainQuestStarter;
 
     /**
      * Creates a new chain manager.
@@ -57,6 +52,7 @@ public class QuestChainManager extends Manager<McRPG> {
     public QuestChainManager(@NotNull McRPG plugin) {
         super(plugin);
         this.persistenceService = new ChainPersistenceService(plugin);
+        this.chainQuestStarter = new ChainQuestStarter(plugin);
     }
 
     /**
@@ -112,37 +108,12 @@ public class QuestChainManager extends Manager<McRPG> {
             }
         }
 
-        Optional<QuestSource> sourceOpt = RegistryAccess.registryAccess()
-                .registry(McRPGRegistryKey.QUEST_SOURCE).get(definition.getSourceKey());
-        if (sourceOpt.isEmpty()) {
-            plugin().getLogger().warning("[QuestChainManager] Chain '" + chainKey
-                    + "' references unknown source '" + definition.getSourceKey() + "'");
-            return false;
-        }
-        QuestSource questSource = sourceOpt.get();
-
         QuestChainStep firstStep = definition.getSteps().get(0);
-        QuestDefinitionRegistry questDefinitionRegistry = RegistryAccess.registryAccess()
-                .registry(McRPGRegistryKey.QUEST_DEFINITION);
-        Optional<QuestDefinition> firstQuestDefOpt = questDefinitionRegistry.get(firstStep.questKey());
-        if (firstQuestDefOpt.isEmpty()) {
-            plugin().getLogger().severe("[QuestChainManager] Chain '" + chainKey
-                    + "' step 0 references unknown quest '" + firstStep.questKey() + "' — cannot start chain");
-            return false;
-        }
-
         QuestChainPlayerState newState = QuestChainPlayerState.newActive(chainKey, firstStep.questKey());
         chainData.putChainState(newState);
 
-        QuestManager questManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.QUEST);
-        Optional<QuestInstance> instance = questManager.startQuest(firstQuestDefOpt.get(),
-                player.getUniqueId(), Map.of(), questSource);
-        if (instance.isEmpty()) {
+        if (!chainQuestStarter.startStepQuest(player.getUniqueId(), definition, firstStep)) {
             chainData.removeChainState(chainKey);
-            plugin().getLogger().warning("[QuestChainManager] Chain '" + chainKey
-                    + "' startQuest returned empty for quest '" + firstStep.questKey()
-                    + "' and player " + player.getUniqueId() + " — rolling back chain state");
             return false;
         }
 
@@ -156,25 +127,26 @@ public class QuestChainManager extends Manager<McRPG> {
     /**
      * Advances a player's chain to the next step after the specified quest key was completed.
      * Uses the O(1) reverse index in {@link QuestChainPlayerData} to locate the chain.
-     * No-op if the completed quest is not managed by any active chain for this player.
+     * No-op (returns {@code false}) if the completed quest is not managed by any active chain.
      *
      * @param playerUUID        the player UUID
      * @param completedQuestKey the quest definition key that was just completed
+     * @return {@code true} if the chain advanced or completed; {@code false} if it was a no-op
      */
-    public void advanceChain(@NotNull UUID playerUUID, @NotNull NamespacedKey completedQuestKey) {
+    public boolean advanceChain(@NotNull UUID playerUUID, @NotNull NamespacedKey completedQuestKey) {
         Optional<McRPGPlayer> mcRPGPlayerOpt = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.PLAYER).getPlayer(playerUUID);
         if (mcRPGPlayerOpt.isEmpty()) {
             plugin().getLogger().warning("[QuestChainManager] Player " + playerUUID
                     + " not loaded, cannot advance chain for quest '" + completedQuestKey + "'");
-            return;
+            return false;
         }
         McRPGPlayer mcRPGPlayer = mcRPGPlayerOpt.get();
         QuestChainPlayerData chainData = mcRPGPlayer.getChainData();
 
         Optional<NamespacedKey> chainKeyOpt = chainData.getChainKeyForCurrentQuest(completedQuestKey);
         if (chainKeyOpt.isEmpty()) {
-            return;
+            return false;
         }
         NamespacedKey chainKey = chainKeyOpt.get();
 
@@ -184,12 +156,15 @@ public class QuestChainManager extends Manager<McRPG> {
             plugin().getLogger().warning("[QuestChainManager] Chain '" + chainKey
                     + "' definition missing during advancement for player " + playerUUID
                     + " — state left as ACTIVE (inert)");
-            return;
+            return false;
         }
         QuestChainDefinition definition = definitionOpt.get();
         QuestChainPlayerState state = chainData.getChainState(chainKey).orElse(null);
         if (state == null) {
-            return;
+            plugin().getLogger().warning("[QuestChainManager] Chain '" + chainKey
+                    + "' reverse index hit but state is null for player " + playerUUID
+                    + " — possible index/state desync");
+            return false;
         }
 
         Player player = Bukkit.getPlayer(playerUUID);
@@ -197,34 +172,8 @@ public class QuestChainManager extends Manager<McRPG> {
 
         if (nextStepOpt.isPresent()) {
             QuestChainStep nextStep = nextStepOpt.get();
-            QuestDefinitionRegistry questDefinitionRegistry = RegistryAccess.registryAccess()
-                    .registry(McRPGRegistryKey.QUEST_DEFINITION);
-            Optional<QuestDefinition> nextQuestDefOpt = questDefinitionRegistry.get(nextStep.questKey());
-            if (nextQuestDefOpt.isEmpty()) {
-                plugin().getLogger().severe("[QuestChainManager] Chain '" + chainKey
-                        + "' next step references unknown quest '" + nextStep.questKey()
-                        + "' — advancement halted for player " + playerUUID);
-                return;
-            }
-
-            Optional<QuestSource> sourceOpt = RegistryAccess.registryAccess()
-                    .registry(McRPGRegistryKey.QUEST_SOURCE).get(definition.getSourceKey());
-            if (sourceOpt.isEmpty()) {
-                plugin().getLogger().severe("[QuestChainManager] Chain '" + chainKey
-                        + "' failed to start next quest '" + nextStep.questKey()
-                        + "' for player " + playerUUID + " — source not found");
-                return;
-            }
-
-            QuestManager questManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.QUEST);
-            Optional<QuestInstance> instance = questManager.startQuest(nextQuestDefOpt.get(),
-                    playerUUID, Map.of(), sourceOpt.get());
-            if (instance.isEmpty()) {
-                plugin().getLogger().severe("[QuestChainManager] Chain '" + chainKey
-                        + "' failed to start next quest '" + nextStep.questKey()
-                        + "' for player " + playerUUID);
-                return;
+            if (!chainQuestStarter.startStepQuest(playerUUID, definition, nextStep)) {
+                return false;
             }
 
             int completionNumber = state.getCompletionCount() + 1;
@@ -239,6 +188,7 @@ public class QuestChainManager extends Manager<McRPG> {
             plugin().getLogger().fine("[QuestChainManager] Advanced chain '" + chainKey
                     + "' for player " + playerUUID + " to step '" + nextStep.questKey() + "'");
             persistenceService.persistAdvancementAsync(playerUUID, state, chainKey, completedQuestKey, completionNumber);
+            return true;
 
         } else {
             int completionNumber = state.getCompletionCount() + 1;
@@ -251,6 +201,7 @@ public class QuestChainManager extends Manager<McRPG> {
             plugin().getLogger().fine("[QuestChainManager] Completed chain '" + chainKey
                     + "' for player " + playerUUID + " (completion #" + state.getCompletionCount() + ")");
             persistenceService.persistAdvancementAsync(playerUUID, state, chainKey, completedQuestKey, completionNumber);
+            return true;
         }
     }
 
@@ -279,8 +230,7 @@ public class QuestChainManager extends Manager<McRPG> {
         if (currentQuestKeyOpt.isEmpty()) {
             return false;
         }
-        advanceChain(playerUUID, currentQuestKeyOpt.get());
-        return true;
+        return advanceChain(playerUUID, currentQuestKeyOpt.get());
     }
 
     /**
@@ -607,31 +557,7 @@ public class QuestChainManager extends Manager<McRPG> {
 
             if (uncompletedStep.isPresent()) {
                 QuestChainStep step = uncompletedStep.get();
-                Optional<QuestDefinition> questDefOpt = RegistryAccess.registryAccess()
-                        .registry(McRPGRegistryKey.QUEST_DEFINITION).get(step.questKey());
-                if (questDefOpt.isEmpty()) {
-                    plugin().getLogger().severe("[QuestChainManager] Chain '" + chainKey
-                            + "' step references unknown quest '" + step.questKey()
-                            + "' during re-resolution for player " + playerUUID);
-                    continue;
-                }
-                Optional<QuestSource> sourceOpt = RegistryAccess.registryAccess()
-                        .registry(McRPGRegistryKey.QUEST_SOURCE).get(definition.getSourceKey());
-                if (sourceOpt.isEmpty()) {
-                    plugin().getLogger().severe("[QuestChainManager] Chain '" + chainKey
-                            + "' failed to start quest '" + step.questKey()
-                            + "' during re-resolution for player " + playerUUID + " — source not found");
-                    continue;
-                }
-                QuestManager questManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                        .manager(McRPGManagerKey.QUEST);
-                Optional<QuestInstance> instance = questManager.startQuest(
-                        questDefOpt.get(), playerUUID, Map.of(), sourceOpt.get());
-                if (instance.isEmpty()) {
-                    plugin().getLogger().severe("[QuestChainManager] Chain '" + chainKey
-                            + "' failed to start quest '" + step.questKey()
-                            + "' during re-resolution for player " + playerUUID
-                            + " — chain left in current state");
+                if (!chainQuestStarter.startStepQuest(playerUUID, definition, step)) {
                     continue;
                 }
                 state.resetToStep(step.questKey());
@@ -739,34 +665,20 @@ public class QuestChainManager extends Manager<McRPG> {
     }
 
     /**
-     * Starts the given step's quest for the player, resetting the chain state to that step.
-     * Returns {@code true} if the quest started successfully.
+     * Starts the given step's quest for the player and resets the chain state to that step.
+     * Delegates quest resolution and start to {@link ChainQuestStarter}.
      *
      * @param definition the chain definition
      * @param step       the step to start
      * @param player     the player
-     * @param state      the chain state to reset
+     * @param state      the chain state to reset on success
      * @return {@code true} if the quest started successfully
      */
     private boolean startStepForPlayer(@NotNull QuestChainDefinition definition,
                                         @NotNull QuestChainStep step,
                                         @NotNull Player player,
                                         @NotNull QuestChainPlayerState state) {
-        Optional<QuestDefinition> questDefOpt = RegistryAccess.registryAccess()
-                .registry(McRPGRegistryKey.QUEST_DEFINITION).get(step.questKey());
-        if (questDefOpt.isEmpty()) {
-            return false;
-        }
-        Optional<QuestSource> sourceOpt = RegistryAccess.registryAccess()
-                .registry(McRPGRegistryKey.QUEST_SOURCE).get(definition.getSourceKey());
-        if (sourceOpt.isEmpty()) {
-            return false;
-        }
-        QuestManager questManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.QUEST);
-        Optional<QuestInstance> instance = questManager.startQuest(
-                questDefOpt.get(), player.getUniqueId(), Map.of(), sourceOpt.get());
-        if (instance.isPresent()) {
+        if (chainQuestStarter.startStepQuest(player.getUniqueId(), definition, step)) {
             state.resetToStep(step.questKey());
             return true;
         }
