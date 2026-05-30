@@ -12,9 +12,15 @@ import org.incendo.cloud.key.CloudKey;
 import org.incendo.cloud.minecraft.extras.RichDescription;
 import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+
+import us.eunoians.mcrpg.command.CommandPlaceholders;
+
+import java.util.Map;
 
 /**
  * Command: {@code /mcrpg quest admin chain advance <player> <chain>}
@@ -55,20 +61,24 @@ public class ChainAdvanceCommand extends ChainAdminCommandBase {
                     Audience sender = ctx.sender().getSender();
                     Player target = ctx.get(PLAYER_KEY);
                     QuestChainDefinition chain = ctx.get(CHAIN_KEY);
+                    McRPGLocalizationManager lm = RegistryAccess.registryAccess()
+                            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
 
                     QuestChainManager chainManager = RegistryAccess.registryAccess()
                             .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
 
+                    Map<String, String> placeholders = Map.of(
+                            CommandPlaceholders.TARGET.getPlaceholder(), target.getName(),
+                            CommandPlaceholders.CHAIN_DISPLAY_NAME.getPlaceholder(), chain.getDisplayName(),
+                            CommandPlaceholders.CHAIN_KEY.getPlaceholder(), chain.getChainKey().toString());
+
                     boolean success = chainManager.forceAdvanceChain(target.getUniqueId(), chain.getChainKey());
                     if (success) {
-                        sender.sendMessage(mm.deserialize(
-                                "<green>Advanced chain <white>" + chain.getChainKey()
-                                + "</white> for <white>" + target.getName() + "</white>."));
+                        sender.sendMessage(lm.getLocalizedMessageAsComponent(sender,
+                                LocalizationKey.CHAIN_ADMIN_ADVANCE_SUCCESS, placeholders));
                     } else {
-                        sender.sendMessage(mm.deserialize(
-                                "<red>Could not advance chain <white>" + chain.getChainKey()
-                                + "</white> for <white>" + target.getName()
-                                + "</white>. Player may have no active state or chain is in a terminal state."));
+                        sender.sendMessage(lm.getLocalizedMessageAsComponent(sender,
+                                LocalizationKey.CHAIN_ADMIN_ADVANCE_FAILURE, placeholders));
                     }
                 }));
     }

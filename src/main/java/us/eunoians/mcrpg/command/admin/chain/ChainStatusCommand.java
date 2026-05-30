@@ -14,6 +14,8 @@ import org.incendo.cloud.minecraft.extras.RichDescription;
 import org.incendo.cloud.permission.Permission;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainPlayerState;
@@ -22,6 +24,9 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import us.eunoians.mcrpg.command.CommandPlaceholders;
+
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -65,6 +70,8 @@ public class ChainStatusCommand extends ChainAdminCommandBase {
                     Audience sender = ctx.sender().getSender();
                     Player target = ctx.get(PLAYER_KEY);
                     QuestChainDefinition chain = ctx.get(CHAIN_KEY);
+                    McRPGLocalizationManager lm = RegistryAccess.registryAccess()
+                            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
 
                     QuestChainManager chainManager = RegistryAccess.registryAccess()
                             .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
@@ -72,33 +79,37 @@ public class ChainStatusCommand extends ChainAdminCommandBase {
                             chainManager.getChainStatus(target.getUniqueId(), chain.getChainKey());
 
                     if (stateOpt.isEmpty()) {
-                        sender.sendMessage(mm.deserialize("<yellow>" + target.getName()
-                                + " has no state for chain <white>" + chain.getChainKey() + "</white>."));
+                        sender.sendMessage(lm.getLocalizedMessageAsComponent(sender, LocalizationKey.CHAIN_ADMIN_NO_STATE,
+                                Map.of(CommandPlaceholders.TARGET.getPlaceholder(), target.getName(),
+                                        CommandPlaceholders.CHAIN_DISPLAY_NAME.getPlaceholder(), chain.getDisplayName(),
+                                        CommandPlaceholders.CHAIN_KEY.getPlaceholder(), chain.getChainKey().toString())));
                         return;
                     }
 
                     QuestChainPlayerState state = stateOpt.get();
                     String currentStep = state.getCurrentQuestKey()
                             .map(NamespacedKey::toString)
-                            .orElse("<none>");
+                            .orElse("none");
                     String lastCompleted = state.getLastCompletedAt()
                             .map(ts -> TIMESTAMP_FORMAT.format(Instant.ofEpochMilli(ts)))
                             .orElse("never");
                     int totalSteps = chain.getSteps().size();
+                    Map<String, String> basePlaceholders = Map.of(
+                            CommandPlaceholders.TARGET.getPlaceholder(), target.getName(),
+                            CommandPlaceholders.CHAIN_DISPLAY_NAME.getPlaceholder(), chain.getDisplayName(),
+                            CommandPlaceholders.CHAIN_KEY.getPlaceholder(), chain.getChainKey().toString());
 
-                    sender.sendMessage(mm.deserialize(
-                            "<gold>Chain status for <white>" + target.getName()
-                            + "</white> — <white>" + chain.getDisplayName() + "</white>"));
-                    sender.sendMessage(mm.deserialize(
-                            "<gray>State: <white>" + state.getState().name()));
-                    sender.sendMessage(mm.deserialize(
-                            "<gray>Current step: <white>" + currentStep));
-                    sender.sendMessage(mm.deserialize(
-                            "<gray>Completions: <white>" + state.getCompletionCount()));
-                    sender.sendMessage(mm.deserialize(
-                            "<gray>Last completed: <white>" + lastCompleted));
-                    sender.sendMessage(mm.deserialize(
-                            "<gray>Total steps: <white>" + totalSteps));
+                    sender.sendMessage(lm.getLocalizedMessageAsComponent(sender, LocalizationKey.CHAIN_ADMIN_STATUS_HEADER, basePlaceholders));
+                    sender.sendMessage(lm.getLocalizedMessageAsComponent(sender, LocalizationKey.CHAIN_ADMIN_STATUS_STATE,
+                            Map.of(CommandPlaceholders.CHAIN_STATE.getPlaceholder(), state.getState().name())));
+                    sender.sendMessage(lm.getLocalizedMessageAsComponent(sender, LocalizationKey.CHAIN_ADMIN_STATUS_CURRENT_STEP,
+                            Map.of(CommandPlaceholders.CHAIN_CURRENT_STEP.getPlaceholder(), currentStep)));
+                    sender.sendMessage(lm.getLocalizedMessageAsComponent(sender, LocalizationKey.CHAIN_ADMIN_STATUS_COMPLETIONS,
+                            Map.of(CommandPlaceholders.CHAIN_COMPLETION_COUNT.getPlaceholder(), String.valueOf(state.getCompletionCount()))));
+                    sender.sendMessage(lm.getLocalizedMessageAsComponent(sender, LocalizationKey.CHAIN_ADMIN_STATUS_LAST_COMPLETED,
+                            Map.of(CommandPlaceholders.CHAIN_LAST_COMPLETED.getPlaceholder(), lastCompleted)));
+                    sender.sendMessage(lm.getLocalizedMessageAsComponent(sender, LocalizationKey.CHAIN_ADMIN_STATUS_TOTAL_STEPS,
+                            Map.of(CommandPlaceholders.CHAIN_TOTAL_STEPS.getPlaceholder(), String.valueOf(totalSteps))));
                 }));
     }
 }
