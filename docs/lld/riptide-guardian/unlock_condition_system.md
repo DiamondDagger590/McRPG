@@ -393,7 +393,7 @@ public class UnlockConditionTypeRegistry implements Registry<UnlockConditionType
 A `Manager` registered under `McRPGManagerKey.UNLOCK_CONDITION`. It owns:
 
 - **Resolution.** `resolve(UnlockableAbility)` reads the ability's `unlock-conditions` config section. If present and non-empty → parse it (logging the Java-default override warning, [3.4](#34-java-defaults-are-replaced-by-config-and-the-replacement-is-logged)). Otherwise → use `ability.getDefaultUnlockConditions()`.
-- **Caching.** Results are cached by ability `NamespacedKey`. The cache is the home for the resolved config-state (keeping ability singletons stateless per CLAUDE.md). `reload()` clears it.
+- **Caching.** Results are cached by ability `NamespacedKey`. The cache is the home for the resolved config-state (keeping ability singletons stateless per CLAUDE.md). `reload()` clears the entire cache; `resolveAll()` repopulates it eagerly afterward. This is a manager-level cache, **not** per-field `ReloadableContent`. `ReloadableContent` is designed for a single `(YamlDocument, Route, callback)` triple — one config file, one path, one parsed value. The unlock condition cache is cross-cutting: it aggregates named sections from *multiple* skill config files with a per-ability Java-default fallback, so the `ReloadableContent` model doesn't fit. The manager's `reload()` / `resolveAll()` pair is the correct granularity.
 - **Recursive parsing.** `parseSection(Section)` turns one `unlock-conditions` (or composite `conditions`) section into a `List<UnlockConditionType>`, used both at the top level and by the composite types.
 - **Startup validation.** `resolveAll()` is called once during bootstrap (after types are registered, abilities are registered, and configs are loaded) to populate the cache and emit the [empty-display warning](#13-empty-display-startup-warning).
 
@@ -595,21 +595,17 @@ public final class DisplayHintUnlockConditionType implements UnlockConditionType
     private final String inlineText;
 
     public DisplayHintUnlockConditionType() {
-        this(null, null);
+        this.localeKey = null;
+        this.inlineText = null;
     }
 
-    /** Configured via locale key — preferred for translatable sources. */
-    public static DisplayHintUnlockConditionType fromLocaleKey(@NotNull Route localeKey) {
-        return new DisplayHintUnlockConditionType(localeKey, null);
-    }
-
-    /** Configured via inline text — for server-owner-specific advertising. */
-    public static DisplayHintUnlockConditionType fromInlineText(@NotNull String text) {
-        return new DisplayHintUnlockConditionType(null, text);
-    }
-
-    private DisplayHintUnlockConditionType(@Nullable Route localeKey, @Nullable String inlineText) {
+    public DisplayHintUnlockConditionType(@NotNull Route localeKey) {
         this.localeKey = localeKey;
+        this.inlineText = null;
+    }
+
+    public DisplayHintUnlockConditionType(@NotNull String inlineText) {
+        this.localeKey = null;
         this.inlineText = inlineText;
     }
 
@@ -623,8 +619,8 @@ public final class DisplayHintUnlockConditionType implements UnlockConditionType
                     "mcrpg:display_hint requires exactly one of 'locale-key' or 'text'");
         }
         return hasKey
-                ? fromLocaleKey(Route.fromString(section.getString("locale-key")))
-                : fromInlineText(section.getString("text"));
+                ? new DisplayHintUnlockConditionType(Route.fromString(section.getString("locale-key")))
+                : new DisplayHintUnlockConditionType(section.getString("text"));
     }
 
     @Override
@@ -970,6 +966,8 @@ default List<UnlockConditionType> getDefaultUnlockConditions() {
 
 For Vampire (a `SkillAbility` tierable), this yields exactly one configured `SkillLevelUnlockConditionType` at Swords level 250 — behavior-identical to the old `getUnlockLevel()` path, constructed directly via the public configured constructor without touching `parseConfig`. Non-`SkillAbility` tierables previously threw `UnsupportedOperationException`; the new model returns an empty list and relies on config + the startup warning, which is gentler and config-overridable.
 
+**Vampire is fully configurable from YAML without any Java changes.** The Java default in `getDefaultUnlockConditions()` is only a *fallback*. As described in [Section 5.2](#52-unlockconditionmanager-resolution--caching--warnings), `UnlockConditionManager.resolve()` checks for a config `unlock-conditions` section first. If that section is present and non-empty, it **replaces** the Java default entirely (with a logged warning). So a server owner can change Vampire's unlock requirement to "Mining level 500 AND have 10,000 blocks mined" purely by adding an `unlock-conditions` block to the swords config — the Java `SkillLevelUnlockConditionType(swords, 250)` default is never consulted.
+
 ### 9.1 Why per-tier methods stay
 
 `getUnlockLevelForTier(int)` is consulted by 8 upgrade-quest-eligibility callsites ([Section 14.3](#143-callsites-that-stay-on-the-old-per-tier-api)). Promoting per-tier gates to conditions would force every upgrade-quest reward type and GUI slot into polymorphic condition checks for a question they answer today with one integer compare. A future LLD can add `getUnlockConditionsForTier(int)` additively without touching the base interface.
@@ -983,6 +981,57 @@ For Vampire (a `SkillAbility` tierable), this yields exactly one configured `Ski
 - **Display-only conditions never auto-unlock.** `mcrpg:display_hint` always returns `false`, so a crate/book hint advertises a path without McRPG ever firing an unlock for it. The external system (crate plugin / `SkillBookConsumeListener`) flips `AbilityUnlockedAttribute` directly.
 
 This OR-by-default is what makes the Vampire example work: "Swords 250 **or** Epic Crates" — reaching the level fires the unlock through the sweep/level-up flow; the crate path is advertised but driven externally.
+
+### 10.1 Evaluation walkthrough — `OnSkillLevelUpListener` and login sweep
+
+Both the skill level-up handler and the login sweep call `isAnyConditionMet(holder)`. The evaluation is a short-circuiting recursive walk:
+
+1. `isAnyConditionMet` iterates the top-level `List<UnlockConditionType>` (**OR**). On the first `condition.isMet(holder) == true`, it returns `true` immediately (short-circuit). If every entry returns `false`, the ability stays locked.
+
+2. Each entry calls its own `isMet(holder)`:
+   - **Leaf types** (`skill_level`, `statistic`, `papi`): evaluate directly against the holder's state (current skill level, statistic value, resolved PAPI string) and return `true` / `false`.
+   - **`display_hint`**: always returns `false` — never contributes to auto-unlock.
+   - **`all_of` (composite AND)**: iterates its children; returns `true` only if *every* child returns `true`. Short-circuits on the first `false`.
+   - **`any_of` (composite OR)**: iterates its children; returns `true` if *any* child returns `true`. Short-circuits on the first `true`.
+
+3. Composites can be nested, forming an arbitrary boolean tree. Evaluation is recursive but bounded by the config depth — practically two or three levels deep.
+
+**Example.** Vampire configured with:
+
+```yaml
+unlock-conditions:
+  swords-mastery:
+    type: mcrpg:skill_level
+    skill: mcrpg:swords
+    level: 250
+  mining-veteran:
+    type: mcrpg:all_of
+    conditions:
+      blocks-mined:
+        type: mcrpg:statistic
+        statistic: mcrpg:blocks_mined
+        required: 10000
+      mining-level:
+        type: mcrpg:skill_level
+        skill: mcrpg:mining
+        level: 100
+  epic-crates:
+    type: mcrpg:display_hint
+    text: "<body>Can be unlocked from <primary>Epic Crates<body>!"
+```
+
+When a player hits Swords level 250, `OnSkillLevelUpListener` calls `isAnyConditionMet(player)`:
+
+1. Check `swords-mastery` → `SkillLevelUnlockConditionType.isMet()` → player's Swords level ≥ 250? **Yes → return `true`**. Done — ability unlocks.
+
+If the player had NOT reached Swords 250 but logged in with 12,000 blocks mined and Mining 105, the login sweep would call `isAnyConditionMet`:
+
+1. Check `swords-mastery` → Swords level < 250 → `false`.
+2. Check `mining-veteran` → `AllOfUnlockConditionType.isMet()`:
+   - Child `blocks-mined` → `StatisticUnlockConditionType.isMet()` → 12,000 ≥ 10,000 → `true`.
+   - Child `mining-level` → `SkillLevelUnlockConditionType.isMet()` → 105 ≥ 100 → `true`.
+   - All children met → `all_of` returns `true`. **Top-level returns `true`** — ability unlocks.
+3. `epic-crates` is never evaluated (short-circuit), and would return `false` anyway (`display_hint`).
 
 ---
 
