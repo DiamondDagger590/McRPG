@@ -1,7 +1,5 @@
 package us.eunoians.mcrpg.listener.quest;
 
-import com.diamonddagger590.mccore.registry.RegistryAccess;
-import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,7 +14,6 @@ import us.eunoians.mcrpg.event.quest.QuestChainStartEvent;
 import us.eunoians.mcrpg.event.quest.QuestChainStepAdvanceEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
-import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Map;
 import java.util.Optional;
@@ -27,8 +24,26 @@ import java.util.Optional;
  * <p>
  * All handlers run at {@link EventPriority#MONITOR} so infrastructure listeners
  * finish processing the event before the feedback message is sent.
+ * <p>
+ * Dependencies are constructor-injected to avoid hidden coupling to static registry lookups
+ * in every event handler.
  */
 public class QuestChainFeedbackListener implements Listener {
+
+    private final McRPGPlayerManager playerManager;
+    private final McRPGLocalizationManager localizationManager;
+
+    /**
+     * Creates a new feedback listener with the required collaborators.
+     *
+     * @param playerManager      the player manager used to resolve {@link McRPGPlayer} from a Bukkit {@link Player}
+     * @param localizationManager the localization manager used to resolve and send chain messages
+     */
+    public QuestChainFeedbackListener(@NotNull McRPGPlayerManager playerManager,
+                                      @NotNull McRPGLocalizationManager localizationManager) {
+        this.playerManager = playerManager;
+        this.localizationManager = localizationManager;
+    }
 
     /**
      * Notifies the player when their chain starts (first step begins).
@@ -86,14 +101,10 @@ public class QuestChainFeedbackListener implements Listener {
     private void sendChainMessage(@NotNull Player player,
                                   @NotNull dev.dejvokep.boostedyaml.route.Route localizationKey,
                                   @NotNull Map<String, String> placeholders) {
-        McRPGPlayerManager playerManager = RegistryAccess.registryAccess()
-                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
         Optional<McRPGPlayer> mcRPGPlayerOpt = playerManager.getPlayer(player.getUniqueId());
         if (mcRPGPlayerOpt.isEmpty()) {
             return;
         }
-        McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
-                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
         Component message = localizationManager.getLocalizedMessageAsComponent(
                 mcRPGPlayerOpt.get(), localizationKey, placeholders);
         player.sendMessage(message);

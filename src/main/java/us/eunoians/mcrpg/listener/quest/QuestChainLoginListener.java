@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.listener.quest;
 
 import com.diamonddagger590.mccore.event.player.PlayerLoadEvent;
 import com.diamonddagger590.mccore.player.CorePlayer;
-import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -13,8 +12,8 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
+import us.eunoians.mcrpg.quest.chain.trigger.builtin.LoginChainAutoStartTrigger;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
-import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * Listens on {@link PlayerLoadEvent} at {@link EventPriority#NORMAL} and performs two
@@ -62,10 +61,9 @@ public class QuestChainLoginListener implements Listener {
         }
 
         chainManager.reResolveOnLogin(player.getUniqueId(), () -> {
-            NamespacedKey loginKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "login");
             QuestChainRegistry chainRegistry = McRPG.getInstance().registryAccess()
                     .registry(McRPGRegistryKey.QUEST_CHAIN);
-            for (QuestChainDefinition chain : chainRegistry.getChainsForTrigger(loginKey)) {
+            for (QuestChainDefinition chain : chainRegistry.getChainsForTrigger(LoginChainAutoStartTrigger.KEY)) {
                 chainManager.tryStartChain(player, chain.getChainKey());
             }
         });

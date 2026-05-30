@@ -49,6 +49,7 @@ import us.eunoians.mcrpg.quest.board.distribution.builtin.TopPlayersDistribution
 import us.eunoians.mcrpg.quest.board.template.condition.ChanceCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.CompletionPrerequisiteCondition;
 import us.eunoians.mcrpg.quest.chain.trigger.builtin.FirstJoinChainAutoStartTrigger;
+import us.eunoians.mcrpg.quest.chain.trigger.builtin.LoginChainAutoStartTrigger;
 import us.eunoians.mcrpg.quest.chain.trigger.builtin.ManualChainAutoStartTrigger;
 import us.eunoians.mcrpg.quest.board.template.condition.CompoundCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.PermissionCondition;
@@ -510,6 +511,7 @@ public final class McRPGExpansion extends ContentExpansion {
         ChainAutoStartTriggerContentPack pack = new ChainAutoStartTriggerContentPack(this);
         pack.addContent(new ManualChainAutoStartTrigger());
         pack.addContent(new FirstJoinChainAutoStartTrigger());
+        pack.addContent(new LoginChainAutoStartTrigger());
         return pack;
     }
 

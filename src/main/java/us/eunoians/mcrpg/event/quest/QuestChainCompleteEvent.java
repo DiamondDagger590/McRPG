@@ -57,6 +57,17 @@ public class QuestChainCompleteEvent extends Event {
     }
 
     /**
+     * Gets the UUID of the player who completed the chain.
+     * Convenience accessor for cases where the UUID is needed without the live {@link Player} reference.
+     *
+     * @return the player UUID
+     */
+    @NotNull
+    public java.util.UUID getPlayerUUID() {
+        return player.getUniqueId();
+    }
+
+    /**
      * Gets how many times the player has now completed this chain.
      *
      * @return the completion number (≥ 1)

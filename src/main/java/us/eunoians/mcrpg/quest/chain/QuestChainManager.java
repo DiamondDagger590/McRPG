@@ -11,7 +11,9 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.table.quest.QuestChainCompletionLogDAO;
 import us.eunoians.mcrpg.database.table.quest.QuestChainStateDAO;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.quest.QuestChainAbandonEvent;
 import us.eunoians.mcrpg.event.quest.QuestChainCompleteEvent;
+import us.eunoians.mcrpg.event.quest.QuestChainFailEvent;
 import us.eunoians.mcrpg.event.quest.QuestChainStartEvent;
 import us.eunoians.mcrpg.event.quest.QuestChainStepAdvanceEvent;
 import us.eunoians.mcrpg.quest.QuestManager;
@@ -395,6 +397,8 @@ public class QuestChainManager extends Manager<McRPG> {
             return;
         }
         NamespacedKey chainKey = chainKeyOpt.get();
+        Optional<QuestChainDefinition> definitionOpt = RegistryAccess.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_CHAIN).get(chainKey);
         chainData.getChainState(chainKey).ifPresent(state -> {
             state.abandon();
             chainData.updateQuestKeyIndex(state);
@@ -402,6 +406,8 @@ public class QuestChainManager extends Manager<McRPG> {
                     + "' abandoned for player " + playerUUID
                     + " — quest '" + cancelledQuestKey + "' was cancelled");
             persistenceService.saveChainStateAsync(playerUUID, state);
+            definitionOpt.ifPresent(definition -> Bukkit.getPluginManager().callEvent(
+                    new QuestChainAbandonEvent(definition, Bukkit.getPlayer(playerUUID), playerUUID)));
         });
     }
 
@@ -447,6 +453,8 @@ public class QuestChainManager extends Manager<McRPG> {
                     + "' failed for player " + playerUUID + " — quest '" + expiredQuestKey
                     + "' expired (on-quest-expire: fail-chain)");
             persistenceService.saveChainStateAsync(playerUUID, state);
+            Bukkit.getPluginManager().callEvent(
+                    new QuestChainFailEvent(definition, Bukkit.getPlayer(playerUUID), playerUUID));
         });
     }
 

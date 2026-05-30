@@ -72,6 +72,8 @@ import us.eunoians.mcrpg.listener.quest.SmeltItemQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.SmithingQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.TameAnimalQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.VillagerTradeQuestProgressListener;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.board.distribution.DistributionCompletionService;
@@ -213,7 +215,12 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new LoadoutEquipQuestProgressListener(questManager), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestBoardAcceptQuestProgressListener(questManager), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestFeedbackListener(), plugin);
-        Bukkit.getPluginManager().registerEvents(new QuestChainFeedbackListener(), plugin);
+        McRPGPlayerManager mcRPGPlayerManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
+        McRPGLocalizationManager mcRPGLocalizationManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        Bukkit.getPluginManager().registerEvents(
+                new QuestChainFeedbackListener(mcRPGPlayerManager, mcRPGLocalizationManager), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestProgressNotificationListener(plugin), plugin);
         Bukkit.getPluginManager().registerEvents(new BoardRotationNotificationListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestStartMessageListener(plugin), plugin);
