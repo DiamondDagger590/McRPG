@@ -152,8 +152,8 @@ public class QuestChainConfigLoader {
                 QuestChainDefinition definition = parseChainDefinition(chainKey, chainSection, file.getName());
                 definitions.put(chainKey, definition);
             } catch (Exception e) {
-                logger.warning("[QuestChainConfigLoader] Failed to parse chain '" + chainKeyString +
-                        "' in " + file.getName() + ": " + e.getMessage());
+                logger.log(Level.WARNING, "[QuestChainConfigLoader] Failed to parse chain '" + chainKeyString +
+                        "' in " + file.getName(), e);
             }
         }
     }

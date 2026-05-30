@@ -47,16 +47,25 @@ public class ChainStepCompletionSlot implements McRPGSlot {
 
     @Override
     public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
+        McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+
         NamespacedKey questKey = NamespacedKey.fromString(stepRecord.questKey());
         if (questKey == null) {
-            return false;
+            mcRPGPlayer.getAsBukkitPlayer().ifPresent(p -> p.sendMessage(
+                    localizationManager.getLocalizedMessageAsComponent(
+                            mcRPGPlayer, LocalizationKey.QUEST_CHAIN_HISTORY_GUI_UNKNOWN_STEP_MESSAGE, Map.of())));
+            return true;
         }
 
         QuestDefinitionRegistry definitionRegistry = RegistryAccess.registryAccess()
                 .registry(McRPGRegistryKey.QUEST_DEFINITION);
         Optional<QuestDefinition> definitionOpt = definitionRegistry.get(questKey);
         if (definitionOpt.isEmpty()) {
-            return false;
+            mcRPGPlayer.getAsBukkitPlayer().ifPresent(p -> p.sendMessage(
+                    localizationManager.getLocalizedMessageAsComponent(
+                            mcRPGPlayer, LocalizationKey.QUEST_CHAIN_HISTORY_GUI_UNKNOWN_STEP_MESSAGE, Map.of())));
+            return true;
         }
 
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {

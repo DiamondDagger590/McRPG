@@ -181,8 +181,7 @@ public class QuestConfigLoader {
                 QuestDefinition definition = parseQuestDefinition(questKey, questSection, file.getName());
                 definitions.put(questKey, definition);
             } catch (Exception e) {
-                logger.warning("Failed to parse quest '" + questKeyString + "' in " + file.getName()
-                        + ": " + e.getMessage());
+                logger.log(Level.WARNING, "Failed to parse quest '" + questKeyString + "' in " + file.getName(), e);
             }
         }
     }
@@ -710,8 +709,8 @@ public class QuestConfigLoader {
                 }
                 rewards.add(configuredReward);
             } catch (Exception e) {
-                logger.warning("Failed to parse reward of type '" + typeKey + "' in " + contextKey
-                        + " (" + fileName + "): " + e.getMessage());
+                logger.log(Level.WARNING, "Failed to parse reward of type '" + typeKey + "' in " + contextKey
+                        + " (" + fileName + ")", e);
             }
         }
 
