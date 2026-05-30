@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.configuration;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
-import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.dvs.versioning.BasicVersioning;
 import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
@@ -76,12 +75,6 @@ public final class FileManager extends Manager<McRPG> {
             }
         }
         plugin().registryAccess().registry(RegistryKey.MANAGER).manager(ManagerKey.RELOADABLE_CONTENT).reloadAllContent();
-        // Drop the resolved-condition cache and warm it again so edited unlock-conditions
-        // and any newly-empty configurations re-emit the startup warnings.
-        var unlockManager = plugin().registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.UNLOCK_CONDITION);
-        unlockManager.reload();
-        unlockManager.resolveAll();
     }
 
     /**
