@@ -321,6 +321,18 @@ public class QuestChainManager extends Manager<McRPG> {
             }
             Set<NamespacedKey> finalCompletedKeys = completedKeys;
             Bukkit.getScheduler().runTask(plugin(), () -> {
+                // Guard: if chain state changed while the async DB read was in-flight
+                // (e.g. advanceChain completed the chain), this restart is stale.
+                // Return the current result rather than regressing the chain.
+                if (state.getState() != QuestChainState.ACTIVE) {
+                    callback.accept(state.getState() == QuestChainState.COMPLETED);
+                    return;
+                }
+                Optional<NamespacedKey> currentKey = state.getCurrentQuestKey();
+                if (currentKey.isPresent() && !currentKey.equals(oldQuestKey)) {
+                    callback.accept(true);
+                    return;
+                }
                 Optional<QuestChainStep> firstUncompleted = findFirstUncompletedStep(definition, finalCompletedKeys);
                 Player player = Bukkit.getPlayer(playerUUID);
                 if (firstUncompleted.isPresent()) {
