@@ -77,7 +77,7 @@ MythicMobDespawnEvent → listener checks binding registry
   → if bound: fire CustomMobDespawnEvent (no rewards)
 ```
 
-**Key difference from original design:** McRPG never "registers" the entity in `EntityManager`. The mob is purely a MythicMob. McRPG just observes events and reacts.
+**Key difference from original design:** McRPG never "registers" the entity in `EntityManager` for binding purposes. The mob is purely a MythicMob. McRPG just observes events and reacts. However, for mob ability casting via `MobCastableAbility`, the mob is tracked as a temporary `AbilityHolder` in `EntityManager` during `MythicMobsListener`'s spawn/death lifecycle.
 
 ### Config File Location
 
@@ -230,9 +230,11 @@ spawn:
 
 ---
 
-## 4. Mob Abilities (MythicMobs-side, documentation only)
+## 4. Mob Abilities (MythicMobs-side + McRPG Mob Casting)
 
-All abilities are MythicMobs config. McRPG does not execute any of this. Documented for config authoring reference.
+MythicMobs owns the mob AI and skill priority/cooldown system. McRPG provides the `McRPGAbilityMechanic` (a custom MM mechanic type from LLD-4) that allows MM mobs to cast McRPG player abilities. When MM fires the mechanic, `OnMobAbilityTriggerListener` invokes `ability.activateAbility(holder, event)`, which dispatches to `MobCastableAbility.mobActivate()` on abilities that implement it. All four guardian abilities implement `MobCastableAbility`.
+
+The mob casting path shares core effect logic with the player combo path via shared private methods (e.g., `spawnWhirlpool()`, `spawnWall()`). MM owns targeting, cooldowns, and AI priority — McRPG just executes the ability effect. Mob activations do not consume mana, apply McRPG cooldowns, or increment player statistics.
 
 ### 4.1 Phase Shift
 - Teleport behind aggro target when >8 blocks away or out of LoS for 3+ seconds
@@ -302,7 +304,7 @@ Handled by the MythicMob binding loot table (see Section 2). Per-ability drop ch
 
 ## 6. Player Abilities (Standalone, Non-Tiered, Combo-Activated)
 
-Four water-themed combat abilities unlocked by consuming skill books dropped from the Riptide Guardian. These are **standalone** (no parent skill), **non-tiered** (flat power, no upgrade path), and **combo-activated** (standard combo system, any held item). All work in both PvE and PvP. See [LLD-6](../../lld/riptide-guardian/player_abilities.md) for full implementation details.
+Four water-themed combat abilities unlocked by consuming skill books dropped from the Riptide Guardian. These are **standalone** (no parent skill), **non-tiered** (flat power, no upgrade path), and **combo-activated** (standard combo system, any held item). All work in both PvE and PvP. All four implement `MobCastableAbility`, enabling MythicMobs mobs to cast them via the `McRPGAbilityMechanic` from LLD-4. See [LLD-6](../../lld/riptide-guardian/player_abilities.md) for full implementation details.
 
 ### 6.1 Player Phase Shift (`mcrpg:phase_shift`)
 - Teleport behind the last entity the player attacked (5-second hit window, 12-block range, no LOS required)
@@ -529,7 +531,7 @@ This HLD is broken into the following LLDs:
 | **[LLD-3: Skill Book System](../../lld/riptide-guardian/skill_book_system.md)** | Sections 5, 10 (book events) | Factory, consumption listener, consume event, quest reward type | **Implemented** |
 | **[LLD-4: MythicMobs Example Configuration](../../lld/riptide-guardian/mythicmobs_example_configuration.md)** | Section 4 | Bundled Riptide Guardian MM mob YAML, config extractor, MythicMob ability/condition integration | **Implemented** |
 | **[LLD-5: UnlockCondition System](../../lld/riptide-guardian/unlock_condition_system.md)** | Section 7 | Registry-backed condition types, built-in types, ability refactor, login sweep, GUI integration | **Draft** |
-| **[LLD-6: Player Abilities](../../lld/riptide-guardian/player_abilities.md)** | Section 6 | Four standalone, non-tiered, combo-activated abilities, shared config, custom events | **Draft** |
+| **[LLD-6: Player Abilities](../../lld/riptide-guardian/player_abilities.md)** | Section 6 | Four standalone, non-tiered, combo-activated abilities, shared config, custom events, MobCastableAbility mob casting | **Draft** |
 
 Each LLD includes class-level design, method signatures, test coverage plan, and config schema.
 
@@ -547,6 +549,10 @@ Each LLD includes class-level design, method signatures, test coverage plan, and
 | `configuration/FileManager.java` | Loads all FileType entries at startup |
 | `ability/impl/type/UnlockableAbility.java` | Current unlock interface — needs `UnlockCondition` refactor |
 | `ability/impl/type/configurable/ConfigurableAbility.java` | Standalone abilities use this |
+| `ability/impl/type/MobCastableAbility.java` | Opt-in interface for abilities that support mob casting via MythicMobs |
+| `entity/EntityManager.java` | Entity alliance system (`areEntitiesAllied()`, `shouldAlliesBeUnableToDamage()`) — used by tasks and components |
+| `entity/check/EntityAlliedCheck.java` | Functional interface for entity alliance checks |
+| `entity/check/AlliedAttackCheck.java` | Functional interface for allied attack eligibility |
 | `entity/holder/LoadoutHolder.java` | `getAvailableDefaultAbilities()` excludes `UnlockableAbility` |
 | `expansion/McRPGExpansion.java` | New content packs registered here |
 | `src/main/resources/plugin.yml` | MythicMobs already listed as softdepend |

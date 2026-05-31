@@ -4,7 +4,7 @@
 **Date:** 2026-05-31
 **Last Updated:** 2026-05-31
 **HLD Reference:** [Riptide Guardian HLD](../../hld/riptide-guardian/riptide_guardian.md), Section 6
-**Scope:** Four standalone, non-tiered, combo-activated abilities (Phase Shift, Whirlpool, Waterlogged Strike, Tsunami Wall), shared config file, custom events, localization, bootstrap registration
+**Scope:** Four standalone, non-tiered, combo-activated abilities (Phase Shift, Whirlpool, Waterlogged Strike, Tsunami Wall), shared config file, custom events, localization, bootstrap registration, MythicMobs mob casting support via `MobCastableAbility`
 
 ---
 
@@ -58,10 +58,10 @@ These abilities use custom mana costs that sit below the standard bucket ranges 
 
 ### Boundary with Prior LLDs
 
-- **LLD-1 (MythicMobs Binding):** Mob spawning and death events are already implemented. This LLD does not modify any LLD-1 classes.
+- **LLD-1 (MythicMobs Binding):** Mob spawning and death events are already implemented. This LLD does not modify any LLD-1 classes. The `McRPGAbilityMechanic` and `OnMobAbilityTriggerListener` from LLD-4 provide the mob casting path — this LLD implements the `MobCastableAbility` interface that those classes invoke.
 - **LLD-2 (Fishing Mob Spawn):** Spawn probability and mob pool are already implemented. This LLD does not modify any LLD-2 classes.
 - **LLD-3 (Skill Book System):** `SkillBookFactory`, `SkillBookConsumeListener`, and `SkillBookRewardType` are already implemented. Skill books for these abilities use the existing system. This LLD does not modify any LLD-3 classes.
-- **LLD-4 (MythicMobs Example Config):** The bundled `RiptideGuardian.yml` already includes `mcrpg_skillbook` drop entries for these four abilities.
+- **LLD-4 (MythicMobs Example Config):** The bundled `RiptideGuardian.yml` already includes `mcrpg_skillbook` drop entries for these four abilities. The `McRPGAbilityMechanic` (custom MM mechanic) and `OnMobAbilityTriggerListener` from LLD-4 fire `MobAbilityTriggerEvent`, which these abilities handle via `MobCastableAbility.mobActivate()`.
 - **LLD-5 (UnlockCondition System):** These abilities use `DisplayHintUnlockConditionType` as their default unlock condition — books bypass conditions and unlock directly via `SkillBookConsumeListener`.
 
 ### What this LLD does NOT cover
@@ -88,6 +88,7 @@ These abilities use custom mana costs that sit below the standard bucket ranges 
 | `ManaAbility` | `ability/impl/type/` | Mana cost — `getManaCost()` |
 | `ActiveAbility` | `ability/impl/type/` | Activation statistic tracking — `getActivationStatisticKey()` |
 | `ComboActivatable` | `ability/combo/` | Combo activation — `comboActivate()` |
+| `MobCastableAbility` | `ability/impl/type/` | Mob casting support — `mobActivate(AbilityHolder, MobAbilityTriggerEvent)` |
 
 ### 2.2 Interfaces NOT used
 
@@ -153,11 +154,43 @@ All abilities use water-themed particles (WATER_SPLASH, DRIP_WATER, BUBBLE_POP) 
 
 ### 3.7 Per-player combat state tracking
 
-Phase Shift requires knowing the player's last-attacked target and when the attack occurred. This state is **session-only, per-player, not persisted**. It lives on `McRPGPlayer` as an optional transient field, similar to `PlayerFishingState`.
+Phase Shift requires knowing the player's last-attacked target and when the attack occurred. This state is **session-only, per-player, not persisted**. It lives on `McRPGPlayer` as an optional transient field, similar to `PlayerFishingState`. `CombatTargetState` uses `Optional<UUID>` for its last-attacked entity field.
 
 **Rationale.** Combat target tracking is a volatile, high-frequency state change that would be wasteful to persist. It resets on logout, death, or world change — exactly the lifecycle of a session field.
 
 > **Backlog:** Create a general-purpose "combat tracker" system (plugin-wide, not guardian-specific) that tracks last-attacked target, last attacker, recent damage events, etc. Once built, Phase Shift should integrate with it instead of maintaining its own `CombatTargetState`. The current `CombatTargetState` implementation is an acceptable interim solution that can be migrated later.
+
+### 3.8 MobCastableAbility — dual activation path
+
+All four guardian abilities implement `MobCastableAbility`, an opt-in interface that adds `mobActivate(AbilityHolder, MobAbilityTriggerEvent)` alongside the existing `comboActivate()` for players. When MythicMobs fires a `MobAbilityTriggerEvent` via the `McRPGAbilityMechanic`, `OnMobAbilityTriggerListener` calls `ability.activateAbility(holder, event)`, which dispatches to `mobActivate()`.
+
+**Rationale.** The MythicMobs integration (LLD-4) provides the infrastructure for mobs to cast McRPG abilities, but the abilities themselves must handle the mob activation path. Rather than widening `comboActivate()` (which is player-specific by contract), a separate interface keeps the player path clean and makes mob support explicitly opt-in per ability.
+
+**Shared method extraction.** Both `comboActivate()` and `mobActivate()` delegate to a shared private method (e.g., `spawnWhirlpool()`, `spawnWall()`, `launchStrike()`) that contains the core effect logic. This avoids code duplication between the two paths.
+
+### 3.9 PDC-based crit window state
+
+Phase Shift's guaranteed crit window is tracked via a `PersistentDataContainer` tag on the Bukkit `Player` entity, not as a field on `McRPGPlayer`. The tag key is `PhaseShift.CRIT_WINDOW_TAG` (`mcrpg:phase_shift_crit_window`).
+
+**Rationale.** The crit window is Phase Shift-specific state, not a generic player concept. Storing it on `McRPGPlayer` as a boolean field was architecturally misleading — it implied all abilities could use it. A PDC tag scoped to the ability's `NamespacedKey` keeps the state where it belongs and requires no `McRPGPlayer` modifications.
+
+### 3.10 Public config value getters
+
+All four abilities expose public getter methods for their config values (e.g., `getRadius()`, `getDamage()`, `getMaxRange()`). These getters read from the YAML config with sensible defaults and are used internally by both activation paths.
+
+**Rationale.** Public getters serve three purposes: (1) `mobActivate()` and `comboActivate()` share config access through a common method rather than duplicating `getYamlDocument().getDouble(...)` calls, (2) `getItemBuilderPlaceholders()` uses them to populate display item placeholders, and (3) external code (listeners, tasks) can access config values without coupling to Route constants.
+
+### 3.11 Entity alliance checks via EntityManager
+
+Alliance checks (determining if two entities are allies) live on `EntityManager`, not `AbilityRegistry`. Both `WhirlpoolZoneTask` and `TsunamiWallTask` resolve the caster entity once before the entity loop and use `entityManager.areEntitiesAllied(caster, target).getLeft()` for the alliance check.
+
+**Rationale.** The alliance system (`EntityAlliedCheck`, `AlliedAttackCheck`) is an entity relationship concern, not an ability concern. Moving it from `AbilityRegistry` to `EntityManager` aligns with single-responsibility and allows non-ability code to perform alliance checks. The check functions live in the `entity/check/` package.
+
+### 3.12 Synchronous teleport
+
+Phase Shift uses synchronous `entity.teleport()` instead of `teleportAsync()` so that post-teleport effects (attack timer reset, crit window grant, VFX) are gated on teleport success.
+
+**Rationale.** `teleportAsync()` returns a `CompletableFuture` that completes on the main thread, which means chaining `.thenRun()` from the main thread risks deadlock. Synchronous teleport is safe for all entities on the main thread and guarantees that subsequent code only runs if the teleport succeeded.
 
 ---
 
@@ -362,7 +395,7 @@ A session-only, per-player state container tracking the last entity attacked by 
 package us.eunoians.mcrpg.entity.player;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import java.util.Optional;
 import java.util.UUID;
 
 public class CombatTargetState {
@@ -375,9 +408,9 @@ public class CombatTargetState {
         this.lastAttackTimestamp = timestamp;
     }
 
-    @Nullable
-    public UUID getLastAttackedEntityUUID() {
-        return lastAttackedEntityUUID;
+    @NotNull
+    public Optional<UUID> getLastAttackedEntityUUID() {
+        return Optional.ofNullable(lastAttackedEntityUUID);
     }
 
     public long getLastAttackTimestamp() {
@@ -455,149 +488,121 @@ package us.eunoians.mcrpg.ability.impl.guardian;
 public final class PhaseShift extends McRPGAbility
         implements ConfigurableAbility, UnlockableAbility,
                    CooldownableAbility, ManaAbility,
-                   ActiveAbility, ComboActivatable {
+                   ActiveAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey PHASE_SHIFT_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "phase_shift");
+
+    public static final NamespacedKey CRIT_WINDOW_TAG =
+            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "phase_shift_crit_window");
 
     public PhaseShift(@NotNull McRPG mcRPG) {
         super(mcRPG, PHASE_SHIFT_KEY);
     }
 
-    @Override
-    public int getManaCost(@NotNull AbilityHolder abilityHolder) {
-        String formula = getYamlDocument().getString(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_MANA_COST, "40");
-        int cost = (int) new Parser(formula).getValue();
-        int globalMinimum = resolveGlobalMinimumManaCost();
-        return Math.max(cost, globalMinimum);
+    // --- Public config getters ---
+
+    public double getTeleportOffset() {
+        return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.PHASE_SHIFT_TELEPORT_OFFSET, 1.5);
     }
 
-    @Override
-    public long getCooldown(@NotNull AbilityHolder abilityHolder) {
-        String formula = getYamlDocument().getString(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_COOLDOWN, "12");
-        return (long) new Parser(formula).getValue();
+    public double getMaxRange() {
+        return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.PHASE_SHIFT_MAX_RANGE, 12.0);
     }
+
+    public int getLastHitWindowSeconds() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.PHASE_SHIFT_LAST_HIT_WINDOW_SECONDS, 5);
+    }
+
+    public int getCritWindowTicks() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.PHASE_SHIFT_CRIT_WINDOW_TICKS, 60);
+    }
+
+    public double getCritDamageMultiplier() {
+        return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.PHASE_SHIFT_CRIT_DAMAGE_MULTIPLIER, 1.5);
+    }
+
+    // --- Activation paths ---
 
     @Override
     public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
-        Optional<McRPGPlayer> playerOpt = resolvePlayer(abilityHolder);
-        if (playerOpt.isEmpty()) {
-            return false;
-        }
-        McRPGPlayer mcRPGPlayer = playerOpt.get();
-        Player player = mcRPGPlayer.getAsBukkitPlayer();
+        // Player-specific: resolve McRPGPlayer, check CombatTargetState, validate target
+        // Then delegate to shared teleportBehindTarget() + playTeleportEffects()
+        // Player path also calls grantCritWindow() and resetCooldown()
+        // ...
+    }
 
-        // Check for recent combat target
-        Optional<CombatTargetState> stateOpt = mcRPGPlayer.getCombatTargetState();
-        if (stateOpt.isEmpty()) {
-            sendNoTargetMessage(mcRPGPlayer);
-            return false;
-        }
-        CombatTargetState state = stateOpt.get();
-        long windowMillis = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_LAST_HIT_WINDOW_SECONDS, 5) * 1000L;
-        if (!state.hasRecentTarget(System.currentTimeMillis(), windowMillis)) {
-            sendNoTargetMessage(mcRPGPlayer);
-            return false;
-        }
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder holder, @NotNull MobAbilityTriggerEvent event) {
+        // Mob path: gets caster (LivingEntity) and target (LivingEntity) from event
+        // Fires PhaseShiftActivateEvent, calls teleportBehindTarget() + playTeleportEffects()
+        // Skips CombatTargetState (MM owns targeting), skips grantCritWindow() (player-only)
+        // ...
+    }
 
-        // Resolve target entity (cannot Phase Shift to yourself)
-        UUID targetUUID = state.getLastAttackedEntityUUID();
-        if (targetUUID.equals(player.getUniqueId())) {
-            sendNoTargetMessage(mcRPGPlayer);
-            return false;
-        }
-        Entity target = player.getWorld().getEntity(targetUUID);
-        if (target == null || target.isDead()) {
-            sendNoTargetMessage(mcRPGPlayer);
-            return false;
-        }
+    // --- Shared helper methods ---
 
-        // Range check (no LOS required)
-        double maxRange = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_MAX_RANGE, 12.0);
-        if (player.getLocation().distanceSquared(target.getLocation()) > maxRange * maxRange) {
-            sendOutOfRangeMessage(mcRPGPlayer);
-            return false;
-        }
-
-        // Fire event
-        PhaseShiftActivateEvent event = new PhaseShiftActivateEvent(
-                abilityHolder, this, target);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return false;
-        }
-
-        // Calculate teleport destination (behind target)
-        double offset = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_TELEPORT_OFFSET, 1.5);
-        Location destination = calculateBehindTarget(target, offset);
+    private void teleportBehindTarget(@NotNull LivingEntity caster, @NotNull Entity target) {
+        // Synchronous teleport (not teleportAsync) to gate post-teleport effects on success
+        Location destination = calculateBehindTarget(target, getTeleportOffset());
         if (!isSafeLocation(destination)) {
             destination = target.getLocation();
         }
         destination.setYaw(calculateFacingYaw(destination, target.getLocation()));
         destination.setPitch(0);
-
-        // Teleport (async via Paper API)
-        player.teleportAsync(destination);
-
-        // Reset attack timer
-        player.resetCooldown();
-
-        // Apply crit window (via metadata tag, consumed by damage listener)
-        int critWindowTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_CRIT_WINDOW_TICKS, 60);
-        applyCritWindow(mcRPGPlayer, critWindowTicks);
-
-        // VFX
-        spawnTeleportParticles(player.getLocation());
-        player.getWorld().playSound(player.getLocation(),
-                Sound.ENTITY_ENDERMAN_TELEPORT, 0.8f, 1.2f);
-
-        return true;
+        if (caster.teleport(destination)) {
+            if (caster instanceof Player player) {
+                player.resetCooldown();
+            }
+            playTeleportEffects(caster);
+        }
     }
 
-    // Unlock conditions are config-driven (loaded from YAML unlock-conditions section),
-    // not hardcoded in Java. See Section 10.
+    private void grantCritWindow(@NotNull Player player) {
+        player.getPersistentDataContainer().set(CRIT_WINDOW_TAG, PersistentDataType.BOOLEAN, true);
+        new PhaseShiftCritWindowTask(getPlugin(), player.getUniqueId(), getCritWindowTicks()).runTask();
+    }
 
-    // ... config routes, display item, enabled check, helper methods ...
+    private void playTeleportEffects(@NotNull LivingEntity entity) {
+        // Location-based VFX — works for any LivingEntity
+        // ...
+    }
+
+    // ... calculateBehindTarget, calculateFacingYaw, isSafeLocation, getItemBuilderPlaceholders ...
 }
 ```
 
 ### 5.5 Phase Shift Crit Window
 
-The crit window is tracked via a specialized `CoreTask`. When Phase Shift activates:
+The crit window is tracked via a **PDC tag** on the Bukkit `Player` entity. When Phase Shift activates:
 
-1. A `NamespacedKey`-tagged metadata entry is placed on the `McRPGPlayer` marking the crit window as active.
-2. A `PhaseShiftCritWindowTask` (extends `DelayableCoreTask`) is scheduled to remove the tag after `crit-window-ticks` ticks.
-3. A damage listener (`OnPhaseShiftCritListener`) checks for the tag on `EntityDamageByEntityEvent`. If present:
-   - Multiplies damage by `crit-damage-multiplier` (default 1.5x)
-   - Removes the tag (one-time crit, not sustained)
+1. A `PersistentDataContainer` tag (`PhaseShift.CRIT_WINDOW_TAG` = `mcrpg:phase_shift_crit_window`) is set on the Bukkit `Player`.
+2. A `PhaseShiftCritWindowTask` (extends `ExpireableCoreTask`) is scheduled with the player's `UUID` to remove the PDC tag after `crit-window-ticks` ticks.
+3. A damage listener (`OnPhaseShiftCritListener`) checks for the PDC tag on `EntityDamageByEntityEvent`. If present:
+   - Multiplies damage by `crit-damage-multiplier` (default 1.5x) via `phaseShift.getCritDamageMultiplier()`
+   - Removes the PDC tag (one-time crit, not sustained)
    - Plays a crit VFX (CRIT particles + ENTITY_PLAYER_ATTACK_CRIT sound)
+
+**Key design:** `OnPhaseShiftCritListener` takes a `PhaseShift` instance in its constructor (resolved from `AbilityRegistry` during bootstrap) to access config values via the ability's public getters. `PhaseShiftCritWindowTask` takes a `UUID` (not `McRPGPlayer`) and resolves the Bukkit `Player` on expiry to remove the PDC tag. `McRPGPlayer` has no crit window fields or methods.
 
 **New listener:** `src/main/java/us/eunoians/mcrpg/listener/ability/guardian/OnPhaseShiftCritListener.java`
 
 ```java
+public OnPhaseShiftCritListener(@NotNull PhaseShift phaseShift) {
+    this.phaseShift = phaseShift;
+}
+
 @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
 public void onPlayerAttack(@NotNull EntityDamageByEntityEvent event) {
     if (!(event.getDamager() instanceof Player player)) {
         return;
     }
-    Optional<McRPGPlayer> playerOpt = resolvePlayer(player);
-    if (playerOpt.isEmpty()) {
+    if (!player.getPersistentDataContainer().has(PhaseShift.CRIT_WINDOW_TAG, PersistentDataType.BOOLEAN)) {
         return;
     }
-    McRPGPlayer mcRPGPlayer = playerOpt.get();
-    if (!mcRPGPlayer.hasCritWindow()) {
-        return;
-    }
-    double multiplier = getYamlDocument().getDouble(
-            GuardianAbilitiesConfigFile.PHASE_SHIFT_CRIT_DAMAGE_MULTIPLIER, 1.5);
+    double multiplier = phaseShift.getCritDamageMultiplier();
     event.setDamage(event.getDamage() * multiplier);
-    mcRPGPlayer.consumeCritWindow();
+    player.getPersistentDataContainer().remove(PhaseShift.CRIT_WINDOW_TAG);
     spawnCritParticles(event.getEntity().getLocation());
     player.getWorld().playSound(event.getEntity().getLocation(),
             Sound.ENTITY_PLAYER_ATTACK_CRIT, 1.0f, 1.0f);
@@ -653,111 +658,93 @@ Create a stationary AoE zone at the player's current location. For 5 seconds, th
 public final class Whirlpool extends McRPGAbility
         implements ConfigurableAbility, UnlockableAbility,
                    CooldownableAbility, ManaAbility,
-                   ActiveAbility, ComboActivatable {
+                   ActiveAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey WHIRLPOOL_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "whirlpool");
 
+    // --- Public config getters ---
+
+    public double getRadius() { return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.WHIRLPOOL_RADIUS, 4.0); }
+    public int getDurationTicks() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WHIRLPOOL_DURATION_TICKS, 100); }
+    public double getPullVelocity() { return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.WHIRLPOOL_PULL_VELOCITY, 0.1); }
+    public int getSlownessAmplifier() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_AMPLIFIER, 0); }
+    public int getSlownessDurationTicks() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_DURATION_TICKS, 40); }
+    public int getTickInterval() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WHIRLPOOL_TICK_INTERVAL, 4); }
+    public int getExpansionTicks() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WHIRLPOOL_EXPANSION_TICKS, 20); }
+
+    // --- Activation paths ---
+
     @Override
     public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
-        Optional<McRPGPlayer> playerOpt = resolvePlayer(abilityHolder);
-        if (playerOpt.isEmpty()) {
-            return false;
-        }
-        McRPGPlayer mcRPGPlayer = playerOpt.get();
-        Player player = mcRPGPlayer.getAsBukkitPlayer();
+        // Player path: resolve McRPGPlayer, fire event, delegate to spawnWhirlpool()
+        // ...
+    }
 
-        // Fire event
-        WhirlpoolActivateEvent event = new WhirlpoolActivateEvent(
-                abilityHolder, this, player.getLocation());
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return false;
-        }
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder holder, @NotNull MobAbilityTriggerEvent event) {
+        // Mob path: get caster location from event, fire event, delegate to spawnWhirlpool()
+        // ...
+    }
 
-        Location center = player.getLocation().clone();
+    // --- Shared effect method ---
 
-        // Read config
-        double radius = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_RADIUS, 4.0);
-        int durationTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_DURATION_TICKS, 100);
-        double pullVelocity = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_PULL_VELOCITY, 0.1);
-        int slownessAmplifier = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_AMPLIFIER, 0);
-        int slownessDurationTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_DURATION_TICKS, 40);
-        int tickInterval = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_TICK_INTERVAL, 4);
+    private void spawnWhirlpool(@NotNull Location center, @NotNull UUID casterUUID) {
+        WhirlpoolZoneTask task = new WhirlpoolZoneTask(getPlugin(), center, getRadius(),
+                getPullVelocity(), getSlownessAmplifier(), getSlownessDurationTicks(),
+                casterUUID, getDurationTicks(), getTickInterval(), getExpansionTicks());
+        task.runTask();
+        center.getWorld().playSound(center, Sound.ENTITY_FISHING_BOBBER_SPLASH, 1.0f, 0.5f);
+    }
 
-        // Schedule repeating CoreTask for zone effects
-        UUID casterUUID = player.getUniqueId();
-        WhirlpoolZoneTask task = new WhirlpoolZoneTask(center, radius, pullVelocity,
-                slownessAmplifier, slownessDurationTicks,
-                casterUUID, durationTicks);
-        task.scheduleRepeating(getPlugin(), 0L, tickInterval);
-
-        // Spawn sound
-        player.getWorld().playSound(center, Sound.ENTITY_FISHING_BOBBER_SPLASH, 1.0f, 0.5f);
-
-        return true;
+    @Override
+    @NotNull
+    public Map<String, String> getItemBuilderPlaceholders() {
+        Map<String, String> placeholders = new HashMap<>(Ability.super.getItemBuilderPlaceholders());
+        placeholders.put(AbilityItemPlaceholderKeys.RADIUS.getKey(), String.valueOf(getRadius()));
+        placeholders.put(AbilityItemPlaceholderKeys.ABILITY_DURATION.getKey(), String.valueOf(getDurationTicks()));
+        return placeholders;
     }
 }
 ```
 
 ### 6.3 WhirlpoolZoneTask
 
-**New file:** `src/main/java/us/eunoians/mcrpg/ability/impl/guardian/WhirlpoolZoneTask.java`
+**New file:** `src/main/java/us/eunoians/mcrpg/task/ability/guardian/WhirlpoolZoneTask.java`
 
-A specialized `CoreTask` (extends McCore's `CoreTask`) that ticks the whirlpool zone. Each tick:
+An `ExpireableCoreTask` that ticks the whirlpool zone. Supports a configurable expansion phase where the whirlpool grows from `MIN_SCALE` (15%) to full radius over `expansionTicks`. Each tick:
 
-1. Find all `LivingEntity` within `radius` of `center`, excluding the caster and allies (via `isAllies` check).
-2. For each entity: calculate direction vector from entity to center, normalize, multiply by `pullVelocity`, apply as velocity.
-3. Apply Slowness potion effect.
-4. Spawn water particles in a spiral pattern at the zone boundary.
-5. After `durationTicks` total elapsed, cancel self.
+1. Calculate current effective radius based on expansion progress.
+2. Resolve caster via `Bukkit.getEntity(casterUUID)` with `instanceof LivingEntity` (handles null + non-living, supports both players and mobs).
+3. Find all `LivingEntity` within current radius, excluding the caster and allies (via `EntityManager.areEntitiesAllied()`).
+4. For each entity: fire `WhirlpoolPullEvent`, calculate pull direction, apply velocity + Slowness.
+5. Spawn 3-arm spiral water particles at the current radius.
 
 ```java
 @Override
-public void run() {
-    elapsedTicks += tickInterval;
-    if (elapsedTicks >= durationTicks || !center.getWorld().isChunkLoaded(
-            center.getBlockX() >> 4, center.getBlockZ() >> 4)) {
-        cancel();
+protected void onIntervalComplete() {
+    // ...chunk loaded check...
+    double currentRadius = calculateCurrentRadius();
+    pullAndSlowEntities(world, currentRadius);
+    spawnSpiralParticles(world, currentRadius);
+    elapsedTicks++;
+}
+
+private void pullAndSlowEntities(@NotNull World world, double currentRadius) {
+    if (!(Bukkit.getEntity(casterUUID) instanceof LivingEntity caster)) {
+        this.cancelTask();
         return;
     }
+    EntityManager entityManager = ((McRPG) getPlugin()).registryAccess()
+            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
 
-    double radiusSquared = radius * radius;
-    for (Entity entity : center.getWorld().getNearbyEntities(center, radius, radius, radius)) {
-        if (!(entity instanceof LivingEntity living)) {
+    for (Entity entity : world.getNearbyEntities(center, currentRadius, currentRadius, currentRadius)) {
+        // ... instanceof, caster exclusion, distance checks ...
+        if (entity instanceof Player target && entityManager.areEntitiesAllied(caster, target).getLeft()) {
             continue;
         }
-        if (entity.getUniqueId().equals(casterUUID)) {
-            continue;
-        }
-        // Skip allies (party members, etc.)
-        if (entity instanceof Player targetPlayer && isAllies(casterUUID, targetPlayer)) {
-            continue;
-        }
-        double distSq = entity.getLocation().distanceSquared(center);
-        if (distSq > radiusSquared) {
-            continue;
-        }
-        // Pull toward center
-        Vector pullDirection = center.toVector().subtract(entity.getLocation().toVector());
-        if (pullDirection.lengthSquared() > 0.01) {
-            pullDirection.normalize().multiply(pullVelocity);
-            entity.setVelocity(entity.getVelocity().add(pullDirection));
-        }
-        // Apply slowness
-        living.addPotionEffect(new PotionEffect(
-                PotionEffectType.SLOWNESS, slownessDurationTicks,
-                slownessAmplifier, false, true, true));
+        // Fire WhirlpoolPullEvent, apply pull + slowness
     }
-
-    // Spiral water particles
-    spawnWhirlpoolParticles(center, radius, elapsedTicks);
 }
 ```
 
@@ -796,7 +783,7 @@ Fire an invisible projectile entity (snowball with custom metadata, set invisibl
 public final class WaterloggedStrike extends McRPGAbility
         implements ConfigurableAbility, UnlockableAbility,
                    CooldownableAbility, ManaAbility,
-                   ActiveAbility, ComboActivatable {
+                   ActiveAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey WATERLOGGED_STRIKE_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "waterlogged_strike");
@@ -804,44 +791,50 @@ public final class WaterloggedStrike extends McRPGAbility
     public static final NamespacedKey PROJECTILE_TAG =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "waterlogged_strike_projectile");
 
+    // --- Public config getters ---
+
+    public double getProjectileSpeed() { return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_PROJECTILE_SPEED, 1.5); }
+    public double getDamage() { return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_DAMAGE, 3.0); }
+    public double getMaxRange() { return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_MAX_RANGE, 28); }
+    public int getSlownessAmplifier() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_SLOWNESS_AMPLIFIER, 1); }
+    public int getSlownessDurationTicks() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_SLOWNESS_DURATION_TICKS, 60); }
+
+    // --- Activation paths ---
+
     @Override
     public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
-        Optional<McRPGPlayer> playerOpt = resolvePlayer(abilityHolder);
-        if (playerOpt.isEmpty()) {
-            return false;
-        }
-        McRPGPlayer mcRPGPlayer = playerOpt.get();
-        Player player = mcRPGPlayer.getAsBukkitPlayer();
+        // Player path: resolve McRPGPlayer, fire event, delegate to launchStrike()
+        // ...
+    }
 
-        // Fire event
-        WaterloggedStrikeActivateEvent event = new WaterloggedStrikeActivateEvent(
-                abilityHolder, this);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return false;
-        }
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder holder, @NotNull MobAbilityTriggerEvent event) {
+        // Mob path: get caster (LivingEntity extends ProjectileSource), fire event, delegate to launchStrike()
+        // ...
+    }
 
-        // Launch projectile
-        double speed = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_PROJECTILE_SPEED, 1.5);
-        Snowball projectile = player.launchProjectile(Snowball.class,
-                player.getLocation().getDirection().normalize().multiply(speed));
+    // --- Shared effect method ---
+
+    private void launchStrike(@NotNull LivingEntity caster) {
+        Snowball projectile = caster.launchProjectile(Snowball.class,
+                caster.getLocation().getDirection().normalize().multiply(getProjectileSpeed()));
         projectile.setInvisible(true);
-        projectile.getPersistentDataContainer().set(
-                PROJECTILE_TAG, PersistentDataType.BOOLEAN, true);
+        projectile.getPersistentDataContainer().set(PROJECTILE_TAG, PersistentDataType.BOOLEAN, true);
 
-        // Schedule particle trail + range limit
-        int maxRange = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_MAX_RANGE, 28);
         WaterloggedStrikeTrailTask trailTask = new WaterloggedStrikeTrailTask(
-                projectile, player.getLocation(), maxRange);
-        trailTask.scheduleRepeating(getPlugin(), 1L, 1L);
+                getPlugin(), projectile, caster.getLocation(), getMaxRange());
+        trailTask.runTask();
 
-        // Launch sound
-        player.getWorld().playSound(player.getLocation(),
-                Sound.ENTITY_FISHING_BOBBER_THROW, 1.0f, 0.8f);
+        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_FISHING_BOBBER_THROW, 1.0f, 0.8f);
+    }
 
-        return true;
+    @Override
+    @NotNull
+    public Map<String, String> getItemBuilderPlaceholders() {
+        Map<String, String> placeholders = new HashMap<>(Ability.super.getItemBuilderPlaceholders());
+        placeholders.put(AbilityItemPlaceholderKeys.DAMAGE.getKey(), String.valueOf(getDamage()));
+        placeholders.put(AbilityItemPlaceholderKeys.RANGE.getKey(), String.valueOf(getMaxRange()));
+        return placeholders;
     }
 }
 ```
@@ -863,18 +856,21 @@ public void onProjectileHit(@NotNull ProjectileHitEvent event) {
     if (event.getHitEntity() == null || !(event.getHitEntity() instanceof LivingEntity target)) {
         return;
     }
-    if (!(snowball.getShooter() instanceof Player player)) {
+    if (!(snowball.getShooter() instanceof LivingEntity shooter)) {
         return;
     }
 
-    double damage = getYamlDocument().getDouble(
-            GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_DAMAGE, 3.0);
-    int slownessAmplifier = getYamlDocument().getInt(
-            GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_SLOWNESS_AMPLIFIER, 1);
-    int slownessDurationTicks = getYamlDocument().getInt(
-            GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_SLOWNESS_DURATION_TICKS, 60);
+    // Config values read from WaterloggedStrike ability instance
+    double damage = ...;
+    int slownessAmplifier = ...;
+    int slownessDurationTicks = ...;
 
-    target.damage(damage, player);
+    // Fire WaterloggedStrikeImpactEvent (caster is LivingEntity, not Player)
+    WaterloggedStrikeImpactEvent impactEvent = new WaterloggedStrikeImpactEvent(
+            shooter, target, damage, slownessAmplifier, slownessDurationTicks);
+    // ...
+
+    target.damage(damage, shooter);
     target.addPotionEffect(new PotionEffect(
             PotionEffectType.SLOWNESS, slownessDurationTicks,
             slownessAmplifier, false, true, true));
@@ -924,136 +920,130 @@ Summon a 5-wide x 3-tall particle wall in front of the player, facing the player
 public final class TsunamiWall extends McRPGAbility
         implements ConfigurableAbility, UnlockableAbility,
                    CooldownableAbility, ManaAbility,
-                   ActiveAbility, ComboActivatable {
+                   ActiveAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey TSUNAMI_WALL_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "tsunami_wall");
 
+    // --- Public config getters ---
+
+    public int getWidth() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.TSUNAMI_WALL_WIDTH, 5); }
+    public int getHeight() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.TSUNAMI_WALL_HEIGHT, 3); }
+    public int getDurationTicks() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.TSUNAMI_WALL_DURATION_TICKS, 140); }
+    public double getKnockbackStrength() { return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.TSUNAMI_WALL_KNOCKBACK_STRENGTH, 1.5); }
+    public int getSlownessAmplifier() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.TSUNAMI_WALL_SLOWNESS_AMPLIFIER, 2); }
+    public int getSlownessDurationTicks() { return getYamlDocument().getInt(GuardianAbilitiesConfigFile.TSUNAMI_WALL_SLOWNESS_DURATION_TICKS, 60); }
+    public double getSpawnDistance() { return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.TSUNAMI_WALL_SPAWN_DISTANCE, 2.0); }
+    public double getTravelSpeed() { return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.TSUNAMI_WALL_TRAVEL_SPEED, 0.3); }
+
+    // --- Activation paths ---
+
     @Override
     public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
-        Optional<McRPGPlayer> playerOpt = resolvePlayer(abilityHolder);
-        if (playerOpt.isEmpty()) {
-            return false;
-        }
-        McRPGPlayer mcRPGPlayer = playerOpt.get();
-        Player player = mcRPGPlayer.getAsBukkitPlayer();
+        // Player path: resolve McRPGPlayer, fire event, delegate to spawnWall()
+        // ...
+    }
 
-        // Fire event
-        TsunamiWallActivateEvent event = new TsunamiWallActivateEvent(
-                abilityHolder, this, player.getLocation());
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return false;
-        }
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder holder, @NotNull MobAbilityTriggerEvent event) {
+        // Mob path: get caster location/direction from event, fire event, delegate to spawnWall()
+        // ...
+    }
 
-        // Read config
-        int width = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_WIDTH, 5);
-        int height = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_HEIGHT, 3);
-        int durationTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_DURATION_TICKS, 140);
-        double knockbackStrength = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_KNOCKBACK_STRENGTH, 1.5);
-        int slownessAmplifier = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_SLOWNESS_AMPLIFIER, 2);
-        int slownessDurationTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_SLOWNESS_DURATION_TICKS, 60);
-        double spawnDistance = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_SPAWN_DISTANCE, 2.0);
+    // --- Shared effect method ---
 
-        // Calculate wall position and orientation
-        Location playerLoc = player.getLocation();
-        Vector forward = playerLoc.getDirection().setY(0).normalize();
-        Location wallCenter = playerLoc.clone().add(forward.multiply(spawnDistance));
+    private void spawnWall(@NotNull Location casterLoc, @NotNull UUID casterUUID) {
+        Vector forward = casterLoc.getDirection().setY(0).normalize();
+        Location origin = casterLoc.clone().add(forward.clone().multiply(getSpawnDistance()));
+        Location destination = casterLoc.clone().add(forward.clone().multiply(getSpawnDistance() + 5));
         Vector wallRight = new Vector(-forward.getZ(), 0, forward.getX()).normalize();
 
-        UUID casterUUID = player.getUniqueId();
-        TsunamiWallTask task = new TsunamiWallTask(wallCenter, wallRight, width, height,
-                knockbackStrength, slownessAmplifier, slownessDurationTicks,
-                forward, casterUUID, durationTicks);
-        task.scheduleRepeating(getPlugin(), 0L, 2L);
+        TsunamiWallTask task = new TsunamiWallTask(getPlugin(), origin, destination,
+                wallRight, getWidth(), getHeight(), getKnockbackStrength(),
+                getSlownessAmplifier(), getSlownessDurationTicks(),
+                forward, casterUUID, getDurationTicks(), getTravelSpeed());
+        task.runTask();
 
-        // Spawn sound
-        player.getWorld().playSound(wallCenter,
-                Sound.ENTITY_GENERIC_SPLASH, 1.0f, 0.6f);
+        casterLoc.getWorld().playSound(origin, Sound.ENTITY_GENERIC_SPLASH, 1.0f, 0.6f);
+    }
 
-        return true;
+    @Override
+    @NotNull
+    public Map<String, String> getItemBuilderPlaceholders() {
+        Map<String, String> placeholders = new HashMap<>(Ability.super.getItemBuilderPlaceholders());
+        placeholders.put(AbilityItemPlaceholderKeys.ABILITY_DURATION.getKey(), String.valueOf(getDurationTicks()));
+        return placeholders;
     }
 }
 ```
 
 ### 8.3 TsunamiWallTask
 
-**New file:** `src/main/java/us/eunoians/mcrpg/ability/impl/guardian/TsunamiWallTask.java`
+**New file:** `src/main/java/us/eunoians/mcrpg/task/ability/guardian/TsunamiWallTask.java`
 
-A specialized `CoreTask` that maintains the wall. Each tick (every 2 ticks):
+An `ExpireableCoreTask` that drives a Tsunami Wall through two phases:
 
-1. Render particles along the wall surface (grid of WATER_SPLASH + ENCHANTED_HIT).
-2. Check for entities intersecting the wall AABB.
-3. For each intersecting entity (excluding caster): apply knockback away from the wall surface + Slowness III.
+1. **Travel:** The wall moves from the spawn origin toward the destination, expanding from a narrow column (`MIN_SCALE` = 20%) to its full configured width/height as it travels.
+2. **Hold:** Once the wall reaches its destination, it stays stationary for the remaining duration.
+
+Each tick:
+1. If still traveling, advance the wall position along the forward direction by `travelSpeed`.
+2. Calculate the current scale factor based on travel progress.
+3. Render DRIPPING_WATER particles along the wall grid at the current effective size.
+4. Resolve caster via `Bukkit.getEntity(casterUUID)` with `instanceof LivingEntity` (supports both players and mobs).
+5. Check for entities within the wall bounds, excluding caster and allies (via `EntityManager.areEntitiesAllied()`).
+6. Fire `TsunamiWallContactEvent` per entity, apply knockback + Slowness.
 
 ```java
 @Override
-public void run() {
-    elapsedTicks += 2;
-    if (elapsedTicks >= durationTicks || !wallCenter.getWorld().isChunkLoaded(
-            wallCenter.getBlockX() >> 4, wallCenter.getBlockZ() >> 4)) {
-        cancel();
+protected void onIntervalComplete() {
+    // ...chunk loaded check...
+    if (!arrived) {
+        advanceWall();
+    }
+    double scale = calculateScale();
+    double effectiveWidth = fullWidth * scale;
+    double effectiveHeight = fullHeight * scale;
+    renderWallParticles(world, effectiveWidth, effectiveHeight);
+    applyWallEffects(world, effectiveWidth, effectiveHeight);
+}
+
+private void applyWallEffects(@NotNull World world, double effectiveWidth, double effectiveHeight) {
+    if (!(Bukkit.getEntity(casterUUID) instanceof LivingEntity caster)) {
+        this.cancelTask();
         return;
     }
+    EntityManager entityManager = ((McRPG) getPlugin()).registryAccess()
+            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
 
-    World world = wallCenter.getWorld();
-
-    // Render particles along the wall
-    for (int w = 0; w < width; w++) {
-        for (int h = 0; h < height; h++) {
-            double offsetW = (w - width / 2.0) + 0.5;
-            double x = wallCenter.getX() + wallRight.getX() * offsetW;
-            double y = wallCenter.getY() + h;
-            double z = wallCenter.getZ() + wallRight.getZ() * offsetW;
-            world.spawnParticle(Particle.SPLASH, x, y, z, 1, 0.1, 0.1, 0.1, 0);
-        }
-    }
-
-    // Contact check: entities within 0.5 blocks of the wall plane
-    double halfWidth = width / 2.0;
-    for (Entity entity : world.getNearbyEntities(wallCenter, halfWidth + 1, height, 1.5)) {
-        if (!(entity instanceof LivingEntity living)) {
+    for (Entity entity : world.getNearbyEntities(currentCenter, searchRadius, effectiveHeight, searchRadius)) {
+        // ... instanceof, caster exclusion, bounds checks ...
+        if (entity instanceof Player target && entityManager.areEntitiesAllied(caster, target).getLeft()) {
             continue;
         }
-        if (entity.getUniqueId().equals(casterUUID)) {
-            continue;
-        }
-        // Skip allies (party members, etc.)
-        if (entity instanceof Player targetPlayer && isAllies(casterUUID, targetPlayer)) {
-            continue;
-        }
-        if (isInWallBounds(entity.getLocation())) {
-            // Knockback away from wall (in the forward direction)
-            living.setVelocity(forward.clone().normalize().multiply(knockbackStrength)
-                    .setY(0.3));
-            living.addPotionEffect(new PotionEffect(
-                    PotionEffectType.SLOWNESS, slownessDurationTicks,
-                    slownessAmplifier, false, true, true));
-        }
+        // Fire TsunamiWallContactEvent, apply knockback + slowness
     }
 }
 ```
 
 ### 8.4 Wall Bounds Check
 
-The wall is an infinitely-thin plane. Contact is defined as being within 0.5 blocks of the plane and within the wall's width/height bounds.
+The wall has a configurable `WALL_THICKNESS` (0.75 blocks). Contact is defined as being within the thickness of the wall plane and within the wall's effective width/height bounds (which scale during travel).
 
 ```java
-private boolean isInWallBounds(@NotNull Location entityLoc) {
-    Vector relative = entityLoc.toVector().subtract(wallCenter.toVector());
-    double alongWall = relative.dot(wallRight);
-    double heightAbove = entityLoc.getY() - wallCenter.getY();
-    double perpendicular = relative.dot(forward);
-    return Math.abs(alongWall) <= width / 2.0
-            && heightAbove >= 0 && heightAbove <= height
-            && Math.abs(perpendicular) <= 0.8;
+private boolean isWithinWallBounds(@NotNull Location location, double effectiveWidth, double effectiveHeight) {
+    Vector offset = location.toVector().subtract(currentCenter.toVector());
+    double verticalOffset = offset.getY();
+    if (verticalOffset < 0 || verticalOffset > effectiveHeight) {
+        return false;
+    }
+    double widthOffset = offset.dot(wallRight);
+    double halfWidth = effectiveWidth / 2.0;
+    if (Math.abs(widthOffset) > halfWidth) {
+        return false;
+    }
+    double depthOffset = offset.dot(forward);
+    return Math.abs(depthOffset) <= WALL_THICKNESS;
 }
 ```
 
@@ -1148,30 +1138,34 @@ These events are fired when an ability applies damage or effects to a specific t
 
 | Event | Extends | Extra Fields | Fired When |
 |---|---|---|---|
-| `PhaseShiftCritDamageEvent` | `McRPGPlayerEvent` | `Entity target`, `double originalDamage`, `double critDamage`, `double multiplier` | Crit window consumed and damage multiplied |
-| `WhirlpoolPullEvent` | `McRPGPlayerEvent` | `Player caster` (inherited), `LivingEntity target`, `Location center`, `Vector pullVector` | Entity pulled toward whirlpool center |
-| `WaterloggedStrikeImpactEvent` | `McRPGPlayerEvent` | `LivingEntity target`, `double damage`, `int slownessAmplifier`, `int slownessDurationTicks` | Projectile hits a living entity |
-| `TsunamiWallContactEvent` | `McRPGPlayerEvent` | `LivingEntity target`, `Vector knockbackVector`, `int slownessAmplifier`, `int slownessDurationTicks` | Entity contacts the wall |
+| `PhaseShiftCritDamageEvent` | `McRPGPlayerEvent` | `Entity target`, `double originalDamage`, `double critDamage`, `double multiplier` | Crit window consumed and damage multiplied (player-only) |
+| `WhirlpoolPullEvent` | `Event` | `LivingEntity caster`, `LivingEntity target`, `Location center`, `Vector pullVector` | Entity pulled toward whirlpool center |
+| `WaterloggedStrikeImpactEvent` | `Event` | `LivingEntity caster`, `LivingEntity target`, `double damage`, `int slownessAmplifier`, `int slownessDurationTicks` | Projectile hits a living entity |
+| `TsunamiWallContactEvent` | `Event` | `LivingEntity caster`, `LivingEntity target`, `Vector knockbackVector`, `int slownessAmplifier`, `int slownessDurationTicks` | Entity contacts the wall |
+
+**Event widening:** `WhirlpoolPullEvent`, `WaterloggedStrikeImpactEvent`, and `TsunamiWallContactEvent` use `LivingEntity` for the caster field (not `Player`) so they work for both player and mob casters. `PhaseShiftCritDamageEvent` remains `Player`-typed because the crit window is inherently player-only. The three widened events extend `Event` directly (not `McRPGPlayerEvent`) since the caster may not be a player.
 
 All effect events implement `Cancellable`. Example:
 
 ```java
-public class WhirlpoolPullEvent extends McRPGPlayerEvent implements Cancellable {
+public class WhirlpoolPullEvent extends Event implements Cancellable {
 
     private static final HandlerList handlers = new HandlerList();
+    private final LivingEntity caster;
     private final LivingEntity target;
     private final Location center;
     private Vector pullVector;
     private boolean cancelled;
 
-    public WhirlpoolPullEvent(@NotNull Player caster, @NotNull LivingEntity target,
+    public WhirlpoolPullEvent(@NotNull LivingEntity caster, @NotNull LivingEntity target,
                                @NotNull Location center, @NotNull Vector pullVector) {
-        super(caster);
+        this.caster = caster;
         this.target = target;
         this.center = center;
         this.pullVector = pullVector;
     }
 
+    @NotNull public LivingEntity getCaster() { return caster; }
     @NotNull public LivingEntity getTarget() { return target; }
     @NotNull public Location getCenter() { return center; }
     @NotNull public Vector getPullVector() { return pullVector; }
@@ -1366,7 +1360,13 @@ GUARDIAN_ABILITIES_CONFIG("guardian_abilities_configuration.yml", new GuardianAb
 ```java
 // Guardian ability listeners
 Bukkit.getPluginManager().registerEvents(new OnPlayerAttackCombatTargetListener(), plugin);
-Bukkit.getPluginManager().registerEvents(new OnPhaseShiftCritListener(), plugin);
+
+// OnPhaseShiftCritListener takes a PhaseShift instance for config access
+PhaseShift phaseShift = (PhaseShift) plugin.registryAccess()
+        .registry(McRPGRegistryKey.ABILITY)
+        .getRegisteredAbility(PhaseShift.PHASE_SHIFT_KEY);
+Bukkit.getPluginManager().registerEvents(new OnPhaseShiftCritListener(phaseShift), plugin);
+
 Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener(), plugin);
 ```
 
@@ -1440,10 +1440,13 @@ Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener()
 | `ability/impl/guardian/Whirlpool.java` | Ability | Whirlpool ability class |
 | `ability/impl/guardian/WaterloggedStrike.java` | Ability | Waterlogged Strike ability class |
 | `ability/impl/guardian/TsunamiWall.java` | Ability | Tsunami Wall ability class |
-| `ability/impl/guardian/WhirlpoolZoneTask.java` | Task | Whirlpool repeating zone logic |
-| `ability/impl/guardian/WaterloggedStrikeTrailTask.java` | Task | Projectile trail + range enforcement |
-| `ability/impl/guardian/TsunamiWallTask.java` | Task | Wall rendering + contact detection |
-| `ability/impl/guardian/PhaseShiftCritWindowTask.java` | Task | Crit window expiration (extends DelayableCoreTask) |
+| `task/ability/guardian/WhirlpoolZoneTask.java` | Task | Whirlpool repeating zone logic (extends ExpireableCoreTask) |
+| `task/ability/guardian/WaterloggedStrikeTrailTask.java` | Task | Projectile trail + range enforcement |
+| `task/ability/guardian/TsunamiWallTask.java` | Task | Wall rendering + contact detection (extends ExpireableCoreTask) |
+| `task/ability/guardian/PhaseShiftCritWindowTask.java` | Task | Crit window PDC tag expiration (extends ExpireableCoreTask) |
+| `entity/check/EntityAlliedCheck.java` | Check | Functional interface for entity alliance checks |
+| `entity/check/AlliedAttackCheck.java` | Check | Functional interface for allied attack eligibility |
+| `entity/check/EntityPetCheck.java` | Check | Functional interface for entity pet checks |
 | `entity/player/CombatTargetState.java` | State | Per-player last-attacked target tracking |
 | `event/ability/guardian/AbilityActivateEvent.java` | Event | Base cancellable event for guardian abilities |
 | `event/ability/guardian/PhaseShiftActivateEvent.java` | Event | Phase Shift activation event |
@@ -1466,10 +1469,13 @@ All Java files under `src/main/java/us/eunoians/mcrpg/`.
 
 | File | Change |
 |---|---|
-| `entity/player/McRPGPlayer.java` | Add `CombatTargetState` field + accessors + cleanup on logout |
+| `entity/player/McRPGPlayer.java` | Add `CombatTargetState` field + accessors + cleanup on logout. Removed crit window fields/methods (moved to PDC tag) |
+| `entity/EntityManager.java` | Added entity alliance system (`EntityAlliedCheck`, `AlliedAttackCheck` maps + `areEntitiesAllied()`, `shouldAlliesBeUnableToDamage()`, `registerEntityAlliedFunction()`, `registerAlliedAttackCheckFunction()`) |
+| `ability/AbilityRegistry.java` | Removed entity alliance fields and methods (moved to `EntityManager`) |
+| `ability/component/activatable/TargetablePlayerComponent.java` | Updated `doesAffect()` to use `EntityManager.areEntitiesAllied()` instead of `AbilityRegistry` |
 | `configuration/FileType.java` | Add `GUARDIAN_ABILITIES_CONFIG` enum entry |
 | `expansion/McRPGExpansion.java` | Register four guardian abilities in `getAbilityContent()` |
-| `bootstrap/McRPGListenerRegistrar.java` | Register combat target, crit, and impact listeners |
+| `bootstrap/McRPGListenerRegistrar.java` | Register combat target, crit (with `PhaseShift` instance), and impact listeners |
 | `configuration/file/localization/LocalizationKey.java` | Add guardian ability locale route constants |
 | `src/main/resources/localization/english/en_abilities.yml` | Add `ability.guardian.*` messages + `ability.unlock-condition.source.riptide-guardian` |
 | `statistic/McRPGStatistic.java` | Add guardian ability statistic key constants |
@@ -1481,9 +1487,11 @@ All Java files under `src/main/java/us/eunoians/mcrpg/`.
 | `SkillBookFactory.java` | Creates skill book items for these abilities |
 | `SkillBookConsumeListener.java` | Handles skill book consumption and unlock |
 | `OnComboCompleteListener.java` | Handles mana consumption, cooldown, refund |
-| `AbilityRegistry.java` | Registers all four abilities |
 | `AbilityUnlockedAttribute.java` | Tracks unlock state |
 | `DisplayHintUnlockConditionType.java` | Default unlock condition |
+| `OnMobAbilityTriggerListener.java` | Calls `activateAbility(holder, event)` — already dispatches to `mobActivate()` |
+| `MobAbilityTriggerEvent.java` | Carries `LivingEntity` caster/target — used by `mobActivate()` |
+| `WaterloggedStrikeTrailTask.java` | Already entity-agnostic (tracks Snowball + Location) |
 
 ---
 
@@ -1494,3 +1502,4 @@ All Java files under `src/main/java/us/eunoians/mcrpg/`.
 - **PvP split tuning.** Add `pvp-damage-multiplier` and `pvp-slowness-amplifier` config keys per ability. The damage/effect application code checks `target instanceof Player` and applies the multiplier.
 - **Phase Shift wall-clip prevention.** Advanced teleport destination validation with collision checking could supplement the basic `isSafeLocation` check.
 - **General combat tracker.** Replace `CombatTargetState` with a plugin-wide combat tracker system (see Section 3.7 backlog note).
+- **Mob-specific Phase Shift crit.** The crit window is currently player-only (PDC on Bukkit Player). If mob crits are desired, a separate tracking mechanism would be needed since PDC on non-player entities isn't reliable across ticks.
