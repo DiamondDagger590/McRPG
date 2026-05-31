@@ -22,7 +22,9 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -353,19 +355,34 @@ public class QuestChainManager extends Manager<McRPG> {
         var database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
-            boolean deleteStateSuccess;
-            boolean deleteLogSuccess;
+            boolean success = false;
             try (Connection connection = database.getConnection()) {
-                deleteStateSuccess = QuestChainStateDAO.deleteChainState(connection, playerUUID, chainKey);
-                deleteLogSuccess = QuestChainCompletionLogDAO.deleteForChain(connection, playerUUID, chainKey.toString());
+                connection.setAutoCommit(false);
+                try {
+                    List<PreparedStatement> statements = new ArrayList<>();
+                    statements.addAll(QuestChainStateDAO.deleteChainState(connection, playerUUID, chainKey));
+                    statements.addAll(QuestChainCompletionLogDAO.deleteForChain(connection, playerUUID, chainKey.toString()));
+                    for (PreparedStatement ps : statements) {
+                        try (ps) {
+                            ps.executeUpdate();
+                        }
+                    }
+                    connection.commit();
+                    success = true;
+                } catch (SQLException e) {
+                    connection.rollback();
+                    plugin().getLogger().log(Level.SEVERE,
+                            "[QuestChainManager] Failed to reset chain '" + chainKey
+                                    + "' for player " + playerUUID, e);
+                } finally {
+                    connection.setAutoCommit(true);
+                }
             } catch (SQLException e) {
                 plugin().getLogger().log(Level.SEVERE,
-                        "[QuestChainManager] Failed to reset chain '" + chainKey
+                        "[QuestChainManager] Connection error resetting chain '" + chainKey
                                 + "' for player " + playerUUID, e);
-                Bukkit.getScheduler().runTask(plugin(), () -> callback.accept(false));
-                return;
             }
-            boolean finalSuccess = deleteStateSuccess && deleteLogSuccess;
+            boolean finalSuccess = success;
             Bukkit.getScheduler().runTask(plugin(), () -> {
                 if (finalSuccess) {
                     chainData.removeChainState(chainKey);
@@ -634,10 +651,11 @@ public class QuestChainManager extends Manager<McRPG> {
      * @param connection the database connection
      * @param playerUUID the player UUID
      * @return the list of loaded chain states
+     * @throws SQLException if a database error occurs
      */
     @NotNull
     public List<QuestChainPlayerState> loadChainStates(@NotNull Connection connection,
-                                                        @NotNull UUID playerUUID) {
+                                                        @NotNull UUID playerUUID) throws SQLException {
         List<QuestChainPlayerState> states = QuestChainStateDAO.loadAllChainStates(connection, playerUUID);
         if (states.isEmpty()) {
             plugin().getLogger().fine("[QuestChainManager] No chain states found for player " + playerUUID);
