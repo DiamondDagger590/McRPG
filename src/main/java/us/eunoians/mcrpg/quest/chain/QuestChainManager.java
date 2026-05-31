@@ -570,6 +570,11 @@ public class QuestChainManager extends Manager<McRPG> {
                                     @NotNull Map<NamespacedKey, Set<NamespacedKey>> completionsByChain) {
         for (QuestChainPlayerState state : chainsNeedingReResolution) {
             NamespacedKey chainKey = state.getChainKey();
+            if (state.getState() != QuestChainState.ACTIVE) {
+                plugin().getLogger().fine("[QuestChainManager] Skipping re-resolution for chain '"
+                        + chainKey + "' for player " + playerUUID + ": state is now " + state.getState());
+                continue;
+            }
             Optional<QuestChainDefinition> definitionOpt = RegistryAccess.registryAccess()
                     .registry(McRPGRegistryKey.QUEST_CHAIN).get(chainKey);
             if (definitionOpt.isEmpty()) {
