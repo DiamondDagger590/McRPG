@@ -66,20 +66,20 @@ public final class DisplayHintUnlockConditionType implements UnlockConditionType
         boolean hasKey = section.contains("locale-key");
         boolean hasText = section.contains("text");
         if (hasKey == hasText) {
-            throw new UnlockConditionParseException(
+            throw new UnlockConditionParseException(KEY,
                     "mcrpg:display_hint requires exactly one of 'locale-key' or 'text'");
         }
         if (hasKey) {
             String raw = section.getString("locale-key");
             if (raw == null || raw.isBlank()) {
-                throw new UnlockConditionParseException(
+                throw new UnlockConditionParseException(KEY,
                         "mcrpg:display_hint 'locale-key' must not be blank");
             }
             return new DisplayHintUnlockConditionType(Route.fromString(raw));
         }
         String text = section.getString("text");
         if (text == null || text.isBlank()) {
-            throw new UnlockConditionParseException(
+            throw new UnlockConditionParseException(KEY,
                     "mcrpg:display_hint 'text' must not be blank");
         }
         return new DisplayHintUnlockConditionType(text);

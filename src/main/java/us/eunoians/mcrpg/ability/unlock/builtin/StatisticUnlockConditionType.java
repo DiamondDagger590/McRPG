@@ -62,15 +62,15 @@ public final class StatisticUnlockConditionType implements UnlockConditionType {
     public UnlockConditionType parseConfig(@NotNull Section section) {
         NamespacedKey stat = McRPGMethods.parseNamespacedKey(section.getString("statistic"));
         if (stat == null) {
-            throw new UnlockConditionParseException("mcrpg:statistic requires a 'statistic' key");
+            throw new UnlockConditionParseException(KEY, "mcrpg:statistic requires a 'statistic' key");
         }
         if (!section.contains("threshold")) {
-            throw new UnlockConditionParseException("mcrpg:statistic requires a 'threshold' key");
+            throw new UnlockConditionParseException(KEY, "mcrpg:statistic requires a 'threshold' key");
         }
         boolean hasKey = section.contains("locale-key");
         boolean hasText = section.contains("text");
         if (hasKey && hasText) {
-            throw new UnlockConditionParseException(
+            throw new UnlockConditionParseException(KEY,
                     "mcrpg:statistic may set at most one of 'locale-key' or 'text'");
         }
         Route customKey = hasKey ? Route.fromString(section.getString("locale-key")) : null;

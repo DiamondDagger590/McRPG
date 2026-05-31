@@ -58,10 +58,10 @@ public final class SkillLevelUnlockConditionType implements UnlockConditionType 
     public UnlockConditionType parseConfig(@NotNull Section section) {
         NamespacedKey skill = McRPGMethods.parseNamespacedKey(section.getString("skill"));
         if (skill == null) {
-            throw new UnlockConditionParseException("mcrpg:skill_level requires a 'skill' key");
+            throw new UnlockConditionParseException(KEY, "mcrpg:skill_level requires a 'skill' key");
         }
         if (!section.contains("level")) {
-            throw new UnlockConditionParseException("mcrpg:skill_level requires a 'level' key");
+            throw new UnlockConditionParseException(KEY, "mcrpg:skill_level requires a 'level' key");
         }
         return new SkillLevelUnlockConditionType(skill, section.getInt("level"));
     }

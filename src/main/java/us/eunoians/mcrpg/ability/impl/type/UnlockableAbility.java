@@ -74,6 +74,21 @@ public interface UnlockableAbility extends Ability {
      * @param holder the holder to evaluate against
      * @return {@code true} if at least one condition is met
      */
+    /**
+     * The best (max) progress of any condition on this ability for the given holder.
+     * Display-only conditions always report 0 and do not contribute to the max.
+     *
+     * @param holder the holder to evaluate against
+     * @return the maximum progress value across all conditions, between 0.0 and 1.0
+     */
+    default double getBestConditionProgress(@NotNull AbilityHolder holder) {
+        double max = 0.0;
+        for (UnlockConditionType condition : getUnlockConditions()) {
+            max = Math.max(max, condition.getProgress(holder));
+        }
+        return max;
+    }
+
     default boolean isAnyConditionMet(@NotNull AbilityHolder holder) {
         for (UnlockConditionType condition : getUnlockConditions()) {
             if (condition.isMet(holder)) {

@@ -49,12 +49,12 @@ public final class AllOfUnlockConditionType implements UnlockConditionType {
     @Override
     public UnlockConditionType parseConfig(@NotNull Section section) {
         Section nested = section.getOptionalSection("conditions").orElseThrow(() ->
-                new UnlockConditionParseException("mcrpg:all_of requires a 'conditions' section"));
+                new UnlockConditionParseException(KEY, "mcrpg:all_of requires a 'conditions' section"));
         UnlockConditionManager manager = McRPG.getInstance().registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.UNLOCK_CONDITION);
         List<UnlockConditionType> parsed = manager.parseSection(nested);
         if (parsed.isEmpty()) {
-            throw new UnlockConditionParseException("mcrpg:all_of requires at least one child");
+            throw new UnlockConditionParseException(KEY, "mcrpg:all_of requires at least one child");
         }
         return new AllOfUnlockConditionType(parsed);
     }

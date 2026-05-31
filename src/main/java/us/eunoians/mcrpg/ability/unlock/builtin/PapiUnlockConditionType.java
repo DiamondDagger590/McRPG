@@ -68,23 +68,23 @@ public final class PapiUnlockConditionType implements UnlockConditionType {
     public UnlockConditionType parseConfig(@NotNull Section section) {
         String placeholderRaw = section.getString("placeholder");
         if (placeholderRaw == null || placeholderRaw.isBlank()) {
-            throw new UnlockConditionParseException("mcrpg:papi requires a 'placeholder' key");
+            throw new UnlockConditionParseException(KEY, "mcrpg:papi requires a 'placeholder' key");
         }
         String operatorRaw = section.getString("operator");
         if (operatorRaw == null || operatorRaw.isBlank()) {
-            throw new UnlockConditionParseException("mcrpg:papi requires an 'operator' key");
+            throw new UnlockConditionParseException(KEY, "mcrpg:papi requires an 'operator' key");
         }
         if (!section.contains("value")) {
-            throw new UnlockConditionParseException("mcrpg:papi requires a 'value' key");
+            throw new UnlockConditionParseException(KEY, "mcrpg:papi requires a 'value' key");
         }
         ComparisonOperator parsedOperator = ComparisonOperator.fromSymbol(operatorRaw).orElseThrow(() ->
-                new UnlockConditionParseException("Unknown PAPI operator '" + operatorRaw
+                new UnlockConditionParseException(KEY, "Unknown PAPI operator '" + operatorRaw
                         + "'. Valid operators: >=, >, ==, <=, <, !="));
         String valueRaw = String.valueOf(section.get("value"));
         boolean hasKey = section.contains("locale-key");
         boolean hasText = section.contains("text");
         if (hasKey && hasText) {
-            throw new UnlockConditionParseException(
+            throw new UnlockConditionParseException(KEY,
                     "mcrpg:papi may set at most one of 'locale-key' or 'text'");
         }
         Route customKey = hasKey ? Route.fromString(section.getString("locale-key")) : null;

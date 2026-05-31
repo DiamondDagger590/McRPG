@@ -55,11 +55,20 @@ public class OnPlayerLoadUnlockSweepListener implements Listener {
             if (unlockable.isAbilityUnlocked(skillHolder) || !unlockable.isAnyConditionMet(skillHolder)) {
                 continue;
             }
-            flipAttributeAndFire(skillHolder, unlockable);
+            unlockAbility(skillHolder, unlockable);
         }
     }
 
-    private void flipAttributeAndFire(@NotNull SkillHolder skillHolder, @NotNull UnlockableAbility unlockable) {
+    /**
+     * Marks the ability as unlocked for the holder by setting {@link AbilityUnlockedAttribute}
+     * to {@code true}, fires {@link AbilityUnlockEvent}, and persists the change to the database
+     * asynchronously. Silently returns if the ability data or attribute is missing, or if the
+     * ability is already unlocked.
+     *
+     * @param skillHolder the holder gaining the unlock
+     * @param unlockable  the ability being unlocked
+     */
+    private void unlockAbility(@NotNull SkillHolder skillHolder, @NotNull UnlockableAbility unlockable) {
         var abilityDataOptional = skillHolder.getAbilityData(unlockable);
         if (abilityDataOptional.isEmpty()) {
             return;
