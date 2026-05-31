@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.MobCastableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
@@ -30,6 +31,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.event.ability.swords.RageSpikeActivateEvent;
 import us.eunoians.mcrpg.event.ability.swords.RageSpikeDamageEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -49,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * blasting the player forward and knocking back enemies while dealing damage.
  */
 @ParserConfigKeys({"cooldown", "mana-cost", "damage", "velocity"})
-public final class RageSpike extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable {
+public final class RageSpike extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey RAGE_SPIKE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "rage_spike");
 
@@ -94,51 +96,56 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        RageSpikeActivateEvent rageSpikeActivateEvent = new RageSpikeActivateEvent(abilityHolder);
-        Bukkit.getPluginManager().callEvent(rageSpikeActivateEvent);
+        return comboActivate(abilityHolder);
+    }
 
-        if (rageSpikeActivateEvent.isCancelled()) {
-            return false;
-        }
-        if (Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
-            performRageSpike(abilityHolder, player);
-        }
-        return true;
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
+        return fireAndPerform(abilityHolder, mobEvent.getCaster());
     }
 
     @Override
     public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
+        if (!(Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player)) {
+            return false;
+        }
+        return fireAndPerform(abilityHolder, player);
+    }
+
+    /**
+     * Fires the {@link RageSpikeActivateEvent} and, if not cancelled, executes the
+     * Rage Spike effect on the given caster entity.
+     *
+     * @param abilityHolder The {@link AbilityHolder} activating the ability.
+     * @param caster        The {@link LivingEntity} that will dash forward.
+     * @return {@code true} if the ability executed, {@code false} if cancelled.
+     */
+    private boolean fireAndPerform(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity caster) {
         RageSpikeActivateEvent rageSpikeActivateEvent = new RageSpikeActivateEvent(abilityHolder);
         Bukkit.getPluginManager().callEvent(rageSpikeActivateEvent);
-
         if (rageSpikeActivateEvent.isCancelled()) {
             return false;
         }
-        if (Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
-            performRageSpike(abilityHolder, player);
-        }
+        performRageSpike(abilityHolder, caster);
         return true;
     }
 
     /**
-     * Executes the core Rage Spike effect — launching the player forward and damaging
-     * entities they pass through. Called by both the event path and the combo path.
+     * Executes the core Rage Spike effect — launching the entity forward and damaging
+     * entities they pass through. Called by both the combo path and the mob path.
      *
      * @param abilityHolder The {@link AbilityHolder} activating the ability.
-     * @param player        The online {@link Player} associated with the holder.
+     * @param caster        The {@link LivingEntity} performing the dash.
      */
-    private void performRageSpike(@NotNull AbilityHolder abilityHolder, @NotNull Player player) {
+    private void performRageSpike(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity caster) {
         int tier = getCurrentAbilityTier(abilityHolder);
-        var direction = player.getLocation().getDirection();
+        var direction = caster.getLocation().getDirection();
         double clampedY = Math.min(direction.getY(), getMaxVerticalVelocity());
-        // Horizontal components are scaled by the tier velocity; Y is applied directly so
-        // the config cap represents the actual Y velocity and is not amplified by the multiplier.
         Vector launchVector = new Vector(direction.getX(), 0, direction.getZ()).multiply(getVelocity(tier));
         launchVector.setY(clampedY);
-        player.setVelocity(launchVector);
+        caster.setVelocity(launchVector);
 
-        // Launch sound
-        player.getWorld().playSound(player.getLocation(), Sound.ENTITY_BREEZE_SHOOT, 1.0f, 1.4f);
+        caster.getWorld().playSound(caster.getLocation(), Sound.ENTITY_BREEZE_SHOOT, 1.0f, 1.4f);
 
         RageSpike rageSpike = this;
         abilityHolder.addActiveAbility(rageSpike);
@@ -147,29 +154,28 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (!abilityHolder.isAbilityActive(rageSpike) || !player.isOnline()
-                        || player.isDead() || player.isSleeping()
+                boolean casterInvalid = caster.isDead()
+                        || (caster instanceof Player player && !player.isOnline());
+                if (!abilityHolder.isAbilityActive(rageSpike) || casterInvalid
                         || count.incrementAndGet() == 21) {
                     abilityHolder.removeActiveAbility(rageSpike);
                     cancel();
                 } else {
-                    // Dash trail: cloud puffs at feet + crit sparkle at chest
-                    player.getWorld().spawnParticle(Particle.CLOUD, player.getLocation().add(0, 0.1, 0), 4, 0.15, 0.05, 0.15, 0.02);
-                    player.getWorld().spawnParticle(Particle.CRIT, player.getLocation().add(0, 0.8, 0), 6, 0.25, 0.25, 0.25, 0.05);
+                    caster.getWorld().spawnParticle(Particle.CLOUD, caster.getLocation().add(0, 0.1, 0), 4, 0.15, 0.05, 0.15, 0.02);
+                    caster.getWorld().spawnParticle(Particle.CRIT, caster.getLocation().add(0, 0.8, 0), 6, 0.25, 0.25, 0.25, 0.05);
 
-                    for (Entity entity : player.getNearbyEntities(2, 2, 2)) {
+                    for (Entity entity : caster.getNearbyEntities(2, 2, 2)) {
                         if (entity instanceof LivingEntity livingEntity && !isNPC(entity) && !entities.contains(entity.getUniqueId())) {
                             RageSpikeDamageEvent rageSpikeDamageEvent = new RageSpikeDamageEvent(abilityHolder, livingEntity, getDamage(tier));
                             Bukkit.getPluginManager().callEvent(rageSpikeDamageEvent);
                             if (rageSpikeDamageEvent.isCancelled()) {
                                 continue;
                             }
-                            Vector targVector = new Vector(entity.getLocation().getDirection().getX(), entity.getLocation().getDirection().getY(), player.getLocation().getDirection().getZ());
+                            Vector targVector = new Vector(entity.getLocation().getDirection().getX(), entity.getLocation().getDirection().getY(), caster.getLocation().getDirection().getZ());
                             entity.setVelocity(targVector.multiply(-4.3));
                             livingEntity.damage(rageSpikeDamageEvent.getDamage());
                             entities.add(entity.getUniqueId());
-                            // Hit confirmation particles on the struck entity
-                            player.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, livingEntity.getLocation().add(0, 1, 0), 10, 0.3, 0.3, 0.3, 0.02);
+                            caster.getWorld().spawnParticle(Particle.DAMAGE_INDICATOR, livingEntity.getLocation().add(0, 1, 0), 10, 0.3, 0.3, 0.3, 0.02);
                         }
                     }
                 }

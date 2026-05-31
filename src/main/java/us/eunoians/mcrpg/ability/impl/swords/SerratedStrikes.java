@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.MobCastableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
@@ -19,6 +20,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.event.ability.swords.SerratedStrikesActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
@@ -38,7 +40,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * the activation rate of {@link Bleed} while active.
  */
 @ParserConfigKeys({"cooldown", "mana-cost", "duration", "bleed-activation-boost"})
-public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable {
+public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey SERRATED_STRIKES_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "serrated_strikes");
 
@@ -104,17 +106,13 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
         return true;
     }
 
-    /**
-     * Delegates to {@link #comboActivate(AbilityHolder)}. This ability has no activation
-     * components registered, so this method is never called via the event-listener path;
-     * it remains implemented to satisfy the {@link us.eunoians.mcrpg.ability.Ability} interface.
-     *
-     * @param abilityHolder The holder activating this ability.
-     * @param event         The triggering event (unused).
-     * @return The result of {@link #comboActivate(AbilityHolder)}.
-     */
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        return comboActivate(abilityHolder);
+    }
+
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
         return comboActivate(abilityHolder);
     }
 

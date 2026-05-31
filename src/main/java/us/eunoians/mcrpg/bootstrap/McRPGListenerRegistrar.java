@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
+import us.eunoians.mcrpg.ability.impl.guardian.PhaseShift;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
@@ -39,6 +40,9 @@ import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnMobAbilityTriggerListener;
 import us.eunoians.mcrpg.listener.ability.OnPlayerMoveAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnSneakAbilityListener;
+import us.eunoians.mcrpg.listener.ability.guardian.OnPhaseShiftCritListener;
+import us.eunoians.mcrpg.listener.ability.guardian.OnPlayerAttackCombatTargetListener;
+import us.eunoians.mcrpg.listener.ability.guardian.OnWaterloggedStrikeImpactListener;
 import us.eunoians.mcrpg.listener.entity.EntitySpawnListener;
 import us.eunoians.mcrpg.listener.entity.player.CorePlayerLoadListener;
 import us.eunoians.mcrpg.listener.entity.player.CorePlayerUnloadListener;
@@ -167,6 +171,14 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         // Skill book listener (always registered — books can come from any source)
         Bukkit.getPluginManager().registerEvents(new SkillBookConsumeListener(), plugin);
+
+        // Guardian ability listeners
+        Bukkit.getPluginManager().registerEvents(new OnPlayerAttackCombatTargetListener(), plugin);
+        PhaseShift phaseShift = (PhaseShift) plugin.registryAccess()
+                .registry(McRPGRegistryKey.ABILITY)
+                .getRegisteredAbility(PhaseShift.PHASE_SHIFT_KEY);
+        Bukkit.getPluginManager().registerEvents(new OnPhaseShiftCritListener(phaseShift), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener(), plugin);
 
         // Statistic listeners
         Bukkit.getPluginManager().registerEvents(new SkillStatisticListener(), plugin);

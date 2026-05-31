@@ -4,6 +4,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.ability.impl.type.MobCastableAbility;
 import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 
 /**
@@ -12,8 +13,11 @@ import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
  * <p>
  * MythicMobs owns AI decisions (when to fire, cooldowns, targeting).
  * This listener bridges those decisions into McRPG's
- * {@link us.eunoians.mcrpg.ability.Ability#activateAbility} call so that McRPG owns
+ * {@link MobCastableAbility#mobActivate} call so that McRPG owns
  * execution (damage, effects, scaling, events).
+ * <p>
+ * Only abilities that implement {@link MobCastableAbility} are eligible for mob
+ * casting. Abilities that do not implement the interface are silently skipped.
  * <p>
  * Component checks are intentionally bypassed — MythicMobs has already decided
  * the ability should fire, and the mob's transient {@link us.eunoians.mcrpg.entity.holder.AbilityHolder}
@@ -22,12 +26,15 @@ import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 public class OnMobAbilityTriggerListener implements Listener {
 
     /**
-     * Handles a mob ability trigger by directly activating the ability carried in the event.
+     * Handles a mob ability trigger by calling {@link MobCastableAbility#mobActivate}
+     * if the ability supports mob casting.
      *
      * @param event The mob ability trigger event fired by the {@code mcrpg_ability} mechanic
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void handleMobAbilityTrigger(@NotNull MobAbilityTriggerEvent event) {
-        event.getAbility().activateAbility(event.getAbilityHolder(), event);
+        if (event.getAbility() instanceof MobCastableAbility mobCastable) {
+            mobCastable.mobActivate(event.getAbilityHolder(), event);
+        }
     }
 }

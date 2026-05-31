@@ -77,7 +77,7 @@ MythicMobDespawnEvent → listener checks binding registry
   → if bound: fire CustomMobDespawnEvent (no rewards)
 ```
 
-**Key difference from original design:** McRPG never "registers" the entity in `EntityManager`. The mob is purely a MythicMob. McRPG just observes events and reacts.
+**Key difference from original design:** McRPG never "registers" the entity in `EntityManager` for binding purposes. The mob is purely a MythicMob. McRPG just observes events and reacts. However, for mob ability casting via `MobCastableAbility`, the mob is tracked as a temporary `AbilityHolder` in `EntityManager` during `MythicMobsListener`'s spawn/death lifecycle.
 
 ### Config File Location
 
@@ -230,9 +230,11 @@ spawn:
 
 ---
 
-## 4. Mob Abilities (MythicMobs-side, documentation only)
+## 4. Mob Abilities (MythicMobs-side + McRPG Mob Casting)
 
-All abilities are MythicMobs config. McRPG does not execute any of this. Documented for config authoring reference.
+MythicMobs owns the mob AI and skill priority/cooldown system. McRPG provides the `McRPGAbilityMechanic` (a custom MM mechanic type from LLD-4) that allows MM mobs to cast McRPG player abilities. When MM fires the mechanic, `OnMobAbilityTriggerListener` invokes `ability.activateAbility(holder, event)`, which dispatches to `MobCastableAbility.mobActivate()` on abilities that implement it. All four guardian abilities implement `MobCastableAbility`.
+
+The mob casting path shares core effect logic with the player combo path via shared private methods (e.g., `spawnWhirlpool()`, `spawnWall()`). MM owns targeting, cooldowns, and AI priority — McRPG just executes the ability effect. Mob activations do not consume mana, apply McRPG cooldowns, or increment player statistics.
 
 ### 4.1 Phase Shift
 - Teleport behind aggro target when >8 blocks away or out of LoS for 3+ seconds
@@ -300,54 +302,66 @@ Handled by the MythicMob binding loot table (see Section 2). Per-ability drop ch
 
 ---
 
-## 6. Player Ability Concepts (Ideas Only — Not Implemented)
+## 6. Player Abilities (Standalone, Non-Tiered, Combo-Activated)
 
-These are documented for future iteration when the ability activation system rework is complete. **No code will be written for these abilities.** They may or may not have tiers.
+Four water-themed combat abilities unlocked by consuming skill books dropped from the Riptide Guardian. These are **standalone** (no parent skill), **non-tiered** (flat power, no upgrade path), and **combo-activated** (standard combo system, any held item). All work in both PvE and PvP. All four implement `MobCastableAbility`, enabling MythicMobs mobs to cast them via the `McRPGAbilityMechanic` from LLD-4. See [LLD-6](../../lld/riptide-guardian/player_abilities.md) for full implementation details.
 
 ### 6.1 Player Phase Shift (`mcrpg:phase_shift`)
-- Teleport behind current attack target during melee. Active ability.
-- Possible activation: Ready with right-click sword → attack to teleport + bonus damage.
-- Skill book source: Riptide Guardian
+- Teleport behind the last entity the player attacked (5-second hit window, 12-block range, no LOS required)
+- Resets the player's attack timer on arrival
+- Grants a guaranteed critical hit window (3 seconds, 1.5x damage multiplier) on the next melee attack
+- **Mana:** 40 | **Cooldown:** 12s
 
 ### 6.2 Player Whirlpool (`mcrpg:whirlpool`)
-- Small AoE zone at player's feet that damages/slows nearby enemies.
-- Possible activation: Sneak while holding fishing rod/trident.
-- Smaller than mob version (radius ~2-3 vs ~4, shorter duration).
-- Skill book source: Riptide Guardian
+- Stationary AoE zone at the player's current location (4-block radius, 5 seconds)
+- Pulls entities toward center with gentle force (0.1 velocity) + applies Slowness I
+- No damage — pure crowd control utility
+- Caster excluded from effects
+- **Mana:** 25 | **Cooldown:** 12s
 
 ### 6.3 Player Waterlogged Strike (`mcrpg:waterlogged_strike`)
-- Fire a water projectile (particle-trailed snowball) that deals damage + Slowness.
-- Possible activation: Right-click fishing rod while not actively fishing.
-- Lower damage/slow than mob version.
-- Skill book source: Riptide Guardian
+- Physical projectile entity (snowball with PDC tag + DRIPPING_WATER particle trail)
+- On impact: 1.5 hearts damage + Slowness II (3 seconds)
+- Max range ~28 blocks
+- **Mana:** 15 | **Cooldown:** 1s
 
 ### 6.4 Player Tsunami Wall (`mcrpg:tsunami_wall`)
-- Summon a particle wall in facing direction that slows/knocks back enemies on contact.
-- Possible activation: Ready with trident → sneak to place.
-- Smaller than mob version.
-- Skill book source: Riptide Guardian
+- Forward-facing particle wall (5 wide x 3 tall, 7 seconds)
+- Spawns in front of the player, oriented to their look direction
+- Entities contacting the wall receive knockback + Slowness III (3 seconds)
+- Caster excluded from effects
+- **Mana:** 50 | **Cooldown:** 15s
 
 ### Integration with Loadout
 
-Once implemented, these abilities should participate in the loadout system — players must slot them, creating meaningful choices between skill abilities and standalone abilities. They are NOT "default abilities" that bypass the loadout.
+These abilities participate in the standard loadout system — players slot them into any active ability slot and activate via the slot's assigned combo pattern. They compete for loadout slots with skill-based abilities, creating meaningful loadout choices. They are NOT "default abilities" that bypass the loadout.
+
+### Mana Cost Rationale
+
+These abilities use custom fixed mana costs below the standard tiered-ability bucket ranges. The standard buckets (Light 28-32, Medium 42-50, Heavy 70-80) were designed for T1-T5 scaling where T1 costs are high and T5 costs reward progression. Non-tiered abilities have no cost reduction progression, so the fixed cost must be playable without that reward. The config file allows server owners to adjust all values.
 
 ---
 
-## 7. UnlockCondition System (Design Document — Not Implemented)
+## 7. UnlockCondition System (Designed — LLD-5)
 
-### Problem
+**Status:** LLD-5 written and approved. See [LLD-5](../../lld/riptide-guardian/unlock_condition_system.md) for full implementation details.
 
-`UnlockableAbility` currently has:
-```java
-boolean checkIfAbilityCanBeUnlocked(SkillHolder skillHolder, Skill skill);
-int getUnlockLevel();
-```
+### Summary
 
-This is tightly coupled to skill-level progression. Skill book abilities, quest rewards, achievements, and other unlock methods don't fit this interface. The GUI also has no standardized way to display diverse unlock conditions to players.
+`UnlockableAbility`'s skill-coupled `getUnlockLevel()` / `checkIfAbilityCanBeUnlocked()` methods are replaced with a **registry-backed, content-pack-extensible `UnlockConditionType` system** modeled on the `QuestObjectiveType` pattern. Key design decisions:
 
-### Proposed Design
+- **`UnlockConditionType`** is a single interface (prototype + configured instance) registered in `UnlockConditionTypeRegistry` and distributed via `UnlockConditionTypeContentPack`.
+- **Top-level list is OR** — meeting any condition unlocks the ability. AND is expressed via the `mcrpg:all_of` composite.
+- **Six built-in types:** `mcrpg:skill_level`, `mcrpg:statistic`, `mcrpg:papi`, `mcrpg:display_hint`, `mcrpg:all_of`, `mcrpg:any_of`.
+- **Config replaces Java defaults** — server owners compose conditions in YAML; config overrides the programmatic default entirely (with a logged warning).
+- **Books bypass conditions** — `mcrpg:display_hint` always returns `isMet() = false`; books unlock via `SkillBookConsumeListener` directly.
+- **Login sweep** resolves issue #220 — checks all conditions on player load.
 
-**Replace the skill-coupled methods with a flexible `UnlockCondition` system:**
+### Original Problem Statement
+
+`UnlockableAbility` was tightly coupled to skill-level progression. Skill book abilities, quest rewards, achievements, and other unlock methods didn't fit the `getUnlockLevel()` interface. The GUI also had no standardized way to display diverse unlock conditions to players.
+
+### Original Proposed Interface
 
 ```java
 public interface UnlockCondition {
@@ -508,17 +522,18 @@ The following items are explicitly called out as future work. GitHub issues shou
 
 ## 13. LLD Breakdown
 
-This HLD will be broken into the following LLDs for implementation:
+This HLD is broken into the following LLDs:
 
-| LLD | Sections Covered | Scope |
-|---|---|---|
-| **LLD-1: MythicMobs Binding System** | Sections 2, 10 (binding events) | Hook, integration, binding registry, config file, event listener |
-| **LLD-2: Fishing Mob Spawn System** | Sections 3, 8 (despawn policy) | Spawn tracker, mob pool, despawn scheduling, config file |
-| **LLD-3: Skill Book System** | Sections 5, 10 (book events) | Factory, consumption listener, PDC tags, localization keys |
-| **LLD-4: UnlockCondition Refactor** | Section 7 | Interface, implementations, migration of existing abilities |
-| **LLD-5: Player Abilities** | Section 6 | Deferred until ability system rework — LLD written then |
+| LLD | Sections Covered | Scope | Status |
+|---|---|---|---|
+| **[LLD-1: MythicMobs Binding System](../../lld/riptide-guardian/mythicmobs_binding_system.md)** | Sections 2, 10 (binding events) | Hook, event bridge, PDC tagging, custom drop type, custom events | **Implemented** |
+| **[LLD-2: Fishing Mob Spawn System](../../lld/riptide-guardian/fishing_mob_spawn_system.md)** | Sections 3, 8 (despawn policy) | Spawn tracker, mob pool, per-player state, config file, custom events | **Implemented** |
+| **[LLD-3: Skill Book System](../../lld/riptide-guardian/skill_book_system.md)** | Sections 5, 10 (book events) | Factory, consumption listener, consume event, quest reward type | **Implemented** |
+| **[LLD-4: MythicMobs Example Configuration](../../lld/riptide-guardian/mythicmobs_example_configuration.md)** | Section 4 | Bundled Riptide Guardian MM mob YAML, config extractor, MythicMob ability/condition integration | **Implemented** |
+| **[LLD-5: UnlockCondition System](../../lld/riptide-guardian/unlock_condition_system.md)** | Section 7 | Registry-backed condition types, built-in types, ability refactor, login sweep, GUI integration | **Draft** |
+| **[LLD-6: Player Abilities](../../lld/riptide-guardian/player_abilities.md)** | Section 6 | Four standalone, non-tiered, combo-activated abilities, shared config, custom events, MobCastableAbility mob casting | **Draft** |
 
-Each LLD will include class-level design, method signatures, test coverage plan, and config schema.
+Each LLD includes class-level design, method signatures, test coverage plan, and config schema.
 
 ---
 
@@ -534,6 +549,10 @@ Each LLD will include class-level design, method signatures, test coverage plan,
 | `configuration/FileManager.java` | Loads all FileType entries at startup |
 | `ability/impl/type/UnlockableAbility.java` | Current unlock interface — needs `UnlockCondition` refactor |
 | `ability/impl/type/configurable/ConfigurableAbility.java` | Standalone abilities use this |
+| `ability/impl/type/MobCastableAbility.java` | Opt-in interface for abilities that support mob casting via MythicMobs |
+| `entity/EntityManager.java` | Entity alliance system (`areEntitiesAllied()`, `shouldAlliesBeUnableToDamage()`) — used by tasks and components |
+| `entity/check/EntityAlliedCheck.java` | Functional interface for entity alliance checks |
+| `entity/check/AlliedAttackCheck.java` | Functional interface for allied attack eligibility |
 | `entity/holder/LoadoutHolder.java` | `getAvailableDefaultAbilities()` excludes `UnlockableAbility` |
 | `expansion/McRPGExpansion.java` | New content packs registered here |
 | `src/main/resources/plugin.yml` | MythicMobs already listed as softdepend |

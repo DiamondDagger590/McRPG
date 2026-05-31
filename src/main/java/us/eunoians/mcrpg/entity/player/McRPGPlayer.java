@@ -41,6 +41,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.setting.McRPGSetting;
 import us.eunoians.mcrpg.stat.instance.PlayerStatData;
 
+import us.eunoians.mcrpg.entity.player.CombatTargetState;
 import us.eunoians.mcrpg.fishing.PlayerFishingState;
 
 import java.sql.Connection;
@@ -73,6 +74,7 @@ public class McRPGPlayer extends CorePlayer {
     private final Map<Class<? extends PlayerDisplay>, PlayerDisplay> displays = new HashMap<>();
     private boolean standingInSafeZone;
     private PlayerFishingState fishingState;
+    private CombatTargetState combatTargetState;
 
     public McRPGPlayer(@NotNull Player player, @NotNull McRPG mcRPG) {
         super(player.getUniqueId(), mcRPG);
@@ -340,6 +342,36 @@ public class McRPGPlayer extends CorePlayer {
      */
     public void resetFishingState() {
         this.fishingState = null;
+    }
+
+    /**
+     * Gets the player's combat target state, creating it lazily if needed.
+     *
+     * @return The player's combat target state, never null.
+     */
+    @NotNull
+    public CombatTargetState getOrCreateCombatTargetState() {
+        if (combatTargetState == null) {
+            combatTargetState = new CombatTargetState();
+        }
+        return combatTargetState;
+    }
+
+    /**
+     * Gets the player's combat target state if it exists.
+     *
+     * @return The combat target state, or empty if no attack has been recorded this session.
+     */
+    @NotNull
+    public Optional<CombatTargetState> getCombatTargetState() {
+        return Optional.ofNullable(combatTargetState);
+    }
+
+    /**
+     * Resets the player's combat target state. Called on logout.
+     */
+    public void resetCombatTargetState() {
+        this.combatTargetState = null;
     }
 
     /**

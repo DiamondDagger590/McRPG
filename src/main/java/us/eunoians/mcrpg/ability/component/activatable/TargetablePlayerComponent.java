@@ -1,8 +1,9 @@
 package us.eunoians.mcrpg.ability.component.activatable;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.entity.Player;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 //TODO javadoc (https://github.com/DiamondDagger590/McRPG/issues/180)
 public interface TargetablePlayerComponent extends EventActivatableComponent {
@@ -43,7 +44,7 @@ public interface TargetablePlayerComponent extends EventActivatableComponent {
             return true;
         }
         //Check if they're allies
-        boolean allies = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).areEntitiesAllied(activator, target).getLeft();
+        boolean allies = McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY).areEntitiesAllied(activator, target).getLeft();
 
         //Return true if allies we affect allies or not ally and we affect enemies
         return (allies && affectAllies()) || (!allies && affectEnemies());

@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.check;
+package us.eunoians.mcrpg.entity.check;
 
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
@@ -22,5 +22,5 @@ public interface EntityAlliedCheck {
      * @param entity2 The second {@link Entity} to compare
      * @return {@code true} if the two {@link Entity entities} should be considered "allies"
      */
-    public boolean areAllies(@NotNull Entity entity1, @NotNull Entity entity2);
+    boolean areAllies(@NotNull Entity entity1, @NotNull Entity entity2);
 }
