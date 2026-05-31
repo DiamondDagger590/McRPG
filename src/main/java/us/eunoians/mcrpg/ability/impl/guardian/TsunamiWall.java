@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
+import us.eunoians.mcrpg.ability.impl.type.MobCastableAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -39,7 +40,7 @@ import java.util.UUID;
  */
 public final class TsunamiWall extends McRPGAbility
         implements ConfigurableAbility, UnlockableAbility,
-        CooldownableAbility, ActiveAbility, ComboActivatable {
+        CooldownableAbility, ActiveAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey TSUNAMI_WALL_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "tsunami_wall");
@@ -70,21 +71,11 @@ public final class TsunamiWall extends McRPGAbility
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        if (event instanceof MobAbilityTriggerEvent mobEvent) {
-            return mobActivate(abilityHolder, mobEvent);
-        }
         return comboActivate(abilityHolder);
     }
 
-    /**
-     * Activates Tsunami Wall for a MythicMobs mob. Spawns the wall in the caster's facing
-     * direction using the same config values as player activation.
-     *
-     * @param abilityHolder The {@link AbilityHolder} representing the mob caster.
-     * @param mobEvent      The {@link MobAbilityTriggerEvent} containing the caster entity.
-     * @return {@code true} if the ability executed, {@code false} if cancelled.
-     */
-    private boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
         LivingEntity caster = mobEvent.getCaster();
         Location casterLoc = caster.getLocation();
 

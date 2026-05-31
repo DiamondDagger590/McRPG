@@ -22,6 +22,7 @@ import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
+import us.eunoians.mcrpg.ability.impl.type.MobCastableAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -46,7 +47,7 @@ import java.util.UUID;
  */
 public final class PhaseShift extends McRPGAbility
         implements ConfigurableAbility, UnlockableAbility,
-        CooldownableAbility, ActiveAbility, ComboActivatable {
+        CooldownableAbility, ActiveAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey PHASE_SHIFT_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "phase_shift");
@@ -77,22 +78,11 @@ public final class PhaseShift extends McRPGAbility
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        if (event instanceof MobAbilityTriggerEvent mobEvent) {
-            return mobActivate(abilityHolder, mobEvent);
-        }
         return comboActivate(abilityHolder);
     }
 
-    /**
-     * Activates Phase Shift for a MythicMobs mob. Teleports the caster behind the MM-provided
-     * target and plays effects. Skips combat target resolution (MM owns targeting) and crit
-     * window (player-only mechanic).
-     *
-     * @param abilityHolder The {@link AbilityHolder} representing the mob caster.
-     * @param mobEvent      The {@link MobAbilityTriggerEvent} containing caster and target.
-     * @return {@code true} if the ability executed, {@code false} if cancelled.
-     */
-    private boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
         LivingEntity caster = mobEvent.getCaster();
         LivingEntity target = mobEvent.getTarget();
 

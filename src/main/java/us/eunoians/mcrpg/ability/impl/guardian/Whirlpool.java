@@ -17,6 +17,7 @@ import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
+import us.eunoians.mcrpg.ability.impl.type.MobCastableAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -39,7 +40,7 @@ import java.util.UUID;
  */
 public final class Whirlpool extends McRPGAbility
         implements ConfigurableAbility, UnlockableAbility,
-        CooldownableAbility, ActiveAbility, ComboActivatable {
+        CooldownableAbility, ActiveAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey WHIRLPOOL_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "whirlpool");
@@ -70,21 +71,11 @@ public final class Whirlpool extends McRPGAbility
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        if (event instanceof MobAbilityTriggerEvent mobEvent) {
-            return mobActivate(abilityHolder, mobEvent);
-        }
         return comboActivate(abilityHolder);
     }
 
-    /**
-     * Activates Whirlpool for a MythicMobs mob. Creates the whirlpool zone at the
-     * caster's location using the same config values as player activation.
-     *
-     * @param abilityHolder The {@link AbilityHolder} representing the mob caster.
-     * @param mobEvent      The {@link MobAbilityTriggerEvent} containing the caster entity.
-     * @return {@code true} if the ability executed, {@code false} if cancelled.
-     */
-    private boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
         LivingEntity caster = mobEvent.getCaster();
         Location center = caster.getLocation().clone();
 

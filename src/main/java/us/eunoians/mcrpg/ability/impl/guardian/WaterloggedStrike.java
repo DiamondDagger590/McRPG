@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
 import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.CooldownableAbility;
+import us.eunoians.mcrpg.ability.impl.type.MobCastableAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
@@ -38,7 +39,7 @@ import java.util.Set;
  */
 public final class WaterloggedStrike extends McRPGAbility
         implements ConfigurableAbility, UnlockableAbility,
-        CooldownableAbility, ActiveAbility, ComboActivatable {
+        CooldownableAbility, ActiveAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey WATERLOGGED_STRIKE_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "waterlogged_strike");
@@ -72,21 +73,11 @@ public final class WaterloggedStrike extends McRPGAbility
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        if (event instanceof MobAbilityTriggerEvent mobEvent) {
-            return mobActivate(abilityHolder, mobEvent);
-        }
         return comboActivate(abilityHolder);
     }
 
-    /**
-     * Activates Waterlogged Strike for a MythicMobs mob. Launches a tagged snowball projectile
-     * from the caster with a water trail, identical to player activation.
-     *
-     * @param abilityHolder The {@link AbilityHolder} representing the mob caster.
-     * @param mobEvent      The {@link MobAbilityTriggerEvent} containing the caster entity.
-     * @return {@code true} if the ability executed, {@code false} if cancelled.
-     */
-    private boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
         LivingEntity caster = mobEvent.getCaster();
 
         WaterloggedStrikeActivateEvent activateEvent = new WaterloggedStrikeActivateEvent(abilityHolder);

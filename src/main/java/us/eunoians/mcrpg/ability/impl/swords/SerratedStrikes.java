@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.MobCastableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
@@ -39,7 +40,7 @@ import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.
  * the activation rate of {@link Bleed} while active.
  */
 @ParserConfigKeys({"cooldown", "mana-cost", "duration", "bleed-activation-boost"})
-public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable {
+public final class SerratedStrikes extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey SERRATED_STRIKES_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "serrated_strikes");
 
@@ -107,21 +108,11 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        if (event instanceof MobAbilityTriggerEvent) {
-            return mobActivate(abilityHolder);
-        }
         return comboActivate(abilityHolder);
     }
 
-    /**
-     * Activates Serrated Strikes for a MythicMobs mob. Marks the ability as active on the
-     * holder for its configured duration, boosting Bleed activation chance. Identical
-     * to {@link #comboActivate(AbilityHolder)} but does not require a player lookup.
-     *
-     * @param abilityHolder The {@link AbilityHolder} representing the mob caster.
-     * @return {@code true} if the ability executed, {@code false} if cancelled.
-     */
-    private boolean mobActivate(@NotNull AbilityHolder abilityHolder) {
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
         int duration = getDuration(getCurrentAbilityTier(abilityHolder));
         SerratedStrikesActivateEvent serratedStrikesActivateEvent =
                 new SerratedStrikesActivateEvent(abilityHolder, duration);

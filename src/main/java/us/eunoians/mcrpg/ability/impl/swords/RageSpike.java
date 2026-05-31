@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboActivatable;
 import us.eunoians.mcrpg.ability.impl.McRPGAbility;
+import us.eunoians.mcrpg.ability.impl.type.MobCastableAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableActiveAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableSkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.configurable.ParserConfigKeys;
@@ -50,7 +51,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * blasting the player forward and knocking back enemies while dealing damage.
  */
 @ParserConfigKeys({"cooldown", "mana-cost", "damage", "velocity"})
-public final class RageSpike extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable {
+public final class RageSpike extends McRPGAbility implements ConfigurableActiveAbility, ConfigurableSkillAbility, ComboActivatable, MobCastableAbility {
 
     public static final NamespacedKey RAGE_SPIKE_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "rage_spike");
 
@@ -95,30 +96,11 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
-        if (event instanceof MobAbilityTriggerEvent mobEvent) {
-            return mobActivate(abilityHolder, mobEvent);
-        }
-        RageSpikeActivateEvent rageSpikeActivateEvent = new RageSpikeActivateEvent(abilityHolder);
-        Bukkit.getPluginManager().callEvent(rageSpikeActivateEvent);
-
-        if (rageSpikeActivateEvent.isCancelled()) {
-            return false;
-        }
-        if (Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player) {
-            performRageSpike(abilityHolder, player);
-        }
-        return true;
+        return comboActivate(abilityHolder);
     }
 
-    /**
-     * Activates Rage Spike for a MythicMobs mob. Launches the caster forward and
-     * damages nearby entities, identical to player activation.
-     *
-     * @param abilityHolder The {@link AbilityHolder} representing the mob caster.
-     * @param mobEvent      The {@link MobAbilityTriggerEvent} containing the caster entity.
-     * @return {@code true} if the ability executed, {@code false} if cancelled.
-     */
-    private boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
+    @Override
+    public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
         LivingEntity caster = mobEvent.getCaster();
 
         RageSpikeActivateEvent rageSpikeActivateEvent = new RageSpikeActivateEvent(abilityHolder);
