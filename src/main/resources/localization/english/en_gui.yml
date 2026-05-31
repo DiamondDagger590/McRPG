@@ -379,6 +379,12 @@ gui:
           material: BARRIER
           lore:
             - '<hint>Click <body>to return to ability settings.'
+      from-chain-detail:
+        display-item:
+          name: "<primary>Back to Chain Steps"
+          material: BARRIER
+          lore:
+            - '<hint>Click <body>to return to the chain step history.'
     # Overview header slot. Placeholders: <quest_name>, <quest_state>, <start_time>,
     # <end_time>, <expiration_time>, <completed_date>, <phase_total>
     overview-slot:
