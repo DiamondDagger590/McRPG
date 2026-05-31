@@ -328,7 +328,7 @@ public class QuestChainManager extends Manager<McRPG> {
                     Bukkit.getPluginManager().callEvent(
                             new QuestChainCompleteEvent(definition, player, playerUUID, state.getCompletionCount(), ChainCompletionSource.RESTART));
                     persistenceService.saveChainStateAsync(playerUUID, state);
-                    callback.accept(false);
+                    callback.accept(true);
                 }
             });
         });
@@ -528,11 +528,13 @@ public class QuestChainManager extends Manager<McRPG> {
             Map<NamespacedKey, Set<NamespacedKey>> finalCompletionsByChain = completionsByChain;
             Bukkit.getScheduler().runTask(plugin(), () -> {
                 // Guard against fast disconnects: if the player unloaded while the DB read was
-                // in-flight, there is no in-memory state to update and no callback to run.
+                // in-flight, skip re-resolution but still invoke onComplete so callers can
+                // sequence downstream work (e.g. auto-start triggers).
                 Optional<McRPGPlayer> stillLoadedOpt = RegistryAccess.registryAccess()
                         .registry(RegistryKey.MANAGER)
                         .manager(McRPGManagerKey.PLAYER).getPlayer(playerUUID);
                 if (stillLoadedOpt.isEmpty()) {
+                    onComplete.run();
                     return;
                 }
                 applyReResolution(playerUUID, chainData, chainsNeedingReResolution, finalCompletionsByChain);
@@ -588,6 +590,8 @@ public class QuestChainManager extends Manager<McRPG> {
             if (uncompletedStep.isPresent()) {
                 QuestChainStep step = uncompletedStep.get();
                 if (!chainQuestStarter.startStepQuest(playerUUID, definition, step)) {
+                    plugin().getLogger().warning("[QuestChainManager] Failed to start re-resolved step '"
+                            + step.questKey() + "' in chain '" + chainKey + "' for player " + playerUUID);
                     continue;
                 }
                 state.resetToStep(step.questKey());
