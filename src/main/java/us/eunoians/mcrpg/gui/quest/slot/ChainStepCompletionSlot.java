@@ -24,21 +24,31 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Supplier;
+import com.diamonddagger590.mccore.gui.BaseGui;
+import dev.dejvokep.boostedyaml.route.Route;
 
 /**
  * A slot in {@link QuestChainHistoryDetailGui} representing a single step completion
  * within a chain run. Displays the quest name, step number, and completion date.
- * Clicking opens {@link QuestDetailGui} for the completed quest.
+ * Clicking opens {@link QuestDetailGui} for the completed quest, with the back button
+ * returning to the originating {@link QuestChainHistoryDetailGui}.
  */
 public class ChainStepCompletionSlot implements McRPGSlot {
 
     private final QuestChainCompletionLogDAO.ChainStepRecord stepRecord;
     private final int stepNumber;
+    private final NamespacedKey chainKey;
+    private final int completionNumber;
 
     public ChainStepCompletionSlot(@NotNull QuestChainCompletionLogDAO.ChainStepRecord stepRecord,
-                                   int stepNumber) {
+                                   int stepNumber,
+                                   @NotNull NamespacedKey chainKey,
+                                   int completionNumber) {
         this.stepRecord = stepRecord;
         this.stepNumber = stepNumber;
+        this.chainKey = chainKey;
+        this.completionNumber = completionNumber;
     }
 
     @Override
@@ -66,7 +76,9 @@ public class ChainStepCompletionSlot implements McRPGSlot {
 
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
             var record = new CompletionRecord(stepRecord.questKey(), UUID.randomUUID(), stepRecord.completedAt());
-            QuestDetailGui detailGui = QuestDetailGui.forCompletedQuest(mcRPGPlayer, record);
+            QuestDetailGui detailGui = QuestDetailGui.forCompletedQuest(mcRPGPlayer, record,
+                    () -> new QuestChainHistoryDetailGui(mcRPGPlayer, chainKey, completionNumber),
+                    LocalizationKey.QUEST_DETAIL_GUI_PREVIOUS_FROM_CHAIN_DETAIL_BUTTON_DISPLAY_ITEM);
             McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
                     .manager(McRPGManagerKey.GUI).trackPlayerGui(player, detailGui);
             player.openInventory(detailGui.getInventory());

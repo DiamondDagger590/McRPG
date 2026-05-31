@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.gui.quest;
 
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
+import com.diamonddagger590.mccore.gui.BaseGui;
 import com.diamonddagger590.mccore.gui.slot.Slot;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
@@ -44,6 +45,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 import com.diamonddagger590.mccore.gui.KeyedGui;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
@@ -70,12 +72,11 @@ public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
     private final QuestDefinition previewDefinition;
     @Nullable
     private final BoardOffering previewOffering;
-    @Nullable
-    private final Ability sourceAbility;
     private final Player player;
     private final boolean fromHistory;
     private final boolean boardPreview;
-    private final boolean fromAbilityEdit;
+    private final Supplier<BaseGui> backGuiFactory;
+    private final Route backButtonRoute;
     private final List<Slot<McRPGPlayer>> contentSlots;
 
     private QuestDetailGui(@NotNull McRPGPlayer mcRPGPlayer,
@@ -85,7 +86,8 @@ public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
                            boolean fromHistory,
                            @Nullable QuestDefinition previewDefinition,
                            @Nullable BoardOffering previewOffering,
-                           @Nullable Ability sourceAbility) {
+                           @NotNull Supplier<BaseGui> backGuiFactory,
+                           @NotNull Route backButtonRoute) {
         super(mcRPGPlayer);
         this.player = mcRPGPlayer.getAsBukkitPlayer()
                 .orElseThrow(() -> new CorePlayerOfflineException(mcRPGPlayer));
@@ -96,13 +98,14 @@ public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
         this.boardPreview = previewDefinition != null;
         this.previewDefinition = previewDefinition;
         this.previewOffering = previewOffering;
-        this.sourceAbility = sourceAbility;
-        this.fromAbilityEdit = sourceAbility != null;
+        this.backGuiFactory = backGuiFactory;
+        this.backButtonRoute = backButtonRoute;
         this.contentSlots = buildContentSlots(mcRPGPlayer);
     }
 
     /**
-     * Creates a detail GUI for an active quest instance.
+     * Creates a detail GUI for an active quest instance. The back button returns to
+     * {@link ActiveQuestGui}.
      *
      * @param player        The player viewing the GUI.
      * @param questInstance The active quest instance to display.
@@ -111,11 +114,14 @@ public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
     @NotNull
     public static QuestDetailGui forActiveQuest(@NotNull McRPGPlayer player,
                                                 @NotNull QuestInstance questInstance) {
-        return new QuestDetailGui(player, questInstance.getQuestKey(), questInstance, null, false, null, null, null);
+        return new QuestDetailGui(player, questInstance.getQuestKey(), questInstance, null, false, null, null,
+                () -> new ActiveQuestGui(player),
+                LocalizationKey.QUEST_DETAIL_GUI_PREVIOUS_FROM_ACTIVE_BUTTON_DISPLAY_ITEM);
     }
 
     /**
-     * Creates a detail GUI for a completed quest from the history log.
+     * Creates a detail GUI for a completed quest from the history log. The back button
+     * returns to {@link QuestHistoryGui}.
      *
      * @param player The player viewing the GUI.
      * @param record The completion record from the quest history log.
@@ -124,16 +130,39 @@ public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
     @NotNull
     public static QuestDetailGui forCompletedQuest(@NotNull McRPGPlayer player,
                                                    @NotNull CompletionRecord record) {
+        return forCompletedQuest(player, record,
+                () -> new QuestHistoryGui(player),
+                LocalizationKey.QUEST_DETAIL_GUI_PREVIOUS_FROM_HISTORY_BUTTON_DISPLAY_ITEM);
+    }
+
+    /**
+     * Creates a detail GUI for a completed quest with a caller-supplied back target. Use this
+     * overload when the detail is opened from a context other than the top-level history list —
+     * for example, from {@link QuestChainHistoryDetailGui} where back should return to the chain
+     * step list rather than {@link QuestHistoryGui}.
+     *
+     * @param player         The player viewing the GUI.
+     * @param record         The completion record from the quest history log.
+     * @param backGuiFactory A factory that produces the GUI to return to on back-click.
+     * @param backButtonRoute The localization route for the back button display item.
+     * @return A configured {@link QuestDetailGui}.
+     */
+    @NotNull
+    public static QuestDetailGui forCompletedQuest(@NotNull McRPGPlayer player,
+                                                   @NotNull CompletionRecord record,
+                                                   @NotNull Supplier<BaseGui> backGuiFactory,
+                                                   @NotNull Route backButtonRoute) {
         NamespacedKey key = NamespacedKey.fromString(record.definitionKey());
         if (key == null) {
             key = new NamespacedKey("mcrpg", record.definitionKey());
         }
-        return new QuestDetailGui(player, key, null, record, true, null, null, null);
+        return new QuestDetailGui(player, key, null, record, true, null, null, backGuiFactory, backButtonRoute);
     }
 
     /**
      * Creates a preview GUI for a board offering before the player accepts it.
      * Shows the quest's phases, objectives, and rewards without needing an active instance.
+     * The back button returns to {@link QuestBoardGui}.
      *
      * @param player     The player viewing the GUI.
      * @param definition The quest definition to preview.
@@ -144,7 +173,9 @@ public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
     public static QuestDetailGui forBoardPreview(@NotNull McRPGPlayer player,
                                                  @NotNull QuestDefinition definition,
                                                  @NotNull BoardOffering offering) {
-        return new QuestDetailGui(player, definition.getQuestKey(), null, null, false, definition, offering, null);
+        return new QuestDetailGui(player, definition.getQuestKey(), null, null, false, definition, offering,
+                () -> new QuestBoardGui(player),
+                LocalizationKey.QUEST_DETAIL_GUI_PREVIOUS_FROM_BOARD_BUTTON_DISPLAY_ITEM);
     }
 
     /**
@@ -161,7 +192,9 @@ public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
     public static QuestDetailGui forUpgradeQuest(@NotNull McRPGPlayer player,
                                                  @NotNull QuestInstance questInstance,
                                                  @NotNull Ability ability) {
-        return new QuestDetailGui(player, questInstance.getQuestKey(), questInstance, null, false, null, null, ability);
+        return new QuestDetailGui(player, questInstance.getQuestKey(), questInstance, null, false, null, null,
+                () -> new AbilityAttributeEditGui(player, ability),
+                LocalizationKey.QUEST_DETAIL_GUI_PREVIOUS_FROM_ABILITY_EDIT_BUTTON_DISPLAY_ITEM);
     }
 
     @NotNull
@@ -293,8 +326,9 @@ public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
     }
 
     /**
-     * Returns the back-navigation slot for this GUI. The navigation target depends on how the GUI
-     * was opened: ability edit, board preview, history log, or the active quests list.
+     * Returns the back-navigation slot for this GUI. The target GUI and button label are
+     * determined by the {@code backGuiFactory} and {@code backButtonRoute} supplied at
+     * construction time by each factory method.
      *
      * @return A configured {@link McRPGPreviousGuiSlot}.
      */
@@ -304,27 +338,10 @@ public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
             @Override
             public boolean onClick(@NotNull McRPGPlayer mcRPGPlayer, @NotNull ClickType clickType) {
                 mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
-                    if (fromAbilityEdit && sourceAbility != null) {
-                        AbilityAttributeEditGui editGui = new AbilityAttributeEditGui(mcRPGPlayer, sourceAbility);
-                        McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                                .manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, editGui);
-                        player.openInventory(editGui.getInventory());
-                    } else if (boardPreview) {
-                        QuestBoardGui boardGui = new QuestBoardGui(mcRPGPlayer);
-                        McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                                .manager(McRPGManagerKey.GUI).trackPlayerGui(player, boardGui);
-                        player.openInventory(boardGui.getInventory());
-                    } else if (fromHistory) {
-                        QuestHistoryGui historyGui = new QuestHistoryGui(mcRPGPlayer);
-                        McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                                .manager(McRPGManagerKey.GUI).trackPlayerGui(player, historyGui);
-                        player.openInventory(historyGui.getInventory());
-                    } else {
-                        ActiveQuestGui activeGui = new ActiveQuestGui(mcRPGPlayer);
-                        McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
-                                .manager(McRPGManagerKey.GUI).trackPlayerGui(player, activeGui);
-                        player.openInventory(activeGui.getInventory());
-                    }
+                    BaseGui backGui = backGuiFactory.get();
+                    McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER)
+                            .manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, backGui);
+                    player.openInventory(backGui.getInventory());
                 });
                 return true;
             }
@@ -332,16 +349,7 @@ public class QuestDetailGui extends McRPGPaginatedGui implements KeyedGui {
             @NotNull
             @Override
             public Route getSpecificDisplayItemRoute() {
-                if (fromAbilityEdit) {
-                    return LocalizationKey.QUEST_DETAIL_GUI_PREVIOUS_FROM_ABILITY_EDIT_BUTTON_DISPLAY_ITEM;
-                }
-                if (boardPreview) {
-                    return LocalizationKey.QUEST_DETAIL_GUI_PREVIOUS_FROM_BOARD_BUTTON_DISPLAY_ITEM;
-                }
-                if (fromHistory) {
-                    return LocalizationKey.QUEST_DETAIL_GUI_PREVIOUS_FROM_HISTORY_BUTTON_DISPLAY_ITEM;
-                }
-                return LocalizationKey.QUEST_DETAIL_GUI_PREVIOUS_FROM_ACTIVE_BUTTON_DISPLAY_ITEM;
+                return backButtonRoute;
             }
         };
     }

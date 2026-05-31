@@ -170,7 +170,7 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
             if (i < pageRecords.size()) {
                 // stepNumber is global 1-based index, not page-relative
                 int globalIndex = (page - 1) * NAVIGATION_ROW_START_INDEX + i;
-                setSlot(i, new ChainStepCompletionSlot(pageRecords.get(i), globalIndex + 1));
+                setSlot(i, new ChainStepCompletionSlot(pageRecords.get(i), globalIndex + 1, chainKey, completionNumber));
             } else {
                 removeSlot(i);
             }
