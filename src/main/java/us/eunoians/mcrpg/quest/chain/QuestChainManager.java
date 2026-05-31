@@ -537,7 +537,7 @@ public class QuestChainManager extends Manager<McRPG> {
                     onComplete.run();
                     return;
                 }
-                applyReResolution(playerUUID, chainData, chainsNeedingReResolution, finalCompletionsByChain);
+                applyReResolution(playerUUID, stillLoadedOpt.get().getChainData(), chainsNeedingReResolution, finalCompletionsByChain);
                 onComplete.run();
             });
         });

@@ -205,7 +205,25 @@ public class QuestChainPlayerState {
     }
 
     /**
-     * Clears all pending advancement entries. Called after a successful flush has
+     * Atomically returns and clears all pending advancement entries. The returned list
+     * is an immutable snapshot of what was present at call time. Any advancements recorded
+     * after this call are not included.
+     * <p>
+     * Used by the async write path so that entries removed here are not double-written
+     * by a subsequent synchronous flush — the flush only replays whatever remains in
+     * {@code pendingAdvancements} at that point (i.e. entries from a failed async write).
+     *
+     * @return an immutable snapshot of the pending advancements, cleared from this state
+     */
+    @NotNull
+    public List<PendingAdvancement> drainPendingAdvancements() {
+        List<PendingAdvancement> drained = List.copyOf(pendingAdvancements);
+        pendingAdvancements.clear();
+        return drained;
+    }
+
+    /**
+     * Clears all pending advancement entries. Called after a successful synchronous flush has
      * persisted them to the completion log.
      */
     public void clearPendingAdvancements() {
