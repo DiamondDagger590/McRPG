@@ -269,12 +269,13 @@ public class QuestChainManager extends Manager<McRPG> {
             return;
         }
 
+        persistenceService.cancelPendingSave(playerUUID);
         cancelActiveChainQuestIfExists(playerUUID, stateOpt.get());
 
         if (force) {
             QuestChainStep firstStep = definition.getSteps().get(0);
             Player player = Bukkit.getPlayer(playerUUID);
-            if (player != null && startStepForPlayer(definition, firstStep, player, stateOpt.get())) {
+            if (player != null && startStepForPlayer(definition, firstStep, player, stateOpt.get(), chainData)) {
                 persistenceService.saveChainStateAsync(playerUUID, stateOpt.get());
                 callback.accept(true);
             } else {
@@ -307,13 +308,14 @@ public class QuestChainManager extends Manager<McRPG> {
                 Optional<QuestChainStep> firstUncompleted = findFirstUncompletedStep(definition, finalCompletedKeys);
                 Player player = Bukkit.getPlayer(playerUUID);
                 if (firstUncompleted.isPresent()) {
-                    boolean started = player != null && startStepForPlayer(definition, firstUncompleted.get(), player, state);
+                    boolean started = player != null && startStepForPlayer(definition, firstUncompleted.get(), player, state, chainData);
                     if (started) {
                         persistenceService.saveChainStateAsync(playerUUID, state);
                     }
                     callback.accept(started);
                 } else {
                     state.complete(plugin().getTimeProvider().now().toEpochMilli());
+                    chainData.updateQuestKeyIndex(state);
                     persistenceService.saveChainStateAsync(playerUUID, state);
                     callback.accept(false);
                 }
@@ -350,7 +352,7 @@ public class QuestChainManager extends Manager<McRPG> {
         // Do not remove in-memory state yet — wait for DB delete to succeed
         // so a failed delete doesn't leave the player with missing state.
 
-        persistenceService.cancelPendingSave(playerUUID);
+        persistenceService.prepareForFlush(playerUUID);
 
         var database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
@@ -707,12 +709,25 @@ public class QuestChainManager extends Manager<McRPG> {
      * @param state      the chain state to reset on success
      * @return {@code true} if the quest started successfully
      */
+    /**
+     * Starts the quest for the given chain step. On success, resets the state to the step's
+     * quest key and updates the reverse quest-key index so O(1) lookup from quest→chain works.
+     *
+     * @param definition the chain definition
+     * @param step       the step to start
+     * @param player     the online player
+     * @param state      the chain state to update
+     * @param chainData  the player's chain data (for index update)
+     * @return {@code true} if the quest was started successfully
+     */
     private boolean startStepForPlayer(@NotNull QuestChainDefinition definition,
                                         @NotNull QuestChainStep step,
                                         @NotNull Player player,
-                                        @NotNull QuestChainPlayerState state) {
+                                        @NotNull QuestChainPlayerState state,
+                                        @NotNull QuestChainPlayerData chainData) {
         if (chainQuestStarter.startStepQuest(player.getUniqueId(), definition, step)) {
             state.resetToStep(step.questKey());
+            chainData.updateQuestKeyIndex(state);
             return true;
         }
         return false;

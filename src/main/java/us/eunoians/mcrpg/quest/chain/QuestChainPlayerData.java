@@ -4,7 +4,6 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,7 +33,7 @@ public class QuestChainPlayerData {
 
     public QuestChainPlayerData() {
         this.chainStates = new ConcurrentHashMap<>();
-        this.questKeyToChainKey = new HashMap<>();
+        this.questKeyToChainKey = new ConcurrentHashMap<>();
     }
 
     /**
