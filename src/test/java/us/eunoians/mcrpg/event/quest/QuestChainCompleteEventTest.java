@@ -33,12 +33,13 @@ public class QuestChainCompleteEventTest extends McRPGBaseTest {
         PlayerMock player = server.addPlayer();
         int completionNumber = 3;
 
-        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, player.getUniqueId(), completionNumber);
+        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, player.getUniqueId(), completionNumber, ChainCompletionSource.ADVANCEMENT);
 
         assertSame(definition, event.getChainDefinition());
         assertSame(player, event.getPlayer());
         assertEquals(player.getUniqueId(), event.getPlayerUUID());
         assertEquals(completionNumber, event.getCompletionNumber());
+        assertEquals(ChainCompletionSource.ADVANCEMENT, event.getSource());
     }
 
     @Test
@@ -47,7 +48,7 @@ public class QuestChainCompleteEventTest extends McRPGBaseTest {
         QuestChainDefinition definition = buildDefinition();
         PlayerMock player = server.addPlayer();
 
-        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, player.getUniqueId(), 1);
+        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, player.getUniqueId(), 1, ChainCompletionSource.ADVANCEMENT);
 
         assertEquals(1, event.getCompletionNumber());
     }
@@ -58,8 +59,19 @@ public class QuestChainCompleteEventTest extends McRPGBaseTest {
         QuestChainDefinition definition = buildDefinition();
         PlayerMock player = server.addPlayer();
 
-        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, player.getUniqueId(), 1);
+        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, player.getUniqueId(), 1, ChainCompletionSource.ADVANCEMENT);
 
         assertEquals(QuestChainCompleteEvent.getHandlerList(), event.getHandlers());
+    }
+
+    @Test
+    @DisplayName("Given a chain-complete event with RE_RESOLUTION source, When getSource() is called, Then RE_RESOLUTION is returned")
+    void event_source_returnsProvidedSource() {
+        QuestChainDefinition definition = buildDefinition();
+        PlayerMock player = server.addPlayer();
+
+        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, player.getUniqueId(), 1, ChainCompletionSource.RE_RESOLUTION);
+
+        assertEquals(ChainCompletionSource.RE_RESOLUTION, event.getSource());
     }
 }
