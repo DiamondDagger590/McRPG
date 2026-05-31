@@ -12,6 +12,7 @@ import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.util.Vector;
@@ -27,6 +28,7 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.GuardianAbilitiesConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.CombatTargetState;
+import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.guardian.PhaseShiftActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -75,7 +77,35 @@ public final class PhaseShift extends McRPGAbility
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        if (event instanceof MobAbilityTriggerEvent mobEvent) {
+            return mobActivate(abilityHolder, mobEvent);
+        }
         return comboActivate(abilityHolder);
+    }
+
+    /**
+     * Activates Phase Shift for a MythicMobs mob. Teleports the caster behind the MM-provided
+     * target and plays effects. Skips combat target resolution (MM owns targeting) and crit
+     * window (player-only mechanic).
+     *
+     * @param abilityHolder The {@link AbilityHolder} representing the mob caster.
+     * @param mobEvent      The {@link MobAbilityTriggerEvent} containing caster and target.
+     * @return {@code true} if the ability executed, {@code false} if cancelled.
+     */
+    private boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
+        LivingEntity caster = mobEvent.getCaster();
+        LivingEntity target = mobEvent.getTarget();
+
+        PhaseShiftActivateEvent event = new PhaseShiftActivateEvent(abilityHolder, target);
+        Bukkit.getPluginManager().callEvent(event);
+        if (event.isCancelled()) {
+            return false;
+        }
+
+        teleportBehindTarget(caster, target);
+        playTeleportEffects(caster);
+
+        return true;
     }
 
     @Override
@@ -153,12 +183,13 @@ public final class PhaseShift extends McRPGAbility
     }
 
     /**
-     * Teleports the player behind the target entity, facing toward it.
+     * Teleports the entity behind the target, facing toward it. If the entity is a
+     * {@link Player}, the attack cooldown is also reset.
      *
-     * @param player The player to teleport.
+     * @param entity The entity to teleport.
      * @param target The target entity to teleport behind.
      */
-    private void teleportBehindTarget(@NotNull Player player, @NotNull Entity target) {
+    private void teleportBehindTarget(@NotNull LivingEntity entity, @NotNull Entity target) {
         double offset = getYamlDocument().getDouble(
                 GuardianAbilitiesConfigFile.PHASE_SHIFT_TELEPORT_OFFSET, 1.5);
         Location destination = calculateBehindTarget(target, offset);
@@ -168,8 +199,10 @@ public final class PhaseShift extends McRPGAbility
         destination.setYaw(calculateFacingYaw(destination, target.getLocation()));
         destination.setPitch(0);
 
-        player.teleportAsync(destination);
-        player.resetCooldown();
+        entity.teleportAsync(destination);
+        if (entity instanceof Player player) {
+            player.resetCooldown();
+        }
     }
 
     /**
@@ -185,13 +218,13 @@ public final class PhaseShift extends McRPGAbility
     }
 
     /**
-     * Plays the teleport sound and spawns water-themed particles at the player's location.
+     * Plays the teleport sound and spawns water-themed particles at the entity's location.
      *
-     * @param player The player whose location is used for effects.
+     * @param entity The entity whose location is used for effects.
      */
-    private void playTeleportEffects(@NotNull Player player) {
-        spawnTeleportParticles(player.getLocation());
-        player.getWorld().playSound(player.getLocation(),
+    private void playTeleportEffects(@NotNull LivingEntity entity) {
+        spawnTeleportParticles(entity.getLocation());
+        entity.getWorld().playSound(entity.getLocation(),
                 Sound.ENTITY_ENDERMAN_TELEPORT, 0.8f, 1.2f);
     }
 

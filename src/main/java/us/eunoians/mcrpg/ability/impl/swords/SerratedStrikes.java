@@ -19,6 +19,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.configuration.file.skill.SwordsConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.event.ability.swords.SerratedStrikesActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.swords.Swords;
@@ -104,18 +105,33 @@ public final class SerratedStrikes extends McRPGAbility implements ConfigurableA
         return true;
     }
 
-    /**
-     * Delegates to {@link #comboActivate(AbilityHolder)}. This ability has no activation
-     * components registered, so this method is never called via the event-listener path;
-     * it remains implemented to satisfy the {@link us.eunoians.mcrpg.ability.Ability} interface.
-     *
-     * @param abilityHolder The holder activating this ability.
-     * @param event         The triggering event (unused).
-     * @return The result of {@link #comboActivate(AbilityHolder)}.
-     */
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        if (event instanceof MobAbilityTriggerEvent) {
+            return mobActivate(abilityHolder);
+        }
         return comboActivate(abilityHolder);
+    }
+
+    /**
+     * Activates Serrated Strikes for a MythicMobs mob. Marks the ability as active on the
+     * holder for its configured duration, boosting Bleed activation chance. Identical
+     * to {@link #comboActivate(AbilityHolder)} but does not require a player lookup.
+     *
+     * @param abilityHolder The {@link AbilityHolder} representing the mob caster.
+     * @return {@code true} if the ability executed, {@code false} if cancelled.
+     */
+    private boolean mobActivate(@NotNull AbilityHolder abilityHolder) {
+        int duration = getDuration(getCurrentAbilityTier(abilityHolder));
+        SerratedStrikesActivateEvent serratedStrikesActivateEvent =
+                new SerratedStrikesActivateEvent(abilityHolder, duration);
+        Bukkit.getPluginManager().callEvent(serratedStrikesActivateEvent);
+
+        if (serratedStrikesActivateEvent.isCancelled()) {
+            return false;
+        }
+        abilityHolder.addActiveAbility(this, serratedStrikesActivateEvent.getDuration());
+        return true;
     }
 
     @NotNull

@@ -209,8 +209,7 @@ public final class TsunamiWallTask extends ExpireableCoreTask {
             Vector knockback = forward.clone().multiply(knockbackStrength);
             knockback.setY(0.2);
 
-            Player caster = Bukkit.getPlayer(casterUUID);
-            if (caster == null) {
+            if (!(Bukkit.getEntity(casterUUID) instanceof LivingEntity caster)) {
                 this.cancelTask();
                 return;
             }

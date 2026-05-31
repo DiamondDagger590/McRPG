@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.event.ability.guardian;
 
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -15,7 +14,7 @@ public class WaterloggedStrikeImpactEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final Player caster;
+    private final LivingEntity caster;
     private final LivingEntity target;
     private double damage;
     private int slownessAmplifier;
@@ -25,13 +24,13 @@ public class WaterloggedStrikeImpactEvent extends Event implements Cancellable {
     /**
      * Constructs a new {@link WaterloggedStrikeImpactEvent}.
      *
-     * @param caster               The {@link Player} who cast the waterlogged strike
+     * @param caster               The {@link LivingEntity} who cast the waterlogged strike
      * @param target               The {@link LivingEntity} being impacted
      * @param damage               The damage dealt to the target
      * @param slownessAmplifier    The amplifier of the slowness effect applied
      * @param slownessDurationTicks The duration of the slowness effect in ticks
      */
-    public WaterloggedStrikeImpactEvent(@NotNull Player caster, @NotNull LivingEntity target, double damage, int slownessAmplifier, int slownessDurationTicks) {
+    public WaterloggedStrikeImpactEvent(@NotNull LivingEntity caster, @NotNull LivingEntity target, double damage, int slownessAmplifier, int slownessDurationTicks) {
         this.caster = caster;
         this.target = target;
         this.damage = damage;
@@ -40,12 +39,12 @@ public class WaterloggedStrikeImpactEvent extends Event implements Cancellable {
     }
 
     /**
-     * Gets the {@link Player} who cast the waterlogged strike.
+     * Gets the {@link LivingEntity} who cast the waterlogged strike.
      *
-     * @return The {@link Player} who cast the waterlogged strike
+     * @return The {@link LivingEntity} who cast the waterlogged strike
      */
     @NotNull
-    public Player getCaster() {
+    public LivingEntity getCaster() {
         return caster;
     }
 

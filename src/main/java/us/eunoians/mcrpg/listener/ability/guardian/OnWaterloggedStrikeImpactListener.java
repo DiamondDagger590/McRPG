@@ -7,7 +7,6 @@ import org.bukkit.Location;
 import org.bukkit.Particle;
 import org.bukkit.Sound;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -42,7 +41,7 @@ public final class OnWaterloggedStrikeImpactListener implements Listener {
         if (event.getHitEntity() == null || !(event.getHitEntity() instanceof LivingEntity target)) {
             return;
         }
-        if (!(snowball.getShooter() instanceof Player player)) {
+        if (!(snowball.getShooter() instanceof LivingEntity shooter)) {
             return;
         }
 
@@ -59,14 +58,14 @@ public final class OnWaterloggedStrikeImpactListener implements Listener {
                 GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_SLOWNESS_DURATION_TICKS, 60);
 
         WaterloggedStrikeImpactEvent impactEvent = new WaterloggedStrikeImpactEvent(
-                player, target, damage, slownessAmplifier, slownessDurationTicks);
+                shooter, target, damage, slownessAmplifier, slownessDurationTicks);
         Bukkit.getPluginManager().callEvent(impactEvent);
 
         if (impactEvent.isCancelled()) {
             return;
         }
 
-        target.damage(impactEvent.getDamage(), player);
+        target.damage(impactEvent.getDamage(), shooter);
         target.addPotionEffect(new PotionEffect(
                 PotionEffectType.SLOWNESS, impactEvent.getSlownessDurationTicks(),
                 impactEvent.getSlownessAmplifier(), false, true, true));

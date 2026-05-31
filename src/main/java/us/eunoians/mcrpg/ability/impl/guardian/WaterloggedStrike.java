@@ -7,6 +7,7 @@ import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Snowball;
 import org.bukkit.event.Event;
@@ -22,6 +23,7 @@ import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.GuardianAbilitiesConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.event.ability.guardian.WaterloggedStrikeActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.ability.guardian.WaterloggedStrikeTrailTask;
@@ -70,7 +72,46 @@ public final class WaterloggedStrike extends McRPGAbility
 
     @Override
     public boolean activateAbility(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
+        if (event instanceof MobAbilityTriggerEvent mobEvent) {
+            return mobActivate(abilityHolder, mobEvent);
+        }
         return comboActivate(abilityHolder);
+    }
+
+    /**
+     * Activates Waterlogged Strike for a MythicMobs mob. Launches a tagged snowball projectile
+     * from the caster with a water trail, identical to player activation.
+     *
+     * @param abilityHolder The {@link AbilityHolder} representing the mob caster.
+     * @param mobEvent      The {@link MobAbilityTriggerEvent} containing the caster entity.
+     * @return {@code true} if the ability executed, {@code false} if cancelled.
+     */
+    private boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
+        LivingEntity caster = mobEvent.getCaster();
+
+        WaterloggedStrikeActivateEvent activateEvent = new WaterloggedStrikeActivateEvent(abilityHolder);
+        Bukkit.getPluginManager().callEvent(activateEvent);
+        if (activateEvent.isCancelled()) {
+            return false;
+        }
+
+        double speed = getYamlDocument().getDouble(
+                GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_PROJECTILE_SPEED, 1.5);
+        Snowball projectile = caster.launchProjectile(Snowball.class,
+                caster.getLocation().getDirection().normalize().multiply(speed));
+        projectile.setInvisible(true);
+        projectile.getPersistentDataContainer().set(
+                PROJECTILE_TAG, PersistentDataType.BOOLEAN, true);
+
+        int maxRange = getYamlDocument().getInt(
+                GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_MAX_RANGE, 28);
+        new WaterloggedStrikeTrailTask(getPlugin(), projectile, caster.getLocation(), maxRange)
+                .runTask();
+
+        caster.getWorld().playSound(caster.getLocation(),
+                Sound.ENTITY_FISHING_BOBBER_THROW, 1.0f, 0.8f);
+
+        return true;
     }
 
     @Override

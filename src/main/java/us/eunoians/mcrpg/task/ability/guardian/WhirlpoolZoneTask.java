@@ -162,8 +162,7 @@ public final class WhirlpoolZoneTask extends ExpireableCoreTask {
             }
             pullDirection.normalize().multiply(pullVelocity);
 
-            Player caster = Bukkit.getPlayer(casterUUID);
-            if (caster == null) {
+            if (!(Bukkit.getEntity(casterUUID) instanceof LivingEntity caster)) {
                 this.cancelTask();
                 return;
             }

@@ -2,7 +2,6 @@ package us.eunoians.mcrpg.event.ability.guardian;
 
 import org.bukkit.Location;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -17,7 +16,7 @@ public class WhirlpoolPullEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final Player caster;
+    private final LivingEntity caster;
     private final LivingEntity target;
     private final Location center;
     private Vector pullVector;
@@ -26,12 +25,12 @@ public class WhirlpoolPullEvent extends Event implements Cancellable {
     /**
      * Constructs a new {@link WhirlpoolPullEvent}.
      *
-     * @param caster     The {@link Player} who created the whirlpool
+     * @param caster     The {@link LivingEntity} who created the whirlpool
      * @param target     The {@link LivingEntity} being pulled
      * @param center     The {@link Location} center of the whirlpool
      * @param pullVector The {@link Vector} representing the pull direction and magnitude
      */
-    public WhirlpoolPullEvent(@NotNull Player caster, @NotNull LivingEntity target, @NotNull Location center, @NotNull Vector pullVector) {
+    public WhirlpoolPullEvent(@NotNull LivingEntity caster, @NotNull LivingEntity target, @NotNull Location center, @NotNull Vector pullVector) {
         this.caster = caster;
         this.target = target;
         this.center = center;
@@ -39,12 +38,12 @@ public class WhirlpoolPullEvent extends Event implements Cancellable {
     }
 
     /**
-     * Gets the {@link Player} who created the whirlpool.
+     * Gets the {@link LivingEntity} who created the whirlpool.
      *
-     * @return The {@link Player} who created the whirlpool
+     * @return The {@link LivingEntity} who created the whirlpool
      */
     @NotNull
-    public Player getCaster() {
+    public LivingEntity getCaster() {
         return caster;
     }
 

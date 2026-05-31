@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.event.ability.guardian;
 
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -16,7 +15,7 @@ public class TsunamiWallContactEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
 
-    private final Player caster;
+    private final LivingEntity caster;
     private final LivingEntity target;
     private Vector knockbackVector;
     private int slownessAmplifier;
@@ -26,13 +25,13 @@ public class TsunamiWallContactEvent extends Event implements Cancellable {
     /**
      * Constructs a new {@link TsunamiWallContactEvent}.
      *
-     * @param caster               The {@link Player} who created the tsunami wall
+     * @param caster               The {@link LivingEntity} who created the tsunami wall
      * @param target               The {@link LivingEntity} contacted by the wall
      * @param knockbackVector      The {@link Vector} representing the knockback applied
      * @param slownessAmplifier    The amplifier of the slowness effect applied
      * @param slownessDurationTicks The duration of the slowness effect in ticks
      */
-    public TsunamiWallContactEvent(@NotNull Player caster, @NotNull LivingEntity target, @NotNull Vector knockbackVector, int slownessAmplifier, int slownessDurationTicks) {
+    public TsunamiWallContactEvent(@NotNull LivingEntity caster, @NotNull LivingEntity target, @NotNull Vector knockbackVector, int slownessAmplifier, int slownessDurationTicks) {
         this.caster = caster;
         this.target = target;
         this.knockbackVector = knockbackVector;
@@ -41,12 +40,12 @@ public class TsunamiWallContactEvent extends Event implements Cancellable {
     }
 
     /**
-     * Gets the {@link Player} who created the tsunami wall.
+     * Gets the {@link LivingEntity} who created the tsunami wall.
      *
-     * @return The {@link Player} who created the tsunami wall
+     * @return The {@link LivingEntity} who created the tsunami wall
      */
     @NotNull
-    public Player getCaster() {
+    public LivingEntity getCaster() {
         return caster;
     }
 
