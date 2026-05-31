@@ -1,9 +1,9 @@
 package us.eunoians.mcrpg.quest.chain;
 
 import com.diamonddagger590.mccore.database.Database;
+import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -12,7 +12,9 @@ import us.eunoians.mcrpg.database.table.quest.QuestChainStateDAO;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -23,8 +25,12 @@ import java.util.logging.Level;
 /**
  * Owns all asynchronous and synchronous persistence operations for quest chain state.
  * Serializes per-player writes to prevent concurrent DB mutations to the same player's
- * chain rows, and moves {@code clearDirtyIfCurrent} back to the main thread after a
- * successful write.
+ * chain rows.
+ * <p>
+ * Async writes ({@link #saveChainStateAsync}, {@link #persistAdvancementAsync}) are
+ * optimistic: they fire and forget, relying on the write-generation gate to skip stale
+ * writes when a logout flush supersedes them. Dirty flags are only cleared by the
+ * authoritative synchronous flush at logout ({@link #flushChainStatesSync}).
  * <p>
  * Eviction: {@code pendingSaves} entries are removed via {@code whenComplete} after each
  * future completes. {@code writeGenerations} entries are removed by {@link #cleanupPlayer(UUID)}
@@ -64,9 +70,8 @@ public class ChainPersistenceService {
      * {@code pendingSaves}: each new submission chains onto the previous future so that
      * concurrent saves for the same player always execute in submission order.
      * <p>
-     * After a successful write, {@link QuestChainPlayerState#clearDirtyIfCurrent(int)} is
-     * scheduled back on the main thread using the version captured at snapshot time so that
-     * a mutation occurring between snapshot and write correctly retains dirty.
+     * The write is atomic via {@link FailSafeTransaction}. Dirty flags are not cleared
+     * here — the authoritative flush at logout ({@link #flushChainStatesSync}) handles that.
      * <p>
      * If the write generation has been incremented since this save was enqueued (e.g. by a
      * logout flush), the JDBC call is skipped entirely.
@@ -76,7 +81,6 @@ public class ChainPersistenceService {
      */
     public void saveChainStateAsync(@NotNull UUID playerUUID, @NotNull QuestChainPlayerState state) {
         NamespacedKey chainKey = state.getChainKey();
-        int dirtySnapshot = state.getDirtyVersion();
         int generation = writeGenerations.computeIfAbsent(playerUUID, k -> new AtomicInteger()).get();
 
         QuestChainPlayerState snapshot = new QuestChainPlayerState(
@@ -93,10 +97,9 @@ public class ChainPersistenceService {
                 return;
             }
             try (Connection connection = database.getConnection()) {
-                boolean saved = QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot);
-                if (saved) {
-                    Bukkit.getScheduler().runTask(plugin, () -> state.clearDirtyIfCurrent(dirtySnapshot));
-                }
+                new FailSafeTransaction(connection,
+                        QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot))
+                        .executeTransaction();
             } catch (SQLException e) {
                 plugin.getLogger().log(Level.SEVERE,
                         "[ChainPersistenceService] Failed to save chain state for player " + playerUUID
@@ -119,11 +122,11 @@ public class ChainPersistenceService {
 
     /**
      * Persists both a step completion log entry and the updated chain state in a single
-     * database connection. Coalesces two separate async writes into one to halve the
-     * connection overhead per step advance. Clears the dirty flag on the main thread after
-     * a successful write.
+     * atomic {@link FailSafeTransaction}: both writes succeed together or both roll back.
+     * Coalesces two DB operations into one connection, halving connection overhead per advance.
      * <p>
      * The write generation gate applies identically to {@link #saveChainStateAsync}.
+     * Dirty flags are not cleared here — the authoritative flush at logout handles that.
      *
      * @param playerUUID        the player UUID
      * @param state             the chain state to persist
@@ -136,7 +139,6 @@ public class ChainPersistenceService {
                                         @NotNull NamespacedKey chainKey,
                                         @NotNull NamespacedKey completedQuestKey,
                                         int completionNumber) {
-        int dirtySnapshot = state.getDirtyVersion();
         int generation = writeGenerations.computeIfAbsent(playerUUID, k -> new AtomicInteger()).get();
 
         QuestChainPlayerState snapshot = new QuestChainPlayerState(
@@ -154,12 +156,11 @@ public class ChainPersistenceService {
                 return;
             }
             try (Connection connection = database.getConnection()) {
-                QuestChainCompletionLogDAO.logCompletion(connection, playerUUID,
-                        chainKey.toString(), completedQuestKey.toString(), completedAt, completionNumber);
-                boolean saved = QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot);
-                if (saved) {
-                    Bukkit.getScheduler().runTask(plugin, () -> state.clearDirtyIfCurrent(dirtySnapshot));
-                }
+                List<PreparedStatement> statements = new ArrayList<>();
+                statements.addAll(QuestChainCompletionLogDAO.logCompletion(connection, playerUUID,
+                        chainKey.toString(), completedQuestKey.toString(), completedAt, completionNumber));
+                statements.addAll(QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot));
+                new FailSafeTransaction(connection, statements).executeTransaction();
             } catch (SQLException e) {
                 plugin.getLogger().log(Level.SEVERE,
                         "[ChainPersistenceService] Failed to persist advancement for player " + playerUUID
@@ -182,8 +183,9 @@ public class ChainPersistenceService {
 
     /**
      * Synchronously flushes all dirty chain states for a player on the database executor
-     * thread. Snapshots each state before writing to avoid read/write races. Only clears the
-     * dirty flag if the DAO write succeeds.
+     * thread. Each dirty state is saved via its own {@link FailSafeTransaction} so that a
+     * failure on one state does not prevent others from being written. On success, clears
+     * the dirty flag immediately.
      * <p>
      * This method must only be called from the database executor thread (e.g. inside
      * {@code McRPGPlayerUnloadTask.unloadPlayer()}), and only after {@link #prepareForFlush(UUID)}
@@ -196,8 +198,7 @@ public class ChainPersistenceService {
     public void flushChainStatesSync(@NotNull Connection connection,
                                      @NotNull UUID playerUUID,
                                      @NotNull QuestChainPlayerData chainData) {
-        List<QuestChainPlayerState> dirty = chainData.getDirtyStates();
-        for (QuestChainPlayerState state : dirty) {
+        for (QuestChainPlayerState state : chainData.getDirtyStates()) {
             try {
                 QuestChainPlayerState snapshot = new QuestChainPlayerState(
                         state.getChainKey(),
@@ -205,10 +206,10 @@ public class ChainPersistenceService {
                         state.getState(),
                         state.getCompletionCount(),
                         state.getLastCompletedAt().orElse(null));
-                boolean saved = QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot);
-                if (saved) {
-                    state.clearDirty();
-                }
+                new FailSafeTransaction(connection,
+                        QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot))
+                        .executeTransaction();
+                state.clearDirty();
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE,
                         "[ChainPersistenceService] Failed to flush dirty chain state for player " + playerUUID

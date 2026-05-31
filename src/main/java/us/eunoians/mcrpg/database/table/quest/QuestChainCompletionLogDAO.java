@@ -27,6 +27,10 @@ import java.util.logging.Level;
  * <p>
  * The table uses {@code (player_uuid, chain_key, quest_key, completion_number)} as
  * its primary key to support multiple chain completions with the same step history.
+ * <p>
+ * Write methods return {@link List} of un-executed {@link PreparedStatement}s for use with
+ * {@link com.diamonddagger590.mccore.database.transaction.FailSafeTransaction}. Read methods
+ * propagate {@link SQLException} to callers.
  */
 public class QuestChainCompletionLogDAO {
 
@@ -86,7 +90,8 @@ public class QuestChainCompletionLogDAO {
     }
 
     /**
-     * Records a chain step completion.
+     * Returns an un-executed {@link PreparedStatement} list that records a chain step completion.
+     * Execute via {@link com.diamonddagger590.mccore.database.transaction.FailSafeTransaction}.
      *
      * @param connection       the database connection
      * @param playerUUID       the player UUID
@@ -94,31 +99,31 @@ public class QuestChainCompletionLogDAO {
      * @param questKey         the completed quest key (string form)
      * @param completedAt      the completion timestamp in epoch millis
      * @param completionNumber which chain completion this belongs to (1-based)
-     * @return {@code true} if the write succeeded; {@code false} on SQL failure
+     * @return list containing the insert statement (un-executed)
      */
-    public static boolean logCompletion(@NotNull Connection connection,
-                                        @NotNull UUID playerUUID,
-                                        @NotNull String chainKey,
-                                        @NotNull String questKey,
-                                        long completedAt,
-                                        int completionNumber) {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "INSERT OR REPLACE INTO " + TABLE_NAME +
-                        " (player_uuid, chain_key, quest_key, completed_at, completion_number) " +
-                        "VALUES (?, ?, ?, ?, ?)")) {
+    @NotNull
+    public static List<PreparedStatement> logCompletion(@NotNull Connection connection,
+                                                        @NotNull UUID playerUUID,
+                                                        @NotNull String chainKey,
+                                                        @NotNull String questKey,
+                                                        long completedAt,
+                                                        int completionNumber) {
+        List<PreparedStatement> statements = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(
+                    "INSERT OR REPLACE INTO " + TABLE_NAME +
+                            " (player_uuid, chain_key, quest_key, completed_at, completion_number) " +
+                            "VALUES (?, ?, ?, ?, ?)");
             statement.setString(1, playerUUID.toString());
             statement.setString(2, chainKey);
             statement.setString(3, questKey);
             statement.setLong(4, completedAt);
             statement.setInt(5, completionNumber);
-            statement.executeUpdate();
-            return true;
+            statements.add(statement);
         } catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.WARNING,
-                    "[QuestChainCompletionLogDAO] Failed to log completion for player " + playerUUID +
-                            ", chain " + chainKey + ", quest " + questKey, e);
-            return false;
+            throw new RuntimeException(e);
         }
+        return statements;
     }
 
     /**
@@ -130,11 +135,12 @@ public class QuestChainCompletionLogDAO {
      * @param playerUUID the player UUID
      * @param chainKey   the chain key (string form)
      * @return set of completed quest key strings
+     * @throws SQLException if a database error occurs
      */
     @NotNull
     public static Set<String> getCompletedQuestKeys(@NotNull Connection connection,
                                                      @NotNull UUID playerUUID,
-                                                     @NotNull String chainKey) {
+                                                     @NotNull String chainKey) throws SQLException {
         Set<String> keys = new HashSet<>();
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT DISTINCT quest_key FROM " + TABLE_NAME +
@@ -146,10 +152,6 @@ public class QuestChainCompletionLogDAO {
                     keys.add(rs.getString("quest_key"));
                 }
             }
-        } catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.WARNING,
-                    "[QuestChainCompletionLogDAO] Failed to get completed quest keys for player " + playerUUID +
-                            ", chain " + chainKey, e);
         }
         return keys;
     }
@@ -161,10 +163,11 @@ public class QuestChainCompletionLogDAO {
      * @param connection the database connection
      * @param playerUUID the player UUID
      * @return map of chain key → set of completed quest key strings for that chain
+     * @throws SQLException if a database error occurs
      */
     @NotNull
     public static Map<NamespacedKey, Set<NamespacedKey>> getAllCompletedQuestKeysByChain(
-            @NotNull Connection connection, @NotNull UUID playerUUID) {
+            @NotNull Connection connection, @NotNull UUID playerUUID) throws SQLException {
         Map<NamespacedKey, Set<NamespacedKey>> result = new HashMap<>();
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT DISTINCT chain_key, quest_key FROM " + TABLE_NAME + " WHERE player_uuid = ?")) {
@@ -178,37 +181,35 @@ public class QuestChainCompletionLogDAO {
                     }
                 }
             }
-        } catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.WARNING,
-                    "[QuestChainCompletionLogDAO] Failed to load all completed quest keys for player " + playerUUID, e);
         }
         return result;
     }
 
     /**
-     * Deletes all completion log entries for a specific chain for a player.
-     * Used by the hard reset admin command.
+     * Returns an un-executed {@link PreparedStatement} list that deletes all completion log
+     * entries for a specific chain for a player. Execute via
+     * {@link com.diamonddagger590.mccore.database.transaction.FailSafeTransaction}.
      *
      * @param connection the database connection
      * @param playerUUID the player UUID
      * @param chainKey   the chain key (string form)
-     * @return {@code true} if the delete succeeded; {@code false} on SQL failure
+     * @return list containing the delete statement (un-executed)
      */
-    public static boolean deleteForChain(@NotNull Connection connection,
-                                         @NotNull UUID playerUUID,
-                                         @NotNull String chainKey) {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "DELETE FROM " + TABLE_NAME + " WHERE player_uuid = ? AND chain_key = ?")) {
+    @NotNull
+    public static List<PreparedStatement> deleteForChain(@NotNull Connection connection,
+                                                         @NotNull UUID playerUUID,
+                                                         @NotNull String chainKey) {
+        List<PreparedStatement> statements = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(
+                    "DELETE FROM " + TABLE_NAME + " WHERE player_uuid = ? AND chain_key = ?");
             statement.setString(1, playerUUID.toString());
             statement.setString(2, chainKey);
-            statement.executeUpdate();
-            return true;
+            statements.add(statement);
         } catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.WARNING,
-                    "[QuestChainCompletionLogDAO] Failed to delete log entries for player " + playerUUID +
-                            ", chain " + chainKey, e);
-            return false;
+            throw new RuntimeException(e);
         }
+        return statements;
     }
 
     /**

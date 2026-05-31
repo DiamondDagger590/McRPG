@@ -488,14 +488,15 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
     }
 
     /**
-     * Loads all chain states for the player from the database.
-     * The states are applied on the main thread via {@link McRPGPlayer#getChainData()}.
+     * Loads all chain states for the player from the database and returns a deferred function
+     * that applies them on the main thread via {@link McRPGPlayer#getChainData()}.
      *
      * @param connection the database connection (DB executor thread)
      * @return a function that applies the loaded states on the main thread
+     * @throws SQLException if a database error occurs reading chain state rows
      */
     @NotNull
-    private UpdatePlayerDataSyncFunction loadChainStates(@NotNull Connection connection) {
+    private UpdatePlayerDataSyncFunction loadChainStates(@NotNull Connection connection) throws SQLException {
         QuestChainManager chainManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST_CHAIN);
         List<QuestChainPlayerState> states = chainManager.loadChainStates(connection, getCorePlayer().getUUID());

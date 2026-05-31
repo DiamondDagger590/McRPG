@@ -35,13 +35,13 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
     private static final NamespacedKey QUEST_KEY_B = new NamespacedKey("mcrpg", "quest_b");
 
     @Test
-    @DisplayName("Given valid parameters, When logCompletion is called, Then it prepares and executes an upsert")
-    void logCompletion_executesUpsert() throws SQLException {
+    @DisplayName("Given valid parameters, When logCompletion is called, Then it returns a non-empty statement list without executing")
+    void logCompletion_returnsUnexecutedStatement() throws SQLException {
         Connection mockConnection = mock(Connection.class);
         PreparedStatement mockStatement = mock(PreparedStatement.class);
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
 
-        QuestChainCompletionLogDAO.logCompletion(
+        List<PreparedStatement> statements = QuestChainCompletionLogDAO.logCompletion(
                 mockConnection,
                 PLAYER_UUID,
                 CHAIN_KEY.toString(),
@@ -50,7 +50,8 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
                 1
         );
 
-        verify(mockStatement).executeUpdate();
+        assertFalse(statements.isEmpty());
+        assertTrue(statements.contains(mockStatement));
     }
 
     @Test
@@ -133,18 +134,17 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("Given a player UUID and chain key, When deleteForChain is called, Then a delete is executed and true is returned on success")
-    void deleteForChain_executesDeleteAndReturnsTrue() throws SQLException {
+    @DisplayName("Given a player UUID and chain key, When deleteForChain is called, Then it returns a non-empty statement list without executing")
+    void deleteForChain_returnsUnexecutedStatement() throws SQLException {
         Connection mockConnection = mock(Connection.class);
         PreparedStatement mockStatement = mock(PreparedStatement.class);
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
-        when(mockStatement.executeUpdate()).thenReturn(2);
 
-        boolean result = QuestChainCompletionLogDAO.deleteForChain(
+        List<PreparedStatement> statements = QuestChainCompletionLogDAO.deleteForChain(
                 mockConnection, PLAYER_UUID, CHAIN_KEY.toString());
 
-        assertTrue(result);
-        verify(mockStatement).executeUpdate();
+        assertFalse(statements.isEmpty());
+        assertTrue(statements.contains(mockStatement));
     }
 
     @Test

@@ -146,28 +146,30 @@ public class QuestChainStateDAOTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("Given a valid chain state, When saveChainState is called, Then it executes an upsert statement")
-    void saveChainState_executesUpsert() throws SQLException {
+    @DisplayName("Given a valid chain state, When saveChainState is called, Then it returns a non-empty statement list without executing")
+    void saveChainState_returnsUnexecutedStatement() throws SQLException {
         Connection mockConnection = mock(Connection.class);
         PreparedStatement mockStatement = mock(PreparedStatement.class);
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
 
         var state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        QuestChainStateDAO.saveChainState(mockConnection, PLAYER_UUID, state);
+        List<PreparedStatement> statements = QuestChainStateDAO.saveChainState(mockConnection, PLAYER_UUID, state);
 
-        verify(mockStatement).executeUpdate();
+        assertFalse(statements.isEmpty());
+        assertTrue(statements.contains(mockStatement));
     }
 
     @Test
-    @DisplayName("Given a player UUID and chain key, When deleteChainState is called, Then it executes a delete statement")
-    void deleteChainState_executesDelete() throws SQLException {
+    @DisplayName("Given a player UUID and chain key, When deleteChainState is called, Then it returns a non-empty statement list without executing")
+    void deleteChainState_returnsUnexecutedStatement() throws SQLException {
         Connection mockConnection = mock(Connection.class);
         PreparedStatement mockStatement = mock(PreparedStatement.class);
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
 
-        QuestChainStateDAO.deleteChainState(mockConnection, PLAYER_UUID, CHAIN_KEY);
+        List<PreparedStatement> statements = QuestChainStateDAO.deleteChainState(mockConnection, PLAYER_UUID, CHAIN_KEY);
 
-        verify(mockStatement).executeUpdate();
+        assertFalse(statements.isEmpty());
+        assertTrue(statements.contains(mockStatement));
     }
 
     @Test

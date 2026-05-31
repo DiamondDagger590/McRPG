@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -21,6 +22,10 @@ import java.util.logging.Level;
  * DAO for the {@code mcrpg_quest_chain_state} table which persists per-player chain lifecycle
  * state. Uses upsert semantics so both insert and update paths go through
  * {@link #saveChainState}.
+ * <p>
+ * Write methods return {@link List} of un-executed {@link PreparedStatement}s for use with
+ * {@link com.diamonddagger590.mccore.database.transaction.FailSafeTransaction}. Read methods
+ * propagate {@link SQLException} to callers.
  */
 public class QuestChainStateDAO {
 
@@ -78,10 +83,11 @@ public class QuestChainStateDAO {
      * @param connection the database connection
      * @param playerUUID the player UUID
      * @return all chain states (may be empty)
+     * @throws SQLException if a database error occurs
      */
     @NotNull
     public static List<QuestChainPlayerState> loadAllChainStates(@NotNull Connection connection,
-                                                                  @NotNull UUID playerUUID) {
+                                                                  @NotNull UUID playerUUID) throws SQLException {
         List<QuestChainPlayerState> states = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT chain_key, current_quest, state, completion_count, last_completed_at " +
@@ -116,35 +122,36 @@ public class QuestChainStateDAO {
                     states.add(new QuestChainPlayerState(chainKey, currentQuest, chainState, completionCount, lastCompletedAt));
                 }
             }
-        } catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.SEVERE,
-                    "[QuestChainStateDAO] Failed to load chain states for player " + playerUUID, e);
         }
         return states;
     }
 
     /**
-     * Saves or upserts a single chain state for a player.
+     * Returns an un-executed {@link PreparedStatement} list that upserts a single chain state
+     * for a player. Execute via {@link com.diamonddagger590.mccore.database.transaction.FailSafeTransaction}.
      *
      * @param connection the database connection
      * @param playerUUID the player UUID
      * @param state      the chain state to save
-     * @return {@code true} if the write succeeded; {@code false} on SQL failure
+     * @return list containing the upsert statement (un-executed)
      */
-    public static boolean saveChainState(@NotNull Connection connection,
-                                         @NotNull UUID playerUUID,
-                                         @NotNull QuestChainPlayerState state) {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "INSERT OR REPLACE INTO " + TABLE_NAME +
-                        " (player_uuid, chain_key, current_quest, state, completion_count, last_completed_at) " +
-                        "VALUES (?, ?, ?, ?, ?, ?)")) {
+    @NotNull
+    public static List<PreparedStatement> saveChainState(@NotNull Connection connection,
+                                                         @NotNull UUID playerUUID,
+                                                         @NotNull QuestChainPlayerState state) {
+        List<PreparedStatement> statements = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(
+                    "INSERT OR REPLACE INTO " + TABLE_NAME +
+                            " (player_uuid, chain_key, current_quest, state, completion_count, last_completed_at) " +
+                            "VALUES (?, ?, ?, ?, ?, ?)");
             statement.setString(1, playerUUID.toString());
             statement.setString(2, state.getChainKey().toString());
             var currentQuestOpt = state.getCurrentQuestKey();
             if (currentQuestOpt.isPresent()) {
                 statement.setString(3, currentQuestOpt.get().toString());
             } else {
-                statement.setNull(3, java.sql.Types.VARCHAR);
+                statement.setNull(3, Types.VARCHAR);
             }
             statement.setString(4, state.getState().name());
             statement.setInt(5, state.getCompletionCount());
@@ -152,41 +159,39 @@ public class QuestChainStateDAO {
             if (lastCompletedOpt.isPresent()) {
                 statement.setLong(6, lastCompletedOpt.get());
             } else {
-                statement.setNull(6, java.sql.Types.BIGINT);
+                statement.setNull(6, Types.BIGINT);
             }
-            statement.executeUpdate();
-            return true;
+            statements.add(statement);
         } catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.SEVERE,
-                    "[QuestChainStateDAO] Failed to save chain state for player " + playerUUID +
-                            ", chain " + state.getChainKey(), e);
-            return false;
+            throw new RuntimeException(e);
         }
+        return statements;
     }
 
     /**
-     * Deletes a specific chain state for a player.
+     * Returns an un-executed {@link PreparedStatement} list that deletes a specific chain state
+     * for a player. Execute via {@link com.diamonddagger590.mccore.database.transaction.FailSafeTransaction}.
      *
      * @param connection the database connection
      * @param playerUUID the player UUID
      * @param chainKey   the chain key
-     * @return {@code true} if the delete succeeded; {@code false} on SQL failure
+     * @return list containing the delete statement (un-executed)
      */
-    public static boolean deleteChainState(@NotNull Connection connection,
-                                           @NotNull UUID playerUUID,
-                                           @NotNull NamespacedKey chainKey) {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "DELETE FROM " + TABLE_NAME + " WHERE player_uuid = ? AND chain_key = ?")) {
+    @NotNull
+    public static List<PreparedStatement> deleteChainState(@NotNull Connection connection,
+                                                           @NotNull UUID playerUUID,
+                                                           @NotNull NamespacedKey chainKey) {
+        List<PreparedStatement> statements = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(
+                    "DELETE FROM " + TABLE_NAME + " WHERE player_uuid = ? AND chain_key = ?");
             statement.setString(1, playerUUID.toString());
             statement.setString(2, chainKey.toString());
-            statement.executeUpdate();
-            return true;
+            statements.add(statement);
         } catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.WARNING,
-                    "[QuestChainStateDAO] Failed to delete chain state for player " + playerUUID +
-                            ", chain " + chainKey, e);
-            return false;
+            throw new RuntimeException(e);
         }
+        return statements;
     }
 
     /**
