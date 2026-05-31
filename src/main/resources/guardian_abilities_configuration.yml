@@ -71,6 +71,7 @@ ability-configuration:
     slowness-amplifier: 2
     slowness-duration-ticks: 60
     spawn-distance: 2.0
+    travel-speed: 0.4
     unlock-conditions:
       book-source:
         type: mcrpg:display_hint

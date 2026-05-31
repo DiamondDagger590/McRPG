@@ -26,6 +26,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.ability.guardian.WhirlpoolZoneTask;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -129,7 +130,7 @@ public final class Whirlpool extends McRPGAbility
     @NotNull
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
-        Set<NamespacedKey> attributes = new java.util.HashSet<>(UnlockableAbility.super.getApplicableAttributes());
+        Set<NamespacedKey> attributes = new HashSet<>(UnlockableAbility.super.getApplicableAttributes());
         attributes.addAll(CooldownableAbility.super.getApplicableAttributes());
         return Set.copyOf(attributes);
     }

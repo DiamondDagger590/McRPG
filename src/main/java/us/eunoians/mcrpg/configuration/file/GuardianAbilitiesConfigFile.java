@@ -63,6 +63,7 @@ public final class GuardianAbilitiesConfigFile extends ConfigFile {
     public static final Route TSUNAMI_WALL_SLOWNESS_AMPLIFIER = Route.fromString(toRoutePath(TSUNAMI_WALL_HEADER, "slowness-amplifier"));
     public static final Route TSUNAMI_WALL_SLOWNESS_DURATION_TICKS = Route.fromString(toRoutePath(TSUNAMI_WALL_HEADER, "slowness-duration-ticks"));
     public static final Route TSUNAMI_WALL_SPAWN_DISTANCE = Route.fromString(toRoutePath(TSUNAMI_WALL_HEADER, "spawn-distance"));
+    public static final Route TSUNAMI_WALL_TRAVEL_SPEED = Route.fromString(toRoutePath(TSUNAMI_WALL_HEADER, "travel-speed"));
     public static final Route TSUNAMI_WALL_DISPLAY_ITEM = Route.fromString(toRoutePath(TSUNAMI_WALL_HEADER, "display-item"));
     public static final Route TSUNAMI_WALL_UNLOCK_CONDITIONS = Route.fromString(toRoutePath(TSUNAMI_WALL_HEADER, "unlock-conditions"));
 }

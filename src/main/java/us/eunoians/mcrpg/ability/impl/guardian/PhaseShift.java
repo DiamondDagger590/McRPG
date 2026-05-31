@@ -33,6 +33,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.ability.guardian.PhaseShiftCritWindowTask;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -93,31 +94,11 @@ public final class PhaseShift extends McRPGAbility
         }
         Player player = bukkitPlayerOpt.get();
 
-        Optional<CombatTargetState> stateOpt = mcRPGPlayer.getCombatTargetState();
-        if (stateOpt.isEmpty()) {
+        Optional<Entity> targetOpt = resolveTarget(mcRPGPlayer, player);
+        if (targetOpt.isEmpty()) {
             return false;
         }
-        CombatTargetState state = stateOpt.get();
-        long windowMillis = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_LAST_HIT_WINDOW_SECONDS, 5) * 1000L;
-        if (!state.hasRecentTarget(System.currentTimeMillis(), windowMillis)) {
-            return false;
-        }
-
-        UUID targetUUID = state.getLastAttackedEntityUUID();
-        if (targetUUID == null || targetUUID.equals(player.getUniqueId())) {
-            return false;
-        }
-        Entity target = player.getWorld().getEntity(targetUUID);
-        if (target == null || target.isDead()) {
-            return false;
-        }
-
-        double maxRange = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_MAX_RANGE, 12.0);
-        if (player.getLocation().distanceSquared(target.getLocation()) > maxRange * maxRange) {
-            return false;
-        }
+        Entity target = targetOpt.get();
 
         PhaseShiftActivateEvent event = new PhaseShiftActivateEvent(abilityHolder, target);
         Bukkit.getPluginManager().callEvent(event);
@@ -125,6 +106,59 @@ public final class PhaseShift extends McRPGAbility
             return false;
         }
 
+        teleportBehindTarget(player, target);
+        grantCritWindow(mcRPGPlayer);
+        playTeleportEffects(player);
+
+        return true;
+    }
+
+    /**
+     * Resolves the combat target for Phase Shift, validating recency, range, self-targeting,
+     * and liveness.
+     *
+     * @param mcRPGPlayer The McRPG player activating the ability.
+     * @param player      The Bukkit player.
+     * @return An {@link Optional} containing the valid target, or empty if no valid target exists.
+     */
+    @NotNull
+    private Optional<Entity> resolveTarget(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Player player) {
+        Optional<CombatTargetState> stateOpt = mcRPGPlayer.getCombatTargetState();
+        if (stateOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        CombatTargetState state = stateOpt.get();
+        long windowMillis = getYamlDocument().getInt(
+                GuardianAbilitiesConfigFile.PHASE_SHIFT_LAST_HIT_WINDOW_SECONDS, 5) * 1000L;
+        if (!state.hasRecentTarget(System.currentTimeMillis(), windowMillis)) {
+            return Optional.empty();
+        }
+
+        UUID targetUUID = state.getLastAttackedEntityUUID();
+        if (targetUUID == null || targetUUID.equals(player.getUniqueId())) {
+            return Optional.empty();
+        }
+        Entity target = player.getWorld().getEntity(targetUUID);
+        if (target == null || target.isDead()) {
+            return Optional.empty();
+        }
+
+        double maxRange = getYamlDocument().getDouble(
+                GuardianAbilitiesConfigFile.PHASE_SHIFT_MAX_RANGE, 12.0);
+        if (player.getLocation().distanceSquared(target.getLocation()) > maxRange * maxRange) {
+            return Optional.empty();
+        }
+
+        return Optional.of(target);
+    }
+
+    /**
+     * Teleports the player behind the target entity, facing toward it.
+     *
+     * @param player The player to teleport.
+     * @param target The target entity to teleport behind.
+     */
+    private void teleportBehindTarget(@NotNull Player player, @NotNull Entity target) {
         double offset = getYamlDocument().getDouble(
                 GuardianAbilitiesConfigFile.PHASE_SHIFT_TELEPORT_OFFSET, 1.5);
         Location destination = calculateBehindTarget(target, offset);
@@ -136,17 +170,29 @@ public final class PhaseShift extends McRPGAbility
 
         player.teleportAsync(destination);
         player.resetCooldown();
+    }
 
+    /**
+     * Grants the player a guaranteed critical hit window for a configured duration.
+     *
+     * @param mcRPGPlayer The McRPG player to grant the crit window to.
+     */
+    private void grantCritWindow(@NotNull McRPGPlayer mcRPGPlayer) {
         int critWindowTicks = getYamlDocument().getInt(
                 GuardianAbilitiesConfigFile.PHASE_SHIFT_CRIT_WINDOW_TICKS, 60);
         mcRPGPlayer.activateCritWindow();
         new PhaseShiftCritWindowTask(getPlugin(), mcRPGPlayer, critWindowTicks).runTask();
+    }
 
+    /**
+     * Plays the teleport sound and spawns water-themed particles at the player's location.
+     *
+     * @param player The player whose location is used for effects.
+     */
+    private void playTeleportEffects(@NotNull Player player) {
         spawnTeleportParticles(player.getLocation());
         player.getWorld().playSound(player.getLocation(),
                 Sound.ENTITY_ENDERMAN_TELEPORT, 0.8f, 1.2f);
-
-        return true;
     }
 
     @NotNull
@@ -171,7 +217,7 @@ public final class PhaseShift extends McRPGAbility
     @NotNull
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
-        Set<NamespacedKey> attributes = new java.util.HashSet<>(UnlockableAbility.super.getApplicableAttributes());
+        Set<NamespacedKey> attributes = new HashSet<>(UnlockableAbility.super.getApplicableAttributes());
         attributes.addAll(CooldownableAbility.super.getApplicableAttributes());
         return Set.copyOf(attributes);
     }

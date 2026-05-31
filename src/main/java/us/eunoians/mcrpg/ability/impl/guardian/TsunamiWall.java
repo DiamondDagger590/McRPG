@@ -27,6 +27,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.ability.guardian.TsunamiWallTask;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -98,17 +99,20 @@ public final class TsunamiWall extends McRPGAbility
                 GuardianAbilitiesConfigFile.TSUNAMI_WALL_SLOWNESS_DURATION_TICKS, 60);
         double spawnDistance = getYamlDocument().getDouble(
                 GuardianAbilitiesConfigFile.TSUNAMI_WALL_SPAWN_DISTANCE, 2.0);
+        double travelSpeed = getYamlDocument().getDouble(
+                GuardianAbilitiesConfigFile.TSUNAMI_WALL_TRAVEL_SPEED, 0.4);
 
         Vector forward = playerLoc.getDirection().setY(0).normalize();
-        Location wallCenter = playerLoc.clone().add(forward.clone().multiply(spawnDistance));
+        Location spawnOrigin = playerLoc.clone().add(forward.clone().multiply(1.0));
+        Location wallDestination = playerLoc.clone().add(forward.clone().multiply(spawnDistance));
         Vector wallRight = new Vector(-forward.getZ(), 0, forward.getX()).normalize();
 
         UUID casterUUID = player.getUniqueId();
-        new TsunamiWallTask(getPlugin(), wallCenter, wallRight, width, height,
+        new TsunamiWallTask(getPlugin(), spawnOrigin, wallDestination, wallRight, width, height,
                 knockbackStrength, slownessAmplifier, slownessDurationTicks,
-                forward, casterUUID, durationTicks).runTask();
+                forward, casterUUID, durationTicks, travelSpeed).runTask();
 
-        player.getWorld().playSound(wallCenter,
+        player.getWorld().playSound(spawnOrigin,
                 Sound.ENTITY_GENERIC_SPLASH, 1.0f, 0.6f);
 
         return true;
@@ -136,7 +140,7 @@ public final class TsunamiWall extends McRPGAbility
     @NotNull
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
-        Set<NamespacedKey> attributes = new java.util.HashSet<>(UnlockableAbility.super.getApplicableAttributes());
+        Set<NamespacedKey> attributes = new HashSet<>(UnlockableAbility.super.getApplicableAttributes());
         attributes.addAll(CooldownableAbility.super.getApplicableAttributes());
         return Set.copyOf(attributes);
     }

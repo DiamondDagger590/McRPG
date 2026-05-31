@@ -27,6 +27,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.ability.guardian.WaterloggedStrikeTrailTask;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -125,7 +126,7 @@ public final class WaterloggedStrike extends McRPGAbility
     @NotNull
     @Override
     public Set<NamespacedKey> getApplicableAttributes() {
-        Set<NamespacedKey> attributes = new java.util.HashSet<>(UnlockableAbility.super.getApplicableAttributes());
+        Set<NamespacedKey> attributes = new HashSet<>(UnlockableAbility.super.getApplicableAttributes());
         attributes.addAll(CooldownableAbility.super.getApplicableAttributes());
         return Set.copyOf(attributes);
     }
