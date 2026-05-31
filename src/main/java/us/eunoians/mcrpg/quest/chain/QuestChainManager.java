@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.database.table.quest.QuestChainCompletionLogDAO;
 import us.eunoians.mcrpg.database.table.quest.QuestChainStateDAO;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.quest.ChainCompletionSource;
 import us.eunoians.mcrpg.event.quest.QuestChainAbandonEvent;
 import us.eunoians.mcrpg.event.quest.QuestChainCompleteEvent;
 import us.eunoians.mcrpg.event.quest.QuestChainFailEvent;
@@ -201,7 +202,7 @@ public class QuestChainManager extends Manager<McRPG> {
             state.complete(plugin().getTimeProvider().now().toEpochMilli());
             chainData.updateQuestKeyIndex(state);
             Bukkit.getPluginManager().callEvent(
-                    new QuestChainCompleteEvent(definition, player, playerUUID, state.getCompletionCount()));
+                    new QuestChainCompleteEvent(definition, player, playerUUID, state.getCompletionCount(), ChainCompletionSource.ADVANCEMENT));
             plugin().getLogger().fine("[QuestChainManager] Completed chain '" + chainKey
                     + "' for player " + playerUUID + " (completion #" + state.getCompletionCount() + ")");
             persistenceService.persistAdvancementAsync(playerUUID, state, chainKey, completedQuestKey, completionNumber);
@@ -321,7 +322,7 @@ public class QuestChainManager extends Manager<McRPG> {
                     state.complete(plugin().getTimeProvider().now().toEpochMilli());
                     chainData.updateQuestKeyIndex(state);
                     Bukkit.getPluginManager().callEvent(
-                            new QuestChainCompleteEvent(definition, player, playerUUID, state.getCompletionCount()));
+                            new QuestChainCompleteEvent(definition, player, playerUUID, state.getCompletionCount(), ChainCompletionSource.RESTART));
                     persistenceService.saveChainStateAsync(playerUUID, state);
                     callback.accept(false);
                 }
@@ -595,7 +596,7 @@ public class QuestChainManager extends Manager<McRPG> {
                 plugin().getLogger().fine("[QuestChainManager] Re-resolved chain '" + chainKey
                         + "' for player " + playerUUID + ": all steps completed, marking COMPLETED");
                 Bukkit.getPluginManager().callEvent(
-                        new QuestChainCompleteEvent(definition, Bukkit.getPlayer(playerUUID), playerUUID, state.getCompletionCount()));
+                        new QuestChainCompleteEvent(definition, Bukkit.getPlayer(playerUUID), playerUUID, state.getCompletionCount(), ChainCompletionSource.RE_RESOLUTION));
                 persistenceService.saveChainStateAsync(playerUUID, state);
             }
         }
