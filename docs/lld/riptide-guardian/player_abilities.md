@@ -411,10 +411,10 @@ public CombatTargetState getOrCreateCombatTargetState() {
     return combatTargetState;
 }
 
-// Optional accessor
-@NotNull
-public Optional<CombatTargetState> getCombatTargetState() {
-    return Optional.ofNullable(combatTargetState);
+// Nullable accessor
+@Nullable
+public CombatTargetState getCombatTargetState() {
+    return combatTargetState;
 }
 
 // Reset on logout (add to existing cleanup)
@@ -490,12 +490,11 @@ public final class PhaseShift extends McRPGAbility
         Player player = mcRPGPlayer.getAsBukkitPlayer();
 
         // Check for recent combat target
-        Optional<CombatTargetState> stateOpt = mcRPGPlayer.getCombatTargetState();
-        if (stateOpt.isEmpty()) {
+        CombatTargetState state = mcRPGPlayer.getCombatTargetState();
+        if (state == null) {
             sendNoTargetMessage(mcRPGPlayer);
             return false;
         }
-        CombatTargetState state = stateOpt.get();
         long windowMillis = getYamlDocument().getInt(
                 GuardianAbilitiesConfigFile.PHASE_SHIFT_LAST_HIT_WINDOW_SECONDS, 5) * 1000L;
         if (!state.hasRecentTarget(System.currentTimeMillis(), windowMillis)) {
@@ -503,8 +502,12 @@ public final class PhaseShift extends McRPGAbility
             return false;
         }
 
-        // Resolve target entity
+        // Resolve target entity (cannot Phase Shift to yourself)
         UUID targetUUID = state.getLastAttackedEntityUUID();
+        if (targetUUID.equals(player.getUniqueId())) {
+            sendNoTargetMessage(mcRPGPlayer);
+            return false;
+        }
         Entity target = player.getWorld().getEntity(targetUUID);
         if (target == null || target.isDead()) {
             sendNoTargetMessage(mcRPGPlayer);
@@ -1145,7 +1148,7 @@ These events are fired when an ability applies damage or effects to a specific t
 | Event | Extends | Extra Fields | Fired When |
 |---|---|---|---|
 | `PhaseShiftCritDamageEvent` | `McRPGPlayerEvent` | `Entity target`, `double originalDamage`, `double critDamage`, `double multiplier` | Crit window consumed and damage multiplied |
-| `WhirlpoolPullEvent` | `McRPGPlayerEvent` | `LivingEntity target`, `Location center`, `Vector pullVector` | Entity pulled toward whirlpool center |
+| `WhirlpoolPullEvent` | `McRPGPlayerEvent` | `Player caster` (inherited), `LivingEntity target`, `Location center`, `Vector pullVector` | Entity pulled toward whirlpool center |
 | `WaterloggedStrikeImpactEvent` | `McRPGPlayerEvent` | `LivingEntity target`, `double damage`, `int slownessAmplifier`, `int slownessDurationTicks` | Projectile hits a living entity |
 | `TsunamiWallContactEvent` | `McRPGPlayerEvent` | `LivingEntity target`, `Vector knockbackVector`, `int slownessAmplifier`, `int slownessDurationTicks` | Entity contacts the wall |
 
@@ -1195,20 +1198,18 @@ Each guardian ability tracks per-player statistics via `McRPGStatistic`. These s
 
 ### 10.1 Statistic Keys
 
+Activation counts are already tracked out-of-box via `ActiveAbility.getActivationStatisticKey()`. The statistics below are **additional** per-ability metrics beyond simple activation counts.
+
 | Statistic Key | Type | Description |
 |---|---|---|
-| `mcrpg:phase_shift_activations` | Counter | Total Phase Shift activations |
 | `mcrpg:phase_shift_crit_damage_dealt` | Accumulator | Total bonus crit damage dealt via Phase Shift |
 | `mcrpg:phase_shift_distance_teleported` | Accumulator | Total blocks teleported via Phase Shift |
-| `mcrpg:whirlpool_activations` | Counter | Total Whirlpool activations |
 | `mcrpg:whirlpool_total_pull_distance` | Accumulator | Total meters entities were pulled toward center |
 | `mcrpg:whirlpool_entities_affected` | Counter | Total unique entities affected by Whirlpool |
-| `mcrpg:waterlogged_strike_activations` | Counter | Total Waterlogged Strike activations |
 | `mcrpg:waterlogged_strike_hits` | Counter | Total successful projectile hits |
 | `mcrpg:waterlogged_strike_damage_dealt` | Accumulator | Total damage dealt by Waterlogged Strike impacts |
-| `mcrpg:tsunami_wall_activations` | Counter | Total Tsunami Wall activations |
 | `mcrpg:tsunami_wall_entities_knocked` | Counter | Total entities knocked back by Tsunami Wall |
-| `mcrpg:tsunami_wall_damage_blocked` | Accumulator | Total knockback force applied (proxy for "area denied") |
+| `mcrpg:tsunami_wall_total_knockback_applied` | Accumulator | Total knockback force applied across all contacts |
 
 ### 10.2 Statistic Registration
 
@@ -1386,7 +1387,7 @@ Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener()
 | Player logs out during active zone/wall | CoreTask continues until duration expires; UUID exclusion prevents ghost interactions |
 | Ability disabled in config | `isAbilityEnabled()` returns false → cannot be slotted in loadout |
 | Server restart during active zone/wall | All CoreTask tasks are cancelled by Bukkit on shutdown |
-| Player attacks themselves (self-damage) | `EntityDamageByEntityEvent` with self as damager and target — combat target state records self UUID, but teleporting behind self is a no-op |
+| Player attacks themselves (self-damage) | `CombatTargetState` records self UUID, but `comboActivate` checks `targetUUID.equals(player.getUniqueId())` and returns `false` with "no target" message — Phase Shift cannot target yourself |
 
 ---
 
