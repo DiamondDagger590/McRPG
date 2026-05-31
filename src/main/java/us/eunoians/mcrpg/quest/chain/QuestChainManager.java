@@ -279,12 +279,13 @@ public class QuestChainManager extends Manager<McRPG> {
         }
 
         persistenceService.prepareForFlush(playerUUID);
-        cancelActiveChainQuestIfExists(playerUUID, stateOpt.get());
+        Optional<NamespacedKey> oldQuestKey = stateOpt.get().getCurrentQuestKey();
 
         if (force) {
             QuestChainStep firstStep = definition.getSteps().get(0);
             Player player = Bukkit.getPlayer(playerUUID);
             if (player != null && startStepForPlayer(definition, firstStep, player, stateOpt.get(), chainData)) {
+                oldQuestKey.ifPresent(key -> cancelQuestByKey(playerUUID, key));
                 persistenceService.saveChainStateAsync(playerUUID, stateOpt.get());
                 callback.accept(true);
             } else {
@@ -319,10 +320,12 @@ public class QuestChainManager extends Manager<McRPG> {
                 if (firstUncompleted.isPresent()) {
                     boolean started = player != null && startStepForPlayer(definition, firstUncompleted.get(), player, state, chainData);
                     if (started) {
+                        oldQuestKey.ifPresent(key -> cancelQuestByKey(playerUUID, key));
                         persistenceService.saveChainStateAsync(playerUUID, state);
                     }
                     callback.accept(started);
                 } else {
+                    oldQuestKey.ifPresent(key -> cancelQuestByKey(playerUUID, key));
                     state.complete(plugin().getTimeProvider().now().toEpochMilli());
                     chainData.updateQuestKeyIndex(state);
                     Bukkit.getPluginManager().callEvent(
@@ -712,16 +715,31 @@ public class QuestChainManager extends Manager<McRPG> {
      * @param playerUUID the player UUID
      * @param state      the chain state whose current quest may need cancellation
      */
+    /**
+     * Cancels the active quest instance for a specific quest key, if one exists for the player.
+     *
+     * @param playerUUID the player UUID
+     * @param questKey   the quest key to cancel
+     */
+    private void cancelQuestByKey(@NotNull UUID playerUUID, @NotNull NamespacedKey questKey) {
+        QuestManager questManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.QUEST);
+        questManager.getActiveQuestsForPlayer(playerUUID).stream()
+                .filter(instance -> instance.getQuestKey().equals(questKey))
+                .findFirst()
+                .ifPresent(QuestInstance::cancel);
+    }
+
+    /**
+     * Cancels the active quest instance for the chain's current step, if one exists.
+     * Used by hard reset operations where the old quest must be cancelled unconditionally.
+     *
+     * @param playerUUID the player UUID
+     * @param state      the chain state whose current quest key to cancel
+     */
     private void cancelActiveChainQuestIfExists(@NotNull UUID playerUUID,
                                                  @NotNull QuestChainPlayerState state) {
-        state.getCurrentQuestKey().ifPresent(questKey -> {
-            QuestManager questManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.QUEST);
-            questManager.getActiveQuestsForPlayer(playerUUID).stream()
-                    .filter(instance -> instance.getQuestKey().equals(questKey))
-                    .findFirst()
-                    .ifPresent(QuestInstance::cancel);
-        });
+        state.getCurrentQuestKey().ifPresent(questKey -> cancelQuestByKey(playerUUID, questKey));
     }
 
     /**
