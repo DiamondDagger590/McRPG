@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.quest.chain;
 
+import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -18,6 +20,9 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -25,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -185,5 +191,46 @@ public class QuestChainManagerTest extends McRPGBaseTest {
 
         // Chain state should remain ACTIVE since the cancelled quest is not part of this chain
         assertEquals(QuestChainState.ACTIVE, state.getState());
+    }
+
+    @Test
+    @DisplayName("Given DAO prepareStatement throws RuntimeException, When resetChain is called, Then callback always receives false")
+    void resetChain_callbackReceivesFalse_whenDAOThrowsRuntimeException() throws Exception {
+        // Load player with chain state
+        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
+        QuestChainPlayerData playerData = new QuestChainPlayerData();
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
+        playerData.putChainState(state);
+        when(mockPlayer.getChainData()).thenReturn(playerData);
+        when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
+
+        // Mock database manager: executor runs submitted tasks synchronously on the calling thread
+        McRPGDatabaseManager mockDatabaseManager = mock(McRPGDatabaseManager.class);
+        Database mockDatabase = mock(Database.class);
+        when(mockDatabaseManager.getDatabase()).thenReturn(mockDatabase);
+
+        ThreadPoolExecutor syncExecutor = mock(ThreadPoolExecutor.class);
+        doAnswer(inv -> {
+            ((Runnable) inv.getArgument(0)).run();
+            return mock(Future.class);
+        }).when(syncExecutor).submit(any(Runnable.class));
+        when(mockDatabase.getDatabaseExecutorService()).thenReturn(syncExecutor);
+
+        // Connection throws RuntimeException on prepareStatement (e.g. wrapped JDBC driver error)
+        Connection mockConnection = mock(Connection.class);
+        when(mockDatabase.getConnection()).thenReturn(mockConnection);
+        when(mockConnection.prepareStatement(anyString())).thenThrow(new RuntimeException("simulated DAO failure"));
+
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mockDatabaseManager);
+
+        // Capture callback result
+        AtomicReference<Boolean> callbackResult = new AtomicReference<>();
+        chainManager.resetChain(PLAYER_UUID, CHAIN_KEY, callbackResult::set);
+
+        // Tick the MockBukkit scheduler to deliver the main-thread callback
+        server.getScheduler().performTicks(1);
+
+        assertNotNull(callbackResult.get(), "Callback must always be called, even on RuntimeException");
+        assertFalse(callbackResult.get(), "Callback must receive false when the DAO throws RuntimeException");
     }
 }
