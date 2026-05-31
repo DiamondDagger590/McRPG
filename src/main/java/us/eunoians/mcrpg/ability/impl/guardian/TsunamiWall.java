@@ -76,7 +76,28 @@ public final class TsunamiWall extends McRPGAbility
 
     @Override
     public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
-        LivingEntity caster = mobEvent.getCaster();
+        return spawnWall(abilityHolder, mobEvent.getCaster());
+    }
+
+    @Override
+    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
+        if (!(Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player)) {
+            return false;
+        }
+        return spawnWall(abilityHolder, player);
+    }
+
+    /**
+     * Fires the {@link TsunamiWallActivateEvent} and, if not cancelled, spawns a
+     * forward-facing particle wall from the caster's location that travels outward
+     * and applies knockback and slowness on contact.
+     *
+     * @param abilityHolder The {@link AbilityHolder} activating the ability.
+     * @param caster        The {@link LivingEntity} whose location and facing direction
+     *                      determine wall placement.
+     * @return {@code true} if the ability executed, {@code false} if cancelled.
+     */
+    private boolean spawnWall(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity caster) {
         Location casterLoc = caster.getLocation();
 
         TsunamiWallActivateEvent event = new TsunamiWallActivateEvent(abilityHolder, casterLoc);
@@ -113,53 +134,6 @@ public final class TsunamiWall extends McRPGAbility
                 forward, casterUUID, durationTicks, travelSpeed).runTask();
 
         caster.getWorld().playSound(spawnOrigin,
-                Sound.ENTITY_GENERIC_SPLASH, 1.0f, 0.6f);
-
-        return true;
-    }
-
-    @Override
-    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
-        if (!(Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player)) {
-            return false;
-        }
-
-        Location playerLoc = player.getLocation();
-
-        TsunamiWallActivateEvent event = new TsunamiWallActivateEvent(abilityHolder, playerLoc);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return false;
-        }
-
-        int width = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_WIDTH, 5);
-        int height = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_HEIGHT, 3);
-        int durationTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_DURATION_TICKS, 140);
-        double knockbackStrength = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_KNOCKBACK_STRENGTH, 1.5);
-        int slownessAmplifier = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_SLOWNESS_AMPLIFIER, 2);
-        int slownessDurationTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_SLOWNESS_DURATION_TICKS, 60);
-        double spawnDistance = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_SPAWN_DISTANCE, 2.0);
-        double travelSpeed = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.TSUNAMI_WALL_TRAVEL_SPEED, 0.4);
-
-        Vector forward = playerLoc.getDirection().setY(0).normalize();
-        Location spawnOrigin = playerLoc.clone().add(forward.clone().multiply(1.0));
-        Location wallDestination = playerLoc.clone().add(forward.clone().multiply(spawnDistance));
-        Vector wallRight = new Vector(-forward.getZ(), 0, forward.getX()).normalize();
-
-        UUID casterUUID = player.getUniqueId();
-        new TsunamiWallTask(getPlugin(), spawnOrigin, wallDestination, wallRight, width, height,
-                knockbackStrength, slownessAmplifier, slownessDurationTicks,
-                forward, casterUUID, durationTicks, travelSpeed).runTask();
-
-        player.getWorld().playSound(spawnOrigin,
                 Sound.ENTITY_GENERIC_SPLASH, 1.0f, 0.6f);
 
         return true;

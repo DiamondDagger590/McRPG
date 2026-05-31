@@ -101,16 +101,7 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
 
     @Override
     public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
-        LivingEntity caster = mobEvent.getCaster();
-
-        RageSpikeActivateEvent rageSpikeActivateEvent = new RageSpikeActivateEvent(abilityHolder);
-        Bukkit.getPluginManager().callEvent(rageSpikeActivateEvent);
-        if (rageSpikeActivateEvent.isCancelled()) {
-            return false;
-        }
-
-        performRageSpike(abilityHolder, caster);
-        return true;
+        return fireAndPerform(abilityHolder, mobEvent.getCaster());
     }
 
     @Override
@@ -118,14 +109,24 @@ public final class RageSpike extends McRPGAbility implements ConfigurableActiveA
         if (!(Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player)) {
             return false;
         }
+        return fireAndPerform(abilityHolder, player);
+    }
 
+    /**
+     * Fires the {@link RageSpikeActivateEvent} and, if not cancelled, executes the
+     * Rage Spike effect on the given caster entity.
+     *
+     * @param abilityHolder The {@link AbilityHolder} activating the ability.
+     * @param caster        The {@link LivingEntity} that will dash forward.
+     * @return {@code true} if the ability executed, {@code false} if cancelled.
+     */
+    private boolean fireAndPerform(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity caster) {
         RageSpikeActivateEvent rageSpikeActivateEvent = new RageSpikeActivateEvent(abilityHolder);
         Bukkit.getPluginManager().callEvent(rageSpikeActivateEvent);
-
         if (rageSpikeActivateEvent.isCancelled()) {
             return false;
         }
-        performRageSpike(abilityHolder, player);
+        performRageSpike(abilityHolder, caster);
         return true;
     }
 

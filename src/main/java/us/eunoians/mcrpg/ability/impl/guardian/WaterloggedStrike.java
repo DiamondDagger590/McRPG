@@ -78,8 +78,26 @@ public final class WaterloggedStrike extends McRPGAbility
 
     @Override
     public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
-        LivingEntity caster = mobEvent.getCaster();
+        return launchStrike(abilityHolder, mobEvent.getCaster());
+    }
 
+    @Override
+    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
+        if (!(Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player)) {
+            return false;
+        }
+        return launchStrike(abilityHolder, player);
+    }
+
+    /**
+     * Fires the {@link WaterloggedStrikeActivateEvent} and, if not cancelled, launches
+     * a tagged invisible snowball projectile from the caster with a water trail.
+     *
+     * @param abilityHolder The {@link AbilityHolder} activating the ability.
+     * @param caster        The {@link LivingEntity} launching the projectile.
+     * @return {@code true} if the ability executed, {@code false} if cancelled.
+     */
+    private boolean launchStrike(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity caster) {
         WaterloggedStrikeActivateEvent activateEvent = new WaterloggedStrikeActivateEvent(abilityHolder);
         Bukkit.getPluginManager().callEvent(activateEvent);
         if (activateEvent.isCancelled()) {
@@ -100,37 +118,6 @@ public final class WaterloggedStrike extends McRPGAbility
                 .runTask();
 
         caster.getWorld().playSound(caster.getLocation(),
-                Sound.ENTITY_FISHING_BOBBER_THROW, 1.0f, 0.8f);
-
-        return true;
-    }
-
-    @Override
-    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
-        if (!(Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player)) {
-            return false;
-        }
-
-        WaterloggedStrikeActivateEvent activateEvent = new WaterloggedStrikeActivateEvent(abilityHolder);
-        Bukkit.getPluginManager().callEvent(activateEvent);
-        if (activateEvent.isCancelled()) {
-            return false;
-        }
-
-        double speed = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_PROJECTILE_SPEED, 1.5);
-        Snowball projectile = player.launchProjectile(Snowball.class,
-                player.getLocation().getDirection().normalize().multiply(speed));
-        projectile.setInvisible(true);
-        projectile.getPersistentDataContainer().set(
-                PROJECTILE_TAG, PersistentDataType.BOOLEAN, true);
-
-        int maxRange = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_MAX_RANGE, 28);
-        new WaterloggedStrikeTrailTask(getPlugin(), projectile, player.getLocation(), maxRange)
-                .runTask();
-
-        player.getWorld().playSound(player.getLocation(),
                 Sound.ENTITY_FISHING_BOBBER_THROW, 1.0f, 0.8f);
 
         return true;

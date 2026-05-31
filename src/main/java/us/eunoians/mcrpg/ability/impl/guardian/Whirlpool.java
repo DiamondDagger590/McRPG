@@ -76,7 +76,26 @@ public final class Whirlpool extends McRPGAbility
 
     @Override
     public boolean mobActivate(@NotNull AbilityHolder abilityHolder, @NotNull MobAbilityTriggerEvent mobEvent) {
-        LivingEntity caster = mobEvent.getCaster();
+        return spawnWhirlpool(abilityHolder, mobEvent.getCaster());
+    }
+
+    @Override
+    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
+        if (!(Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player)) {
+            return false;
+        }
+        return spawnWhirlpool(abilityHolder, player);
+    }
+
+    /**
+     * Fires the {@link WhirlpoolActivateEvent} and, if not cancelled, spawns a
+     * whirlpool zone at the caster's location that pulls and slows nearby entities.
+     *
+     * @param abilityHolder The {@link AbilityHolder} activating the ability.
+     * @param caster        The {@link LivingEntity} whose location becomes the whirlpool center.
+     * @return {@code true} if the ability executed, {@code false} if cancelled.
+     */
+    private boolean spawnWhirlpool(@NotNull AbilityHolder abilityHolder, @NotNull LivingEntity caster) {
         Location center = caster.getLocation().clone();
 
         WhirlpoolActivateEvent event = new WhirlpoolActivateEvent(abilityHolder, center);
@@ -106,45 +125,6 @@ public final class Whirlpool extends McRPGAbility
                 durationTicks, tickInterval, expansionTicks).runTask();
 
         caster.getWorld().playSound(center, Sound.ENTITY_FISHING_BOBBER_SPLASH, 1.0f, 0.5f);
-
-        return true;
-    }
-
-    @Override
-    public boolean comboActivate(@NotNull AbilityHolder abilityHolder) {
-        if (!(Bukkit.getPlayer(abilityHolder.getUUID()) instanceof Player player)) {
-            return false;
-        }
-
-        Location center = player.getLocation().clone();
-
-        WhirlpoolActivateEvent event = new WhirlpoolActivateEvent(abilityHolder, center);
-        Bukkit.getPluginManager().callEvent(event);
-        if (event.isCancelled()) {
-            return false;
-        }
-
-        double radius = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_RADIUS, 4.0);
-        int durationTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_DURATION_TICKS, 100);
-        double pullVelocity = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_PULL_VELOCITY, 0.1);
-        int slownessAmplifier = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_AMPLIFIER, 0);
-        int slownessDurationTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_DURATION_TICKS, 40);
-        int tickInterval = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_TICK_INTERVAL, 4);
-        int expansionTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_EXPANSION_TICKS, 40);
-
-        UUID casterUUID = player.getUniqueId();
-        new WhirlpoolZoneTask(getPlugin(), center, radius, pullVelocity,
-                slownessAmplifier, slownessDurationTicks, casterUUID,
-                durationTicks, tickInterval, expansionTicks).runTask();
-
-        player.getWorld().playSound(center, Sound.ENTITY_FISHING_BOBBER_SPLASH, 1.0f, 0.5f);
 
         return true;
     }
