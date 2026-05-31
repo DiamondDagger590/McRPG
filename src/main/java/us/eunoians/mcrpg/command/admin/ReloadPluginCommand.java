@@ -36,6 +36,10 @@ public class ReloadPluginCommand extends McRPGCommandBase {
 
                     plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).reloadFiles();
 
+                    // Re-resolve unlock conditions from the freshly-reloaded config files
+                    plugin.registryAccess().registry(RegistryKey.MANAGER)
+                            .manager(McRPGManagerKey.UNLOCK_CONDITION).reload();
+
                     // Invalidate level caches for all online players since leveling equations may have changed
                     plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()
                             .forEach(player -> player.asSkillHolder().invalidateAllLevelCaches());

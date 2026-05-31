@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
+import us.eunoians.mcrpg.ability.unlock.UnlockConditionManager;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.display.DisplayManager;
@@ -45,6 +46,7 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
     ManagerKey<GlowingManager> GLOWING = create(GlowingManager.class);
     ManagerKey<QuestBoardManager> QUEST_BOARD = create(QuestBoardManager.class);
     ManagerKey<ComboManager> COMBO = create(ComboManager.class);
+    ManagerKey<UnlockConditionManager> UNLOCK_CONDITION = create(UnlockConditionManager.class);
     /** Retrieves the {@link McRPGStatisticCacheManager} used to cache offline player statistic lookups. */
     ManagerKey<McRPGStatisticCacheManager> STATISTIC_CACHE = create(McRPGStatisticCacheManager.class);
 }

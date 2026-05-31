@@ -1,7 +1,8 @@
 # Low-Level Design: MythicMobs Example Configuration (LLD-4)
 
-**Status:** Draft
+**Status:** Implemented
 **Date:** 2026-04-03
+**Last Updated:** 2026-05-29
 **HLD Reference:** [Riptide Guardian HLD](../../hld/riptide-guardian/riptide_guardian.md), Sections 4, 8, 9
 **Scope:** Bundled MythicMobs mob YAML, resource extraction logic, mob abilities, drop table, despawn config
 

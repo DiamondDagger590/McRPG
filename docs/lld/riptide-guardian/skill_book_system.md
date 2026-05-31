@@ -1,7 +1,8 @@
 # Low-Level Design: Skill Book System (LLD-3)
 
-**Status:** Draft
+**Status:** Implemented
 **Date:** 2026-04-03
+**Last Updated:** 2026-05-29
 **HLD Reference:** [Riptide Guardian HLD](../../hld/riptide-guardian/riptide_guardian.md), Section 5
 **Scope:** Skill book factory, consumption listener, consume event, quest reward type, localization keys, bootstrap registration
 

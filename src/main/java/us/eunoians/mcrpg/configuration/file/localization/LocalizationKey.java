@@ -645,6 +645,24 @@ public final class LocalizationKey extends ConfigFile {
     /** Status line when ability is disabled. */
     public static final Route ABILITY_LORE_STATUS_DISABLED = Route.fromString(toRoutePath(ABILITY_LORE_STATUS_HEADER, "disabled"));
 
+    private static final String UNLOCK_CONDITION_HEADER = toRoutePath(ABILITY_HEADER, "unlock-condition");
+    /** Header shown above the OR-list when an ability has more than one unlock condition. */
+    public static final Route UNLOCK_CONDITION_LIST_HEADER = Route.fromString(toRoutePath(UNLOCK_CONDITION_HEADER, "list-header"));
+    /** Bullet prefix used when rendering an individual entry under a header. */
+    public static final Route UNLOCK_CONDITION_BULLET = Route.fromString(toRoutePath(UNLOCK_CONDITION_HEADER, "bullet"));
+    /** Skill-level condition description. Placeholders: {@code <skill>}, {@code <required>}, {@code <current>}. */
+    public static final Route UNLOCK_CONDITION_SKILL_LEVEL_DESCRIPTION = Route.fromString(toRoutePath(UNLOCK_CONDITION_HEADER, "skill-level.description"));
+    /** Short skill-level label for compact rendering. Same placeholders as the description. */
+    public static final Route UNLOCK_CONDITION_SKILL_LEVEL_LABEL = Route.fromString(toRoutePath(UNLOCK_CONDITION_HEADER, "skill-level.label"));
+    /** Default statistic description (used when the entry supplies no {@code text}/{@code locale-key}). Placeholders: {@code <statistic>}, {@code <required>}, {@code <current>}. */
+    public static final Route UNLOCK_CONDITION_STATISTIC_DESCRIPTION = Route.fromString(toRoutePath(UNLOCK_CONDITION_HEADER, "statistic.description"));
+    /** Default PAPI description (used when the entry supplies no {@code text}/{@code locale-key}). Placeholders: {@code <placeholder>}, {@code <operator>}, {@code <required>}, {@code <current>}. */
+    public static final Route UNLOCK_CONDITION_PAPI_DESCRIPTION = Route.fromString(toRoutePath(UNLOCK_CONDITION_HEADER, "papi.description"));
+    /** Header above an {@code all_of} composite group. */
+    public static final Route UNLOCK_CONDITION_ALL_OF_HEADER = Route.fromString(toRoutePath(UNLOCK_CONDITION_HEADER, "all-of.header"));
+    /** Header above an {@code any_of} composite group. */
+    public static final Route UNLOCK_CONDITION_ANY_OF_HEADER = Route.fromString(toRoutePath(UNLOCK_CONDITION_HEADER, "any-of.header"));
+
     private static final String ABILITY_LORE_HINT_HEADER = toRoutePath(ABILITY_LORE_HEADER, "hint");
     /** Hint shown when ability is currently disabled (left-click to enable). */
     public static final Route ABILITY_LORE_HINT_TOGGLE_ENABLE = Route.fromString(toRoutePath(ABILITY_LORE_HINT_HEADER, "toggle-enable"));

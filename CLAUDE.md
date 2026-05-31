@@ -222,6 +222,8 @@ src/main/java/us/eunoians/mcrpg/
 | **Component** | A modular, reusable piece of activation/cancel logic registered on an ability. Components are priority-ordered; first failing component stops the chain. |
 | **Attribute** | A typed `AbilityAttribute<T>` stored in `AbilityData` — contains per-holder ability state (tier, cooldown, toggle, etc.). Created via factory (no reflection). |
 | **ContentExpansion** | A module that bundles skills, abilities, statistics, player settings, and localization into a single registration unit. |
+| **UnlockConditionType** | Extensible interface defining a single way an `UnlockableAbility` can be unlocked (e.g., `SkillLevelUnlockConditionType`, `StatisticUnlockConditionType`, `DisplayHintUnlockConditionType`, composites `AllOfUnlockConditionType`/`AnyOfUnlockConditionType`). Registered in `UnlockConditionTypeRegistry`. Built-ins ship via `McRPGExpansion`'s `UnlockConditionTypeContentPack`; third-party expansions register their own through the same content-pack pathway. The top-level list on an ability is OR-combined — AND is expressed via the `mcrpg:all_of` composite. |
+| **UnlockConditionManager** | Manager that resolves and caches the effective `UnlockConditionType` list for each `UnlockableAbility`. Config `unlock-conditions` sections under `ability-configuration.<ability-key>` replace the ability's `getDefaultUnlockConditions()` entirely (logged warning). Recursive `parseSection` powers composites. Bootstrap calls `resolveAll()` after content + configs load to emit empty-display startup warnings. |
 | **StatisticContent** | Wrapper that pairs a McCore `Statistic` with an expansion's `NamespacedKey` for content-pack registration. |
 | **StatisticContentPack** | A `McRPGContentPack` that collects `StatisticContent` entries — one per expansion. Registered alongside skill/ability packs in `ContentExpansion.getExpansionContent()`. |
 | **McRPGStatistic** | Constants-only class holding global statistic definitions (blocks mined, damage dealt, etc.). Per-skill keys come from `Skill.getExperienceStatisticKey()` / `getMaxLevelStatisticKey()`; per-ability keys come from `ActiveAbility.getActivationStatisticKey()`. |
@@ -667,6 +669,10 @@ public static final Route MY_NEW_KEY = Route.fromString(toRoutePath(MY_SECTION_H
 ```
 2. Add the corresponding entry to every bundled locale YAML (`en.yml`, `en_gui.yml`, etc. — whichever file owns that section).
 3. **Always add new keys in the same PR as the feature that uses them.**
+
+### Locked-ability lore migration
+
+The legacy `<ability-unlock-level>` placeholder under `ability.lore.ability-locked` is no longer read. Locked-ability lore is rendered dynamically by `AbilityLoreAppender` from the ability's resolved `UnlockConditionType` list, using the templates under `ability.unlock-condition.*` (`skill-level.description`, `statistic.description`, `papi.description`, `all-of.header`, `any-of.header`, `list-header`, `bullet`). Server owners customizing wording should edit those templates rather than `ability-locked`. Owners with custom locale files that referenced `<ability-unlock-level>` should remove those references — the placeholder is no longer substituted.
 
 ### Sending a Message
 

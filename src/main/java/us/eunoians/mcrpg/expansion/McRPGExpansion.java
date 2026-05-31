@@ -39,6 +39,13 @@ import us.eunoians.mcrpg.expansion.content.QuestRewardTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestScopeProviderContentPack;
 import us.eunoians.mcrpg.expansion.content.RewardDistributionTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.TemplateConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.UnlockConditionTypeContentPack;
+import us.eunoians.mcrpg.ability.unlock.builtin.AllOfUnlockConditionType;
+import us.eunoians.mcrpg.ability.unlock.builtin.AnyOfUnlockConditionType;
+import us.eunoians.mcrpg.ability.unlock.builtin.DisplayHintUnlockConditionType;
+import us.eunoians.mcrpg.ability.unlock.builtin.PapiUnlockConditionType;
+import us.eunoians.mcrpg.ability.unlock.builtin.SkillLevelUnlockConditionType;
+import us.eunoians.mcrpg.ability.unlock.builtin.StatisticUnlockConditionType;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.ContributionThresholdDistributionType;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.MembershipDistributionType;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.ParticipatedDistributionType;
@@ -118,7 +125,8 @@ public final class McRPGExpansion extends ContentExpansion {
                 getStatisticContent(skills, abilities), getPlayerSettingContent(), getLocalizationContent(),
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
-                getRewardDistributionTypeContent(), getTemplateConditionContent());
+                getRewardDistributionTypeContent(), getTemplateConditionContent(),
+                getUnlockConditionTypeContent());
     }
 
     @NotNull
@@ -312,6 +320,26 @@ public final class McRPGExpansion extends ContentExpansion {
         QuestObjectiveTypeContentPack pack = new QuestObjectiveTypeContentPack(this);
         pack.addContent(new BlockBreakObjectiveType());
         pack.addContent(new MobKillObjectiveType());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link UnlockConditionTypeContentPack} for McRPG, populated with the
+     * six built-in unlock condition types ({@code mcrpg:skill_level}, {@code mcrpg:statistic},
+     * {@code mcrpg:papi}, {@code mcrpg:display_hint}, {@code mcrpg:all_of}, {@code mcrpg:any_of}).
+     * Third-party expansions ship their own types through the same content-pack pathway.
+     *
+     * @return The native {@link UnlockConditionTypeContentPack} for McRPG.
+     */
+    @NotNull
+    private UnlockConditionTypeContentPack getUnlockConditionTypeContent() {
+        UnlockConditionTypeContentPack pack = new UnlockConditionTypeContentPack(this);
+        pack.addContent(new SkillLevelUnlockConditionType());
+        pack.addContent(new StatisticUnlockConditionType());
+        pack.addContent(new PapiUnlockConditionType());
+        pack.addContent(new DisplayHintUnlockConditionType());
+        pack.addContent(new AllOfUnlockConditionType());
+        pack.addContent(new AnyOfUnlockConditionType());
         return pack;
     }
 

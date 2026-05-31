@@ -20,6 +20,7 @@ import us.eunoians.mcrpg.expansion.content.PlayerStatContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.expansion.content.StatisticContentPack;
 import us.eunoians.mcrpg.expansion.content.TemplateConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.UnlockConditionTypeContentPack;
 import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -186,6 +187,19 @@ public enum ContentHandlerType {
         if (mcRPGContent instanceof TemplateConditionContentPack conditionContent) {
             conditionContent.getContent().forEach(condition ->
                     mcRPG.registryAccess().registry(McRPGRegistryKey.TEMPLATE_CONDITION).register(condition));
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link UnlockConditionTypeContentPack}s by registering
+     * each {@link us.eunoians.mcrpg.ability.unlock.UnlockConditionType} into the
+     * {@link us.eunoians.mcrpg.ability.unlock.UnlockConditionTypeRegistry}.
+     */
+    UNLOCK_CONDITION_TYPE((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof UnlockConditionTypeContentPack typeContent) {
+            typeContent.getContent().forEach(type ->
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.UNLOCK_CONDITION_TYPE).register(type));
             return true;
         }
         return false;

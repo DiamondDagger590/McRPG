@@ -87,9 +87,11 @@ ability:
     upgrade-locked-behind-levelup:
       - '<body>Upgrade this ability once you reach <primary>Lv <next-tier-level>'
       - '<body>in <skill><body>.'
+    # Locked-ability lore is now rendered dynamically from the ability's unlock conditions
+    # via AbilityLoreAppender; see ability.unlock-condition.* below for the per-type templates.
+    # This key is kept for back-compat with older locale references but is no longer read.
     ability-locked:
-      - '<body>Unlock this ability when your <skill> <body>skill'
-      - '<body>reaches level <primary><ability-unlock-level><body>.'
+      - '<body>Unlock this ability via the conditions below.'
     # The lore to add to show what expansion pack an ability is from (only will be displayed if it isn't from McRPG)
     # The following placeholders are supported: <expansion-pack>
     expansion-pack:
@@ -119,6 +121,32 @@ ability:
       configure: '<hint>Right-click <body>to configure'
       # Shown for Bedrock (Geyser) players instead of separate left/right hints
       configure-bedrock: '<hint>Click <body>to configure'
+  # Templates for the player-facing unlock-condition lore rendered by AbilityLoreAppender.
+  # Server owners customize the wording here. Per-type placeholders are documented inline.
+  unlock-condition:
+    # Shown above the OR-list when an ability has more than one unlock path.
+    list-header: '<body>Unlock via any of:'
+    # Bullet prefix used for each entry under a header.
+    bullet: '<body>  · '
+    skill-level:
+      # Placeholders: <skill> (colored), <required> (level), <current> (player level)
+      description: '<body>Reach <skill> <body>level <primary><required> <hint>(currently <primary><current><hint>)'
+      label: '<skill> <primary><current><body>/<primary><required>'
+    statistic:
+      # Default phrasing when an entry supplies no 'text'/'locale-key'.
+      # Placeholders: <statistic>, <required>, <current>
+      description: '<body>Reach <primary><required> <body><statistic> <hint>(<primary><current><hint>/<primary><required><hint>)'
+    papi:
+      # Default phrasing when an entry supplies no 'text'/'locale-key'.
+      # Placeholders: <placeholder>, <operator>, <required>, <current>
+      description: '<body>Requirement: <primary><placeholder> <operator> <required> <hint>(currently <primary><current><hint>)'
+    all-of:
+      header: '<body>All of:'
+    any-of:
+      header: '<body>Any of:'
+    # Reserved namespace for translatable display-hint sources referenced by 'locale-key'.
+    # Bundled sources (e.g. skill book sources) are added here as abilities adopt them.
+    source: {}
   ability-specific-localization:
     # Configure localization for the Bleed ability
     bleed:

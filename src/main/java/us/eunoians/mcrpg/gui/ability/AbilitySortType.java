@@ -93,7 +93,9 @@ public enum AbilitySortType {
                 }
 
                 if (ability instanceof UnlockableAbility unlockableAbility && ability1 instanceof UnlockableAbility unlockableAbility1) {
-                    return Integer.compare(unlockableAbility.getUnlockLevel(), unlockableAbility1.getUnlockLevel());
+                    // Closest-to-unlock first: higher best-condition progress sorts earlier.
+                    return Double.compare(unlockableAbility.getBestConditionProgress(mcRPGPlayer.asSkillHolder()),
+                            unlockableAbility1.getBestConditionProgress(mcRPGPlayer.asSkillHolder())) * -1;
                 }
                 return 0;
             })),

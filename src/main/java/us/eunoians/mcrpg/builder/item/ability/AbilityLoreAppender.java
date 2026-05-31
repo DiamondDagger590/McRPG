@@ -13,6 +13,13 @@ import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
 import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
+import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
+import us.eunoians.mcrpg.ability.unlock.UnlockConditionType;
+import us.eunoians.mcrpg.ability.unlock.builtin.AllOfUnlockConditionType;
+import us.eunoians.mcrpg.ability.unlock.builtin.AnyOfUnlockConditionType;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -102,8 +109,7 @@ public final class AbilityLoreAppender {
                     }
                 } else {
                     lore.add("");
-                    lore.addAll(localizationManager.getLocalizedMessages(mcRPGPlayer, LocalizationKey.ABILITY_LOCKED_LORE));
-                    placeholders.put("ability-unlock-level", Integer.toString(tierableAbility.getUnlockLevel()));
+                    lore.addAll(renderUnlockConditionLore(mcRPGPlayer, tierableAbility));
                     if (tierableAbility instanceof SkillAbility skillAbility) {
                         Skill skill = skillRegistry.getRegisteredSkill(skillAbility.getSkillKey());
                         placeholders.put(AbilityItemPlaceholderKeys.SKILL.getKey(), skill.getColoredName(mcRPGPlayer));
@@ -122,5 +128,58 @@ public final class AbilityLoreAppender {
             }
         }
         return ImmutablePair.of(lore, placeholders);
+    }
+
+    /**
+     * Renders the unlock-condition lore for a locked ability as a list of MiniMessage
+     * strings, one per lore line. Rendering rules ({@code unlock_condition_system} LLD §7.6):
+     * <ul>
+     *   <li>A single non-composite condition renders as one line, no OR header.</li>
+     *   <li>A single composite condition renders its own header + indented bullets.</li>
+     *   <li>Multiple top-level conditions render the list header followed by bulleted entries.</li>
+     * </ul>
+     */
+    @NotNull
+    private static List<String> renderUnlockConditionLore(@NotNull McRPGPlayer mcRPGPlayer,
+                                                          @NotNull UnlockableAbility unlockable) {
+        McRPGLocalizationManager localization = mcRPGPlayer.getPlugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        MiniMessage miniMessage = McRPG.getInstance().getMiniMessage();
+        List<UnlockConditionType> conditions = unlockable.getUnlockConditions();
+        List<String> lines = new ArrayList<>();
+        if (conditions.isEmpty()) {
+            return lines;
+        }
+        if (conditions.size() == 1) {
+            Component description = conditions.get(0).getDisplayDescription(mcRPGPlayer);
+            appendComponentLines(lines, description, miniMessage);
+            return lines;
+        }
+        lines.add(miniMessage.serialize(localization.getLocalizedMessageAsComponent(
+                mcRPGPlayer, LocalizationKey.UNLOCK_CONDITION_LIST_HEADER)));
+        Component bullet = localization.getLocalizedMessageAsComponent(
+                mcRPGPlayer, LocalizationKey.UNLOCK_CONDITION_BULLET);
+        for (UnlockConditionType condition : conditions) {
+            if (condition instanceof AllOfUnlockConditionType || condition instanceof AnyOfUnlockConditionType) {
+                appendComponentLines(lines, bullet.append(condition.getDisplayDescription(mcRPGPlayer)), miniMessage);
+            } else {
+                lines.add(miniMessage.serialize(bullet.append(condition.getDisplayLabel(mcRPGPlayer))));
+            }
+        }
+        return lines;
+    }
+
+    /**
+     * Serializes {@code component} to MiniMessage, splits on newlines, and appends each line
+     * to {@code lines}. Composite descriptions are multi-line (header + children) and
+     * shouldn't collapse to a single GUI lore item.
+     */
+    private static void appendComponentLines(@NotNull List<String> lines,
+                                             @NotNull Component component,
+                                             @NotNull MiniMessage miniMessage) {
+        String serialized = miniMessage.serialize(component);
+        for (String segment : serialized.split("\n", -1)) {
+            lines.add(segment);
+        }
     }
 }

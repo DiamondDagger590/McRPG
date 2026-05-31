@@ -4,8 +4,11 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
+import us.eunoians.mcrpg.ability.unlock.UnlockConditionType;
+import us.eunoians.mcrpg.ability.unlock.builtin.SkillLevelUnlockConditionType;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -45,9 +48,22 @@ public interface TierableAbility extends UnlockableAbility {
         return Optional.empty();
     }
 
+    /**
+     * Default unlock conditions for a tierable ability. For abilities that are also
+     * {@link SkillAbility}, this yields a single {@link SkillLevelUnlockConditionType} at the
+     * tier-1 unlock level — behaviour-identical to the old {@code getUnlockLevel()} path.
+     * Non-{@code SkillAbility} tierables fall back to "config or undiscoverable": an empty
+     * default list triggers the empty-display startup warning unless config supplies
+     * conditions.
+     */
     @Override
-    default int getUnlockLevel() {
-        return getUnlockLevelForTier(1);
+    @NotNull
+    default List<UnlockConditionType> getDefaultUnlockConditions() {
+        if (this instanceof SkillAbility skillAbility) {
+            return List.of(new SkillLevelUnlockConditionType(
+                    skillAbility.getSkillKey(), getUnlockLevelForTier(1)));
+        }
+        return List.of();
     }
 
     @NotNull

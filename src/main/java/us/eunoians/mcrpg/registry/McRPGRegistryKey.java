@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.Registry;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.ability.unlock.UnlockConditionTypeRegistry;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry;
@@ -34,6 +35,7 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
     RegistryKey<AbilityRegistry> ABILITY = create(AbilityRegistry.class);
     RegistryKey<SkillRegistry> SKILL = create(SkillRegistry.class);
     RegistryKey<AbilityAttributeRegistry> ABILITY_ATTRIBUTE = create(AbilityAttributeRegistry.class);
+    RegistryKey<UnlockConditionTypeRegistry> UNLOCK_CONDITION_TYPE = create(UnlockConditionTypeRegistry.class);
     RegistryKey<ExperienceModifierRegistry> EXPERIENCE_MODIFIER = create(ExperienceModifierRegistry.class);
     RegistryKey<QuestDefinitionRegistry> QUEST_DEFINITION = create(QuestDefinitionRegistry.class);
     RegistryKey<QuestScopeProviderRegistry> QUEST_SCOPE_PROVIDER = create(QuestScopeProviderRegistry.class);
