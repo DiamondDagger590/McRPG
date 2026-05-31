@@ -1,10 +1,15 @@
 package us.eunoians.mcrpg.quest.chain;
 
+import com.diamonddagger590.mccore.database.Database;
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.database.McRPGDatabaseManager;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,6 +19,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -22,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.atLeast;
@@ -198,6 +206,30 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
 
         assertEquals(1, state.getPendingAdvancements().size(),
                 "Pending advancements must not be cleared when the flush fails");
+    }
+
+    @Test
+    @DisplayName("Given state with pending advancements, When saveChainStateAsync is called, Then pendingAdvancements is not cleared")
+    void saveChainStateAsync_doesNotClearPendingAdvancements() {
+        // saveChainStateAsync must snapshot without clearing so the sync flush at logout
+        // can replay entries if the async write was skipped or failed.
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
+        state.recordAdvancement(QUEST_KEY, 1000L, 1);
+        assertEquals(1, state.getPendingAdvancements().size(), "Precondition: one pending advancement");
+
+        // Mock database manager with a no-op executor so the async task is never executed.
+        // We only care that the snapshot (without clear) happens on the calling thread.
+        McRPGDatabaseManager mockDatabaseManager = mock(McRPGDatabaseManager.class);
+        Database mockDatabase = mock(Database.class);
+        when(mockDatabaseManager.getDatabase()).thenReturn(mockDatabase);
+        ThreadPoolExecutor noOpExecutor = mock(ThreadPoolExecutor.class);
+        when(mockDatabase.getDatabaseExecutorService()).thenReturn(noOpExecutor);
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mockDatabaseManager);
+
+        persistenceService.saveChainStateAsync(PLAYER_UUID, state);
+
+        assertEquals(1, state.getPendingAdvancements().size(),
+                "Pending advancements must not be cleared by saveChainStateAsync so the sync flush can replay them on failure");
     }
 
     @Test

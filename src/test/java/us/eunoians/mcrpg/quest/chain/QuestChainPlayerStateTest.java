@@ -211,4 +211,15 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertEquals(questKeyB, advancements.get(1).questKey());
     }
 
+    @Test
+    @DisplayName("Given a clean state, When recordAdvancement is called, Then isDirty returns true")
+    public void recordAdvancement_marksDirty() {
+        var state = new QuestChainPlayerState(chainKey, questKeyA, QuestChainState.ACTIVE, 0, null);
+        assertFalse(state.isDirty(), "State must start clean");
+
+        state.recordAdvancement(questKeyA, 1000L, 1);
+
+        assertTrue(state.isDirty(),
+                "recordAdvancement must mark state dirty so logout flush picks it up even without a normal state mutation");
+    }
 }
