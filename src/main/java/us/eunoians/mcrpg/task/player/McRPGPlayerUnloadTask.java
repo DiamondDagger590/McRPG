@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
 
 /**
  * A task used to save and unload the player data
@@ -52,19 +53,13 @@ public final class McRPGPlayerUnloadTask extends PlayerUnloadTask {
                  */
                 mcRPGPlayer.savePlayerLogoutTime(connection);
 
-                // Gate in-flight async chain saves so they skip their JDBC (stale generation),
-                // then flush the latest dirty states synchronously on this DB thread,
-                // then clean up per-player tracking maps so they don't leak.
                 QuestChainManager chainManager = getPlugin().registryAccess()
                         .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
-                chainManager.getPersistenceService().prepareForFlush(mcRPGPlayer.getUUID());
-                chainManager.getPersistenceService().flushChainStatesSync(
-                        connection, mcRPGPlayer.getUUID(), mcRPGPlayer.getChainData());
-                chainManager.getPersistenceService().cleanupPlayer(mcRPGPlayer.getUUID());
+                chainManager.unloadPlayer(mcRPGPlayer.getUUID(), connection, mcRPGPlayer.getChainData());
 
                 return true;
             } catch (SQLException e) {
-                getPlugin().getLogger().log(java.util.logging.Level.SEVERE, "Failed to save and unload player " + getCorePlayer().getUUID(), e);
+                getPlugin().getLogger().log(Level.SEVERE, "Failed to save and unload player " + getCorePlayer().getUUID(), e);
                 return false;
             }
         }

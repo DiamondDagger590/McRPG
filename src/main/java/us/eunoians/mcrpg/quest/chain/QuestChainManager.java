@@ -654,6 +654,24 @@ public class QuestChainManager extends Manager<McRPG> {
     }
 
     /**
+     * Flushes all dirty chain states for a player synchronously and then cleans up all
+     * per-player persistence tracking. Must be called from the database executor thread.
+     * <p>
+     * Call sequence: {@link ChainPersistenceService#prepareForFlush(UUID)} → flush → cleanup.
+     *
+     * @param playerUUID the player UUID to unload
+     * @param connection the open database connection to use for the flush
+     * @param chainData  the player's chain data container
+     */
+    public void unloadPlayer(@NotNull UUID playerUUID,
+                             @NotNull Connection connection,
+                             @NotNull QuestChainPlayerData chainData) {
+        persistenceService.prepareForFlush(playerUUID);
+        persistenceService.flushChainStatesSync(connection, playerUUID, chainData);
+        persistenceService.cleanupPlayer(playerUUID);
+    }
+
+    /**
      * Loads all chain states for a player from the database. This method runs on the database
      * executor thread and must not be called from the main thread.
      *
