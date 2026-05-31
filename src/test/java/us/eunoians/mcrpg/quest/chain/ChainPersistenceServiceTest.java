@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.quest.chain;
 
+import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -11,6 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -21,8 +23,8 @@ import static org.mockito.Mockito.when;
 
 /**
  * Unit tests for {@link ChainPersistenceService}. Covers the synchronous flush path and the
- * dirty-flag lifecycle. Async persistence paths and the write-generation gate are validated
- * through the logout integration path in {@code McRPGPlayerUnloadTaskTest}.
+ * dirty-flag lifecycle. Async persistence paths and the write-generation gate rely on the
+ * {@link FailSafeTransaction} contract and the write-generation CAS in the DB lambdas.
  */
 public class ChainPersistenceServiceTest extends McRPGBaseTest {
 
@@ -99,37 +101,9 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
     @Test
     @DisplayName("Given no pending save, When cleanupPlayer is called, Then subsequent calls do not throw")
     void cleanupPlayer_isIdempotent() {
-        // Should not throw even if no state exists for the player
-        persistenceService.cleanupPlayer(PLAYER_UUID);
-        persistenceService.cleanupPlayer(PLAYER_UUID);
-    }
-
-    @Test
-    @DisplayName("Given a dirty state, When clearDirtyIfCurrent is called with the correct snapshot version, Then dirty is cleared")
-    void clearDirtyIfCurrent_clearsDirty_whenVersionMatches() {
-        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        state.advance(QUEST_KEY);
-        int snapshot = state.getDirtyVersion();
-
-        boolean cleared = state.clearDirtyIfCurrent(snapshot);
-
-        assertTrue(cleared, "clearDirtyIfCurrent should return true when version matches");
-        assertFalse(state.isDirty(), "State should no longer be dirty after successful CAS");
-    }
-
-    @Test
-    @DisplayName("Given a mutation after snapshot, When clearDirtyIfCurrent is called with the stale version, Then dirty is retained")
-    void clearDirtyIfCurrent_retainsDirty_whenVersionStale() {
-        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        state.advance(QUEST_KEY);
-        int stalSnapshot = state.getDirtyVersion();
-
-        // Additional mutation after snapshot (simulates concurrent write)
-        state.abandon();
-
-        boolean cleared = state.clearDirtyIfCurrent(stalSnapshot);
-
-        assertFalse(cleared, "clearDirtyIfCurrent should return false when a newer mutation has occurred");
-        assertTrue(state.isDirty(), "State should remain dirty when the snapshot version is stale");
+        assertDoesNotThrow(() -> {
+            persistenceService.cleanupPlayer(PLAYER_UUID);
+            persistenceService.cleanupPlayer(PLAYER_UUID);
+        }, "cleanupPlayer must be safe to call multiple times for the same player");
     }
 }

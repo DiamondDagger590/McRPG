@@ -27,8 +27,8 @@ public class QuestChainStepAdvanceEventTest extends McRPGBaseTest {
         return new QuestChainDefinition.Builder(chainKey, sourceKey, triggerKey, List.of(step1, step2)).build();
     }
 
-    @DisplayName("Given a step-advance event, When getters are called, Then they return the values passed to the constructor")
     @Test
+    @DisplayName("Given a step-advance event, When getters are called, Then they return the values passed to the constructor")
     void event_getters_returnConstructorValues() {
         QuestChainDefinition definition = buildTwoStepDefinition();
         PlayerMock player = server.addPlayer();
@@ -39,12 +39,13 @@ public class QuestChainStepAdvanceEventTest extends McRPGBaseTest {
 
         assertSame(definition, event.getChainDefinition());
         assertSame(player, event.getPlayer());
+        assertEquals(player.getUniqueId(), event.getPlayerUUID());
         assertSame(completed, event.getCompletedStep());
         assertSame(next, event.getNextStep());
     }
 
-    @DisplayName("Given a step-advance event, When getHandlers() is called, Then a HandlerList is returned")
     @Test
+    @DisplayName("Given a step-advance event, When getHandlers() is called, Then a HandlerList is returned")
     void event_getHandlers_returnsHandlerList() {
         QuestChainDefinition definition = buildTwoStepDefinition();
         PlayerMock player = server.addPlayer();
