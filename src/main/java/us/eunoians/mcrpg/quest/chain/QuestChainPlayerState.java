@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Mutable per-player state for a single quest chain. Loaded eagerly at join from
@@ -25,7 +26,7 @@ public class QuestChainPlayerState {
     private QuestChainState state;
     private int completionCount;
     private Long lastCompletedAt;
-    private volatile boolean dirty;
+    private final AtomicInteger dirtyVersion = new AtomicInteger(0);
 
     /**
      * Constructs a player chain state from database values. Nullable parameters are
@@ -47,7 +48,6 @@ public class QuestChainPlayerState {
         this.state = state;
         this.completionCount = completionCount;
         this.lastCompletedAt = lastCompletedAt;
-        this.dirty = false;
     }
 
     /**
@@ -113,19 +113,45 @@ public class QuestChainPlayerState {
     }
 
     /**
+     * Returns the current dirty version. A value of 0 means the state is clean.
+     * Each mutation increments this counter. Used by persistence to snapshot the
+     * version before writing and conditionally clear only if no new mutations
+     * occurred since the snapshot.
+     *
+     * @return the current dirty version
+     */
+    public int getDirtyVersion() {
+        return dirtyVersion.get();
+    }
+
+    /**
      * Returns whether this state has unsaved mutations.
      *
      * @return {@code true} if the state is dirty
      */
     public boolean isDirty() {
-        return dirty;
+        return dirtyVersion.get() > 0;
     }
 
     /**
-     * Clears the dirty flag after a successful database write.
+     * Clears the dirty flag only if no mutations have occurred since the given
+     * snapshot version. Returns whether the clear succeeded.
+     *
+     * @param snapshotVersion the version captured at persistence snapshot time
+     * @return {@code true} if dirty was cleared; {@code false} if a newer mutation occurred
+     */
+    public boolean clearDirtyIfCurrent(int snapshotVersion) {
+        return dirtyVersion.compareAndSet(snapshotVersion, 0);
+    }
+
+    /**
+     * Unconditionally resets the dirty version to 0. Used only by authoritative
+     * synchronous flush operations where the caller has exclusive access to this
+     * state (e.g. logout flush on the DB thread after prepareForFlush gates
+     * all async writes).
      */
     public void clearDirty() {
-        this.dirty = false;
+        dirtyVersion.set(0);
     }
 
     /**
@@ -145,7 +171,7 @@ public class QuestChainPlayerState {
      */
     public void advance(@NotNull NamespacedKey nextQuestKey) {
         this.currentQuestKey = nextQuestKey;
-        this.dirty = true;
+        dirtyVersion.incrementAndGet();
     }
 
     /**
@@ -159,7 +185,7 @@ public class QuestChainPlayerState {
         this.currentQuestKey = null;
         this.completionCount++;
         this.lastCompletedAt = completedAt;
-        this.dirty = true;
+        dirtyVersion.incrementAndGet();
     }
 
     /**
@@ -170,7 +196,7 @@ public class QuestChainPlayerState {
     public void abandon() {
         this.state = QuestChainState.ABANDONED;
         this.currentQuestKey = null;
-        this.dirty = true;
+        dirtyVersion.incrementAndGet();
     }
 
     /**
@@ -179,7 +205,7 @@ public class QuestChainPlayerState {
     public void fail() {
         this.state = QuestChainState.FAILED;
         this.currentQuestKey = null;
-        this.dirty = true;
+        dirtyVersion.incrementAndGet();
     }
 
     /**
@@ -188,7 +214,7 @@ public class QuestChainPlayerState {
     public void expire() {
         this.state = QuestChainState.EXPIRED;
         this.currentQuestKey = null;
-        this.dirty = true;
+        dirtyVersion.incrementAndGet();
     }
 
     /**
@@ -200,7 +226,7 @@ public class QuestChainPlayerState {
     public void resetToStep(@NotNull NamespacedKey questKey) {
         this.state = QuestChainState.ACTIVE;
         this.currentQuestKey = questKey;
-        this.dirty = true;
+        dirtyVersion.incrementAndGet();
     }
 
     /**
@@ -214,6 +240,6 @@ public class QuestChainPlayerState {
         this.currentQuestKey = firstQuestKey;
         this.completionCount = 0;
         this.lastCompletedAt = null;
-        this.dirty = true;
+        dirtyVersion.incrementAndGet();
     }
 }

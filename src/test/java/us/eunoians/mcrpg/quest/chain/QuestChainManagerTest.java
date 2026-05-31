@@ -26,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -76,15 +78,21 @@ public class QuestChainManagerTest extends McRPGBaseTest {
     @Test
     @DisplayName("Given player not loaded, When handleQuestCancelled is called, Then it is a no-op")
     void handleQuestCancelled_isNoOp_whenPlayerNotLoaded() {
-        // No assertions needed — just verify no exception is thrown and no state is mutated.
-        // The method's guard returns early when the player is absent.
         chainManager.handleQuestCancelled(PLAYER_UUID, QUEST_KEY);
+
+        // The guard performs exactly one player-lookup and then returns early; nothing else
+        // is called on the player manager (no getChainData, no state mutations).
+        verify(mockPlayerManager).getPlayer(PLAYER_UUID);
+        verifyNoMoreInteractions(mockPlayerManager);
     }
 
     @Test
     @DisplayName("Given player not loaded, When handleQuestExpired is called, Then it is a no-op")
     void handleQuestExpired_isNoOp_whenPlayerNotLoaded() {
         chainManager.handleQuestExpired(PLAYER_UUID, QUEST_KEY);
+
+        verify(mockPlayerManager).getPlayer(PLAYER_UUID);
+        verifyNoMoreInteractions(mockPlayerManager);
     }
 
     @Test

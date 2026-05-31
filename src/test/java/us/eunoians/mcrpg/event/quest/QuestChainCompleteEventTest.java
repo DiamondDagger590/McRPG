@@ -33,7 +33,7 @@ public class QuestChainCompleteEventTest extends McRPGBaseTest {
         PlayerMock player = server.addPlayer();
         int completionNumber = 3;
 
-        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, completionNumber);
+        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, player.getUniqueId(), completionNumber);
 
         assertSame(definition, event.getChainDefinition());
         assertSame(player, event.getPlayer());
@@ -46,7 +46,7 @@ public class QuestChainCompleteEventTest extends McRPGBaseTest {
         QuestChainDefinition definition = buildDefinition();
         PlayerMock player = server.addPlayer();
 
-        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, 1);
+        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, player.getUniqueId(), 1);
 
         assertEquals(1, event.getCompletionNumber());
     }
@@ -57,7 +57,7 @@ public class QuestChainCompleteEventTest extends McRPGBaseTest {
         QuestChainDefinition definition = buildDefinition();
         PlayerMock player = server.addPlayer();
 
-        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, 1);
+        QuestChainCompleteEvent event = new QuestChainCompleteEvent(definition, player, player.getUniqueId(), 1);
 
         assertEquals(QuestChainCompleteEvent.getHandlerList(), event.getHandlers());
     }

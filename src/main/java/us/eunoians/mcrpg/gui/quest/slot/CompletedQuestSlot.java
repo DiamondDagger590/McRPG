@@ -19,12 +19,7 @@ import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -72,10 +67,7 @@ public class CompletedQuestSlot implements McRPGSlot {
         }
 
         var localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-        Locale locale = localizationManager.getLocaleChain(mcRPGPlayer).getNodeValue();
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-                .withLocale(locale).withZone(ZoneOffset.UTC);
-        placeholders.put("completed_date", dateFormatter.format(Instant.ofEpochMilli(record.completedAt())));
+        placeholders.put("completed_date", localizationManager.formatDisplayDate(mcRPGPlayer, record.completedAt()));
         ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, displayRoute))
                 .addPlaceholders(placeholders);
         itemBuilder.applyTagReplacements(localizationManager.getPaletteReplacements());

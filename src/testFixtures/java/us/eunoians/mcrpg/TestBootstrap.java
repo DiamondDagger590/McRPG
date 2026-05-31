@@ -29,6 +29,11 @@ import us.eunoians.mcrpg.quest.impl.scope.impl.PermissionQuestScopeProvider;
 import us.eunoians.mcrpg.quest.impl.scope.impl.SinglePlayerQuestScopeProvider;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
+import us.eunoians.mcrpg.quest.source.QuestSourceRegistry;
+import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
+import us.eunoians.mcrpg.quest.source.builtin.BoardLandQuestSource;
+import us.eunoians.mcrpg.quest.source.builtin.BoardPersonalQuestSource;
+import us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 
@@ -81,6 +86,12 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
         scopeProviderRegistry.register(new PermissionQuestScopeProvider());
         registryAccess.register(new QuestObjectiveTypeRegistry());
         registryAccess.register(new QuestRewardTypeRegistry());
+        QuestSourceRegistry sourceRegistry = new QuestSourceRegistry();
+        registryAccess.register(sourceRegistry);
+        sourceRegistry.register(new ManualQuestSource());
+        sourceRegistry.register(new AbilityUpgradeQuestSource());
+        sourceRegistry.register(new BoardPersonalQuestSource());
+        sourceRegistry.register(new BoardLandQuestSource());
         registryAccess.register(new QuestTemplateRegistry());
         registryAccess.register(new QuestRarityRegistry());
         RewardDistributionTypeRegistry distTypeRegistry = new RewardDistributionTypeRegistry();

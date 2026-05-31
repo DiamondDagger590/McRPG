@@ -129,10 +129,11 @@ public class QuestChainStateDAO {
      * @param connection the database connection
      * @param playerUUID the player UUID
      * @param state      the chain state to save
+     * @return {@code true} if the write succeeded; {@code false} on SQL failure
      */
-    public static void saveChainState(@NotNull Connection connection,
-                                      @NotNull UUID playerUUID,
-                                      @NotNull QuestChainPlayerState state) {
+    public static boolean saveChainState(@NotNull Connection connection,
+                                         @NotNull UUID playerUUID,
+                                         @NotNull QuestChainPlayerState state) {
         try (PreparedStatement statement = connection.prepareStatement(
                 "INSERT OR REPLACE INTO " + TABLE_NAME +
                         " (player_uuid, chain_key, current_quest, state, completion_count, last_completed_at) " +
@@ -154,10 +155,12 @@ public class QuestChainStateDAO {
                 statement.setNull(6, java.sql.Types.BIGINT);
             }
             statement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.SEVERE,
                     "[QuestChainStateDAO] Failed to save chain state for player " + playerUUID +
                             ", chain " + state.getChainKey(), e);
+            return false;
         }
     }
 
@@ -167,19 +170,22 @@ public class QuestChainStateDAO {
      * @param connection the database connection
      * @param playerUUID the player UUID
      * @param chainKey   the chain key
+     * @return {@code true} if the delete succeeded; {@code false} on SQL failure
      */
-    public static void deleteChainState(@NotNull Connection connection,
-                                        @NotNull UUID playerUUID,
-                                        @NotNull NamespacedKey chainKey) {
+    public static boolean deleteChainState(@NotNull Connection connection,
+                                           @NotNull UUID playerUUID,
+                                           @NotNull NamespacedKey chainKey) {
         try (PreparedStatement statement = connection.prepareStatement(
                 "DELETE FROM " + TABLE_NAME + " WHERE player_uuid = ? AND chain_key = ?")) {
             statement.setString(1, playerUUID.toString());
             statement.setString(2, chainKey.toString());
             statement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING,
                     "[QuestChainStateDAO] Failed to delete chain state for player " + playerUUID +
                             ", chain " + chainKey, e);
+            return false;
         }
     }
 

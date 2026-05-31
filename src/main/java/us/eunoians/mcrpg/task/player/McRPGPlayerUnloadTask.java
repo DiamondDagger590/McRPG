@@ -52,13 +52,15 @@ public final class McRPGPlayerUnloadTask extends PlayerUnloadTask {
                  */
                 mcRPGPlayer.savePlayerLogoutTime(connection);
 
-                // Flush any dirty chain states that haven't been persisted asynchronously yet.
-                // This runs synchronously on the DB executor thread (inside unloadPlayer) so
-                // we can safely open a connection and write before the player object is discarded.
+                // Gate in-flight async chain saves so they skip their JDBC (stale generation),
+                // then flush the latest dirty states synchronously on this DB thread,
+                // then clean up per-player tracking maps so they don't leak.
                 QuestChainManager chainManager = getPlugin().registryAccess()
                         .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
+                chainManager.getPersistenceService().prepareForFlush(mcRPGPlayer.getUUID());
                 chainManager.getPersistenceService().flushChainStatesSync(
                         connection, mcRPGPlayer.getUUID(), mcRPGPlayer.getChainData());
+                chainManager.getPersistenceService().cleanupPlayer(mcRPGPlayer.getUUID());
 
                 return true;
             } catch (SQLException e) {

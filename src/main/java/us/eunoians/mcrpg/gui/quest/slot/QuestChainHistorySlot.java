@@ -19,11 +19,6 @@ import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -81,10 +76,7 @@ public class QuestChainHistorySlot implements McRPGSlot {
                 .orElse(run.chainKey().getKey());
         int totalSteps = definitionOpt.map(d -> d.getSteps().size()).orElse(run.stepCount());
 
-        Locale locale = localizationManager.getLocaleChain(mcRPGPlayer).getNodeValue();
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-                .withLocale(locale).withZone(ZoneOffset.UTC);
-        String completedDate = dateFormatter.format(Instant.ofEpochMilli(run.completedAt()));
+        String completedDate = localizationManager.formatDisplayDate(mcRPGPlayer, run.completedAt());
 
         ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(
                 mcRPGPlayer, LocalizationKey.QUEST_CHAIN_HISTORY_GUI_CHAIN_SLOT_DISPLAY_ITEM))

@@ -183,10 +183,8 @@ public class QuestChainManager extends Manager<McRPG> {
                     QuestChainStep.simple(completedQuestKey));
             state.advance(nextStep.questKey());
             chainData.updateQuestKeyIndex(state);
-            if (player != null) {
-                Bukkit.getPluginManager().callEvent(
-                        new QuestChainStepAdvanceEvent(definition, player, completedStep, nextStep));
-            }
+            Bukkit.getPluginManager().callEvent(
+                    new QuestChainStepAdvanceEvent(definition, player, playerUUID, completedStep, nextStep));
             plugin().getLogger().fine("[QuestChainManager] Advanced chain '" + chainKey
                     + "' for player " + playerUUID + " to step '" + nextStep.questKey() + "'");
             persistenceService.persistAdvancementAsync(playerUUID, state, chainKey, completedQuestKey, completionNumber);
@@ -196,10 +194,8 @@ public class QuestChainManager extends Manager<McRPG> {
             int completionNumber = state.getCompletionCount() + 1;
             state.complete(plugin().getTimeProvider().now().toEpochMilli());
             chainData.updateQuestKeyIndex(state);
-            if (player != null) {
-                Bukkit.getPluginManager().callEvent(
-                        new QuestChainCompleteEvent(definition, player, state.getCompletionCount()));
-            }
+            Bukkit.getPluginManager().callEvent(
+                    new QuestChainCompleteEvent(definition, player, playerUUID, state.getCompletionCount()));
             plugin().getLogger().fine("[QuestChainManager] Completed chain '" + chainKey
                     + "' for player " + playerUUID + " (completion #" + state.getCompletionCount() + ")");
             persistenceService.persistAdvancementAsync(playerUUID, state, chainKey, completedQuestKey, completionNumber);
@@ -349,27 +345,30 @@ public class QuestChainManager extends Manager<McRPG> {
             return;
         }
         cancelActiveChainQuestIfExists(playerUUID, stateOpt.get());
-        chainData.removeChainState(chainKey);
+        // Do not remove in-memory state yet — wait for DB delete to succeed
+        // so a failed delete doesn't leave the player with missing state.
 
         persistenceService.cancelPendingSave(playerUUID);
 
         var database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
-            boolean success;
+            boolean deleteStateSuccess;
+            boolean deleteLogSuccess;
             try (Connection connection = database.getConnection()) {
-                QuestChainStateDAO.deleteChainState(connection, playerUUID, chainKey);
-                QuestChainCompletionLogDAO.deleteForChain(connection, playerUUID, chainKey.toString());
-                success = true;
+                deleteStateSuccess = QuestChainStateDAO.deleteChainState(connection, playerUUID, chainKey);
+                deleteLogSuccess = QuestChainCompletionLogDAO.deleteForChain(connection, playerUUID, chainKey.toString());
             } catch (SQLException e) {
                 plugin().getLogger().log(Level.SEVERE,
                         "[QuestChainManager] Failed to reset chain '" + chainKey
                                 + "' for player " + playerUUID, e);
-                success = false;
+                Bukkit.getScheduler().runTask(plugin(), () -> callback.accept(false));
+                return;
             }
-            boolean finalSuccess = success;
+            boolean finalSuccess = deleteStateSuccess && deleteLogSuccess;
             Bukkit.getScheduler().runTask(plugin(), () -> {
                 if (finalSuccess) {
+                    chainData.removeChainState(chainKey);
                     plugin().getLogger().fine("[QuestChainManager] Reset chain '" + chainKey
                             + "' for player " + playerUUID);
                 }
@@ -513,6 +512,14 @@ public class QuestChainManager extends Manager<McRPG> {
             }
             Map<NamespacedKey, Set<NamespacedKey>> finalCompletionsByChain = completionsByChain;
             Bukkit.getScheduler().runTask(plugin(), () -> {
+                // Guard against fast disconnects: if the player unloaded while the DB read was
+                // in-flight, there is no in-memory state to update and no callback to run.
+                Optional<McRPGPlayer> stillLoadedOpt = RegistryAccess.registryAccess()
+                        .registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.PLAYER).getPlayer(playerUUID);
+                if (stillLoadedOpt.isEmpty()) {
+                    return;
+                }
                 applyReResolution(playerUUID, chainData, chainsNeedingReResolution, finalCompletionsByChain);
                 onComplete.run();
             });

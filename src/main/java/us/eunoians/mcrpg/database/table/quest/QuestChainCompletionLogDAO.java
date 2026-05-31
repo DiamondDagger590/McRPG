@@ -94,13 +94,14 @@ public class QuestChainCompletionLogDAO {
      * @param questKey         the completed quest key (string form)
      * @param completedAt      the completion timestamp in epoch millis
      * @param completionNumber which chain completion this belongs to (1-based)
+     * @return {@code true} if the write succeeded; {@code false} on SQL failure
      */
-    public static void logCompletion(@NotNull Connection connection,
-                                     @NotNull UUID playerUUID,
-                                     @NotNull String chainKey,
-                                     @NotNull String questKey,
-                                     long completedAt,
-                                     int completionNumber) {
+    public static boolean logCompletion(@NotNull Connection connection,
+                                        @NotNull UUID playerUUID,
+                                        @NotNull String chainKey,
+                                        @NotNull String questKey,
+                                        long completedAt,
+                                        int completionNumber) {
         try (PreparedStatement statement = connection.prepareStatement(
                 "INSERT OR REPLACE INTO " + TABLE_NAME +
                         " (player_uuid, chain_key, quest_key, completed_at, completion_number) " +
@@ -111,10 +112,12 @@ public class QuestChainCompletionLogDAO {
             statement.setLong(4, completedAt);
             statement.setInt(5, completionNumber);
             statement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING,
                     "[QuestChainCompletionLogDAO] Failed to log completion for player " + playerUUID +
                             ", chain " + chainKey + ", quest " + questKey, e);
+            return false;
         }
     }
 
@@ -189,22 +192,23 @@ public class QuestChainCompletionLogDAO {
      * @param connection the database connection
      * @param playerUUID the player UUID
      * @param chainKey   the chain key (string form)
-     * @return number of deleted rows
+     * @return {@code true} if the delete succeeded; {@code false} on SQL failure
      */
-    public static int deleteForChain(@NotNull Connection connection,
-                                     @NotNull UUID playerUUID,
-                                     @NotNull String chainKey) {
+    public static boolean deleteForChain(@NotNull Connection connection,
+                                         @NotNull UUID playerUUID,
+                                         @NotNull String chainKey) {
         try (PreparedStatement statement = connection.prepareStatement(
                 "DELETE FROM " + TABLE_NAME + " WHERE player_uuid = ? AND chain_key = ?")) {
             statement.setString(1, playerUUID.toString());
             statement.setString(2, chainKey);
-            return statement.executeUpdate();
+            statement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING,
                     "[QuestChainCompletionLogDAO] Failed to delete log entries for player " + playerUUID +
                             ", chain " + chainKey, e);
+            return false;
         }
-        return 0;
     }
 
     /**

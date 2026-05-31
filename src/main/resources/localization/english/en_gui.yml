@@ -345,6 +345,9 @@ gui:
         lore:
           - '<body>Completed: <primary><completed_date>'
           - '<negative>Quest definition no longer exists.'
+    # Shown when the player has no completed quests or chain runs to display.
+    empty-state:
+      name: '<body>No completed quests yet.'
   # This GUI shows the detailed breakdown of a quest's phases, stages and objectives.
   quest-detail-gui:
     title: '<gui-title>Quest Details'
@@ -1544,6 +1547,8 @@ gui:
     title: "<gui-title><chain> Details"
     # Shown when the chain has no completed steps to display
     empty-state: "<body>No steps completed yet."
+    # Shown while the async step-record query is still in progress
+    loading-state: "<body>Loading..."
     chain-slot:
       display-item:
         material: BOOK

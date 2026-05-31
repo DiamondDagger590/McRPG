@@ -133,17 +133,17 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("Given a player UUID and chain key, When deleteForChain is called, Then a delete is executed and the count returned")
-    void deleteForChain_executesDeleteAndReturnsCount() throws SQLException {
+    @DisplayName("Given a player UUID and chain key, When deleteForChain is called, Then a delete is executed and true is returned on success")
+    void deleteForChain_executesDeleteAndReturnsTrue() throws SQLException {
         Connection mockConnection = mock(Connection.class);
         PreparedStatement mockStatement = mock(PreparedStatement.class);
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
         when(mockStatement.executeUpdate()).thenReturn(2);
 
-        int result = QuestChainCompletionLogDAO.deleteForChain(
+        boolean result = QuestChainCompletionLogDAO.deleteForChain(
                 mockConnection, PLAYER_UUID, CHAIN_KEY.toString());
 
-        assertEquals(2, result);
+        assertTrue(result);
         verify(mockStatement).executeUpdate();
     }
 

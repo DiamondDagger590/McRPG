@@ -1,9 +1,11 @@
 package us.eunoians.mcrpg.listener.quest;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.event.quest.QuestCompleteEvent;
 import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
@@ -39,8 +41,16 @@ public class QuestChainProgressListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onQuestComplete(@NotNull QuestCompleteEvent event) {
         QuestInstance instance = event.getQuestInstance();
+        NamespacedKey completedQuestKey = event.getQuestDefinition().getQuestKey();
         instance.getQuestScope().map(QuestScope::getCurrentPlayersInScope)
-                .ifPresent(players -> players.forEach(playerUUID ->
-                        chainManager.advanceChain(playerUUID, event.getQuestDefinition().getQuestKey())));
+                .ifPresent(players -> players.forEach(playerUUID -> {
+                    boolean advanced = chainManager.advanceChain(playerUUID, completedQuestKey);
+                    if (!advanced) {
+                        McRPG.getInstance().getLogger().fine(
+                                "[QuestChainProgressListener] advanceChain returned false for player "
+                                        + playerUUID + ", quest " + completedQuestKey
+                                        + " — quest is not a current chain step for this player");
+                    }
+                }));
     }
 }

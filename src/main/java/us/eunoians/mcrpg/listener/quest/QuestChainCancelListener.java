@@ -47,7 +47,7 @@ public class QuestChainCancelListener implements Listener {
         QuestInstance instance = event.getQuestInstance();
         instance.getQuestScope().map(QuestScope::getCurrentPlayersInScope)
                 .ifPresent(players -> players.forEach(playerUUID ->
-                        chainManager.handleQuestCancelled(playerUUID, event.getQuestDefinition().getQuestKey())));
+                        chainManager.handleQuestCancelled(playerUUID, event.getQuestDefinitionKey())));
     }
 
     /**
@@ -64,6 +64,6 @@ public class QuestChainCancelListener implements Listener {
         QuestInstance instance = event.getQuestInstance();
         instance.getQuestScope().map(QuestScope::getCurrentPlayersInScope)
                 .ifPresent(players -> players.forEach(playerUUID ->
-                        chainManager.handleQuestExpired(playerUUID, event.getQuestDefinition().getQuestKey())));
+                        chainManager.handleQuestExpired(playerUUID, event.getQuestDefinitionKey())));
     }
 }

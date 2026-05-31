@@ -429,6 +429,7 @@ public final class LocalizationKey extends ConfigFile {
     private static final String QUEST_CHAIN_HISTORY_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-chain-history-gui");
     public static final Route QUEST_CHAIN_HISTORY_GUI_TITLE = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "title"));
     public static final Route QUEST_CHAIN_HISTORY_GUI_EMPTY_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "empty-state"));
+    public static final Route QUEST_CHAIN_HISTORY_GUI_LOADING_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "loading-state"));
     public static final Route QUEST_CHAIN_HISTORY_GUI_CHAIN_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "chain-slot.display-item"));
     public static final Route QUEST_CHAIN_HISTORY_GUI_STEP_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "step-slot.display-item"));
     public static final Route QUEST_CHAIN_HISTORY_GUI_UNKNOWN_STEP_MESSAGE = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "unknown-step-message"));
@@ -442,6 +443,7 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_HISTORY_GUI_SORT_DATE_ASC_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "sort-date-asc.display-item"));
     public static final Route QUEST_HISTORY_GUI_COMPLETED_QUEST_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "completed-quest-slot.display-item"));
     public static final Route QUEST_HISTORY_GUI_UNKNOWN_QUEST_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "unknown-quest-slot.display-item"));
+    public static final Route QUEST_HISTORY_GUI_EMPTY_STATE = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "empty-state"));
     // Quest Detail GUI
     private static final String QUEST_DETAIL_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-detail-gui");
     public static final Route QUEST_DETAIL_GUI_TITLE = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "title"));

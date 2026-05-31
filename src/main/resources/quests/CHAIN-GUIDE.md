@@ -158,7 +158,7 @@ The `auto-start.trigger` key determines when the chain system evaluates whether 
 |-------------|--------------|
 | `mcrpg:first_join` | Once, the very first time a player joins the server (`Player#hasPlayedBefore()` is false). Ideal for tutorial chains. |
 | `mcrpg:login` | Every time a player logs in. Combined with `repeat-mode: once`, this effectively fires once (the chain starts on first eligible login, then the player is in a terminal state and skipped on future logins). |
-| `mcrpg:manual` | Never fires automatically. The chain must be started via the admin command (`/mcrpg admin chain advance`) or by a third-party plugin calling the API. |
+| `mcrpg:manual` | Never fires automatically. The chain must be started via the admin command (`/mcrpg quest admin chain advance`) or by a third-party plugin calling the API. |
 
 **All triggers are idempotent.** If the player already has an active or terminal state for the chain, the trigger evaluation skips them. You cannot accidentally start a chain twice for the same player.
 
@@ -214,7 +214,7 @@ Running `/mcrpg admin reload` reloads all chain definitions. **Active chains are
 **Best practices:**
 
 - Do not remove quest keys from the middle of a chain definition while players are actively working through it.
-- If you need to restructure a chain, use `/mcrpg admin chain reset <player> <chain>` to clear affected players' state before making the change.
+- If you need to restructure a chain, use `/mcrpg quest admin chain reset <player> <chain>` to clear affected players' state before making the change.
 
 ---
 
@@ -224,10 +224,10 @@ All admin commands require the `mcrpg.quest.admin.chain.*` permission (or the sp
 
 | Command | What it does |
 |---------|-------------|
-| `/mcrpg admin chain status <player> <chain>` | Shows the player's current chain state: active/completed/failed, current step, completion count, last completed time |
-| `/mcrpg admin chain advance <player> <chain>` | Force-advances the player's chain to the next step, bypassing the current quest's normal completion flow |
-| `/mcrpg admin chain restart <player> <chain> [force]` | Restarts the chain. Without `force`, skips already-completed steps. With `force`, restarts from step 1 |
-| `/mcrpg admin chain reset <player> <chain>` | Hard-resets the chain — clears all state and completion history. The player experiences the chain as if they never started it |
+| `/mcrpg quest admin chain status <player> <chain>` | Shows the player's current chain state: active/completed/failed, current step, completion count, last completed time |
+| `/mcrpg quest admin chain advance <player> <chain>` | Force-advances the player's chain to the next step, bypassing the current quest's normal completion flow |
+| `/mcrpg quest admin chain restart <player> <chain> [force]` | Restarts the chain. Without `force`, skips already-completed steps. With `force`, restarts from step 1 |
+| `/mcrpg quest admin chain reset <player> <chain>` | Hard-resets the chain — clears all state and completion history. The player experiences the chain as if they never started it |
 
 **Tab-completion** is supported for player names and registered chain keys.
 
@@ -240,14 +240,14 @@ All admin commands require the `mcrpg.quest.admin.chain.*` permission (or the sp
 1. Make sure the chain file starts with `quest-chain-file: true`.
 2. Check that the trigger matches what you expect (`mcrpg:first_join`, `mcrpg:login`, or `mcrpg:manual`).
 3. Check that the quest keys referenced in `steps` exist in loaded quest files. Check the console after `/mcrpg admin reload` for warnings about unknown quest keys.
-4. For `mcrpg:first_join` trigger: the chain only fires for players who have never joined before (`hasPlayedBefore()` is false). Use `/mcrpg admin chain advance` to manually test it on an existing player.
+4. For `mcrpg:first_join` trigger: the chain only fires for players who have never joined before (`hasPlayedBefore()` is false). Use `/mcrpg quest admin chain advance` to manually test it on an existing player.
 5. Check `repeat-mode` — a player who previously completed, abandoned, or failed the chain will not be automatically restarted (all modes currently behave as `once`).
 
 ### Step Not Advancing?
 
 1. Verify the player completed the correct quest (not just any quest).
-2. Run `/mcrpg admin chain status <player> <chain>` to see the current step.
-3. If the chain state shows ACTIVE but no current step, the player's state may have become inert (the chain definition changed). Use `/mcrpg admin chain restart` to fix it.
+2. Run `/mcrpg quest admin chain status <player> <chain>` to see the current step.
+3. If the chain state shows ACTIVE but no current step, the player's state may have become inert (the chain definition changed). Use `/mcrpg quest admin chain restart` to fix it.
 
 ### Duplicate Chain Keys
 
@@ -256,5 +256,5 @@ Every chain key must be unique across all chain files. If two chain files define
 ### Testing Tips
 
 - Use `mcrpg:manual` trigger while building your chain, then switch to `mcrpg:first_join` or `mcrpg:login` when ready.
-- Use `/mcrpg admin chain reset <yourself> <chain>` after each test run to clear your state.
+- Use `/mcrpg quest admin chain reset <yourself> <chain>` after each test run to clear your state.
 - Use short quest expirations (`5m`) and low targets (`required-progress: 1`) while testing step transitions.

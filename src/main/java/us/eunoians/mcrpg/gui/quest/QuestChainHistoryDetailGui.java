@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.quest.slot.ChainHistoryEmptySlot;
+import us.eunoians.mcrpg.gui.quest.slot.ChainHistoryLoadingSlot;
 import us.eunoians.mcrpg.gui.quest.slot.ChainStepCompletionSlot;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
@@ -63,6 +64,11 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
      * thread.
      */
     private int loadGeneration = 0;
+    /**
+     * Set to {@code true} when the first async load completes. Until then, the GUI
+     * shows a {@link ChainHistoryLoadingSlot} instead of the empty or content slots.
+     */
+    private boolean loaded = false;
     private List<QuestChainCompletionLogDAO.ChainStepRecord> stepRecords;
 
     public QuestChainHistoryDetailGui(@NotNull McRPGPlayer mcRPGPlayer,
@@ -79,6 +85,7 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
 
     /**
      * Loads chain step completion records from the database asynchronously and refreshes the GUI.
+     * Uses the loadGeneration stale-result guard pattern — see {@link QuestHistoryGui#loadCompletionRecords()}.
      */
     private void loadStepRecords() {
         int generation = ++loadGeneration;
@@ -100,6 +107,7 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
                     return;
                 }
                 stepRecords = finalSteps;
+                loaded = true;
                 refreshGUI();
             });
         });
@@ -144,6 +152,13 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
 
     private void paintStepSlots(int page) {
         List<QuestChainCompletionLogDAO.ChainStepRecord> pageRecords = getRecordsForPage(page);
+        if (!loaded) {
+            for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
+                removeSlot(i);
+            }
+            setSlot(22, new ChainHistoryLoadingSlot());
+            return;
+        }
         if (stepRecords.isEmpty()) {
             for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
                 removeSlot(i);

@@ -35,7 +35,7 @@ public class QuestChainStepAdvanceEventTest extends McRPGBaseTest {
         QuestChainStep completed = definition.getSteps().get(0);
         QuestChainStep next = definition.getSteps().get(1);
 
-        QuestChainStepAdvanceEvent event = new QuestChainStepAdvanceEvent(definition, player, completed, next);
+        QuestChainStepAdvanceEvent event = new QuestChainStepAdvanceEvent(definition, player, player.getUniqueId(), completed, next);
 
         assertSame(definition, event.getChainDefinition());
         assertSame(player, event.getPlayer());
@@ -51,7 +51,7 @@ public class QuestChainStepAdvanceEventTest extends McRPGBaseTest {
         QuestChainStep completed = definition.getSteps().get(0);
         QuestChainStep next = definition.getSteps().get(1);
 
-        QuestChainStepAdvanceEvent event = new QuestChainStepAdvanceEvent(definition, player, completed, next);
+        QuestChainStepAdvanceEvent event = new QuestChainStepAdvanceEvent(definition, player, player.getUniqueId(), completed, next);
 
         assertEquals(QuestChainStepAdvanceEvent.getHandlerList(), event.getHandlers());
     }
