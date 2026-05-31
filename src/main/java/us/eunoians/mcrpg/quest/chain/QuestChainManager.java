@@ -186,26 +186,30 @@ public class QuestChainManager extends Manager<McRPG> {
             }
 
             int completionNumber = state.getCompletionCount() + 1;
+            long completedAt = plugin().getTimeProvider().now().toEpochMilli();
             QuestChainStep completedStep = definition.getStep(completedQuestKey).orElse(
                     QuestChainStep.simple(completedQuestKey));
             state.advance(nextStep.questKey());
+            state.recordAdvancement(completedQuestKey, completedAt, completionNumber);
             chainData.updateQuestKeyIndex(state);
             Bukkit.getPluginManager().callEvent(
                     new QuestChainStepAdvanceEvent(definition, player, playerUUID, completedStep, nextStep));
             plugin().getLogger().fine("[QuestChainManager] Advanced chain '" + chainKey
                     + "' for player " + playerUUID + " to step '" + nextStep.questKey() + "'");
-            persistenceService.persistAdvancementAsync(playerUUID, state, chainKey, completedQuestKey, completionNumber);
+            persistenceService.saveChainStateAsync(playerUUID, state);
             return true;
 
         } else {
             int completionNumber = state.getCompletionCount() + 1;
-            state.complete(plugin().getTimeProvider().now().toEpochMilli());
+            long completedAt = plugin().getTimeProvider().now().toEpochMilli();
+            state.recordAdvancement(completedQuestKey, completedAt, completionNumber);
+            state.complete(completedAt);
             chainData.updateQuestKeyIndex(state);
             Bukkit.getPluginManager().callEvent(
                     new QuestChainCompleteEvent(definition, player, playerUUID, state.getCompletionCount(), ChainCompletionSource.ADVANCEMENT));
             plugin().getLogger().fine("[QuestChainManager] Completed chain '" + chainKey
                     + "' for player " + playerUUID + " (completion #" + state.getCompletionCount() + ")");
-            persistenceService.persistAdvancementAsync(playerUUID, state, chainKey, completedQuestKey, completionNumber);
+            persistenceService.saveChainStateAsync(playerUUID, state);
             return true;
         }
     }

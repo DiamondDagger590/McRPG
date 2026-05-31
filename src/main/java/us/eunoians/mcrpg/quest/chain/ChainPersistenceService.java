@@ -28,10 +28,10 @@ import java.util.logging.Level;
  * Serializes per-player writes to prevent concurrent DB mutations to the same player's
  * chain rows.
  * <p>
- * Async writes ({@link #saveChainStateAsync}, {@link #persistAdvancementAsync}) are
- * optimistic: they fire and forget, relying on the write-generation gate to skip stale
- * writes when a logout flush supersedes them. Dirty flags are only cleared by the
- * authoritative synchronous flush at logout ({@link #flushChainStatesSync}).
+ * Async writes ({@link #saveChainStateAsync}) are optimistic: they fire and forget,
+ * relying on the write-generation gate to skip stale writes when a logout flush
+ * supersedes them. Dirty flags are only cleared by the authoritative synchronous
+ * flush at logout ({@link #flushChainStatesSync}).
  * <p>
  * Eviction: {@code pendingSaves} entries are removed via {@code whenComplete} after each
  * future completes. {@code writeGenerations} entries are removed by {@link #cleanupPlayer(UUID)}
@@ -66,13 +66,16 @@ public class ChainPersistenceService {
     }
 
     /**
-     * Persists a chain state asynchronously. Snapshots the current state values before
-     * submitting to avoid read/write races. Writes are serialized per-player via
+     * Persists a chain state and any pending advancement log entries asynchronously.
+     * Snapshots the current state values and pending advancements before submitting
+     * to avoid read/write races. Writes are serialized per-player via
      * {@code pendingSaves}: each new submission chains onto the previous future so that
      * concurrent saves for the same player always execute in submission order.
      * <p>
-     * The write is atomic via {@link FailSafeTransaction}. Dirty flags are not cleared
-     * here — the authoritative flush at logout ({@link #flushChainStatesSync}) handles that.
+     * Both the state upsert and any completion-log entries are written in a single
+     * {@link FailSafeTransaction} — they succeed together or both roll back.
+     * Dirty flags are not cleared here — the authoritative flush at logout
+     * ({@link #flushChainStatesSync}) handles that.
      * <p>
      * If the write generation has been incremented since this save was enqueued (e.g. by a
      * logout flush), the JDBC call is skipped entirely.
@@ -90,6 +93,7 @@ public class ChainPersistenceService {
                 state.getState(),
                 state.getCompletionCount(),
                 state.getLastCompletedAt().orElse(null));
+        List<QuestChainPlayerState.PendingAdvancement> advancementSnapshot = List.copyOf(state.getPendingAdvancements());
 
         Database database = getDatabase();
         CompletableFuture<Void> saveTask = CompletableFuture.runAsync(() -> {
@@ -98,9 +102,13 @@ public class ChainPersistenceService {
                 return;
             }
             try (Connection connection = database.getConnection()) {
-                new FailSafeTransaction(connection,
-                        QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot))
-                        .executeTransaction();
+                List<PreparedStatement> statements = new ArrayList<>();
+                statements.addAll(QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot));
+                for (QuestChainPlayerState.PendingAdvancement adv : advancementSnapshot) {
+                    statements.addAll(QuestChainCompletionLogDAO.logCompletion(connection, playerUUID,
+                            chainKey.toString(), adv.questKey().toString(), adv.completedAt(), adv.completionNumber()));
+                }
+                new FailSafeTransaction(connection, statements).executeTransaction();
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE,
                         "[ChainPersistenceService] Failed to save chain state for player " + playerUUID
@@ -114,70 +122,6 @@ public class ChainPersistenceService {
             }
             plugin.getLogger().log(Level.SEVERE,
                     "[ChainPersistenceService] Unhandled exception in save chain for player " + playerUUID, ex);
-            return null;
-        });
-
-        pendingSaves.compute(playerUUID, (uuid, prev) -> {
-            CompletableFuture<Void> chained = prev == null ? guarded : prev.thenCompose(v -> guarded);
-            chained.whenComplete((v, ex) -> pendingSaves.remove(playerUUID, chained));
-            return chained;
-        });
-    }
-
-    /**
-     * Persists both a step completion log entry and the updated chain state in a single
-     * atomic {@link FailSafeTransaction}: both writes succeed together or both roll back.
-     * Coalesces two DB operations into one connection, halving connection overhead per advance.
-     * <p>
-     * The write generation gate applies identically to {@link #saveChainStateAsync}.
-     * Dirty flags are not cleared here — the authoritative flush at logout handles that.
-     *
-     * @param playerUUID        the player UUID
-     * @param state             the chain state to persist
-     * @param chainKey          the chain key (for the completion log entry)
-     * @param completedQuestKey the quest key that was just completed
-     * @param completionNumber  which run this is (1-based)
-     */
-    public void persistAdvancementAsync(@NotNull UUID playerUUID,
-                                        @NotNull QuestChainPlayerState state,
-                                        @NotNull NamespacedKey chainKey,
-                                        @NotNull NamespacedKey completedQuestKey,
-                                        int completionNumber) {
-        int generation = writeGenerations.computeIfAbsent(playerUUID, k -> new AtomicInteger()).get();
-
-        QuestChainPlayerState snapshot = new QuestChainPlayerState(
-                state.getChainKey(),
-                state.getCurrentQuestKey().orElse(null),
-                state.getState(),
-                state.getCompletionCount(),
-                state.getLastCompletedAt().orElse(null));
-
-        long completedAt = plugin.getTimeProvider().now().toEpochMilli();
-        Database database = getDatabase();
-        CompletableFuture<Void> advanceTask = CompletableFuture.runAsync(() -> {
-            AtomicInteger gen = writeGenerations.get(playerUUID);
-            if (gen == null || gen.get() != generation) {
-                return;
-            }
-            try (Connection connection = database.getConnection()) {
-                List<PreparedStatement> statements = new ArrayList<>();
-                statements.addAll(QuestChainCompletionLogDAO.logCompletion(connection, playerUUID,
-                        chainKey.toString(), completedQuestKey.toString(), completedAt, completionNumber));
-                statements.addAll(QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot));
-                new FailSafeTransaction(connection, statements).executeTransaction();
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.SEVERE,
-                        "[ChainPersistenceService] Failed to persist advancement for player " + playerUUID
-                                + ", chain " + chainKey + ", quest " + completedQuestKey, e);
-            }
-        }, database.getDatabaseExecutorService());
-
-        CompletableFuture<Void> guarded = advanceTask.exceptionally(ex -> {
-            if (ex instanceof CancellationException) {
-                return null;
-            }
-            plugin.getLogger().log(Level.SEVERE,
-                    "[ChainPersistenceService] Unhandled exception in persist advancement for player " + playerUUID, ex);
             return null;
         });
 
@@ -213,9 +157,15 @@ public class ChainPersistenceService {
                         state.getState(),
                         state.getCompletionCount(),
                         state.getLastCompletedAt().orElse(null));
-                new FailSafeTransaction(connection,
-                        QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot))
-                        .executeTransaction();
+                List<PreparedStatement> statements = new ArrayList<>();
+                statements.addAll(QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot));
+                NamespacedKey chainKey = state.getChainKey();
+                for (QuestChainPlayerState.PendingAdvancement adv : state.getPendingAdvancements()) {
+                    statements.addAll(QuestChainCompletionLogDAO.logCompletion(connection, playerUUID,
+                            chainKey.toString(), adv.questKey().toString(), adv.completedAt(), adv.completionNumber()));
+                }
+                new FailSafeTransaction(connection, statements).executeTransaction();
+                state.clearPendingAdvancements();
                 state.clearDirty();
             } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE,

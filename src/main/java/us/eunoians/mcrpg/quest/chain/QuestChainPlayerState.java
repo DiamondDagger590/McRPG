@@ -4,6 +4,9 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -21,12 +24,24 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class QuestChainPlayerState {
 
+    /**
+     * Represents a step completion that has been recorded in memory but may not yet be
+     * persisted to the completion log. Tracked here so that synchronous flush at logout
+     * can replay entries whose async write was cancelled.
+     *
+     * @param questKey         the quest key that was completed
+     * @param completedAt      the completion timestamp in epoch millis
+     * @param completionNumber which chain completion run this belongs to (1-based)
+     */
+    public record PendingAdvancement(@NotNull NamespacedKey questKey, long completedAt, int completionNumber) {}
+
     private final NamespacedKey chainKey;
     private NamespacedKey currentQuestKey;
     private QuestChainState state;
     private int completionCount;
     private Long lastCompletedAt;
     private final AtomicInteger dirtyVersion = new AtomicInteger(0);
+    private final List<PendingAdvancement> pendingAdvancements = new ArrayList<>();
 
     /**
      * Constructs a player chain state from database values. Nullable parameters are
@@ -60,7 +75,9 @@ public class QuestChainPlayerState {
     @NotNull
     public static QuestChainPlayerState newActive(@NotNull NamespacedKey chainKey,
                                                   @NotNull NamespacedKey firstQuestKey) {
-        return new QuestChainPlayerState(chainKey, firstQuestKey, QuestChainState.ACTIVE, 0, null);
+        QuestChainPlayerState state = new QuestChainPlayerState(chainKey, firstQuestKey, QuestChainState.ACTIVE, 0, null);
+        state.markDirty();
+        return state;
     }
 
     /**
@@ -152,6 +169,47 @@ public class QuestChainPlayerState {
      */
     public void clearDirty() {
         dirtyVersion.set(0);
+    }
+
+    /**
+     * Explicitly marks this state as dirty. Used for initial creation via
+     * {@link #newActive(NamespacedKey, NamespacedKey)} where no mutation method
+     * runs but the state must be persisted at logout.
+     */
+    public void markDirty() {
+        dirtyVersion.incrementAndGet();
+    }
+
+    /**
+     * Records a step advancement that needs to be written to the completion log.
+     * The async write path will pick these up, and the synchronous flush at logout
+     * replays any that were not yet persisted.
+     *
+     * @param questKey         the completed quest key
+     * @param completedAt      the completion timestamp in epoch millis
+     * @param completionNumber which chain completion run this belongs to (1-based)
+     */
+    public void recordAdvancement(@NotNull NamespacedKey questKey, long completedAt, int completionNumber) {
+        pendingAdvancements.add(new PendingAdvancement(questKey, completedAt, completionNumber));
+    }
+
+    /**
+     * Returns an unmodifiable view of the pending advancement entries that have not
+     * yet been cleared. Used by persistence to snapshot advancement data before writing.
+     *
+     * @return unmodifiable list of pending advancements
+     */
+    @NotNull
+    public List<PendingAdvancement> getPendingAdvancements() {
+        return Collections.unmodifiableList(pendingAdvancements);
+    }
+
+    /**
+     * Clears all pending advancement entries. Called after a successful flush has
+     * persisted them to the completion log.
+     */
+    public void clearPendingAdvancements() {
+        pendingAdvancements.clear();
     }
 
     /**
