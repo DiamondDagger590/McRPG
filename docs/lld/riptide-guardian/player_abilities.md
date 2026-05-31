@@ -1,6 +1,6 @@
 # Low-Level Design: Player Abilities (LLD-6)
 
-**Status:** Draft
+**Status:** Implemented
 **Date:** 2026-05-31
 **Last Updated:** 2026-05-31
 **HLD Reference:** [Riptide Guardian HLD](../../hld/riptide-guardian/riptide_guardian.md), Section 6
