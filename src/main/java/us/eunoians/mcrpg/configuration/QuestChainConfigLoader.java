@@ -209,6 +209,12 @@ public class QuestChainConfigLoader {
                 repeatMode = repeatModeOpt.get();
             }
         }
+        if (repeatMode != QuestChainRepeatMode.ONCE) {
+            logger.warning("[QuestChainConfigLoader] Chain '" + chainKey + "' in " + fileName
+                    + " uses repeat-mode '" + repeatMode.name().toLowerCase() + "' which is accepted "
+                    + "but not yet enforced at runtime — chain will behave as 'once' until repeat "
+                    + "modes are implemented");
+        }
 
         // Steps (required)
         Section stepsSection = section.getSection("steps");

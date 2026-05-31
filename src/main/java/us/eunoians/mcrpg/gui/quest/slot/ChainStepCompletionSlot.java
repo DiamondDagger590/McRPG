@@ -20,11 +20,6 @@ import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -100,14 +95,11 @@ public class ChainStepCompletionSlot implements McRPGSlot {
 
         QuestDefinitionRegistry definitionRegistry = RegistryAccess.registryAccess()
                 .registry(McRPGRegistryKey.QUEST_DEFINITION);
-        NamespacedKey questKey = NamespacedKey.fromString(stepRecord.questKey());
-        Optional<QuestDefinition> defOpt = questKey != null ? definitionRegistry.get(questKey) : Optional.empty();
+        NamespacedKey itemQuestKey = NamespacedKey.fromString(stepRecord.questKey());
+        Optional<QuestDefinition> defOpt = itemQuestKey != null ? definitionRegistry.get(itemQuestKey) : Optional.empty();
 
         String questName = defOpt.map(def -> def.getDisplayName(mcRPGPlayer)).orElse(stepRecord.questKey());
-        Locale locale = localizationManager.getLocaleChain(mcRPGPlayer).getNodeValue();
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-                .withLocale(locale).withZone(ZoneOffset.UTC);
-        String completedDate = dateFormatter.format(Instant.ofEpochMilli(stepRecord.completedAt()));
+        String completedDate = localizationManager.formatDisplayDate(mcRPGPlayer, stepRecord.completedAt());
 
         ItemBuilder itemBuilder = ItemBuilder.from(localizationManager.getLocalizedSection(
                 mcRPGPlayer, LocalizationKey.QUEST_CHAIN_HISTORY_GUI_STEP_SLOT_DISPLAY_ITEM))

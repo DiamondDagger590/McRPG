@@ -23,6 +23,7 @@ import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
 import us.eunoians.mcrpg.gui.quest.slot.CompletedQuestSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestChainHistorySlot;
+import us.eunoians.mcrpg.gui.quest.slot.QuestHistoryEmptySlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestHistorySortSlot;
 import us.eunoians.mcrpg.gui.slot.McRPGSlot;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
@@ -54,6 +55,11 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
 
     private final Player player;
     private boolean sortAscending = false;
+    /**
+     * Set to {@code true} when the first async load completes. Until then no empty-state
+     * slot is shown because the list being empty only means loading hasn't finished yet.
+     */
+    private boolean loaded = false;
 
     /**
      * Monotonically increasing counter used to discard stale async load results.
@@ -116,6 +122,7 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
                     return;
                 }
                 displayItems = merged;
+                loaded = true;
                 refreshGUI();
             });
         });
@@ -201,6 +208,13 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
 
     private void paintCompletedQuests(int page) {
         List<McRPGSlot> pageSlots = getSlotsForPage(page);
+        if (loaded && displayItems.isEmpty()) {
+            for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
+                removeSlot(i);
+            }
+            setSlot(22, new QuestHistoryEmptySlot());
+            return;
+        }
         for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
             if (i < pageSlots.size()) {
                 setSlot(i, pageSlots.get(i));
