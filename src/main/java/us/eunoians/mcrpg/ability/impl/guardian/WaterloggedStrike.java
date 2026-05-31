@@ -24,14 +24,22 @@ import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.GuardianAbilitiesConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.event.ability.guardian.WaterloggedStrikeActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.ability.guardian.WaterloggedStrikeTrailTask;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.DAMAGE;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.MANA_COST;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.RANGE;
 
 /**
  * Waterlogged Strike fires an invisible water projectile that damages and slows
@@ -104,23 +112,78 @@ public final class WaterloggedStrike extends McRPGAbility
             return false;
         }
 
-        double speed = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_PROJECTILE_SPEED, 1.5);
         Snowball projectile = caster.launchProjectile(Snowball.class,
-                caster.getLocation().getDirection().normalize().multiply(speed));
+                caster.getLocation().getDirection().normalize().multiply(getProjectileSpeed()));
         projectile.setInvisible(true);
         projectile.getPersistentDataContainer().set(
                 PROJECTILE_TAG, PersistentDataType.BOOLEAN, true);
 
-        int maxRange = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_MAX_RANGE, 28);
-        new WaterloggedStrikeTrailTask(getPlugin(), projectile, caster.getLocation(), maxRange)
+        new WaterloggedStrikeTrailTask(getPlugin(), projectile, caster.getLocation(), getMaxRange())
                 .runTask();
 
         caster.getWorld().playSound(caster.getLocation(),
                 Sound.ENTITY_FISHING_BOBBER_THROW, 1.0f, 0.8f);
 
         return true;
+    }
+
+    /**
+     * Gets the projectile launch speed.
+     *
+     * @return The configured projectile speed.
+     */
+    public double getProjectileSpeed() {
+        return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_PROJECTILE_SPEED, 1.5);
+    }
+
+    /**
+     * Gets the damage dealt on impact.
+     *
+     * @return The configured damage value.
+     */
+    public double getDamage() {
+        return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_DAMAGE, 4.0);
+    }
+
+    /**
+     * Gets the maximum projectile range in blocks.
+     *
+     * @return The configured max range.
+     */
+    public int getMaxRange() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_MAX_RANGE, 28);
+    }
+
+    /**
+     * Gets the slowness potion amplifier applied on impact.
+     *
+     * @return The configured slowness amplifier.
+     */
+    public int getSlownessAmplifier() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_SLOWNESS_AMPLIFIER, 0);
+    }
+
+    /**
+     * Gets the slowness effect duration in ticks applied on impact.
+     *
+     * @return The configured slowness duration in ticks.
+     */
+    public int getSlownessDurationTicks() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_SLOWNESS_DURATION_TICKS, 40);
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(DAMAGE.getKey(),
+                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getDamage()));
+        placeholders.put(RANGE.getKey(), Integer.toString(getMaxRange()));
+        placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
+        placeholders.put(MANA_COST.getKey(), Integer.toString(getManaCost(player.asSkillHolder())));
+        return placeholders;
     }
 
     @NotNull

@@ -23,16 +23,24 @@ import us.eunoians.mcrpg.ability.impl.type.configurable.ConfigurableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.GuardianAbilitiesConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.event.ability.guardian.WhirlpoolActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.ability.guardian.WhirlpoolZoneTask;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.ABILITY_DURATION;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.MANA_COST;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.RADIUS;
 
 /**
  * Whirlpool creates a stationary AoE zone at the player's location that pulls nearby
@@ -104,29 +112,91 @@ public final class Whirlpool extends McRPGAbility
             return false;
         }
 
-        double radius = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_RADIUS, 4.0);
-        int durationTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_DURATION_TICKS, 100);
-        double pullVelocity = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_PULL_VELOCITY, 0.1);
-        int slownessAmplifier = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_AMPLIFIER, 0);
-        int slownessDurationTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_DURATION_TICKS, 40);
-        int tickInterval = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_TICK_INTERVAL, 4);
-        int expansionTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.WHIRLPOOL_EXPANSION_TICKS, 40);
-
         UUID casterUUID = caster.getUniqueId();
-        new WhirlpoolZoneTask(getPlugin(), center, radius, pullVelocity,
-                slownessAmplifier, slownessDurationTicks, casterUUID,
-                durationTicks, tickInterval, expansionTicks).runTask();
+        new WhirlpoolZoneTask(getPlugin(), center, getRadius(), getPullVelocity(),
+                getSlownessAmplifier(), getSlownessDurationTicks(), casterUUID,
+                getDurationTicks(), getTickInterval(), getExpansionTicks()).runTask();
 
         caster.getWorld().playSound(center, Sound.ENTITY_FISHING_BOBBER_SPLASH, 1.0f, 0.5f);
 
         return true;
+    }
+
+    /**
+     * Gets the whirlpool zone radius in blocks.
+     *
+     * @return The configured radius.
+     */
+    public double getRadius() {
+        return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.WHIRLPOOL_RADIUS, 4.0);
+    }
+
+    /**
+     * Gets the whirlpool zone duration in ticks.
+     *
+     * @return The configured duration in ticks.
+     */
+    public int getDurationTicks() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WHIRLPOOL_DURATION_TICKS, 100);
+    }
+
+    /**
+     * Gets the velocity magnitude applied when pulling entities toward the center.
+     *
+     * @return The configured pull velocity.
+     */
+    public double getPullVelocity() {
+        return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.WHIRLPOOL_PULL_VELOCITY, 0.1);
+    }
+
+    /**
+     * Gets the slowness potion amplifier applied to entities in the whirlpool.
+     *
+     * @return The configured slowness amplifier.
+     */
+    public int getSlownessAmplifier() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_AMPLIFIER, 0);
+    }
+
+    /**
+     * Gets the slowness effect duration in ticks applied to entities in the whirlpool.
+     *
+     * @return The configured slowness duration in ticks.
+     */
+    public int getSlownessDurationTicks() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_DURATION_TICKS, 40);
+    }
+
+    /**
+     * Gets the tick interval between whirlpool pull/effect applications.
+     *
+     * @return The configured tick interval.
+     */
+    public int getTickInterval() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WHIRLPOOL_TICK_INTERVAL, 4);
+    }
+
+    /**
+     * Gets the number of ticks over which the whirlpool expands to full radius.
+     *
+     * @return The configured expansion duration in ticks.
+     */
+    public int getExpansionTicks() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.WHIRLPOOL_EXPANSION_TICKS, 40);
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(RADIUS.getKey(),
+                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getRadius()));
+        placeholders.put(ABILITY_DURATION.getKey(), Integer.toString(getDurationTicks()));
+        placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
+        placeholders.put(MANA_COST.getKey(), Integer.toString(getManaCost(player.asSkillHolder())));
+        return placeholders;
     }
 
     @NotNull

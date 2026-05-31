@@ -29,17 +29,23 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.GuardianAbilitiesConfigFile;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.CombatTargetState;
-import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.event.ability.MobAbilityTriggerEvent;
 import us.eunoians.mcrpg.event.ability.guardian.PhaseShiftActivateEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.ability.guardian.PhaseShiftCritWindowTask;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.COOLDOWN;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.MANA_COST;
+import static us.eunoians.mcrpg.builder.item.ability.AbilityItemPlaceholderKeys.RANGE;
 
 /**
  * Phase Shift teleports the player behind their last-attacked target, resets the attack
@@ -152,8 +158,7 @@ public final class PhaseShift extends McRPGAbility
             return Optional.empty();
         }
         CombatTargetState state = stateOpt.get();
-        long windowMillis = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_LAST_HIT_WINDOW_SECONDS, 5) * 1000L;
+        long windowMillis = getLastHitWindowSeconds() * 1000L;
         if (!state.hasRecentTarget(System.currentTimeMillis(), windowMillis)) {
             return Optional.empty();
         }
@@ -167,8 +172,7 @@ public final class PhaseShift extends McRPGAbility
             return Optional.empty();
         }
 
-        double maxRange = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_MAX_RANGE, 12.0);
+        double maxRange = getMaxRange();
         if (player.getLocation().distanceSquared(target.getLocation()) > maxRange * maxRange) {
             return Optional.empty();
         }
@@ -185,8 +189,7 @@ public final class PhaseShift extends McRPGAbility
      * @return {@code true} if the teleport succeeded, {@code false} if it was blocked.
      */
     private boolean teleportBehindTarget(@NotNull LivingEntity entity, @NotNull Entity target) {
-        double offset = getYamlDocument().getDouble(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_TELEPORT_OFFSET, 1.5);
+        double offset = getTeleportOffset();
         Location destination = calculateBehindTarget(target, offset);
         if (!isSafeLocation(destination)) {
             destination = target.getLocation().clone();
@@ -209,8 +212,7 @@ public final class PhaseShift extends McRPGAbility
      * @param mcRPGPlayer The McRPG player to grant the crit window to.
      */
     private void grantCritWindow(@NotNull McRPGPlayer mcRPGPlayer) {
-        int critWindowTicks = getYamlDocument().getInt(
-                GuardianAbilitiesConfigFile.PHASE_SHIFT_CRIT_WINDOW_TICKS, 60);
+        int critWindowTicks = getCritWindowTicks();
         mcRPGPlayer.activateCritWindow();
         new PhaseShiftCritWindowTask(getPlugin(), mcRPGPlayer, critWindowTicks).runTask();
     }
@@ -224,6 +226,64 @@ public final class PhaseShift extends McRPGAbility
         spawnTeleportParticles(entity.getLocation());
         entity.getWorld().playSound(entity.getLocation(),
                 Sound.ENTITY_ENDERMAN_TELEPORT, 0.8f, 1.2f);
+    }
+
+    /**
+     * Gets the distance behind the target where the caster teleports.
+     *
+     * @return The configured teleport offset in blocks.
+     */
+    public double getTeleportOffset() {
+        return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.PHASE_SHIFT_TELEPORT_OFFSET, 1.5);
+    }
+
+    /**
+     * Gets the maximum range at which Phase Shift can target an entity.
+     *
+     * @return The configured max range in blocks.
+     */
+    public double getMaxRange() {
+        return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.PHASE_SHIFT_MAX_RANGE, 12.0);
+    }
+
+    /**
+     * Gets the time window in seconds during which a recent attack qualifies for Phase Shift.
+     *
+     * @return The configured last-hit window in seconds.
+     */
+    public int getLastHitWindowSeconds() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.PHASE_SHIFT_LAST_HIT_WINDOW_SECONDS, 5);
+    }
+
+    /**
+     * Gets the duration in ticks of the guaranteed critical hit window after teleporting.
+     *
+     * @return The configured crit window duration in ticks.
+     */
+    public int getCritWindowTicks() {
+        return getYamlDocument().getInt(GuardianAbilitiesConfigFile.PHASE_SHIFT_CRIT_WINDOW_TICKS, 60);
+    }
+
+    /**
+     * Gets the damage multiplier applied during the critical hit window.
+     *
+     * @return The configured crit damage multiplier.
+     */
+    public double getCritDamageMultiplier() {
+        return getYamlDocument().getDouble(GuardianAbilitiesConfigFile.PHASE_SHIFT_CRIT_DAMAGE_MULTIPLIER, 1.5);
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getItemBuilderPlaceholders(@NotNull McRPGPlayer player) {
+        Map<String, String> placeholders = new HashMap<>();
+        placeholders.put(RANGE.getKey(),
+                getPlugin().registryAccess().registry(RegistryKey.MANAGER)
+                        .manager(McRPGManagerKey.LOCALIZATION)
+                        .getDisplayDecimalFormatter().formatDisplayDecimal(player, getMaxRange()));
+        placeholders.put(COOLDOWN.getKey(), Long.toString(getCooldown(player.asSkillHolder())));
+        placeholders.put(MANA_COST.getKey(), Integer.toString(getManaCost(player.asSkillHolder())));
+        return placeholders;
     }
 
     @NotNull
