@@ -19,9 +19,12 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -109,6 +112,52 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
             persistenceService.cleanupPlayer(PLAYER_UUID);
             persistenceService.cleanupPlayer(PLAYER_UUID);
         }, "cleanupPlayer must be safe to call multiple times for the same player");
+    }
+
+    @Test
+    @DisplayName("Given a dirty state with pending advancements, When flushChainStatesSync is called, Then advancement log entries are included in the transaction")
+    void flushChainStatesSync_replaysAdvancements_whenStateHasPending() throws SQLException {
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
+        state.recordAdvancement(QUEST_KEY, 1000L, 1);
+        assertTrue(state.isDirty());
+        assertEquals(1, state.getPendingAdvancements().size());
+
+        QuestChainPlayerData chainData = new QuestChainPlayerData();
+        chainData.putChainState(state);
+
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeUpdate()).thenReturn(1);
+
+        persistenceService.flushChainStatesSync(mockConnection, PLAYER_UUID, chainData);
+
+        // State upsert + completion log = at least 2 prepared statements
+        verify(mockConnection, atLeast(2)).prepareStatement(anyString());
+        verify(mockConnection).prepareStatement(contains("INSERT OR REPLACE INTO mcrpg_quest_chain_completion_log"));
+        assertFalse(state.isDirty(), "Dirty flag should be cleared after successful flush");
+        assertTrue(state.getPendingAdvancements().isEmpty(), "Pending advancements should be cleared after flush");
+    }
+
+    @Test
+    @DisplayName("Given a dirty state with no pending advancements, When flushChainStatesSync is called, Then only state upsert is written")
+    void flushChainStatesSync_writesOnlyState_whenNoPendingAdvancements() throws SQLException {
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
+        assertTrue(state.isDirty());
+        assertTrue(state.getPendingAdvancements().isEmpty());
+
+        QuestChainPlayerData chainData = new QuestChainPlayerData();
+        chainData.putChainState(state);
+
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeUpdate()).thenReturn(1);
+
+        persistenceService.flushChainStatesSync(mockConnection, PLAYER_UUID, chainData);
+
+        verify(mockConnection, never()).prepareStatement(contains("mcrpg_quest_chain_completion_log"));
+        assertFalse(state.isDirty());
     }
 
     @Test

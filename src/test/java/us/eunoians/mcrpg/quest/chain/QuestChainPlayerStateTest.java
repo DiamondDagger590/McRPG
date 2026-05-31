@@ -160,4 +160,54 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertFalse(cleared, "clearDirtyIfCurrent should return false when a newer mutation has occurred");
         assertTrue(state.isDirty(), "State should remain dirty when the snapshot version is stale");
     }
+
+    @Test
+    @DisplayName("Given a new active state, When newActive returns, Then isDirty is true")
+    public void newActive_returnsDirtyState() {
+        var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
+
+        assertTrue(state.isDirty(), "newActive must return a dirty state so fast-quit persists it");
+        assertTrue(state.getDirtyVersion() > 0, "Dirty version must be positive after newActive");
+    }
+
+    @Test
+    @DisplayName("Given a state with no advancements, When recordAdvancement is called, Then getPendingAdvancements returns one entry")
+    public void recordAdvancement_addsEntry_toPendingList() {
+        var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
+        assertTrue(state.getPendingAdvancements().isEmpty());
+
+        state.recordAdvancement(questKeyA, 1000L, 1);
+
+        assertEquals(1, state.getPendingAdvancements().size());
+        var adv = state.getPendingAdvancements().get(0);
+        assertEquals(questKeyA, adv.questKey());
+        assertEquals(1000L, adv.completedAt());
+        assertEquals(1, adv.completionNumber());
+    }
+
+    @Test
+    @DisplayName("Given a state with pending advancements, When clearPendingAdvancements is called, Then list is empty")
+    public void clearPendingAdvancements_removesAllEntries() {
+        var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
+        state.recordAdvancement(questKeyA, 1000L, 1);
+        state.recordAdvancement(questKeyB, 2000L, 1);
+        assertEquals(2, state.getPendingAdvancements().size());
+
+        state.clearPendingAdvancements();
+
+        assertTrue(state.getPendingAdvancements().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Given multiple advancements recorded, When getPendingAdvancements is called, Then entries preserve insertion order")
+    public void recordAdvancement_preservesInsertionOrder() {
+        var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
+        state.recordAdvancement(questKeyA, 1000L, 1);
+        state.recordAdvancement(questKeyB, 2000L, 1);
+
+        var advancements = state.getPendingAdvancements();
+        assertEquals(2, advancements.size());
+        assertEquals(questKeyA, advancements.get(0).questKey());
+        assertEquals(questKeyB, advancements.get(1).questKey());
+    }
 }
