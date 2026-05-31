@@ -11,14 +11,17 @@ import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -232,5 +235,65 @@ public class QuestChainManagerTest extends McRPGBaseTest {
 
         assertNotNull(callbackResult.get(), "Callback must always be called, even on RuntimeException");
         assertFalse(callbackResult.get(), "Callback must receive false when the DAO throws RuntimeException");
+    }
+
+    @Test
+    @DisplayName("Given all steps completed in log, When restartChain is called without force, Then callback receives true and chain is COMPLETED")
+    void restartChain_callbackTrue_whenAllStepsAlreadyCompleted() throws Exception {
+        NamespacedKey sourceKey = new NamespacedKey("mcrpg", "test_source");
+        NamespacedKey triggerKey = new NamespacedKey("mcrpg", "test_trigger");
+        QuestChainStep step1 = QuestChainStep.simple(QUEST_KEY);
+        NamespacedKey questKey2 = new NamespacedKey("mcrpg", "test_quest_2");
+        QuestChainStep step2 = QuestChainStep.simple(questKey2);
+
+        QuestChainDefinition definition = new QuestChainDefinition.Builder(
+                CHAIN_KEY, sourceKey, triggerKey, List.of(step1, step2))
+                .build();
+
+        QuestChainRegistry chainRegistry = RegistryAccess.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_CHAIN);
+        chainRegistry.register(definition);
+
+        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
+        QuestChainPlayerData playerData = new QuestChainPlayerData();
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
+        playerData.putChainState(state);
+        when(mockPlayer.getChainData()).thenReturn(playerData);
+        when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
+
+        McRPGDatabaseManager mockDatabaseManager = mock(McRPGDatabaseManager.class);
+        Database mockDatabase = mock(Database.class);
+        when(mockDatabaseManager.getDatabase()).thenReturn(mockDatabase);
+
+        ThreadPoolExecutor syncExecutor = mock(ThreadPoolExecutor.class);
+        doAnswer(inv -> {
+            ((Runnable) inv.getArgument(0)).run();
+            return mock(Future.class);
+        }).when(syncExecutor).submit(any(Runnable.class));
+        when(mockDatabase.getDatabaseExecutorService()).thenReturn(syncExecutor);
+
+        Connection mockConnection = mock(Connection.class);
+        when(mockDatabase.getConnection()).thenReturn(mockConnection);
+
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+        // Return both quest keys as completed
+        when(mockResultSet.next()).thenReturn(true, true, false);
+        when(mockResultSet.getString("quest_key")).thenReturn(QUEST_KEY.toString(), questKey2.toString());
+        when(mockStatement.executeUpdate()).thenReturn(1);
+
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mockDatabaseManager);
+
+        AtomicReference<Boolean> callbackResult = new AtomicReference<>();
+        chainManager.restartChain(PLAYER_UUID, CHAIN_KEY, false, callbackResult::set);
+
+        server.getScheduler().performTicks(1);
+
+        assertNotNull(callbackResult.get(), "Callback must be invoked");
+        assertTrue(callbackResult.get(), "Callback must receive true when chain completes via restart");
+        assertEquals(QuestChainState.COMPLETED, state.getState(), "State must be COMPLETED after all steps found in log");
     }
 }
