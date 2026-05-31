@@ -34,7 +34,7 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertEquals(questKeyA, state.getCurrentQuestKey().get());
         assertEquals(0, state.getCompletionCount());
         assertFalse(state.getLastCompletedAt().isPresent());
-        assertFalse(state.isDirty());
+        assertTrue(state.isDirty());
     }
 
     @Test

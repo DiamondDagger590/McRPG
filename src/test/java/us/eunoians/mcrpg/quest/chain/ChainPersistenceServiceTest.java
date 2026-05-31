@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.quest.chain;
 
-import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -90,8 +89,7 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
     @Test
     @DisplayName("Given no dirty states, When flushChainStatesSync is called, Then no SQL is executed")
     void flushChainStatesSync_doesNothing_whenNoStatesDirty() throws SQLException {
-        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        // State is fresh — not dirty
+        QuestChainPlayerState state = new QuestChainPlayerState(CHAIN_KEY, QUEST_KEY, QuestChainState.ACTIVE, 0, null);
         assertFalse(state.isDirty());
 
         QuestChainPlayerData chainData = new QuestChainPlayerData();
@@ -101,7 +99,6 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
 
         persistenceService.flushChainStatesSync(mockConnection, PLAYER_UUID, chainData);
 
-        // prepareStatement should never be called if nothing is dirty
         verify(mockConnection, never()).prepareStatement(anyString());
     }
 
