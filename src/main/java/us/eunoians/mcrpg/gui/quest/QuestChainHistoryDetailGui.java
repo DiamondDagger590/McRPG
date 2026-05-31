@@ -156,7 +156,7 @@ public class QuestChainHistoryDetailGui extends McRPGPaginatedGui implements Key
             for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
                 removeSlot(i);
             }
-            setSlot(22, new ChainHistoryLoadingSlot());
+            setSlot(22, new ChainHistoryLoadingSlot(LocalizationKey.QUEST_CHAIN_HISTORY_GUI_LOADING_STATE));
             return;
         }
         if (stepRecords.isEmpty()) {
