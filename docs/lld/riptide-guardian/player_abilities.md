@@ -19,13 +19,14 @@
 7. [Waterlogged Strike](#7-waterlogged-strike)
 8. [Tsunami Wall](#8-tsunami-wall)
 9. [Custom Events](#9-custom-events)
-10. [Unlock Conditions](#10-unlock-conditions)
-11. [Localization Keys](#11-localization-keys)
-12. [Bootstrap Registration](#12-bootstrap-registration)
-13. [Edge Cases & Graceful Degradation](#13-edge-cases--graceful-degradation)
-14. [Test Plan](#14-test-plan)
-15. [File Manifest](#15-file-manifest)
-16. [Future LLD Notes](#16-future-lld-notes)
+10. [Custom Statistics](#10-custom-statistics)
+11. [Unlock Conditions](#11-unlock-conditions)
+12. [Localization Keys](#12-localization-keys)
+13. [Bootstrap Registration](#13-bootstrap-registration)
+14. [Edge Cases & Graceful Degradation](#14-edge-cases--graceful-degradation)
+15. [Test Plan](#15-test-plan)
+16. [File Manifest](#16-file-manifest)
+17. [Future LLD Notes](#17-future-lld-notes)
 
 ---
 
@@ -94,7 +95,7 @@ These abilities use custom mana costs that sit below the standard bucket ranges 
 |---|---|
 | `TierableAbility` | No tiers |
 | `ConfigurableTierableAbility` | No tier-based config routing |
-| `ConfigurableActiveAbility` | Provides tier-formula mana/cooldown resolution; standalone abilities use fixed values |
+| `ConfigurableActiveAbility` | Provides tier-formula mana/cooldown resolution with tier variable; standalone abilities use Parser directly without tier |
 | `ConfigurableSkillAbility` | No parent skill |
 | `SkillAbility` | No parent skill |
 
@@ -120,11 +121,11 @@ These abilities implement `ConfigurableAbility` + `UnlockableAbility` + `ComboAc
 
 **Rationale.** The Riptide Guardian abilities are unlocked by consuming skill books dropped from a mob, not by leveling a skill. Creating a Fishing skill solely to house these abilities would add an empty progression system with no XP source. The abilities stand on their own — they are combat tools earned through gameplay, not skill mastery.
 
-### 3.2 Fixed mana costs and cooldowns (no Parser formulas)
+### 3.2 Parser formulas for mana costs and cooldowns
 
-Since these abilities have no tiers, mana costs and cooldowns are fixed integers read directly from YAML via `getYamlDocument().getInt(route)`. No `Parser` formula evaluation, no `tier` variable, no `all-tiers` / `tier-N` config routing.
+Mana costs and cooldowns are read as strings from YAML via `getYamlDocument().getString(route)` and evaluated through `new Parser(formula).getValue()`, even though current default values are simple integers (e.g. `"40"`). No `tier` variable or `all-tiers` / `tier-N` config routing — these abilities are non-tiered.
 
-**Rationale.** Parser formulas with `tier` variable exist to scale values across T1-T5. With no tiers, the formula degenerates to a constant string (e.g. `"40"`), adding parsing overhead and configuration complexity for no benefit. A plain integer is simpler, faster, and less error-prone for server owners.
+**Rationale.** Using Parser formulas from the start ensures these abilities are forward-compatible with future expansion. If modifiers, scaling, or conditional costs are added later, they can be expressed as formulas in config without touching Java code. Reading a string that happens to be `"40"` and parsing it works identically to `getInt()` in the default case, with zero additional config complexity for server owners.
 
 ### 3.3 Single shared config file
 
@@ -155,6 +156,8 @@ All abilities use water-themed particles (WATER_SPLASH, DRIP_WATER, BUBBLE_POP) 
 Phase Shift requires knowing the player's last-attacked target and when the attack occurred. This state is **session-only, per-player, not persisted**. It lives on `McRPGPlayer` as an optional transient field, similar to `PlayerFishingState`.
 
 **Rationale.** Combat target tracking is a volatile, high-frequency state change that would be wasteful to persist. It resets on logout, death, or world change — exactly the lifecycle of a session field.
+
+> **Backlog:** Create a general-purpose "combat tracker" system (plugin-wide, not guardian-specific) that tracks last-attacked target, last attacker, recent damage events, etc. Once built, Phase Shift should integrate with it instead of maintaining its own `CombatTargetState`. The current `CombatTargetState` implementation is an acceptable interim solution that can be migrated later.
 
 ---
 
@@ -253,11 +256,10 @@ ability-configuration:
     crit-damage-multiplier: 1.5
     # Blocks behind the target to teleport to
     teleport-offset-behind-target: 1.5
-    # Unlock conditions (server-owner-customizable, replaces Java default)
-    # unlock-conditions:
-    #   book-source:
-    #     type: mcrpg:display_hint
-    #     locale-key: ability.unlock-condition.source.riptide-guardian
+    unlock-conditions:
+      book-source:
+        type: mcrpg:display_hint
+        locale-key: ability.unlock-condition.source.riptide-guardian
     display-item:
       name: "<ability-active>Phase Shift"
       lore:
@@ -280,10 +282,10 @@ ability-configuration:
     slowness-duration-ticks: 40
     # Ticks between each pull/slow tick (4 = 5 times per second)
     tick-interval: 4
-    # unlock-conditions:
-    #   book-source:
-    #     type: mcrpg:display_hint
-    #     locale-key: ability.unlock-condition.source.riptide-guardian
+    unlock-conditions:
+      book-source:
+        type: mcrpg:display_hint
+        locale-key: ability.unlock-condition.source.riptide-guardian
     display-item:
       name: "<ability-active>Whirlpool"
       lore:
@@ -304,10 +306,10 @@ ability-configuration:
     slowness-amplifier: 1
     # Duration of slowness effect in ticks
     slowness-duration-ticks: 60
-    # unlock-conditions:
-    #   book-source:
-    #     type: mcrpg:display_hint
-    #     locale-key: ability.unlock-condition.source.riptide-guardian
+    unlock-conditions:
+      book-source:
+        type: mcrpg:display_hint
+        locale-key: ability.unlock-condition.source.riptide-guardian
     display-item:
       name: "<ability-active>Waterlogged Strike"
       lore:
@@ -331,10 +333,10 @@ ability-configuration:
     slowness-duration-ticks: 60
     # Distance in front of the player to spawn the wall
     spawn-distance: 2.0
-    # unlock-conditions:
-    #   book-source:
-    #     type: mcrpg:display_hint
-    #     locale-key: ability.unlock-condition.source.riptide-guardian
+    unlock-conditions:
+      book-source:
+        type: mcrpg:display_hint
+        locale-key: ability.unlock-condition.source.riptide-guardian
     display-item:
       name: "<ability-active>Tsunami Wall"
       lore:
@@ -464,14 +466,18 @@ public final class PhaseShift extends McRPGAbility
 
     @Override
     public int getManaCost(@NotNull AbilityHolder abilityHolder) {
-        int cost = getYamlDocument().getInt(GuardianAbilitiesConfigFile.PHASE_SHIFT_MANA_COST, 40);
+        String formula = getYamlDocument().getString(
+                GuardianAbilitiesConfigFile.PHASE_SHIFT_MANA_COST, "40");
+        int cost = (int) new Parser(formula).getValue();
         int globalMinimum = resolveGlobalMinimumManaCost();
         return Math.max(cost, globalMinimum);
     }
 
     @Override
     public long getCooldown(@NotNull AbilityHolder abilityHolder) {
-        return getYamlDocument().getLong(GuardianAbilitiesConfigFile.PHASE_SHIFT_COOLDOWN, 12L);
+        String formula = getYamlDocument().getString(
+                GuardianAbilitiesConfigFile.PHASE_SHIFT_COOLDOWN, "12");
+        return (long) new Parser(formula).getValue();
     }
 
     @Override
@@ -531,8 +537,8 @@ public final class PhaseShift extends McRPGAbility
         destination.setYaw(calculateFacingYaw(destination, target.getLocation()));
         destination.setPitch(0);
 
-        // Teleport
-        player.teleport(destination);
+        // Teleport (async via Paper API)
+        player.teleportAsync(destination);
 
         // Reset attack timer
         player.resetCooldown();
@@ -550,12 +556,8 @@ public final class PhaseShift extends McRPGAbility
         return true;
     }
 
-    @Override
-    @NotNull
-    public List<UnlockConditionType> getDefaultUnlockConditions() {
-        return List.of(new DisplayHintUnlockConditionType(
-                Route.fromString("ability.unlock-condition.source.riptide-guardian")));
-    }
+    // Unlock conditions are config-driven (loaded from YAML unlock-conditions section),
+    // not hardcoded in Java. See Section 10.
 
     // ... config routes, display item, enabled check, helper methods ...
 }
@@ -563,10 +565,10 @@ public final class PhaseShift extends McRPGAbility
 
 ### 5.5 Phase Shift Crit Window
 
-The crit window is tracked via a scheduled task. When Phase Shift activates:
+The crit window is tracked via a specialized `CoreTask`. When Phase Shift activates:
 
 1. A `NamespacedKey`-tagged metadata entry is placed on the `McRPGPlayer` marking the crit window as active.
-2. A `BukkitRunnable` is scheduled to remove the tag after `crit-window-ticks` ticks.
+2. A `PhaseShiftCritWindowTask` (extends `DelayableCoreTask`) is scheduled to remove the tag after `crit-window-ticks` ticks.
 3. A damage listener (`OnPhaseShiftCritListener`) checks for the tag on `EntityDamageByEntityEvent`. If present:
    - Multiplies damage by `crit-damage-multiplier` (default 1.5x)
    - Removes the tag (one-time crit, not sustained)
@@ -685,12 +687,12 @@ public final class Whirlpool extends McRPGAbility
         int tickInterval = getYamlDocument().getInt(
                 GuardianAbilitiesConfigFile.WHIRLPOOL_TICK_INTERVAL, 4);
 
-        // Schedule repeating task for zone effects
+        // Schedule repeating CoreTask for zone effects
         UUID casterUUID = player.getUniqueId();
-        new WhirlpoolZoneTask(center, radius, pullVelocity,
+        WhirlpoolZoneTask task = new WhirlpoolZoneTask(center, radius, pullVelocity,
                 slownessAmplifier, slownessDurationTicks,
-                casterUUID, durationTicks)
-                .runTaskTimer(getPlugin(), 0L, tickInterval);
+                casterUUID, durationTicks);
+        task.scheduleRepeating(getPlugin(), 0L, tickInterval);
 
         // Spawn sound
         player.getWorld().playSound(center, Sound.ENTITY_FISHING_BOBBER_SPLASH, 1.0f, 0.5f);
@@ -704,9 +706,9 @@ public final class Whirlpool extends McRPGAbility
 
 **New file:** `src/main/java/us/eunoians/mcrpg/ability/impl/guardian/WhirlpoolZoneTask.java`
 
-A `BukkitRunnable` that ticks the whirlpool zone. Each tick:
+A specialized `CoreTask` (extends McCore's `CoreTask`) that ticks the whirlpool zone. Each tick:
 
-1. Find all `LivingEntity` within `radius` of `center`, excluding the caster.
+1. Find all `LivingEntity` within `radius` of `center`, excluding the caster and allies (via `isAllies` check).
 2. For each entity: calculate direction vector from entity to center, normalize, multiply by `pullVelocity`, apply as velocity.
 3. Apply Slowness potion effect.
 4. Spawn water particles in a spiral pattern at the zone boundary.
@@ -728,6 +730,10 @@ public void run() {
             continue;
         }
         if (entity.getUniqueId().equals(casterUUID)) {
+            continue;
+        }
+        // Skip allies (party members, etc.)
+        if (entity instanceof Player targetPlayer && isAllies(casterUUID, targetPlayer)) {
             continue;
         }
         double distSq = entity.getLocation().distanceSquared(center);
@@ -776,7 +782,7 @@ private void spawnWhirlpoolParticles(@NotNull Location center, double radius, in
 
 ### 7.1 Ability Summary
 
-Fire a physical projectile entity (snowball with custom metadata) in the player's look direction. On impact with a `LivingEntity`, deal 1.5 hearts (3 half-hearts) of damage and apply Slowness II for 3 seconds. Max range ~28 blocks. Projectile has a DRIPPING_WATER particle trail.
+Fire an invisible projectile entity (snowball with custom metadata, set invisible via `setInvisible(true)`) in the player's look direction. The projectile is represented visually by a dense particle trail (DRIPPING_WATER + SPLASH) rather than the snowball model. On impact with a `LivingEntity`, deal 1.5 hearts (3 half-hearts) of damage and apply Slowness II for 3 seconds. Max range ~28 blocks.
 
 ### 7.2 Waterlogged Strike Ability Class
 
@@ -816,14 +822,16 @@ public final class WaterloggedStrike extends McRPGAbility
                 GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_PROJECTILE_SPEED, 1.5);
         Snowball projectile = player.launchProjectile(Snowball.class,
                 player.getLocation().getDirection().normalize().multiply(speed));
+        projectile.setInvisible(true);
         projectile.getPersistentDataContainer().set(
                 PROJECTILE_TAG, PersistentDataType.BOOLEAN, true);
 
         // Schedule particle trail + range limit
         int maxRange = getYamlDocument().getInt(
                 GuardianAbilitiesConfigFile.WATERLOGGED_STRIKE_MAX_RANGE, 28);
-        new WaterloggedStrikeTrailTask(projectile, player.getLocation(), maxRange)
-                .runTaskTimer(getPlugin(), 1L, 1L);
+        WaterloggedStrikeTrailTask trailTask = new WaterloggedStrikeTrailTask(
+                projectile, player.getLocation(), maxRange);
+        trailTask.scheduleRepeating(getPlugin(), 1L, 1L);
 
         // Launch sound
         player.getWorld().playSound(player.getLocation(),
@@ -878,7 +886,7 @@ public void onProjectileHit(@NotNull ProjectileHitEvent event) {
 
 **New file:** `src/main/java/us/eunoians/mcrpg/ability/impl/guardian/WaterloggedStrikeTrailTask.java`
 
-Spawns DRIPPING_WATER particles along the projectile path each tick. Cancels when the projectile is dead, on the ground, or has exceeded `maxRange` from the origin.
+A specialized `CoreTask` that spawns dense water particles along the invisible projectile's path each tick, making the projectile visually distinct. Cancels when the projectile is dead, on the ground, or has exceeded `maxRange` from the origin.
 
 ```java
 @Override
@@ -889,8 +897,10 @@ public void run() {
         cancel();
         return;
     }
-    projectile.getWorld().spawnParticle(Particle.DRIPPING_WATER,
-            projectile.getLocation(), 3, 0.05, 0.05, 0.05, 0);
+    Location loc = projectile.getLocation();
+    // Dense particle trail to represent the invisible projectile
+    loc.getWorld().spawnParticle(Particle.DRIPPING_WATER, loc, 8, 0.1, 0.1, 0.1, 0);
+    loc.getWorld().spawnParticle(Particle.SPLASH, loc, 4, 0.05, 0.05, 0.05, 0);
 }
 ```
 
@@ -955,10 +965,10 @@ public final class TsunamiWall extends McRPGAbility
         Vector wallRight = new Vector(-forward.getZ(), 0, forward.getX()).normalize();
 
         UUID casterUUID = player.getUniqueId();
-        new TsunamiWallTask(wallCenter, wallRight, width, height,
+        TsunamiWallTask task = new TsunamiWallTask(wallCenter, wallRight, width, height,
                 knockbackStrength, slownessAmplifier, slownessDurationTicks,
-                forward, casterUUID, durationTicks)
-                .runTaskTimer(getPlugin(), 0L, 2L);
+                forward, casterUUID, durationTicks);
+        task.scheduleRepeating(getPlugin(), 0L, 2L);
 
         // Spawn sound
         player.getWorld().playSound(wallCenter,
@@ -973,7 +983,7 @@ public final class TsunamiWall extends McRPGAbility
 
 **New file:** `src/main/java/us/eunoians/mcrpg/ability/impl/guardian/TsunamiWallTask.java`
 
-A `BukkitRunnable` that maintains the wall. Each tick (every 2 ticks):
+A specialized `CoreTask` that maintains the wall. Each tick (every 2 ticks):
 
 1. Render particles along the wall surface (grid of WATER_SPLASH + ENCHANTED_HIT).
 2. Check for entities intersecting the wall AABB.
@@ -1011,6 +1021,10 @@ public void run() {
         if (entity.getUniqueId().equals(casterUUID)) {
             continue;
         }
+        // Skip allies (party members, etc.)
+        if (entity instanceof Player targetPlayer && isAllies(casterUUID, targetPlayer)) {
+            continue;
+        }
         if (isInWallBounds(entity.getLocation())) {
             // Knockback away from wall (in the forward direction)
             living.setVelocity(forward.clone().normalize().multiply(knockbackStrength)
@@ -1043,20 +1057,14 @@ private boolean isInWallBounds(@NotNull Location entityLoc) {
 
 ## 9. Custom Events
 
-All four abilities fire a cancellable custom event before applying their effect. If cancelled, `comboActivate` returns `false` and mana is refunded by `OnComboCompleteListener`.
+Guardian abilities fire two categories of cancellable custom events:
 
-### 9.1 Event Classes
+1. **Activation events** — fired before the ability applies its effect. If cancelled, `comboActivate` returns `false` and mana is refunded by `OnComboCompleteListener`.
+2. **Effect events** — fired when an ability deals damage or applies effects to a target. If cancelled, the specific damage/effect is skipped but the ability activation is not reverted.
+
+### 9.1 Base Event Class
 
 **New package:** `src/main/java/us/eunoians/mcrpg/event/ability/guardian/`
-
-| Event | Extends | Extra Fields |
-|---|---|---|
-| `PhaseShiftActivateEvent` | `AbilityActivateEvent` | `Entity target` |
-| `WhirlpoolActivateEvent` | `AbilityActivateEvent` | `Location center` |
-| `WaterloggedStrikeActivateEvent` | `AbilityActivateEvent` | — |
-| `TsunamiWallActivateEvent` | `AbilityActivateEvent` | `Location wallCenter` |
-
-All extend a base `AbilityActivateEvent`:
 
 ```java
 package us.eunoians.mcrpg.event.ability.guardian;
@@ -1096,7 +1104,14 @@ public abstract class AbilityActivateEvent extends McRPGPlayerEvent implements C
 }
 ```
 
-### 9.2 PhaseShiftActivateEvent
+### 9.2 Activation Events
+
+| Event | Extends | Extra Fields |
+|---|---|---|
+| `PhaseShiftActivateEvent` | `AbilityActivateEvent` | `Entity target` |
+| `WhirlpoolActivateEvent` | `AbilityActivateEvent` | `Location center` |
+| `WaterloggedStrikeActivateEvent` | `AbilityActivateEvent` | — |
+| `TsunamiWallActivateEvent` | `AbilityActivateEvent` | `Location wallCenter` |
 
 ```java
 public class PhaseShiftActivateEvent extends AbilityActivateEvent {
@@ -1123,22 +1138,121 @@ public class PhaseShiftActivateEvent extends AbilityActivateEvent {
 
 `WhirlpoolActivateEvent`, `WaterloggedStrikeActivateEvent`, and `TsunamiWallActivateEvent` follow the same pattern with their respective extra fields.
 
+### 9.3 Effect Events
+
+These events are fired when an ability applies damage or effects to a specific target. They are cancellable — cancelling prevents the damage/effect from being applied to that target without reverting the ability activation itself. Third-party plugins can listen to these events to modify, log, or cancel specific interactions.
+
+| Event | Extends | Extra Fields | Fired When |
+|---|---|---|---|
+| `PhaseShiftCritDamageEvent` | `McRPGPlayerEvent` | `Entity target`, `double originalDamage`, `double critDamage`, `double multiplier` | Crit window consumed and damage multiplied |
+| `WhirlpoolPullEvent` | `McRPGPlayerEvent` | `LivingEntity target`, `Location center`, `Vector pullVector` | Entity pulled toward whirlpool center |
+| `WaterloggedStrikeImpactEvent` | `McRPGPlayerEvent` | `LivingEntity target`, `double damage`, `int slownessAmplifier`, `int slownessDurationTicks` | Projectile hits a living entity |
+| `TsunamiWallContactEvent` | `McRPGPlayerEvent` | `LivingEntity target`, `Vector knockbackVector`, `int slownessAmplifier`, `int slownessDurationTicks` | Entity contacts the wall |
+
+All effect events implement `Cancellable`. Example:
+
+```java
+public class WhirlpoolPullEvent extends McRPGPlayerEvent implements Cancellable {
+
+    private static final HandlerList handlers = new HandlerList();
+    private final LivingEntity target;
+    private final Location center;
+    private Vector pullVector;
+    private boolean cancelled;
+
+    public WhirlpoolPullEvent(@NotNull Player caster, @NotNull LivingEntity target,
+                               @NotNull Location center, @NotNull Vector pullVector) {
+        super(caster);
+        this.target = target;
+        this.center = center;
+        this.pullVector = pullVector;
+    }
+
+    @NotNull public LivingEntity getTarget() { return target; }
+    @NotNull public Location getCenter() { return center; }
+    @NotNull public Vector getPullVector() { return pullVector; }
+    public void setPullVector(@NotNull Vector pullVector) { this.pullVector = pullVector; }
+
+    @Override public boolean isCancelled() { return cancelled; }
+    @Override public void setCancelled(boolean cancel) { this.cancelled = cancel; }
+    @Override @NotNull public HandlerList getHandlers() { return handlers; }
+    @NotNull public static HandlerList getHandlerList() { return handlers; }
+}
+```
+
+**Integration points:**
+
+- `OnPhaseShiftCritListener`: fires `PhaseShiftCritDamageEvent` before applying the multiplied damage. If cancelled, damage is not modified and the crit window is still consumed.
+- `WhirlpoolZoneTask`: fires `WhirlpoolPullEvent` before applying velocity/slowness to each entity. If cancelled, that entity is skipped for that tick.
+- `OnWaterloggedStrikeImpactListener`: fires `WaterloggedStrikeImpactEvent` before applying damage/slowness. If cancelled, no damage or slowness applied.
+- `TsunamiWallTask`: fires `TsunamiWallContactEvent` before applying knockback/slowness. If cancelled, that entity is unaffected.
+
 ---
 
-## 10. Unlock Conditions
+## 10. Custom Statistics
 
-All four abilities use `DisplayHintUnlockConditionType` with a `locale-key` pointing to a translatable "Obtain from Riptide Guardian" string. Books bypass conditions entirely — `SkillBookConsumeListener` sets `AbilityUnlockedAttribute` directly.
+Each guardian ability tracks per-player statistics via `McRPGStatistic`. These statistics persist across sessions and are designed to feed into quest objectives, achievements, and leaderboards.
 
-### 10.1 Java Default
+### 10.1 Statistic Keys
 
-Each ability's `getDefaultUnlockConditions()`:
+| Statistic Key | Type | Description |
+|---|---|---|
+| `mcrpg:phase_shift_activations` | Counter | Total Phase Shift activations |
+| `mcrpg:phase_shift_crit_damage_dealt` | Accumulator | Total bonus crit damage dealt via Phase Shift |
+| `mcrpg:phase_shift_distance_teleported` | Accumulator | Total blocks teleported via Phase Shift |
+| `mcrpg:whirlpool_activations` | Counter | Total Whirlpool activations |
+| `mcrpg:whirlpool_total_pull_distance` | Accumulator | Total meters entities were pulled toward center |
+| `mcrpg:whirlpool_entities_affected` | Counter | Total unique entities affected by Whirlpool |
+| `mcrpg:waterlogged_strike_activations` | Counter | Total Waterlogged Strike activations |
+| `mcrpg:waterlogged_strike_hits` | Counter | Total successful projectile hits |
+| `mcrpg:waterlogged_strike_damage_dealt` | Accumulator | Total damage dealt by Waterlogged Strike impacts |
+| `mcrpg:tsunami_wall_activations` | Counter | Total Tsunami Wall activations |
+| `mcrpg:tsunami_wall_entities_knocked` | Counter | Total entities knocked back by Tsunami Wall |
+| `mcrpg:tsunami_wall_damage_blocked` | Accumulator | Total knockback force applied (proxy for "area denied") |
+
+### 10.2 Statistic Registration
+
+**Modified file:** `src/main/java/us/eunoians/mcrpg/statistic/McRPGStatistic.java`
+
+Add static `NamespacedKey` constants for each guardian ability statistic. Register in `McRPGExpansion` alongside ability registration.
+
+### 10.3 Statistic Increment Points
+
+| Ability | Increment Location |
+|---|---|
+| Phase Shift | `comboActivate` increments activation + distance; `OnPhaseShiftCritListener` increments crit damage |
+| Whirlpool | `comboActivate` increments activation; `WhirlpoolZoneTask` increments pull distance + entities affected |
+| Waterlogged Strike | `comboActivate` increments activation; `OnWaterloggedStrikeImpactListener` increments hits + damage |
+| Tsunami Wall | `comboActivate` increments activation; `TsunamiWallTask` increments entities knocked + force applied |
+
+### 10.4 Quest/Achievement Integration
+
+These statistics use the existing `McRPGStatistic` system, which is already queryable by the quest framework. Example quest objectives that become possible:
+
+- "Pull 500 total meters with Whirlpool"
+- "Land 100 Waterlogged Strike hits"
+- "Teleport 1000 blocks with Phase Shift"
+- "Knock back 200 entities with Tsunami Wall"
+
+---
+
+## 11. Unlock Conditions
+
+All four abilities use config-driven unlock conditions defined in `guardian_abilities_configuration.yml`. The default config uses `DisplayHintUnlockConditionType` with a `locale-key` pointing to a translatable "Obtain from Riptide Guardian" string. Books bypass conditions entirely — `SkillBookConsumeListener` sets `AbilityUnlockedAttribute` directly.
+
+### 10.1 Config-Driven (No Java Default)
+
+Unlock conditions are **not hardcoded** in `getDefaultUnlockConditions()`. Instead, each ability reads its unlock conditions from the `unlock-conditions` section in the YAML config. This allows server owners full control without needing to override Java defaults.
+
+Each ability's unlock condition loading:
 
 ```java
 @Override
 @NotNull
 public List<UnlockConditionType> getDefaultUnlockConditions() {
-    return List.of(new DisplayHintUnlockConditionType(
-            Route.fromString("ability.unlock-condition.source.riptide-guardian")));
+    // Loaded from config YAML unlock-conditions section, not hardcoded
+    return loadUnlockConditionsFromConfig(
+            GuardianAbilitiesConfigFile.PHASE_SHIFT_UNLOCK_CONDITIONS);
 }
 ```
 
@@ -1153,9 +1267,9 @@ ability:
       riptide-guardian: "<body>Obtain from <primary>Riptide Guardian"
 ```
 
-### 10.3 Config Override
+### 10.3 Server Owner Customization
 
-Server owners can customize unlock display per-ability in `guardian_abilities_configuration.yml`:
+Server owners can add, remove, or modify unlock display entries per-ability directly in `guardian_abilities_configuration.yml`:
 
 ```yaml
 phase-shift:
@@ -1170,9 +1284,9 @@ phase-shift:
 
 ---
 
-## 11. Localization Keys
+## 12. Localization Keys
 
-### 11.1 LocalizationKey.java Additions
+### 12.1 LocalizationKey.java Additions
 
 **Modified file:** `configuration/file/localization/LocalizationKey.java`
 
@@ -1193,7 +1307,7 @@ public static final Route TSUNAMI_WALL_ACTIVATED =
         Route.fromString(toRoutePath(GUARDIAN_ABILITY_HEADER, "tsunami-wall.activated"));
 ```
 
-### 11.2 en_abilities.yml Additions
+### 12.2 en_abilities.yml Additions
 
 ```yaml
   guardian:
@@ -1209,7 +1323,7 @@ public static final Route TSUNAMI_WALL_ACTIVATED =
       activated: "<positive>Tsunami Wall deployed!"
 ```
 
-### 11.3 Unlock Condition Source Entry
+### 12.3 Unlock Condition Source Entry
 
 ```yaml
   unlock-condition:
@@ -1219,9 +1333,9 @@ public static final Route TSUNAMI_WALL_ACTIVATED =
 
 ---
 
-## 12. Bootstrap Registration
+## 13. Bootstrap Registration
 
-### 12.1 McRPGExpansion
+### 13.1 McRPGExpansion
 
 **Modified file:** `src/main/java/us/eunoians/mcrpg/expansion/McRPGExpansion.java`
 
@@ -1235,7 +1349,7 @@ abilityContent.addContent(new WaterloggedStrike(mcRPG));
 abilityContent.addContent(new TsunamiWall(mcRPG));
 ```
 
-### 12.2 FileType
+### 13.2 FileType
 
 **Modified file:** `src/main/java/us/eunoians/mcrpg/configuration/FileType.java`
 
@@ -1243,7 +1357,7 @@ abilityContent.addContent(new TsunamiWall(mcRPG));
 GUARDIAN_ABILITIES_CONFIG("guardian_abilities_configuration.yml", new GuardianAbilitiesConfigFile())
 ```
 
-### 12.3 Listener Registration
+### 13.3 Listener Registration
 
 **Modified file:** `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java`
 
@@ -1256,7 +1370,7 @@ Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener()
 
 ---
 
-## 13. Edge Cases & Graceful Degradation
+## 14. Edge Cases & Graceful Degradation
 
 | Scenario | Behavior |
 |---|---|
@@ -1269,16 +1383,16 @@ Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener()
 | Waterlogged Strike exceeds max range | Trail task removes projectile and cancels |
 | Tsunami Wall chunk unloads | Wall task cancels on next tick (chunk loaded check) |
 | Tsunami Wall placed in mid-air | Wall renders at the placement location; entities below wall are unaffected (height check) |
-| Player logs out during active zone/wall | BukkitRunnable continues until duration expires; UUID exclusion prevents ghost interactions |
+| Player logs out during active zone/wall | CoreTask continues until duration expires; UUID exclusion prevents ghost interactions |
 | Ability disabled in config | `isAbilityEnabled()` returns false → cannot be slotted in loadout |
-| Server restart during active zone/wall | All BukkitRunnable tasks are cancelled by Bukkit on shutdown |
+| Server restart during active zone/wall | All CoreTask tasks are cancelled by Bukkit on shutdown |
 | Player attacks themselves (self-damage) | `EntityDamageByEntityEvent` with self as damager and target — combat target state records self UUID, but teleporting behind self is a no-op |
 
 ---
 
-## 14. Test Plan
+## 15. Test Plan
 
-### 14.1 Unit Tests (`src/test/java`)
+### 15.1 Unit Tests (`src/test/java`)
 
 | Test Class | Coverage |
 |---|---|
@@ -1286,7 +1400,7 @@ Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener()
 | `PhaseShiftTeleportCalculationTest` | `calculateBehindTarget` places destination behind target facing direction; `calculateFacingYaw` faces the target; `isSafeLocation` rejects solid blocks, accepts passable |
 | `GuardianAbilitiesConfigFileTest` | All Route constants resolve to valid YAML paths in the bundled config file |
 
-### 14.2 MockBukkit Tests (extend `McRPGBaseTest`)
+### 15.2 MockBukkit Tests (extend `McRPGBaseTest`)
 
 | Test Class | Coverage |
 |---|---|
@@ -1297,7 +1411,7 @@ Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener()
 | `OnPhaseShiftCritListenerTest` | Crit window active: damage multiplied on next attack, window consumed. No crit window: no modification |
 | `OnWaterloggedStrikeImpactListenerTest` | Tagged snowball hitting entity: damage + slowness. Untagged snowball: no effect. Non-entity hit: no effect |
 
-### 14.3 Manual Testing (Paper Server)
+### 15.3 Manual Testing (Paper Server)
 
 | Scenario | Verification |
 |---|---|
@@ -1314,7 +1428,7 @@ Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener()
 
 ---
 
-## 15. File Manifest
+## 16. File Manifest
 
 ### New Files
 
@@ -1327,12 +1441,17 @@ Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener()
 | `ability/impl/guardian/WhirlpoolZoneTask.java` | Task | Whirlpool repeating zone logic |
 | `ability/impl/guardian/WaterloggedStrikeTrailTask.java` | Task | Projectile trail + range enforcement |
 | `ability/impl/guardian/TsunamiWallTask.java` | Task | Wall rendering + contact detection |
+| `ability/impl/guardian/PhaseShiftCritWindowTask.java` | Task | Crit window expiration (extends DelayableCoreTask) |
 | `entity/player/CombatTargetState.java` | State | Per-player last-attacked target tracking |
 | `event/ability/guardian/AbilityActivateEvent.java` | Event | Base cancellable event for guardian abilities |
 | `event/ability/guardian/PhaseShiftActivateEvent.java` | Event | Phase Shift activation event |
 | `event/ability/guardian/WhirlpoolActivateEvent.java` | Event | Whirlpool activation event |
 | `event/ability/guardian/WaterloggedStrikeActivateEvent.java` | Event | Waterlogged Strike activation event |
 | `event/ability/guardian/TsunamiWallActivateEvent.java` | Event | Tsunami Wall activation event |
+| `event/ability/guardian/PhaseShiftCritDamageEvent.java` | Event | Crit damage effect event |
+| `event/ability/guardian/WhirlpoolPullEvent.java` | Event | Whirlpool pull effect event |
+| `event/ability/guardian/WaterloggedStrikeImpactEvent.java` | Event | Projectile impact effect event |
+| `event/ability/guardian/TsunamiWallContactEvent.java` | Event | Wall contact effect event |
 | `listener/entity/OnPlayerAttackCombatTargetListener.java` | Listener | Records last-attacked target for Phase Shift |
 | `listener/ability/guardian/OnPhaseShiftCritListener.java` | Listener | Applies crit damage during crit window |
 | `listener/ability/guardian/OnWaterloggedStrikeImpactListener.java` | Listener | Handles projectile impact damage + effects |
@@ -1351,6 +1470,7 @@ All Java files under `src/main/java/us/eunoians/mcrpg/`.
 | `bootstrap/McRPGListenerRegistrar.java` | Register combat target, crit, and impact listeners |
 | `configuration/file/localization/LocalizationKey.java` | Add guardian ability locale route constants |
 | `src/main/resources/localization/english/en_abilities.yml` | Add `ability.guardian.*` messages + `ability.unlock-condition.source.riptide-guardian` |
+| `statistic/McRPGStatistic.java` | Add guardian ability statistic key constants |
 
 ### Not Modified (Used As-Is)
 
@@ -1365,10 +1485,10 @@ All Java files under `src/main/java/us/eunoians/mcrpg/`.
 
 ---
 
-## 16. Future LLD Notes
+## 17. Future LLD Notes
 
 - **Fishing skill integration.** If a Fishing skill is added, these abilities could optionally be re-parented to it by implementing `SkillAbility` and adding skill-level unlock conditions alongside the book source. The `UnlockConditionType` system already supports OR-combining multiple paths.
-- **Tier system.** If tiers are added later, migrate from `ConfigurableAbility` + fixed costs to `ConfigurableTierableAbility` + Parser formulas. The config structure would gain `tier-configuration` sections.
+- **Tier system.** If tiers are added later, migrate from `ConfigurableAbility` to `ConfigurableTierableAbility` with tier-variable Parser formulas. The config structure would gain `tier-configuration` sections. Current Parser formula support makes this migration straightforward.
 - **PvP split tuning.** Add `pvp-damage-multiplier` and `pvp-slowness-amplifier` config keys per ability. The damage/effect application code checks `target instanceof Player` and applies the multiplier.
-- **Phase Shift wall-clip prevention.** Advanced teleport destination validation (Paper's `Player.teleportAsync` with collision checking) could replace the basic `isSafeLocation` check.
-- **Whirlpool stacking prevention.** Add a max-active-whirlpools-per-player config and UUID-based tracking to prevent zone spam.
+- **Phase Shift wall-clip prevention.** Advanced teleport destination validation with collision checking could supplement the basic `isSafeLocation` check.
+- **General combat tracker.** Replace `CombatTargetState` with a plugin-wide combat tracker system (see Section 3.7 backlog note).
