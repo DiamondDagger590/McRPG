@@ -92,7 +92,9 @@ public final class PhaseShift extends McRPGAbility
             return false;
         }
 
-        teleportBehindTarget(caster, target);
+        if (!teleportBehindTarget(caster, target)) {
+            return false;
+        }
         playTeleportEffects(caster);
 
         return true;
@@ -126,7 +128,9 @@ public final class PhaseShift extends McRPGAbility
             return false;
         }
 
-        teleportBehindTarget(player, target);
+        if (!teleportBehindTarget(player, target)) {
+            return false;
+        }
         grantCritWindow(mcRPGPlayer);
         playTeleportEffects(player);
 
@@ -174,12 +178,13 @@ public final class PhaseShift extends McRPGAbility
 
     /**
      * Teleports the entity behind the target, facing toward it. If the entity is a
-     * {@link Player}, the attack cooldown is also reset.
+     * {@link Player}, the attack cooldown is also reset upon successful teleport.
      *
      * @param entity The entity to teleport.
      * @param target The target entity to teleport behind.
+     * @return {@code true} if the teleport succeeded, {@code false} if it was blocked.
      */
-    private void teleportBehindTarget(@NotNull LivingEntity entity, @NotNull Entity target) {
+    private boolean teleportBehindTarget(@NotNull LivingEntity entity, @NotNull Entity target) {
         double offset = getYamlDocument().getDouble(
                 GuardianAbilitiesConfigFile.PHASE_SHIFT_TELEPORT_OFFSET, 1.5);
         Location destination = calculateBehindTarget(target, offset);
@@ -189,10 +194,13 @@ public final class PhaseShift extends McRPGAbility
         destination.setYaw(calculateFacingYaw(destination, target.getLocation()));
         destination.setPitch(0);
 
-        entity.teleportAsync(destination);
+        if (!entity.teleport(destination)) {
+            return false;
+        }
         if (entity instanceof Player player) {
             player.resetCooldown();
         }
+        return true;
     }
 
     /**
