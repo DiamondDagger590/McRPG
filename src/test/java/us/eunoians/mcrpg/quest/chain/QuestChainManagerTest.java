@@ -26,6 +26,8 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
+import us.eunoians.mcrpg.quest.chain.QuestChainPlayerState.PendingAdvancement;
+import static org.mockito.Mockito.spy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -295,5 +297,98 @@ public class QuestChainManagerTest extends McRPGBaseTest {
         assertNotNull(callbackResult.get(), "Callback must be invoked");
         assertTrue(callbackResult.get(), "Callback must receive true when chain completes via restart");
         assertEquals(QuestChainState.COMPLETED, state.getState(), "State must be COMPLETED after all steps found in log");
+    }
+
+    @Test
+    @DisplayName("Given advanceChain where next step quest definition is missing, When advanceChain is called, Then completed step is recorded as pending advancement")
+    void advanceChain_recordsAdvancement_whenStartStepQuestFails() throws Exception {
+        NamespacedKey sourceKey = new NamespacedKey("mcrpg", "test_source");
+        NamespacedKey triggerKey = new NamespacedKey("mcrpg", "test_trigger");
+        NamespacedKey nextQuestKey = new NamespacedKey("mcrpg", "next_quest_adv");
+        QuestChainStep step1 = QuestChainStep.simple(QUEST_KEY);
+        QuestChainStep step2 = QuestChainStep.simple(nextQuestKey);
+
+        QuestChainDefinition definition = new QuestChainDefinition.Builder(
+                CHAIN_KEY, sourceKey, triggerKey, List.of(step1, step2))
+                .build();
+
+        QuestChainRegistry chainRegistry = RegistryAccess.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_CHAIN);
+        chainRegistry.register(definition);
+
+        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
+        QuestChainPlayerData playerData = new QuestChainPlayerData();
+        // Spy on the state to capture the drain call from saveChainStateAsync.
+        // saveChainStateAsync calls drainPendingAdvancements(), which clears the list.
+        // Without the spy, getPendingAdvancements() would be empty after advanceChain returns.
+        QuestChainPlayerState realState = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
+        QuestChainPlayerState state = spy(realState);
+        AtomicReference<List<PendingAdvancement>> capturedDrain = new AtomicReference<>();
+        doAnswer(inv -> {
+            List<PendingAdvancement> result = (List<PendingAdvancement>) inv.callRealMethod();
+            capturedDrain.set(result);
+            return result;
+        }).when(state).drainPendingAdvancements();
+        playerData.putChainState(state);
+        when(mockPlayer.getChainData()).thenReturn(playerData);
+        when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
+
+        // Provide a database manager so that saveChainStateAsync does not NPE when resolving
+        // the executor. The async execute() call is a no-op on the mock executor, but the
+        // drain happens on the calling thread before the task is submitted.
+        McRPGDatabaseManager mockDatabaseManager = mock(McRPGDatabaseManager.class);
+        Database mockDatabase = mock(Database.class);
+        when(mockDatabaseManager.getDatabase()).thenReturn(mockDatabase);
+        ThreadPoolExecutor syncExecutor = mock(ThreadPoolExecutor.class);
+        when(mockDatabase.getDatabaseExecutorService()).thenReturn(syncExecutor);
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mockDatabaseManager);
+
+        // nextQuestKey is not registered in QuestDefinitionRegistry, so startStepQuest returns false
+        boolean result = chainManager.advanceChain(PLAYER_UUID, QUEST_KEY);
+
+        assertFalse(result, "advanceChain should return false when next step cannot start");
+        assertNotNull(capturedDrain.get(),
+                "drainPendingAdvancements must have been called (saveChainStateAsync was invoked)");
+        assertEquals(1, capturedDrain.get().size(),
+                "Completed step should be included in the drain snapshot even when next step fails to start");
+        assertEquals(QUEST_KEY, capturedDrain.get().get(0).questKey(),
+                "The drained advancement should be for the completed quest key");
+    }
+
+    @Test
+    @DisplayName("Given restartChain force=true where no online player exists, When restartChain is called, Then callback receives false and chain state is unchanged")
+    void restartChain_callbackFalse_andStateUnchanged_whenPlayerOfflineDuringForce() {
+        // No online player — Bukkit.getPlayer returns null, so startStepForPlayer short-circuits
+        NamespacedKey sourceKey = new NamespacedKey("mcrpg", "test_source2");
+        NamespacedKey triggerKey = new NamespacedKey("mcrpg", "test_trigger2");
+        NamespacedKey restartQuestKey = new NamespacedKey("mcrpg", "restart_quest");
+        NamespacedKey restartChainKey = new NamespacedKey("mcrpg", "restart_chain");
+        QuestChainStep step1 = QuestChainStep.simple(restartQuestKey);
+
+        QuestChainDefinition definition = new QuestChainDefinition.Builder(
+                restartChainKey, sourceKey, triggerKey, List.of(step1))
+                .build();
+
+        QuestChainRegistry chainRegistry = RegistryAccess.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_CHAIN);
+        chainRegistry.register(definition);
+
+        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
+        QuestChainPlayerData playerData = new QuestChainPlayerData();
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(restartChainKey, restartQuestKey);
+        playerData.putChainState(state);
+        when(mockPlayer.getChainData()).thenReturn(playerData);
+        when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
+
+        AtomicReference<Boolean> callbackResult = new AtomicReference<>();
+        chainManager.restartChain(PLAYER_UUID, restartChainKey, true, callbackResult::set);
+
+        assertNotNull(callbackResult.get(), "Callback must always be invoked");
+        assertFalse(callbackResult.get(), "Callback must receive false when the online player is absent");
+        // State must not be mutated — the old quest key is preserved (no cancel + reset happened)
+        assertEquals(QuestChainState.ACTIVE, state.getState(),
+                "Chain must remain ACTIVE when startStepForPlayer fails");
+        assertEquals(restartQuestKey, state.getCurrentQuestKey().orElseThrow(),
+                "Current quest key must be unchanged when start fails before any cancel");
     }
 }

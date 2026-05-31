@@ -161,6 +161,46 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
     }
 
     @Test
+    @DisplayName("Given pending advancements added before flush, When flushChainStatesSync completes, Then advancements are cleared")
+    void flushChainStatesSync_clearsPendingAdvancements_afterSuccessfulFlush() throws SQLException {
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
+        state.recordAdvancement(QUEST_KEY, 1000L, 1);
+        assertEquals(1, state.getPendingAdvancements().size());
+
+        QuestChainPlayerData chainData = new QuestChainPlayerData();
+        chainData.putChainState(state);
+
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeUpdate()).thenReturn(1);
+
+        persistenceService.flushChainStatesSync(mockConnection, PLAYER_UUID, chainData);
+
+        assertTrue(state.getPendingAdvancements().isEmpty(),
+                "Pending advancements must be cleared after successful flush");
+    }
+
+    @Test
+    @DisplayName("Given pending advancements fail to persist, When flushChainStatesSync fails, Then advancements are NOT cleared")
+    void flushChainStatesSync_retainsPendingAdvancements_whenFlushFails() throws SQLException {
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
+        state.recordAdvancement(QUEST_KEY, 1000L, 1);
+        assertEquals(1, state.getPendingAdvancements().size());
+
+        QuestChainPlayerData chainData = new QuestChainPlayerData();
+        chainData.putChainState(state);
+
+        Connection mockConnection = mock(Connection.class);
+        when(mockConnection.prepareStatement(anyString())).thenThrow(new SQLException("simulated failure"));
+
+        persistenceService.flushChainStatesSync(mockConnection, PLAYER_UUID, chainData);
+
+        assertEquals(1, state.getPendingAdvancements().size(),
+                "Pending advancements must not be cleared when the flush fails");
+    }
+
+    @Test
     @DisplayName("Given a CompletableFuture that completes with CancellationException, When the guard is applied, Then no SEVERE is logged")
     void cancellationException_doesNotLogSevere_whenGuardIsApplied() throws Exception {
         List<LogRecord> records = new ArrayList<>();
