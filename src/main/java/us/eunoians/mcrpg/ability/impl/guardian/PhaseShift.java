@@ -158,11 +158,11 @@ public final class PhaseShift extends McRPGAbility
             return Optional.empty();
         }
 
-        UUID targetUUID = state.getLastAttackedEntityUUID();
-        if (targetUUID == null || targetUUID.equals(player.getUniqueId())) {
+        Optional<UUID> targetUUIDOpt = state.getLastAttackedEntityUUID();
+        if (targetUUIDOpt.isEmpty() || targetUUIDOpt.get().equals(player.getUniqueId())) {
             return Optional.empty();
         }
-        Entity target = player.getWorld().getEntity(targetUUID);
+        Entity target = player.getWorld().getEntity(targetUUIDOpt.get());
         if (target == null || target.isDead()) {
             return Optional.empty();
         }

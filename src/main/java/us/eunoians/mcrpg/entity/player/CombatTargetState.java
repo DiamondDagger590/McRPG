@@ -1,14 +1,13 @@
 package us.eunoians.mcrpg.entity.player;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Session-only, per-player state tracking the last entity attacked by the player.
- * Used by Phase Shift to determine the teleport target. Not persisted — resets on
- * logout, death, or world change.
+ * Not persisted — resets on logout, death, or world change.
  */
 public class CombatTargetState {
 
@@ -29,11 +28,11 @@ public class CombatTargetState {
     /**
      * Gets the UUID of the last entity attacked by this player.
      *
-     * @return The UUID, or null if no attack has been recorded.
+     * @return An {@link Optional} containing the UUID, or empty if no attack has been recorded.
      */
-    @Nullable
-    public UUID getLastAttackedEntityUUID() {
-        return lastAttackedEntityUUID;
+    @NotNull
+    public Optional<UUID> getLastAttackedEntityUUID() {
+        return Optional.ofNullable(lastAttackedEntityUUID);
     }
 
     /**
@@ -50,7 +49,7 @@ public class CombatTargetState {
      *
      * @param currentTime  The current system time in milliseconds.
      * @param windowMillis The maximum age of the attack in milliseconds.
-     * @return True if a target was attacked within the window.
+     * @return {@code true} if a target was attacked within the window.
      */
     public boolean hasRecentTarget(long currentTime, long windowMillis) {
         return lastAttackedEntityUUID != null

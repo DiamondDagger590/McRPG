@@ -376,23 +376,25 @@ public class McRPGPlayer extends CorePlayer {
     }
 
     /**
-     * Activates the Phase Shift crit window.
+     * Activates the guaranteed crit window, causing the player's next melee attack
+     * to be a critical hit.
      */
     public void activateCritWindow() {
         this.critWindowActive = true;
     }
 
     /**
-     * Checks if the Phase Shift crit window is currently active.
+     * Checks if the guaranteed crit window is currently active.
      *
-     * @return True if the crit window is active.
+     * @return {@code true} if the crit window is active.
      */
     public boolean hasCritWindow() {
         return critWindowActive;
     }
 
     /**
-     * Consumes the crit window (deactivates it after the crit hit or expiry).
+     * Consumes the crit window, deactivating it after a crit hit lands or the
+     * window expires.
      */
     public void consumeCritWindow() {
         this.critWindowActive = false;
