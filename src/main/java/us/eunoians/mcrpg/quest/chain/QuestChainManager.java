@@ -27,6 +27,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -601,7 +602,13 @@ public class QuestChainManager extends Manager<McRPG> {
             }
             QuestChainDefinition definition = definitionOpt.get();
             Optional<NamespacedKey> currentQuestOpt = state.getCurrentQuestKey();
-            Set<NamespacedKey> completedKeys = completionsByChain.getOrDefault(chainKey, Set.of());
+            Set<NamespacedKey> completedKeys = new HashSet<>(completionsByChain.getOrDefault(chainKey, Set.of()));
+            // Merge in-memory pending advancements: these are steps recorded by advanceChain
+            // that may not yet be in the DB (async write pending or failed). Without this merge,
+            // re-resolution would treat a stuck chain as healthy in-progress and skip it.
+            state.getPendingAdvancements().stream()
+                    .map(QuestChainPlayerState.PendingAdvancement::questKey)
+                    .forEach(completedKeys::add);
             // Skip only if the current step still exists in the definition AND has not been
             // completed yet. If the step is completed but the next couldn't start (stuck state),
             // fall through to findFirstUncompletedStep so it can retry or complete the chain.
