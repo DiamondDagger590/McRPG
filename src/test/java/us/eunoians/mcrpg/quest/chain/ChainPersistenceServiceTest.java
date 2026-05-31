@@ -10,7 +10,14 @@ import us.eunoians.mcrpg.McRPGBaseTest;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -105,5 +112,47 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
             persistenceService.cleanupPlayer(PLAYER_UUID);
             persistenceService.cleanupPlayer(PLAYER_UUID);
         }, "cleanupPlayer must be safe to call multiple times for the same player");
+    }
+
+    @Test
+    @DisplayName("Given a CompletableFuture that completes with CancellationException, When the guard is applied, Then no SEVERE is logged")
+    void cancellationException_doesNotLogSevere_whenGuardIsApplied() throws Exception {
+        List<LogRecord> records = new ArrayList<>();
+        Handler captureHandler = new Handler() {
+            @Override
+            public void publish(LogRecord record) {
+                records.add(record);
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() {
+            }
+        };
+        mcRPG.getLogger().addHandler(captureHandler);
+        try {
+            CompletableFuture<Void> task = new CompletableFuture<>();
+            CompletableFuture<Void> guarded = task.exceptionally(ex -> {
+                if (ex instanceof CancellationException) {
+                    return null;
+                }
+                mcRPG.getLogger().log(Level.SEVERE, "Unexpected exception in async persistence", ex);
+                return null;
+            });
+
+            task.cancel(true);
+            // Wait for the exceptionally handler to complete
+            guarded.join();
+
+            assertFalse(
+                    records.stream().anyMatch(r -> r.getLevel() == Level.SEVERE),
+                    "CancellationException must not produce a SEVERE log entry"
+            );
+        } finally {
+            mcRPG.getLogger().removeHandler(captureHandler);
+        }
     }
 }
