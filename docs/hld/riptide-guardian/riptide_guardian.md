@@ -530,8 +530,8 @@ This HLD is broken into the following LLDs:
 | **[LLD-2: Fishing Mob Spawn System](../../lld/riptide-guardian/fishing_mob_spawn_system.md)** | Sections 3, 8 (despawn policy) | Spawn tracker, mob pool, per-player state, config file, custom events | **Implemented** |
 | **[LLD-3: Skill Book System](../../lld/riptide-guardian/skill_book_system.md)** | Sections 5, 10 (book events) | Factory, consumption listener, consume event, quest reward type | **Implemented** |
 | **[LLD-4: MythicMobs Example Configuration](../../lld/riptide-guardian/mythicmobs_example_configuration.md)** | Section 4 | Bundled Riptide Guardian MM mob YAML, config extractor, MythicMob ability/condition integration | **Implemented** |
-| **[LLD-5: UnlockCondition System](../../lld/riptide-guardian/unlock_condition_system.md)** | Section 7 | Registry-backed condition types, built-in types, ability refactor, login sweep, GUI integration | **Draft** |
-| **[LLD-6: Player Abilities](../../lld/riptide-guardian/player_abilities.md)** | Section 6 | Four standalone, non-tiered, combo-activated abilities, shared config, custom events, MobCastableAbility mob casting | **Draft** |
+| **[LLD-5: UnlockCondition System](../../lld/riptide-guardian/unlock_condition_system.md)** | Section 7 | Registry-backed condition types, built-in types, ability refactor, login sweep, GUI integration | **Implemented** |
+| **[LLD-6: Player Abilities](../../lld/riptide-guardian/player_abilities.md)** | Section 6 | Four standalone, non-tiered, combo-activated abilities, shared config, custom events, MobCastableAbility mob casting | **Implemented** |
 
 Each LLD includes class-level design, method signatures, test coverage plan, and config schema.
 
