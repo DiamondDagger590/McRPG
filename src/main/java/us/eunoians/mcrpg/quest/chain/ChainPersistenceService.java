@@ -17,6 +17,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -100,7 +101,7 @@ public class ChainPersistenceService {
                 new FailSafeTransaction(connection,
                         QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot))
                         .executeTransaction();
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE,
                         "[ChainPersistenceService] Failed to save chain state for player " + playerUUID
                                 + ", chain " + chainKey, e);
@@ -108,6 +109,9 @@ public class ChainPersistenceService {
         }, database.getDatabaseExecutorService());
 
         CompletableFuture<Void> guarded = saveTask.exceptionally(ex -> {
+            if (ex instanceof CancellationException) {
+                return null;
+            }
             plugin.getLogger().log(Level.SEVERE,
                     "[ChainPersistenceService] Unhandled exception in save chain for player " + playerUUID, ex);
             return null;
@@ -161,7 +165,7 @@ public class ChainPersistenceService {
                         chainKey.toString(), completedQuestKey.toString(), completedAt, completionNumber));
                 statements.addAll(QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot));
                 new FailSafeTransaction(connection, statements).executeTransaction();
-            } catch (SQLException e) {
+            } catch (Exception e) {
                 plugin.getLogger().log(Level.SEVERE,
                         "[ChainPersistenceService] Failed to persist advancement for player " + playerUUID
                                 + ", chain " + chainKey + ", quest " + completedQuestKey, e);
@@ -169,6 +173,9 @@ public class ChainPersistenceService {
         }, database.getDatabaseExecutorService());
 
         CompletableFuture<Void> guarded = advanceTask.exceptionally(ex -> {
+            if (ex instanceof CancellationException) {
+                return null;
+            }
             plugin.getLogger().log(Level.SEVERE,
                     "[ChainPersistenceService] Unhandled exception in persist advancement for player " + playerUUID, ex);
             return null;

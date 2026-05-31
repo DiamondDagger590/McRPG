@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.quest.chain;
 
+import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;
@@ -272,7 +273,7 @@ public class QuestChainManager extends Manager<McRPG> {
             return;
         }
 
-        persistenceService.cancelPendingSave(playerUUID);
+        persistenceService.prepareForFlush(playerUUID);
         cancelActiveChainQuestIfExists(playerUUID, stateOpt.get());
 
         if (force) {
@@ -364,29 +365,14 @@ public class QuestChainManager extends Manager<McRPG> {
         database.getDatabaseExecutorService().submit(() -> {
             boolean success = false;
             try (Connection connection = database.getConnection()) {
-                connection.setAutoCommit(false);
-                try {
-                    List<PreparedStatement> statements = new ArrayList<>();
-                    statements.addAll(QuestChainStateDAO.deleteChainState(connection, playerUUID, chainKey));
-                    statements.addAll(QuestChainCompletionLogDAO.deleteForChain(connection, playerUUID, chainKey.toString()));
-                    for (PreparedStatement ps : statements) {
-                        try (ps) {
-                            ps.executeUpdate();
-                        }
-                    }
-                    connection.commit();
-                    success = true;
-                } catch (SQLException e) {
-                    connection.rollback();
-                    plugin().getLogger().log(Level.SEVERE,
-                            "[QuestChainManager] Failed to reset chain '" + chainKey
-                                    + "' for player " + playerUUID, e);
-                } finally {
-                    connection.setAutoCommit(true);
-                }
-            } catch (SQLException e) {
+                List<PreparedStatement> statements = new ArrayList<>();
+                statements.addAll(QuestChainStateDAO.deleteChainState(connection, playerUUID, chainKey));
+                statements.addAll(QuestChainCompletionLogDAO.deleteForChain(connection, playerUUID, chainKey.toString()));
+                new FailSafeTransaction(connection, statements).executeTransaction();
+                success = true;
+            } catch (Exception e) {
                 plugin().getLogger().log(Level.SEVERE,
-                        "[QuestChainManager] Connection error resetting chain '" + chainKey
+                        "[QuestChainManager] Failed to reset chain '" + chainKey
                                 + "' for player " + playerUUID, e);
             }
             boolean finalSuccess = success;
