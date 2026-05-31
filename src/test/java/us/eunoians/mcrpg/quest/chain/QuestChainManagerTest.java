@@ -26,8 +26,6 @@ import java.util.UUID;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
-import us.eunoians.mcrpg.quest.chain.QuestChainPlayerState.PendingAdvancement;
-import static org.mockito.Mockito.spy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -318,24 +316,14 @@ public class QuestChainManagerTest extends McRPGBaseTest {
 
         McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
         QuestChainPlayerData playerData = new QuestChainPlayerData();
-        // Spy on the state to capture the drain call from saveChainStateAsync.
-        // saveChainStateAsync calls drainPendingAdvancements(), which clears the list.
-        // Without the spy, getPendingAdvancements() would be empty after advanceChain returns.
-        QuestChainPlayerState realState = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        QuestChainPlayerState state = spy(realState);
-        AtomicReference<List<PendingAdvancement>> capturedDrain = new AtomicReference<>();
-        doAnswer(inv -> {
-            List<PendingAdvancement> result = (List<PendingAdvancement>) inv.callRealMethod();
-            capturedDrain.set(result);
-            return result;
-        }).when(state).drainPendingAdvancements();
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
         playerData.putChainState(state);
         when(mockPlayer.getChainData()).thenReturn(playerData);
         when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
 
         // Provide a database manager so that saveChainStateAsync does not NPE when resolving
-        // the executor. The async execute() call is a no-op on the mock executor, but the
-        // drain happens on the calling thread before the task is submitted.
+        // the executor. The async task is not run by the mock executor, but the snapshot of
+        // pendingAdvancements (without clearing) happens on the calling thread before submission.
         McRPGDatabaseManager mockDatabaseManager = mock(McRPGDatabaseManager.class);
         Database mockDatabase = mock(Database.class);
         when(mockDatabaseManager.getDatabase()).thenReturn(mockDatabase);
@@ -347,12 +335,11 @@ public class QuestChainManagerTest extends McRPGBaseTest {
         boolean result = chainManager.advanceChain(PLAYER_UUID, QUEST_KEY);
 
         assertFalse(result, "advanceChain should return false when next step cannot start");
-        assertNotNull(capturedDrain.get(),
-                "drainPendingAdvancements must have been called (saveChainStateAsync was invoked)");
-        assertEquals(1, capturedDrain.get().size(),
-                "Completed step should be included in the drain snapshot even when next step fails to start");
-        assertEquals(QUEST_KEY, capturedDrain.get().get(0).questKey(),
-                "The drained advancement should be for the completed quest key");
+        // saveChainStateAsync snapshots without clearing, so pendingAdvancements is still intact
+        assertEquals(1, state.getPendingAdvancements().size(),
+                "Completed step should remain in pending advancements after failed advance");
+        assertEquals(QUEST_KEY, state.getPendingAdvancements().get(0).questKey(),
+                "The pending advancement should be for the completed quest key");
     }
 
     @Test
