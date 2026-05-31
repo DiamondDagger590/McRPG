@@ -343,6 +343,70 @@ public class QuestChainManagerTest extends McRPGBaseTest {
     }
 
     @Test
+    @DisplayName("Given chain completes between async DB read and main-thread callback, When restartChain callback fires, Then callback receives true without double-completing")
+    void restartChain_callbackTrue_whenStateCompletedDuringAsyncGap() throws Exception {
+        NamespacedKey sourceKey = new NamespacedKey("mcrpg", "stale_source");
+        NamespacedKey triggerKey = new NamespacedKey("mcrpg", "stale_trigger");
+        NamespacedKey staleChainKey = new NamespacedKey("mcrpg", "stale_chain");
+        NamespacedKey staleQuestKey = new NamespacedKey("mcrpg", "stale_quest");
+        QuestChainStep step1 = QuestChainStep.simple(staleQuestKey);
+
+        QuestChainDefinition definition = new QuestChainDefinition.Builder(
+                staleChainKey, sourceKey, triggerKey, List.of(step1))
+                .build();
+
+        QuestChainRegistry chainRegistry = RegistryAccess.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_CHAIN);
+        chainRegistry.register(definition);
+
+        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
+        QuestChainPlayerData playerData = new QuestChainPlayerData();
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(staleChainKey, staleQuestKey);
+        playerData.putChainState(state);
+        when(mockPlayer.getChainData()).thenReturn(playerData);
+        when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
+
+        McRPGDatabaseManager mockDatabaseManager = mock(McRPGDatabaseManager.class);
+        Database mockDatabase = mock(Database.class);
+        when(mockDatabaseManager.getDatabase()).thenReturn(mockDatabase);
+
+        ThreadPoolExecutor syncExecutor = mock(ThreadPoolExecutor.class);
+        doAnswer(inv -> {
+            ((Runnable) inv.getArgument(0)).run();
+            return mock(Future.class);
+        }).when(syncExecutor).submit(any(Runnable.class));
+        when(mockDatabase.getDatabaseExecutorService()).thenReturn(syncExecutor);
+
+        Connection mockConnection = mock(Connection.class);
+        when(mockDatabase.getConnection()).thenReturn(mockConnection);
+
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+        // Return no completed keys from DB (empty log)
+        when(mockResultSet.next()).thenReturn(false);
+
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mockDatabaseManager);
+
+        AtomicReference<Boolean> callbackResult = new AtomicReference<>();
+        chainManager.restartChain(PLAYER_UUID, staleChainKey, false, callbackResult::set);
+
+        // Simulate advanceChain completing the chain between the async DB read and the callback.
+        state.complete(System.currentTimeMillis());
+        assertEquals(QuestChainState.COMPLETED, state.getState());
+        int completionCountBeforeTick = state.getCompletionCount();
+
+        // Tick the scheduler to deliver the main-thread callback.
+        server.getScheduler().performTicks(1);
+
+        assertNotNull(callbackResult.get(), "Callback must be invoked");
+        assertTrue(callbackResult.get(), "Callback must return true for COMPLETED state");
+        assertEquals(completionCountBeforeTick, state.getCompletionCount(),
+                "completionCount must not be double-incremented by the stale restart callback");
+    }
+
+    @Test
     @DisplayName("Given restartChain force=true where no online player exists, When restartChain is called, Then callback receives false and chain state is unchanged")
     void restartChain_callbackFalse_andStateUnchanged_whenPlayerOfflineDuringForce() {
         // No online player — Bukkit.getPlayer returns null, so startStepForPlayer short-circuits
