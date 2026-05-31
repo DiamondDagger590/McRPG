@@ -221,7 +221,12 @@ public final class McRPGExpansion extends ContentExpansion {
                 // Woodcutting
                 new ExtraLumber(mcRPG), new HeavySwing(mcRPG), new DryadsGift(mcRPG), new NymphsVitality(mcRPG),
                 // Herbalism
-                new InstantIrrigation(mcRPG), new TooManyPlants(mcRPG), new VerdantSurge(mcRPG), new MassHarvest(mcRPG)
+                new InstantIrrigation(mcRPG), new TooManyPlants(mcRPG), new VerdantSurge(mcRPG), new MassHarvest(mcRPG),
+                // Guardian (standalone, non-tiered)
+                new us.eunoians.mcrpg.ability.impl.guardian.PhaseShift(mcRPG),
+                new us.eunoians.mcrpg.ability.impl.guardian.Whirlpool(mcRPG),
+                new us.eunoians.mcrpg.ability.impl.guardian.WaterloggedStrike(mcRPG),
+                new us.eunoians.mcrpg.ability.impl.guardian.TsunamiWall(mcRPG)
         );
     }
 

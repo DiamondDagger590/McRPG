@@ -1,0 +1,82 @@
+config-version: 1
+
+ability-configuration:
+
+  phase-shift:
+    enabled: true
+    mana-cost: 40
+    cooldown: 12
+    max-range: 12
+    last-hit-window-seconds: 5
+    crit-window-ticks: 60
+    crit-damage-multiplier: 1.5
+    teleport-offset-behind-target: 1.5
+    unlock-conditions:
+      book-source:
+        type: mcrpg:display_hint
+        locale-key: ability.unlock-condition.source.riptide-guardian
+    display-item:
+      name: "<ability-active>Phase Shift"
+      lore:
+        - "<body>Teleport behind your target and"
+        - "<body>strike with a guaranteed critical hit."
+
+  whirlpool:
+    enabled: true
+    mana-cost: 25
+    cooldown: 12
+    radius: 4.0
+    duration-ticks: 100
+    pull-velocity: 0.1
+    slowness-amplifier: 0
+    slowness-duration-ticks: 40
+    tick-interval: 4
+    unlock-conditions:
+      book-source:
+        type: mcrpg:display_hint
+        locale-key: ability.unlock-condition.source.riptide-guardian
+    display-item:
+      name: "<ability-active>Whirlpool"
+      lore:
+        - "<body>Create a vortex at your feet that"
+        - "<body>pulls in and slows nearby enemies."
+
+  waterlogged-strike:
+    enabled: true
+    mana-cost: 15
+    cooldown: 1
+    damage: 3.0
+    max-range: 28
+    projectile-speed: 1.5
+    slowness-amplifier: 1
+    slowness-duration-ticks: 60
+    unlock-conditions:
+      book-source:
+        type: mcrpg:display_hint
+        locale-key: ability.unlock-condition.source.riptide-guardian
+    display-item:
+      name: "<ability-active>Waterlogged Strike"
+      lore:
+        - "<body>Fire a water bolt that damages"
+        - "<body>and heavily slows the target."
+
+  tsunami-wall:
+    enabled: true
+    mana-cost: 50
+    cooldown: 15
+    width: 5
+    height: 3
+    duration-ticks: 140
+    knockback-strength: 1.5
+    slowness-amplifier: 2
+    slowness-duration-ticks: 60
+    spawn-distance: 2.0
+    unlock-conditions:
+      book-source:
+        type: mcrpg:display_hint
+        locale-key: ability.unlock-condition.source.riptide-guardian
+    display-item:
+      name: "<ability-active>Tsunami Wall"
+      lore:
+        - "<body>Summon a wall of water ahead"
+        - "<body>that knocks back and slows enemies."

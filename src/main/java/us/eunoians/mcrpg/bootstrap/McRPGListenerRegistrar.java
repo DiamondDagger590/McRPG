@@ -39,6 +39,9 @@ import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnMobAbilityTriggerListener;
 import us.eunoians.mcrpg.listener.ability.OnPlayerMoveAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnSneakAbilityListener;
+import us.eunoians.mcrpg.listener.ability.guardian.OnPhaseShiftCritListener;
+import us.eunoians.mcrpg.listener.ability.guardian.OnPlayerAttackCombatTargetListener;
+import us.eunoians.mcrpg.listener.ability.guardian.OnWaterloggedStrikeImpactListener;
 import us.eunoians.mcrpg.listener.entity.EntitySpawnListener;
 import us.eunoians.mcrpg.listener.entity.player.CorePlayerLoadListener;
 import us.eunoians.mcrpg.listener.entity.player.CorePlayerUnloadListener;
@@ -167,6 +170,11 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         // Skill book listener (always registered — books can come from any source)
         Bukkit.getPluginManager().registerEvents(new SkillBookConsumeListener(), plugin);
+
+        // Guardian ability listeners
+        Bukkit.getPluginManager().registerEvents(new OnPlayerAttackCombatTargetListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnPhaseShiftCritListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener(), plugin);
 
         // Statistic listeners
         Bukkit.getPluginManager().registerEvents(new SkillStatisticListener(), plugin);
