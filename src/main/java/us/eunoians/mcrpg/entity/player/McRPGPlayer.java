@@ -75,7 +75,6 @@ public class McRPGPlayer extends CorePlayer {
     private boolean standingInSafeZone;
     private PlayerFishingState fishingState;
     private CombatTargetState combatTargetState;
-    private boolean critWindowActive;
 
     public McRPGPlayer(@NotNull Player player, @NotNull McRPG mcRPG) {
         super(player.getUniqueId(), mcRPG);
@@ -373,31 +372,6 @@ public class McRPGPlayer extends CorePlayer {
      */
     public void resetCombatTargetState() {
         this.combatTargetState = null;
-    }
-
-    /**
-     * Activates the guaranteed crit window, causing the player's next melee attack
-     * to be a critical hit.
-     */
-    public void activateCritWindow() {
-        this.critWindowActive = true;
-    }
-
-    /**
-     * Checks if the guaranteed crit window is currently active.
-     *
-     * @return {@code true} if the crit window is active.
-     */
-    public boolean hasCritWindow() {
-        return critWindowActive;
-    }
-
-    /**
-     * Consumes the crit window, deactivating it after a crit hit lands or the
-     * window expires.
-     */
-    public void consumeCritWindow() {
-        this.critWindowActive = false;
     }
 
     /**

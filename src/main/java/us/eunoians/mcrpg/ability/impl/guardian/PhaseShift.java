@@ -15,6 +15,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -57,6 +58,9 @@ public final class PhaseShift extends McRPGAbility
 
     public static final NamespacedKey PHASE_SHIFT_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "phase_shift");
+
+    public static final NamespacedKey CRIT_WINDOW_TAG =
+            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "phase_shift_crit_window");
 
     public PhaseShift(@NotNull McRPG mcRPG) {
         super(mcRPG, PHASE_SHIFT_KEY);
@@ -137,7 +141,7 @@ public final class PhaseShift extends McRPGAbility
         if (!teleportBehindTarget(player, target)) {
             return false;
         }
-        grantCritWindow(mcRPGPlayer);
+        grantCritWindow(player);
         playTeleportEffects(player);
 
         return true;
@@ -207,14 +211,14 @@ public final class PhaseShift extends McRPGAbility
     }
 
     /**
-     * Grants the player a guaranteed critical hit window for a configured duration.
+     * Grants the player a guaranteed critical hit window for a configured duration
+     * by setting a PDC tag on the Bukkit player.
      *
-     * @param mcRPGPlayer The McRPG player to grant the crit window to.
+     * @param player The Bukkit player to grant the crit window to.
      */
-    private void grantCritWindow(@NotNull McRPGPlayer mcRPGPlayer) {
-        int critWindowTicks = getCritWindowTicks();
-        mcRPGPlayer.activateCritWindow();
-        new PhaseShiftCritWindowTask(getPlugin(), mcRPGPlayer, critWindowTicks).runTask();
+    private void grantCritWindow(@NotNull Player player) {
+        player.getPersistentDataContainer().set(CRIT_WINDOW_TAG, PersistentDataType.BOOLEAN, true);
+        new PhaseShiftCritWindowTask(getPlugin(), player.getUniqueId(), getCritWindowTicks()).runTask();
     }
 
     /**

@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
+import us.eunoians.mcrpg.ability.impl.guardian.PhaseShift;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.FishingMobSpawnConfigFile;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
@@ -173,7 +174,10 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         // Guardian ability listeners
         Bukkit.getPluginManager().registerEvents(new OnPlayerAttackCombatTargetListener(), plugin);
-        Bukkit.getPluginManager().registerEvents(new OnPhaseShiftCritListener(), plugin);
+        PhaseShift phaseShift = (PhaseShift) plugin.registryAccess()
+                .registry(McRPGRegistryKey.ABILITY)
+                .getRegisteredAbility(PhaseShift.PHASE_SHIFT_KEY);
+        Bukkit.getPluginManager().registerEvents(new OnPhaseShiftCritListener(phaseShift), plugin);
         Bukkit.getPluginManager().registerEvents(new OnWaterloggedStrikeImpactListener(), plugin);
 
         // Statistic listeners
