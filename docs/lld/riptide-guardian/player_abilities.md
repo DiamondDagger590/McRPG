@@ -411,10 +411,10 @@ public CombatTargetState getOrCreateCombatTargetState() {
     return combatTargetState;
 }
 
-// Nullable accessor
-@Nullable
-public CombatTargetState getCombatTargetState() {
-    return combatTargetState;
+// Optional accessor
+@NotNull
+public Optional<CombatTargetState> getCombatTargetState() {
+    return Optional.ofNullable(combatTargetState);
 }
 
 // Reset on logout (add to existing cleanup)
@@ -490,11 +490,12 @@ public final class PhaseShift extends McRPGAbility
         Player player = mcRPGPlayer.getAsBukkitPlayer();
 
         // Check for recent combat target
-        CombatTargetState state = mcRPGPlayer.getCombatTargetState();
-        if (state == null) {
+        Optional<CombatTargetState> stateOpt = mcRPGPlayer.getCombatTargetState();
+        if (stateOpt.isEmpty()) {
             sendNoTargetMessage(mcRPGPlayer);
             return false;
         }
+        CombatTargetState state = stateOpt.get();
         long windowMillis = getYamlDocument().getInt(
                 GuardianAbilitiesConfigFile.PHASE_SHIFT_LAST_HIT_WINDOW_SECONDS, 5) * 1000L;
         if (!state.hasRecentTarget(System.currentTimeMillis(), windowMillis)) {
