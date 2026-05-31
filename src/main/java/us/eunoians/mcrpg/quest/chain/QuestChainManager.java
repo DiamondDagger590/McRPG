@@ -179,9 +179,15 @@ public class QuestChainManager extends Manager<McRPG> {
         if (nextStepOpt.isPresent()) {
             QuestChainStep nextStep = nextStepOpt.get();
             if (!chainQuestStarter.startStepQuest(playerUUID, definition, nextStep)) {
+                // Record that the current step completed even though the next could not start.
+                // Re-resolution on next login detects this via the completion log and retries.
+                int failedCompletionNumber = state.getCompletionCount() + 1;
+                long failedCompletedAt = plugin().getTimeProvider().now().toEpochMilli();
+                state.recordAdvancement(completedQuestKey, failedCompletedAt, failedCompletionNumber);
+                persistenceService.saveChainStateAsync(playerUUID, state);
                 plugin().getLogger().warning("[QuestChainManager] Failed to start next step '" + nextStep.questKey()
                         + "' in chain '" + chainKey + "' for player " + playerUUID
-                        + " — no state mutation; re-resolution will retry on next login");
+                        + " — completed step recorded; re-resolution will retry on next login");
                 return false;
             }
 
@@ -496,18 +502,13 @@ public class QuestChainManager extends Manager<McRPG> {
         McRPGPlayer mcRPGPlayer = mcRPGPlayerOpt.get();
         QuestChainPlayerData chainData = mcRPGPlayer.getChainData();
 
+        // Include all active chains — applyReResolution will skip ones that are genuinely
+        // still in-progress (current step in definition and not yet completed). Including
+        // all of them requires a completion-log DB read on every login with an active chain,
+        // but that is necessary to detect stuck states where startStepQuest failed after
+        // the previous step completed.
         List<QuestChainPlayerState> chainsNeedingReResolution = chainData.getAllStates().stream()
                 .filter(state -> state.getState() == QuestChainState.ACTIVE)
-                .filter(state -> {
-                    Optional<QuestChainDefinition> defOpt = RegistryAccess.registryAccess()
-                            .registry(McRPGRegistryKey.QUEST_CHAIN).get(state.getChainKey());
-                    if (defOpt.isEmpty()) {
-                        return true;
-                    }
-                    Optional<NamespacedKey> currentQuestOpt = state.getCurrentQuestKey();
-                    return currentQuestOpt.isPresent()
-                            && defOpt.get().getStep(currentQuestOpt.get()).isEmpty();
-                })
                 .toList();
 
         if (chainsNeedingReResolution.isEmpty()) {
@@ -588,11 +589,14 @@ public class QuestChainManager extends Manager<McRPG> {
             }
             QuestChainDefinition definition = definitionOpt.get();
             Optional<NamespacedKey> currentQuestOpt = state.getCurrentQuestKey();
-            if (currentQuestOpt.isPresent() && definition.getStep(currentQuestOpt.get()).isPresent()) {
+            Set<NamespacedKey> completedKeys = completionsByChain.getOrDefault(chainKey, Set.of());
+            // Skip only if the current step still exists in the definition AND has not been
+            // completed yet. If the step is completed but the next couldn't start (stuck state),
+            // fall through to findFirstUncompletedStep so it can retry or complete the chain.
+            if (currentQuestOpt.isPresent() && definition.getStep(currentQuestOpt.get()).isPresent()
+                    && !completedKeys.contains(currentQuestOpt.get())) {
                 continue;
             }
-
-            Set<NamespacedKey> completedKeys = completionsByChain.getOrDefault(chainKey, Set.of());
             Optional<QuestChainStep> uncompletedStep = findFirstUncompletedStep(definition, completedKeys);
 
             if (uncompletedStep.isPresent()) {
