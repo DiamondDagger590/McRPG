@@ -284,7 +284,7 @@ public class QuestChainManager extends Manager<McRPG> {
             return;
         }
 
-        persistenceService.prepareForFlush(playerUUID);
+        persistenceService.cancelPendingSave(playerUUID);
         Optional<NamespacedKey> oldQuestKey = stateOpt.get().getCurrentQuestKey();
 
         if (force) {
