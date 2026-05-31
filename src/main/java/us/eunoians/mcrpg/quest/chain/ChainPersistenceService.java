@@ -67,10 +67,15 @@ public class ChainPersistenceService {
 
     /**
      * Persists a chain state and any pending advancement log entries asynchronously.
-     * Snapshots the current state values and pending advancements before submitting
-     * to avoid read/write races. Writes are serialized per-player via
-     * {@code pendingSaves}: each new submission chains onto the previous future so that
-     * concurrent saves for the same player always execute in submission order.
+     * Snapshots the current state values and pending advancements (without clearing them)
+     * before submitting to avoid read/write races. Pending advancements are left in the
+     * state so the synchronous flush at logout can replay them if this async write is
+     * skipped or fails. The completion log table uses {@code INSERT OR REPLACE} on its
+     * primary key, so writing the same rows on both the async and sync paths is idempotent.
+     * <p>
+     * Writes are serialized per-player via {@code pendingSaves}: each new submission chains
+     * onto the previous future so that concurrent saves for the same player always execute
+     * in submission order.
      * <p>
      * Both the state upsert and any completion-log entries are written in a single
      * {@link FailSafeTransaction} — they succeed together or both roll back.
@@ -93,7 +98,7 @@ public class ChainPersistenceService {
                 state.getState(),
                 state.getCompletionCount(),
                 state.getLastCompletedAt().orElse(null));
-        List<QuestChainPlayerState.PendingAdvancement> advancementSnapshot = state.drainPendingAdvancements();
+        List<QuestChainPlayerState.PendingAdvancement> advancementSnapshot = List.copyOf(state.getPendingAdvancements());
 
         Database database = getDatabase();
         CompletableFuture<Void> saveTask = CompletableFuture.runAsync(() -> {

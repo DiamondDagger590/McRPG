@@ -211,42 +211,4 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         assertEquals(questKeyB, advancements.get(1).questKey());
     }
 
-    @Test
-    @DisplayName("Given state with pending advancements, When drainPendingAdvancements is called, Then returned list contains all entries and list is cleared")
-    public void drainPendingAdvancements_returnsEntriesAndClearsList() {
-        var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
-        state.recordAdvancement(questKeyA, 1000L, 1);
-        state.recordAdvancement(questKeyB, 2000L, 1);
-
-        var drained = state.drainPendingAdvancements();
-
-        assertEquals(2, drained.size());
-        assertEquals(questKeyA, drained.get(0).questKey());
-        assertEquals(questKeyB, drained.get(1).questKey());
-        assertTrue(state.getPendingAdvancements().isEmpty(),
-                "Pending advancements should be empty after drain");
-    }
-
-    @Test
-    @DisplayName("Given state already drained, When drainPendingAdvancements is called again, Then it returns empty list")
-    public void drainPendingAdvancements_returnsEmpty_whenCalledAgain() {
-        var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
-        state.recordAdvancement(questKeyA, 1000L, 1);
-        state.drainPendingAdvancements();
-
-        var secondDrain = state.drainPendingAdvancements();
-
-        assertTrue(secondDrain.isEmpty(), "Second drain should return empty list");
-        assertTrue(state.getPendingAdvancements().isEmpty());
-    }
-
-    @Test
-    @DisplayName("Given state with no advancements, When drainPendingAdvancements is called, Then it returns empty list without error")
-    public void drainPendingAdvancements_returnsEmpty_whenNoAdvancements() {
-        var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
-
-        var drained = state.drainPendingAdvancements();
-
-        assertTrue(drained.isEmpty(), "Drain on empty list should return empty list");
-    }
 }

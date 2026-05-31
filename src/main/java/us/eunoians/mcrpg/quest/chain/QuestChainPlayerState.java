@@ -181,9 +181,14 @@ public class QuestChainPlayerState {
     }
 
     /**
-     * Records a step advancement that needs to be written to the completion log.
-     * The async write path will pick these up, and the synchronous flush at logout
-     * replays any that were not yet persisted.
+     * Records a step advancement that needs to be written to the completion log, and marks
+     * this state dirty so the synchronous flush at logout picks it up even when the advancement
+     * is recorded outside of a normal state mutation (e.g. the failure path in
+     * {@link QuestChainManager#advanceChain}).
+     * <p>
+     * The async write path snapshots these entries without clearing them. If the async write
+     * fails or is skipped, the entries remain here for the synchronous flush at logout, which
+     * clears them only after a successful transaction.
      *
      * @param questKey         the completed quest key
      * @param completedAt      the completion timestamp in epoch millis
@@ -191,6 +196,7 @@ public class QuestChainPlayerState {
      */
     public void recordAdvancement(@NotNull NamespacedKey questKey, long completedAt, int completionNumber) {
         pendingAdvancements.add(new PendingAdvancement(questKey, completedAt, completionNumber));
+        dirtyVersion.incrementAndGet();
     }
 
     /**
@@ -202,24 +208,6 @@ public class QuestChainPlayerState {
     @NotNull
     public List<PendingAdvancement> getPendingAdvancements() {
         return Collections.unmodifiableList(pendingAdvancements);
-    }
-
-    /**
-     * Atomically returns and clears all pending advancement entries. The returned list
-     * is an immutable snapshot of what was present at call time. Any advancements recorded
-     * after this call are not included.
-     * <p>
-     * Used by the async write path so that entries removed here are not double-written
-     * by a subsequent synchronous flush — the flush only replays whatever remains in
-     * {@code pendingAdvancements} at that point (i.e. entries from a failed async write).
-     *
-     * @return an immutable snapshot of the pending advancements, cleared from this state
-     */
-    @NotNull
-    public List<PendingAdvancement> drainPendingAdvancements() {
-        List<PendingAdvancement> drained = List.copyOf(pendingAdvancements);
-        pendingAdvancements.clear();
-        return drained;
     }
 
     /**
