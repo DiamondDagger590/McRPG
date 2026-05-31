@@ -10,7 +10,9 @@ import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import java.util.UUID;
 
 /**
- * Fired when all steps in a quest chain have been completed by a player.
+ * Fired when all steps in a quest chain have been completed by a player. This event is
+ * fired after the chain state has been marked {@code COMPLETED} — it is post-commit and
+ * non-cancellable.
  * <p>
  * The {@code completionNumber} reflects how many times this player has now completed the
  * chain (1 on first completion, 2 on second, etc.), allowing repeat-mode handling and

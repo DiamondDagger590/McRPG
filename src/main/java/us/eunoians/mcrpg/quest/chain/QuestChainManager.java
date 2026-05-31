@@ -177,6 +177,9 @@ public class QuestChainManager extends Manager<McRPG> {
         if (nextStepOpt.isPresent()) {
             QuestChainStep nextStep = nextStepOpt.get();
             if (!chainQuestStarter.startStepQuest(playerUUID, definition, nextStep)) {
+                plugin().getLogger().warning("[QuestChainManager] Failed to start next step '" + nextStep.questKey()
+                        + "' in chain '" + chainKey + "' for player " + playerUUID
+                        + " — no state mutation; re-resolution will retry on next login");
                 return false;
             }
 
@@ -316,6 +319,8 @@ public class QuestChainManager extends Manager<McRPG> {
                 } else {
                     state.complete(plugin().getTimeProvider().now().toEpochMilli());
                     chainData.updateQuestKeyIndex(state);
+                    Bukkit.getPluginManager().callEvent(
+                            new QuestChainCompleteEvent(definition, player, playerUUID, state.getCompletionCount()));
                     persistenceService.saveChainStateAsync(playerUUID, state);
                     callback.accept(false);
                 }
@@ -603,6 +608,8 @@ public class QuestChainManager extends Manager<McRPG> {
                 state.complete(plugin().getTimeProvider().now().toEpochMilli());
                 plugin().getLogger().fine("[QuestChainManager] Re-resolved chain '" + chainKey
                         + "' for player " + playerUUID + ": all steps completed, marking COMPLETED");
+                Bukkit.getPluginManager().callEvent(
+                        new QuestChainCompleteEvent(definition, Bukkit.getPlayer(playerUUID), playerUUID, state.getCompletionCount()));
                 persistenceService.saveChainStateAsync(playerUUID, state);
             }
         }

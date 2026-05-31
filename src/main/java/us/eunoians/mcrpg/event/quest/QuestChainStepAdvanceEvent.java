@@ -12,7 +12,8 @@ import java.util.UUID;
 
 /**
  * Fired when a chain advances from one step to the next after a quest within that
- * step is completed.
+ * step is completed. This event is fired after the next step's quest has already been
+ * started — it is post-commit and non-cancellable.
  * <p>
  * Both the step that was just completed and the step that will now become active are
  * provided. External plugins can listen to this event to respond to mid-chain progress.

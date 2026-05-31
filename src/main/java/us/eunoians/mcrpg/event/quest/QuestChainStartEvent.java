@@ -7,12 +7,14 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainStep;
 
+import java.util.UUID;
+
 /**
- * Fired when a quest chain starts for a player — the first step is about to begin.
+ * Fired when a quest chain starts for a player — the first step quest has been started.
  * <p>
- * Non-cancellable: the chain manager has already validated that the chain can start
- * before this event is fired. External plugins may use this event for analytics or
- * side-effect logic only.
+ * Non-cancellable: the chain manager fires this event after the first step quest has
+ * already been submitted to {@link us.eunoians.mcrpg.quest.QuestManager}. External
+ * plugins may use this event for analytics or side-effect logic only.
  */
 public class QuestChainStartEvent extends Event {
 
@@ -64,7 +66,7 @@ public class QuestChainStartEvent extends Event {
      * @return the player UUID
      */
     @NotNull
-    public java.util.UUID getPlayerUUID() {
+    public UUID getPlayerUUID() {
         return player.getUniqueId();
     }
 
