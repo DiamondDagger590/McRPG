@@ -93,7 +93,7 @@ public class ChainPersistenceService {
                 state.getState(),
                 state.getCompletionCount(),
                 state.getLastCompletedAt().orElse(null));
-        List<QuestChainPlayerState.PendingAdvancement> advancementSnapshot = List.copyOf(state.getPendingAdvancements());
+        List<QuestChainPlayerState.PendingAdvancement> advancementSnapshot = state.drainPendingAdvancements();
 
         Database database = getDatabase();
         CompletableFuture<Void> saveTask = CompletableFuture.runAsync(() -> {
@@ -160,7 +160,9 @@ public class ChainPersistenceService {
                 List<PreparedStatement> statements = new ArrayList<>();
                 statements.addAll(QuestChainStateDAO.saveChainState(connection, playerUUID, snapshot));
                 NamespacedKey chainKey = state.getChainKey();
-                for (QuestChainPlayerState.PendingAdvancement adv : state.getPendingAdvancements()) {
+                List<QuestChainPlayerState.PendingAdvancement> advancementSnapshot =
+                        List.copyOf(state.getPendingAdvancements());
+                for (QuestChainPlayerState.PendingAdvancement adv : advancementSnapshot) {
                     statements.addAll(QuestChainCompletionLogDAO.logCompletion(connection, playerUUID,
                             chainKey.toString(), adv.questKey().toString(), adv.completedAt(), adv.completionNumber()));
                 }
