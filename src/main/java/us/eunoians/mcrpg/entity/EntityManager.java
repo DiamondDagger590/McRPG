@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.entity;
 
 import com.diamonddagger590.mccore.registry.manager.Manager;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
@@ -106,5 +107,18 @@ public class EntityManager extends Manager<McRPG> {
     @NotNull
     public Optional<QuestHolder> removeQuestHolder(@NotNull UUID uuid) {
         return Optional.ofNullable(questHolderMap.remove(uuid));
+    }
+
+    /**
+     * Checks if the target player is allied with the entity identified by the given UUID.
+     * Allied entities should not be affected by hostile ability effects (knockback, slowness, pull, etc.).
+     *
+     * @param casterUUID The UUID of the entity that cast the ability.
+     * @param target     The target player to check alliance with.
+     * @return {@code true} if the target is allied with the caster, {@code false} otherwise.
+     */
+    public boolean isAllied(@NotNull UUID casterUUID, @NotNull Player target) {
+        // TODO: Implement with party system
+        return false;
     }
 }

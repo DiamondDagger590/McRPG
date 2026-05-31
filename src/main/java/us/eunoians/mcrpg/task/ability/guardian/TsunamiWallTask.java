@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.task.ability.guardian;
 
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.ExpireableCoreTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -13,7 +14,9 @@ import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.entity.EntityManager;
 import us.eunoians.mcrpg.event.ability.guardian.TsunamiWallContactEvent;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -198,8 +201,12 @@ public final class TsunamiWallTask extends ExpireableCoreTask {
                 continue;
             }
 
-            if (entity instanceof Player target && isAllied(casterUUID, target)) {
-                continue;
+            if (entity instanceof Player target) {
+                EntityManager entityManager = ((McRPG) getPlugin()).registryAccess()
+                        .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
+                if (entityManager.isAllied(casterUUID, target)) {
+                    continue;
+                }
             }
 
             if (!isWithinWallBounds(entity.getLocation(), effectiveWidth, effectiveHeight)) {
@@ -282,17 +289,4 @@ public final class TsunamiWallTask extends ExpireableCoreTask {
         return Math.abs(depthOffset) <= WALL_THICKNESS;
     }
 
-    /**
-     * Checks if the target player is allied with the caster.
-     * <p>
-     * TODO: Implement with party system when available.
-     *
-     * @param casterUUID The UUID of the caster.
-     * @param target     The target player to check.
-     * @return {@code true} if the target is allied with the caster, {@code false} otherwise.
-     */
-    private boolean isAllied(@NotNull UUID casterUUID, @NotNull Player target) {
-        // TODO: Implement with party system
-        return false;
-    }
 }
