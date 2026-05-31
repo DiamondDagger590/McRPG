@@ -35,6 +35,7 @@ public final class GuardianAbilitiesConfigFile extends ConfigFile {
     public static final Route WHIRLPOOL_SLOWNESS_AMPLIFIER = Route.fromString(toRoutePath(WHIRLPOOL_HEADER, "slowness-amplifier"));
     public static final Route WHIRLPOOL_SLOWNESS_DURATION_TICKS = Route.fromString(toRoutePath(WHIRLPOOL_HEADER, "slowness-duration-ticks"));
     public static final Route WHIRLPOOL_TICK_INTERVAL = Route.fromString(toRoutePath(WHIRLPOOL_HEADER, "tick-interval"));
+    public static final Route WHIRLPOOL_EXPANSION_TICKS = Route.fromString(toRoutePath(WHIRLPOOL_HEADER, "expansion-ticks"));
     public static final Route WHIRLPOOL_DISPLAY_ITEM = Route.fromString(toRoutePath(WHIRLPOOL_HEADER, "display-item"));
     public static final Route WHIRLPOOL_UNLOCK_CONDITIONS = Route.fromString(toRoutePath(WHIRLPOOL_HEADER, "unlock-conditions"));
 

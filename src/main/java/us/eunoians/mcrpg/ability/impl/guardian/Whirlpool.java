@@ -97,11 +97,13 @@ public final class Whirlpool extends McRPGAbility
                 GuardianAbilitiesConfigFile.WHIRLPOOL_SLOWNESS_DURATION_TICKS, 40);
         int tickInterval = getYamlDocument().getInt(
                 GuardianAbilitiesConfigFile.WHIRLPOOL_TICK_INTERVAL, 4);
+        int expansionTicks = getYamlDocument().getInt(
+                GuardianAbilitiesConfigFile.WHIRLPOOL_EXPANSION_TICKS, 40);
 
         UUID casterUUID = player.getUniqueId();
         new WhirlpoolZoneTask(getPlugin(), center, radius, pullVelocity,
                 slownessAmplifier, slownessDurationTicks, casterUUID,
-                durationTicks, tickInterval).runTask();
+                durationTicks, tickInterval, expansionTicks).runTask();
 
         player.getWorld().playSound(center, Sound.ENTITY_FISHING_BOBBER_SPLASH, 1.0f, 0.5f);
 

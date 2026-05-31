@@ -26,11 +26,12 @@ ability-configuration:
     mana-cost: 25
     cooldown: 12
     radius: 4.0
-    duration-ticks: 100
+    duration-ticks: 140
     pull-velocity: 0.1
     slowness-amplifier: 0
     slowness-duration-ticks: 40
     tick-interval: 4
+    expansion-ticks: 40
     unlock-conditions:
       book-source:
         type: mcrpg:display_hint
