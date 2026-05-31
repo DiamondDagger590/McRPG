@@ -189,6 +189,14 @@ public final class TsunamiWallTask extends ExpireableCoreTask {
      * @param effectiveHeight The current height of the wall.
      */
     private void applyWallEffects(@NotNull World world, double effectiveWidth, double effectiveHeight) {
+        if (!(Bukkit.getEntity(casterUUID) instanceof LivingEntity caster)) {
+            this.cancelTask();
+            return;
+        }
+
+        EntityManager entityManager = ((McRPG) getPlugin()).registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
+
         double halfWidth = effectiveWidth / 2.0;
         double searchRadius = Math.max(halfWidth, effectiveHeight);
 
@@ -201,12 +209,8 @@ public final class TsunamiWallTask extends ExpireableCoreTask {
                 continue;
             }
 
-            if (entity instanceof Player target) {
-                EntityManager entityManager = ((McRPG) getPlugin()).registryAccess()
-                        .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
-                if (entityManager.isAllied(casterUUID, target)) {
-                    continue;
-                }
+            if (entity instanceof Player target && entityManager.areEntitiesAllied(caster, target).getLeft()) {
+                continue;
             }
 
             if (!isWithinWallBounds(entity.getLocation(), effectiveWidth, effectiveHeight)) {
@@ -216,10 +220,6 @@ public final class TsunamiWallTask extends ExpireableCoreTask {
             Vector knockback = forward.clone().multiply(knockbackStrength);
             knockback.setY(0.2);
 
-            if (!(Bukkit.getEntity(casterUUID) instanceof LivingEntity caster)) {
-                this.cancelTask();
-                return;
-            }
             TsunamiWallContactEvent contactEvent = new TsunamiWallContactEvent(
                     caster, livingEntity, knockback.clone(), slownessAmplifier, slownessDurationTicks);
             Bukkit.getPluginManager().callEvent(contactEvent);

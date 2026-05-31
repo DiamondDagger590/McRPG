@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.ability.check;
+package us.eunoians.mcrpg.entity.check;
 
 import org.bukkit.entity.Entity;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +17,7 @@ public interface AlliedAttackCheck {
 
     /**
      * Checks to see if the two {@link Entity entities} are unable to attack each other if they are "allies".
-     *
+     * <p>
      * This should return {@code true} if they should be UNABLE to attack each other, whilst returning
      * {@code false} if they should be ABLE to attack each other. (Forgive the back-to-front nature of this,
      * there were edge cases in implementation that demanded it)
@@ -27,5 +27,5 @@ public interface AlliedAttackCheck {
      * @return {@code true} if the two {@link Entity entities} should be unable to attack each other, or {@code false} if
      * they should be able to attack each other
      */
-    public boolean shouldBeUnableToDamage(@NotNull Entity entity1, @NotNull Entity entity2);
+    boolean shouldBeUnableToDamage(@NotNull Entity entity1, @NotNull Entity entity2);
 }

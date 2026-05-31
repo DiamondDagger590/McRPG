@@ -142,6 +142,14 @@ public final class WhirlpoolZoneTask extends ExpireableCoreTask {
      * @param currentRadius The current effective radius of the whirlpool.
      */
     private void pullAndSlowEntities(@NotNull World world, double currentRadius) {
+        if (!(Bukkit.getEntity(casterUUID) instanceof LivingEntity caster)) {
+            this.cancelTask();
+            return;
+        }
+
+        EntityManager entityManager = ((McRPG) getPlugin()).registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
+
         for (Entity entity : world.getNearbyEntities(center, currentRadius, currentRadius, currentRadius)) {
             if (!(entity instanceof LivingEntity livingEntity)) {
                 continue;
@@ -151,12 +159,8 @@ public final class WhirlpoolZoneTask extends ExpireableCoreTask {
                 continue;
             }
 
-            if (entity instanceof Player target) {
-                EntityManager entityManager = ((McRPG) getPlugin()).registryAccess()
-                        .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.ENTITY);
-                if (entityManager.isAllied(casterUUID, target)) {
-                    continue;
-                }
+            if (entity instanceof Player target && entityManager.areEntitiesAllied(caster, target).getLeft()) {
+                continue;
             }
 
             if (entity.getLocation().distanceSquared(center) > currentRadius * currentRadius) {
@@ -169,10 +173,6 @@ public final class WhirlpoolZoneTask extends ExpireableCoreTask {
             }
             pullDirection.normalize().multiply(pullVelocity);
 
-            if (!(Bukkit.getEntity(casterUUID) instanceof LivingEntity caster)) {
-                this.cancelTask();
-                return;
-            }
             WhirlpoolPullEvent pullEvent = new WhirlpoolPullEvent(caster, livingEntity, center, pullDirection.clone());
             Bukkit.getPluginManager().callEvent(pullEvent);
             if (pullEvent.isCancelled()) {
