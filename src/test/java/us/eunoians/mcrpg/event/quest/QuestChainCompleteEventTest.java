@@ -26,8 +26,8 @@ public class QuestChainCompleteEventTest extends McRPGBaseTest {
         return new QuestChainDefinition.Builder(chainKey, sourceKey, triggerKey, steps).build();
     }
 
-    @DisplayName("Given a chain-complete event, When getters are called, Then they return the values passed to the constructor")
     @Test
+    @DisplayName("Given a chain-complete event, When getters are called, Then they return the values passed to the constructor")
     void event_getters_returnConstructorValues() {
         QuestChainDefinition definition = buildDefinition();
         PlayerMock player = server.addPlayer();
@@ -37,11 +37,12 @@ public class QuestChainCompleteEventTest extends McRPGBaseTest {
 
         assertSame(definition, event.getChainDefinition());
         assertSame(player, event.getPlayer());
+        assertEquals(player.getUniqueId(), event.getPlayerUUID());
         assertEquals(completionNumber, event.getCompletionNumber());
     }
 
-    @DisplayName("Given a chain-complete event with completionNumber 1, When getCompletionNumber() is called, Then 1 is returned")
     @Test
+    @DisplayName("Given a chain-complete event with completionNumber 1, When getCompletionNumber() is called, Then 1 is returned")
     void event_firstCompletion_completionNumberIsOne() {
         QuestChainDefinition definition = buildDefinition();
         PlayerMock player = server.addPlayer();
@@ -51,8 +52,8 @@ public class QuestChainCompleteEventTest extends McRPGBaseTest {
         assertEquals(1, event.getCompletionNumber());
     }
 
-    @DisplayName("Given a chain-complete event, When getHandlers() is called, Then a HandlerList is returned")
     @Test
+    @DisplayName("Given a chain-complete event, When getHandlers() is called, Then a HandlerList is returned")
     void event_getHandlers_returnsHandlerList() {
         QuestChainDefinition definition = buildDefinition();
         PlayerMock player = server.addPlayer();

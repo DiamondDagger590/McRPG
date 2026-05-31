@@ -121,4 +121,43 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         state.clearDirty();
         assertFalse(state.isDirty());
     }
+
+    @Test
+    @DisplayName("Given active state, When expire is called, Then state is EXPIRED with null currentQuestKey")
+    public void expire_setsExpired_andNullsCurrentQuestKey() {
+        var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
+        state.expire();
+
+        assertEquals(QuestChainState.EXPIRED, state.getState());
+        assertFalse(state.getCurrentQuestKey().isPresent());
+        assertTrue(state.isDirty());
+    }
+
+    @Test
+    @DisplayName("Given a dirty state, When clearDirtyIfCurrent is called with the correct snapshot version, Then dirty is cleared")
+    public void clearDirtyIfCurrent_clearsDirty_whenVersionMatches() {
+        var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
+        state.advance(questKeyB);
+        int snapshot = state.getDirtyVersion();
+
+        boolean cleared = state.clearDirtyIfCurrent(snapshot);
+
+        assertTrue(cleared, "clearDirtyIfCurrent should return true when version matches");
+        assertFalse(state.isDirty(), "State should no longer be dirty after successful CAS");
+    }
+
+    @Test
+    @DisplayName("Given a mutation after snapshot, When clearDirtyIfCurrent is called with the stale version, Then dirty is retained")
+    public void clearDirtyIfCurrent_retainsDirty_whenVersionStale() {
+        var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
+        state.advance(questKeyB);
+        int staleSnapshot = state.getDirtyVersion();
+
+        state.abandon();
+
+        boolean cleared = state.clearDirtyIfCurrent(staleSnapshot);
+
+        assertFalse(cleared, "clearDirtyIfCurrent should return false when a newer mutation has occurred");
+        assertTrue(state.isDirty(), "State should remain dirty when the snapshot version is stale");
+    }
 }
