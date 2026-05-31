@@ -168,6 +168,7 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
 
     public void toggleSort() {
         sortAscending = !sortAscending;
+        loaded = false;
         setPage(1);
         loadCompletionRecords();
     }
@@ -213,7 +214,7 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
             for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
                 removeSlot(i);
             }
-            setSlot(22, new ChainHistoryLoadingSlot());
+            setSlot(22, new ChainHistoryLoadingSlot(LocalizationKey.QUEST_HISTORY_GUI_LOADING_STATE));
             return;
         }
         if (displayItems.isEmpty()) {

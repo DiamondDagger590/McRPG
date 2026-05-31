@@ -348,6 +348,8 @@ gui:
     # Shown when the player has no completed quests or chain runs to display.
     empty-state:
       name: '<body>No completed quests yet.'
+    # Shown while the async history query is still in progress.
+    loading-state: "<body>Loading..."
   # This GUI shows the detailed breakdown of a quest's phases, stages and objectives.
   quest-detail-gui:
     title: '<gui-title>Quest Details'
