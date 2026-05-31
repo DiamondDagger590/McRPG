@@ -21,6 +21,7 @@ import us.eunoians.mcrpg.database.table.quest.QuestCompletionLogDAO;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
+import us.eunoians.mcrpg.gui.quest.slot.ChainHistoryLoadingSlot;
 import us.eunoians.mcrpg.gui.quest.slot.CompletedQuestSlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestChainHistorySlot;
 import us.eunoians.mcrpg.gui.quest.slot.QuestHistoryEmptySlot;
@@ -208,7 +209,14 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
 
     private void paintCompletedQuests(int page) {
         List<McRPGSlot> pageSlots = getSlotsForPage(page);
-        if (loaded && displayItems.isEmpty()) {
+        if (!loaded) {
+            for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
+                removeSlot(i);
+            }
+            setSlot(22, new ChainHistoryLoadingSlot());
+            return;
+        }
+        if (displayItems.isEmpty()) {
             for (int i = 0; i < NAVIGATION_ROW_START_INDEX; i++) {
                 removeSlot(i);
             }
