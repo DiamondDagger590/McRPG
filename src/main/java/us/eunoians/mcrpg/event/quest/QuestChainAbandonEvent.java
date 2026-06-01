@@ -6,12 +6,20 @@ import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 
 import java.util.UUID;
 
 /**
- * Fired when a quest chain is abandoned for a player — either because the player cancelled
- * a step quest while the chain was active, or an admin force-abandoned the chain.
+ * Fired when a quest chain is abandoned for a player. This can occur from any of:
+ * <ul>
+ *   <li>The player cancelled a step quest while the chain was active
+ *       ({@link QuestChainManager#handleQuestCancelled})</li>
+ *   <li>An admin force-abandoned the chain via a command</li>
+ *   <li>The player disabled the tutorial via the confirmation GUI, which calls
+ *       {@link QuestChainManager#abandonChain(java.util.UUID, org.bukkit.NamespacedKey)}
+ *       directly with the chain key</li>
+ * </ul>
  * <p>
  * The {@code player} field may be {@code null} when the abandonment occurs while the player
  * is offline (e.g., via an admin command targeting an offline player). The {@code playerUUID}

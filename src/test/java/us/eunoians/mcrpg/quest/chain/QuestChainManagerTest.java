@@ -442,4 +442,79 @@ public class QuestChainManagerTest extends McRPGBaseTest {
         assertEquals(restartQuestKey, state.getCurrentQuestKey().orElseThrow(),
                 "Current quest key must be unchanged when start fails before any cancel");
     }
+
+    @Test
+    @DisplayName("Given player not loaded, when abandonChain is called, then it logs a warning and does nothing")
+    void abandonChain_noOp_whenPlayerNotLoaded() {
+        chainManager.abandonChain(PLAYER_UUID, CHAIN_KEY);
+    }
+
+    @Test
+    @DisplayName("Given player is loaded with an ACTIVE chain, when abandonChain is called, then the state transitions to ABANDONED")
+    void abandonChain_transitionsToAbandoned_whenActive() {
+        QuestChainDefinition definition = new QuestChainDefinition.Builder(
+                CHAIN_KEY,
+                new NamespacedKey("mcrpg", "manual"),
+                new NamespacedKey("mcrpg", "manual"),
+                List.of(QuestChainStep.simple(QUEST_KEY))
+        ).build();
+        RegistryAccess.registryAccess().registry(McRPGRegistryKey.QUEST_CHAIN).register(definition);
+
+        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
+        QuestChainPlayerData playerData = new QuestChainPlayerData();
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
+        playerData.putChainState(state);
+        when(mockPlayer.getChainData()).thenReturn(playerData);
+        when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
+
+        McRPGDatabaseManager mockDatabaseManager = mock(McRPGDatabaseManager.class);
+        Database mockDatabase = mock(Database.class);
+        when(mockDatabaseManager.getDatabase()).thenReturn(mockDatabase);
+        ThreadPoolExecutor syncExecutor = mock(ThreadPoolExecutor.class);
+        doAnswer(inv -> {
+            ((Runnable) inv.getArgument(0)).run();
+            return mock(Future.class);
+        }).when(syncExecutor).submit(any(Runnable.class));
+        when(mockDatabase.getDatabaseExecutorService()).thenReturn(syncExecutor);
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockPreparedStatement = mock(PreparedStatement.class);
+        try {
+            when(mockDatabase.getConnection()).thenReturn(mockConnection);
+            when(mockConnection.prepareStatement(anyString())).thenReturn(mockPreparedStatement);
+        } catch (SQLException ignored) {
+        }
+        RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mockDatabaseManager);
+
+        chainManager.abandonChain(PLAYER_UUID, CHAIN_KEY);
+
+        assertEquals(QuestChainState.ABANDONED, state.getState());
+        assertTrue(state.getCurrentQuestKey().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Given player is loaded with a COMPLETED chain, when abandonChain is called, then the state is not modified")
+    void abandonChain_noOp_whenAlreadyTerminal() {
+        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
+        QuestChainPlayerData playerData = new QuestChainPlayerData();
+        QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
+        state.complete(System.currentTimeMillis());
+        playerData.putChainState(state);
+        when(mockPlayer.getChainData()).thenReturn(playerData);
+        when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
+
+        chainManager.abandonChain(PLAYER_UUID, CHAIN_KEY);
+
+        assertEquals(QuestChainState.COMPLETED, state.getState());
+    }
+
+    @Test
+    @DisplayName("Given player is loaded with no chain state for the key, when abandonChain is called, then no exception is thrown")
+    void abandonChain_noOp_whenNoChainState() {
+        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
+        QuestChainPlayerData playerData = new QuestChainPlayerData();
+        when(mockPlayer.getChainData()).thenReturn(playerData);
+        when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
+
+        chainManager.abandonChain(PLAYER_UUID, CHAIN_KEY);
+    }
 }

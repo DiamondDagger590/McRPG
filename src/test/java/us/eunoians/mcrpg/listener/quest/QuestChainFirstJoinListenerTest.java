@@ -13,8 +13,8 @@ import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.quest.chain.CascadeOrchestrator;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
-import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
 import us.eunoians.mcrpg.quest.chain.QuestChainStep;
 import us.eunoians.mcrpg.quest.chain.trigger.builtin.FirstJoinChainAutoStartTrigger;
@@ -36,7 +36,7 @@ public class QuestChainFirstJoinListenerTest extends McRPGBaseTest {
     private static final NamespacedKey CHAIN_KEY = new NamespacedKey("test", "first_join_chain");
     private static final NamespacedKey QUEST_KEY = new NamespacedKey("test", "step_quest");
 
-    private QuestChainManager mockChainManager;
+    private CascadeOrchestrator mockCascadeOrchestrator;
     private QuestChainRegistry chainRegistry;
 
     @BeforeEach
@@ -44,10 +44,10 @@ public class QuestChainFirstJoinListenerTest extends McRPGBaseTest {
         HandlerList.unregisterAll(mcRPG);
         server.getPluginManager().clearEvents();
 
-        mockChainManager = mock(QuestChainManager.class);
+        mockCascadeOrchestrator = mock(CascadeOrchestrator.class);
         chainRegistry = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.QUEST_CHAIN);
 
-        server.getPluginManager().registerEvents(new QuestChainFirstJoinListener(mockChainManager), mcRPG);
+        server.getPluginManager().registerEvents(new QuestChainFirstJoinListener(mockCascadeOrchestrator), mcRPG);
     }
 
     @AfterEach
@@ -69,7 +69,7 @@ public class QuestChainFirstJoinListenerTest extends McRPGBaseTest {
 
         server.getPluginManager().callEvent(new PlayerLoadEvent(mcRPGPlayer));
 
-        verify(mockChainManager).tryStartChain(eq(playerMock), eq(CHAIN_KEY));
+        verify(mockCascadeOrchestrator).tryStartChain(eq(playerMock), eq(CHAIN_KEY));
     }
 
     @DisplayName("Given a PlayerLoadEvent with no first-join chains registered, when fired, then tryStartChain is never called")
@@ -82,7 +82,7 @@ public class QuestChainFirstJoinListenerTest extends McRPGBaseTest {
 
         server.getPluginManager().callEvent(new PlayerLoadEvent(mcRPGPlayer));
 
-        verify(mockChainManager, never()).tryStartChain(eq(playerMock), eq(CHAIN_KEY));
+        verify(mockCascadeOrchestrator, never()).tryStartChain(eq(playerMock), eq(CHAIN_KEY));
     }
 
     @DisplayName("Given a PlayerLoadEvent for a non-McRPGPlayer CorePlayer, when fired, then tryStartChain is never called")
@@ -94,7 +94,7 @@ public class QuestChainFirstJoinListenerTest extends McRPGBaseTest {
         CorePlayer genericPlayer = mock(CorePlayer.class);
         server.getPluginManager().callEvent(new PlayerLoadEvent(genericPlayer));
 
-        verify(mockChainManager, never()).tryStartChain(eq((Player) null), eq(CHAIN_KEY));
+        verify(mockCascadeOrchestrator, never()).tryStartChain(eq((Player) null), eq(CHAIN_KEY));
     }
 
     @DisplayName("Given a chain with a non-first-join trigger registered, when PlayerLoadEvent fires, then tryStartChain is not called for it")
@@ -115,7 +115,7 @@ public class QuestChainFirstJoinListenerTest extends McRPGBaseTest {
 
         server.getPluginManager().callEvent(new PlayerLoadEvent(mcRPGPlayer));
 
-        verify(mockChainManager, never()).tryStartChain(eq(playerMock), eq(new NamespacedKey("test", "manual_chain")));
+        verify(mockCascadeOrchestrator, never()).tryStartChain(eq(playerMock), eq(new NamespacedKey("test", "manual_chain")));
     }
 
     /**

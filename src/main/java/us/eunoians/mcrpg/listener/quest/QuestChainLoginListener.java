@@ -9,6 +9,7 @@ import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.quest.chain.CascadeOrchestrator;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
@@ -22,7 +23,8 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
  *   <li>Re-resolves all ACTIVE chain states against current definitions (handles definition
  *       changes that occurred while the player was offline, such as removed steps or renamed
  *       quest keys).</li>
- *   <li>Evaluates {@code mcrpg:login}-triggered chains for repeatable re-start eligibility.</li>
+ *   <li>Evaluates {@code mcrpg:login}-triggered chains for repeatable re-start eligibility,
+ *       delegating through {@link CascadeOrchestrator} so auto-completing steps are batched.</li>
  * </ol>
  * <p>
  * Must run at {@link EventPriority#NORMAL} so re-resolution completes before
@@ -33,19 +35,23 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 public class QuestChainLoginListener implements Listener {
 
     private final QuestChainManager chainManager;
+    private final CascadeOrchestrator cascadeOrchestrator;
 
     /**
      * Creates a new login listener.
      *
-     * @param chainManager the chain manager used for re-resolution and chain starts
+     * @param chainManager        the chain manager used for re-resolution
+     * @param cascadeOrchestrator the cascade orchestrator used for chain starts
      */
-    public QuestChainLoginListener(@NotNull QuestChainManager chainManager) {
+    public QuestChainLoginListener(@NotNull QuestChainManager chainManager,
+                                   @NotNull CascadeOrchestrator cascadeOrchestrator) {
         this.chainManager = chainManager;
+        this.cascadeOrchestrator = cascadeOrchestrator;
     }
 
     /**
      * On player load at NORMAL priority, re-resolves ACTIVE chain states and evaluates
-     * login-triggered chains.
+     * login-triggered chains via the cascade orchestrator.
      *
      * @param event the player load event
      */
@@ -64,7 +70,7 @@ public class QuestChainLoginListener implements Listener {
             QuestChainRegistry chainRegistry = McRPG.getInstance().registryAccess()
                     .registry(McRPGRegistryKey.QUEST_CHAIN);
             for (QuestChainDefinition chain : chainRegistry.getChainsForTrigger(LoginChainAutoStartTrigger.KEY)) {
-                chainManager.tryStartChain(player, chain.getChainKey());
+                cascadeOrchestrator.tryStartChain(player, chain.getChainKey());
             }
         });
     }

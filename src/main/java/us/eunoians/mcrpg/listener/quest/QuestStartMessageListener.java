@@ -12,6 +12,9 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.quest.QuestStartEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.quest.chain.CascadeContext;
+import us.eunoians.mcrpg.quest.chain.CascadeOrchestrator;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
@@ -31,11 +34,17 @@ import java.util.UUID;
  * If an {@link OnStartMessage} has a locale key, the message is resolved per-player
  * through {@link McRPGLocalizationManager}. Otherwise, inline MiniMessage strings
  * are parsed and sent directly. Message delivery is handled by {@link QuestMessageDeliverer}.
+ * <p>
+ * When the starting player is in a cascade (tracked by {@link CascadeOrchestrator}),
+ * on-start messages are deferred to the {@link CascadeContext} rather than sent immediately.
+ * The orchestrator's {@code finalizeCascade} method delivers only the final
+ * (non-auto-completed) step's messages after the full cascade settles.
  */
 public class QuestStartMessageListener implements Listener {
 
     private final McRPG mcRPG;
     private final QuestMessageDeliverer messageDeliverer;
+    private final CascadeOrchestrator cascadeOrchestrator;
 
     /**
      * Creates a new listener.
@@ -48,24 +57,35 @@ public class QuestStartMessageListener implements Listener {
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
         this.messageDeliverer = new QuestMessageDeliverer(locManager, mcRPG.getMiniMessage(), mcRPG.getLogger());
+        QuestChainManager chainManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.QUEST_CHAIN);
+        this.cascadeOrchestrator = chainManager.getCascadeOrchestrator();
     }
 
     /**
-     * Creates a new listener with an injected {@link QuestMessageDeliverer}. Intended for tests
-     * that need to verify delivery without bootstrapping the full localization stack.
+     * Creates a new listener with an injected {@link QuestMessageDeliverer} and
+     * {@link CascadeOrchestrator}. Intended for tests that need to verify delivery
+     * without bootstrapping the full stack.
      *
-     * @param mcRPG            the plugin instance used to access managers
-     * @param messageDeliverer the deliverer to use for sending messages
+     * @param mcRPG                the plugin instance used to access managers
+     * @param messageDeliverer     the deliverer to use for sending messages
+     * @param cascadeOrchestrator  the cascade orchestrator for checking cascade state
      */
-    QuestStartMessageListener(@NotNull McRPG mcRPG, @NotNull QuestMessageDeliverer messageDeliverer) {
+    QuestStartMessageListener(@NotNull McRPG mcRPG, @NotNull QuestMessageDeliverer messageDeliverer,
+                               @NotNull CascadeOrchestrator cascadeOrchestrator) {
         this.mcRPG = mcRPG;
         this.messageDeliverer = messageDeliverer;
+        this.cascadeOrchestrator = cascadeOrchestrator;
     }
 
     /**
      * Sends on-start messages from the quest definition to all online scope members.
      * Messages are sent in declaration order. Locale-keyed messages fall back to inline
      * MiniMessage strings when the player's chain has no translation.
+     * <p>
+     * When the quest starter is in a cascade, messages are deferred to the
+     * {@link CascadeContext} rather than delivered immediately. The orchestrator
+     * delivers the final step's messages after the cascade settles.
      *
      * @param event the quest start event
      */
@@ -73,6 +93,27 @@ public class QuestStartMessageListener implements Listener {
     public void onQuestStart(@NotNull QuestStartEvent event) {
         QuestDefinition definition = event.getQuestDefinition();
         List<OnStartMessage> messages = definition.getOnStartMessages();
+        UUID starterUUID = event.getStarterUUID();
+
+        // Cascade tracking must always update lastStartedQuestKey, even when
+        // the definition has no on-start messages, so finalizeCascade delivers
+        // the correct step's deferred messages.
+        if (starterUUID != null && cascadeOrchestrator.isInCascade(starterUUID)) {
+            Optional<CascadeContext> contextOpt = cascadeOrchestrator.getCascadeContext(starterUUID);
+            if (contextOpt.isPresent()) {
+                if (!messages.isEmpty()) {
+                    contextOpt.get().deferMessages(definition.getQuestKey(), messages);
+                }
+                cascadeOrchestrator.notifyStepStarted(starterUUID, definition.getQuestKey());
+                return;
+            }
+            // Context missing despite isInCascade=true — map inconsistency.
+            // Fall through to immediate delivery rather than silently dropping messages.
+            mcRPG.getLogger().warning("[QuestStartMessageListener] isInCascade=true but "
+                    + "CascadeContext missing for player " + starterUUID
+                    + " — falling through to immediate delivery");
+        }
+
         if (messages.isEmpty()) {
             return;
         }

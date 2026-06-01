@@ -10,8 +10,8 @@ import org.bukkit.event.Listener;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.quest.chain.CascadeOrchestrator;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
-import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
 import us.eunoians.mcrpg.quest.chain.trigger.builtin.FirstJoinChainAutoStartTrigger;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -19,6 +19,7 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 /**
  * Listens on {@link PlayerLoadEvent} at {@link EventPriority#MONITOR} and evaluates all
  * chains whose {@code auto-start.trigger} is {@code mcrpg:first_join} for the loading player.
+ * Delegates through {@link CascadeOrchestrator} so auto-completing chain steps are batched.
  * <p>
  * {@code tryStartChain} internally checks whether the player already has state for each chain,
  * making this listener idempotent — it runs on every login but only starts chains the player
@@ -29,15 +30,15 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
  */
 public class QuestChainFirstJoinListener implements Listener {
 
-    private final QuestChainManager chainManager;
+    private final CascadeOrchestrator cascadeOrchestrator;
 
     /**
      * Creates a new first-join listener.
      *
-     * @param chainManager the chain manager used to attempt chain starts
+     * @param cascadeOrchestrator the cascade orchestrator used to attempt chain starts
      */
-    public QuestChainFirstJoinListener(@NotNull QuestChainManager chainManager) {
-        this.chainManager = chainManager;
+    public QuestChainFirstJoinListener(@NotNull CascadeOrchestrator cascadeOrchestrator) {
+        this.cascadeOrchestrator = cascadeOrchestrator;
     }
 
     /**
@@ -62,7 +63,7 @@ public class QuestChainFirstJoinListener implements Listener {
         QuestChainRegistry chainRegistry = McRPG.getInstance().registryAccess()
                 .registry(McRPGRegistryKey.QUEST_CHAIN);
         for (QuestChainDefinition chain : chainRegistry.getChainsForTrigger(firstJoinKey)) {
-            chainManager.tryStartChain(player, chain.getChainKey());
+            cascadeOrchestrator.tryStartChain(player, chain.getChainKey());
         }
     }
 }

@@ -161,11 +161,12 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         QuestChainManager chainManager = plugin.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST_CHAIN);
-        Bukkit.getPluginManager().registerEvents(new QuestChainProgressListener(chainManager), plugin);
+        var cascadeOrchestrator = chainManager.getCascadeOrchestrator();
+        Bukkit.getPluginManager().registerEvents(new QuestChainProgressListener(cascadeOrchestrator), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestChainCancelListener(chainManager), plugin);
         if (context.startupProfile() == StartupProfile.PROD) {
-            Bukkit.getPluginManager().registerEvents(new QuestChainLoginListener(chainManager), plugin);
-            Bukkit.getPluginManager().registerEvents(new QuestChainFirstJoinListener(chainManager), plugin);
+            Bukkit.getPluginManager().registerEvents(new QuestChainLoginListener(chainManager, cascadeOrchestrator), plugin);
+            Bukkit.getPluginManager().registerEvents(new QuestChainFirstJoinListener(cascadeOrchestrator), plugin);
         }
         QuestBoardTerminator questBoardTerminator = new QuestBoardTerminator(plugin);
         var rarityRegistry = plugin.registryAccess().registry(McRPGRegistryKey.QUEST_RARITY);
