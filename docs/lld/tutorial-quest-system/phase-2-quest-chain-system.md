@@ -3,7 +3,7 @@
 > **HLD Reference:** [docs/hld/tutorial/tutorial-quest-system.md](../../hld/tutorial/tutorial-quest-system.md)
 > **Phase 1 LLD:** [phase-1-quest-engine-extensions.md](phase-1-quest-engine-extensions.md) (implemented)
 > **Backlog:** [chain-system-backlog.md](../../hld/tutorial/chain-system-backlog.md)
-> **Status:** Pending implementation
+> **Status:** Implemented
 
 ## Scope
 

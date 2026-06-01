@@ -1,9 +1,11 @@
 # Tutorial Quest System
 
 > **Last Updated:** 2026-05-27
-> **Status:** Phase 1 implemented; Phases 2–3 (chain system, tutorial content) pending
+> **Status:** Phases 1–2 implemented; Phase 3 (tutorial content) pending
 > **Scope:** First-class quest chain system, tutorial quest line, new objective/reward types, player onboarding flow
 > **Phase 1 LLD:** [phase-1-quest-engine-extensions.md](../../lld/tutorial-quest-system/phase-1-quest-engine-extensions.md)
+> **Phase 2 LLD:** [phase-2-quest-chain-system.md](../../lld/tutorial-quest-system/phase-2-quest-chain-system.md)
+> **Phase 3 LLD:** [phase-3-tutorial-content.md](../../lld/tutorial-quest-system/phase-3-tutorial-content.md)
 
 ---
 
