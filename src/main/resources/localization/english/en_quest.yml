@@ -92,6 +92,128 @@ quest-objective-types:
     single: "Kill <count> <entity>"
     multi-header: "Kill <count> mobs"
     multi-item: "  - <entity>"
+  block-place:
+    any: "Place <count> blocks"
+    single: "Place <count> <block>"
+    multi-header: "Place <count> blocks"
+    multi-item: "  - <block>"
+  craft-item:
+    any: "Craft <count> items"
+    single: "Craft <count> <item>"
+    multi-header: "Craft <count> items"
+    multi-item: "  - <item>"
+  consume-item:
+    any: "Consume <count> items"
+    single: "Consume <count> <item>"
+    multi-header: "Consume <count> items"
+    multi-item: "  - <item>"
+  smelt-item:
+    any: "Smelt <count> items"
+    single: "Smelt <count> <item>"
+    multi-header: "Smelt <count> items"
+    multi-item: "  - <item>"
+  enchant-item:
+    any: "Enchant <count> items"
+    single-item: "Enchant <count> <item>"
+    single-enchantment: "Enchant <count> items with <enchantment>"
+    single-both: "Enchant <count> <item> with <enchantment>"
+    multi-header: "Enchant <count> items"
+    multi-item: "  - <item>"
+    multi-enchantment: "  with: <enchantment>"
+  smithing:
+    any: "Smith <count> items"
+    single: "Smith <count> <item>"
+    multi-header: "Smith <count> items"
+    multi-item: "  - <item>"
+  item-pickup:
+    any: "Pick up <count> items"
+    single: "Pick up <count> <item>"
+    multi-header: "Pick up <count> items"
+    multi-item: "  - <item>"
+  anvil-repair:
+    any: "Repair <count> items at an anvil"
+    single: "Repair <count> <item> at an anvil"
+    multi-header: "Repair <count> items at an anvil"
+    multi-item: "  - <item>"
+  fish-catch:
+    any: "Catch <count> fish"
+    single: "Catch <count> <item>"
+    multi-header: "Catch <count> items"
+    multi-item: "  - <item>"
+  harvest-crop:
+    any: "Harvest <count> crops"
+    single: "Harvest <count> <block>"
+    multi-header: "Harvest <count> crops"
+    multi-item: "  - <block>"
+  fertilize-block:
+    any: "Fertilize <count> blocks with bone meal"
+    single: "Fertilize <count> <block> with bone meal"
+    multi-header: "Fertilize <count> blocks with bone meal"
+    multi-item: "  - <block>"
+  bucket-fill:
+    any: "Fill <count> buckets"
+    single: "Fill <count> <bucket>"
+    multi-header: "Fill <count> buckets"
+    multi-item: "  - <bucket>"
+  bucket-empty:
+    any: "Empty <count> buckets"
+    single: "Empty <count> <bucket>"
+    multi-header: "Empty <count> buckets"
+    multi-item: "  - <bucket>"
+  breed-animal:
+    any: "Breed <count> animals"
+    single: "Breed <count> <entity>"
+    multi-header: "Breed <count> animals"
+    multi-item: "  - <entity>"
+  tame-animal:
+    any: "Tame <count> animals"
+    single: "Tame <count> <entity>"
+    multi-header: "Tame <count> animals"
+    multi-item: "  - <entity>"
+  shear-entity:
+    any: "Shear <count> entities"
+    single: "Shear <count> <entity>"
+    multi-header: "Shear <count> entities"
+    multi-item: "  - <entity>"
+  villager-trade:
+    any: "Complete <count> villager trades"
+    single: "Trade for <count> <item>"
+    multi-header: "Trade for <count> items"
+    multi-item: "  - <item>"
+  deal-damage:
+    any: "Deal <count> damage"
+    single: "Deal <count> damage to <entity>"
+    multi-header: "Deal <count> damage to"
+    multi-item: "  - <entity>"
+  damage-taken:
+    any: "Take <count> damage"
+    single: "Take <count> <cause> damage"
+    multi-header: "Take <count> damage from"
+    multi-item: "  - <cause>"
+  projectile-hit:
+    any: "Hit <count> targets with projectiles"
+    single: "Hit <count> targets with <projectile>"
+    multi-header: "Hit <count> targets with"
+    multi-item: "  - <projectile>"
+  launch-projectile:
+    any: "Launch <count> projectiles"
+    single: "Launch <count> <projectile>"
+    multi-header: "Launch <count> projectiles"
+    multi-item: "  - <projectile>"
+  gain-experience:
+    description: "Gain <count> experience points"
+  enter-bed:
+    description: "Sleep in a bed <count> times"
+  advancement-complete:
+    any: "Complete <count> advancements"
+    single: "Complete the <advancement> advancement"
+    multi-header: "Complete <count> advancements"
+    multi-item: "  - <advancement>"
+  distance-traveled:
+    any: "Travel <count> blocks"
+    single: "Travel <count> blocks by <mode>"
+    multi-header: "Travel <count> blocks by"
+    multi-item: "  - <mode>"
 
 # -----------------------------------------------------------------------
 # REWARD TYPE FORMAT TEMPLATES

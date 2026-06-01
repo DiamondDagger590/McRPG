@@ -81,4 +81,16 @@ public interface QuestObjectiveType extends McRPGContent {
     long processProgress(@NotNull QuestObjectiveInstance instance,
                          @NotNull QuestObjectiveProgressContext context);
 
+    /**
+     * Checks whether any initial progress should be granted when a quest containing this
+     * objective type starts. This handles cases where the tracked condition is already met
+     * (e.g., a player who already completed an advancement before the quest was assigned).
+     *
+     * @param player the player starting the quest
+     * @return the initial progress to grant (0 if none)
+     */
+    default long checkInitialProgress(@NotNull org.bukkit.entity.Player player) {
+        return 0;
+    }
+
 }

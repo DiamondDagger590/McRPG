@@ -56,8 +56,33 @@ import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.expansion.content.StatisticContent;
 import us.eunoians.mcrpg.expansion.content.StatisticContentPack;
 import us.eunoians.mcrpg.localization.DynamicLocale;
+import us.eunoians.mcrpg.quest.objective.type.builtin.AdvancementCompleteObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.AnvilRepairObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.BlockBreakObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.BlockPlaceObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.BreedAnimalObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.BucketEmptyObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.BucketFillObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.ConsumeItemObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.CraftItemObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.DamageTakenObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.DealDamageObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.DistanceTraveledObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.EnchantItemObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.EnterBedObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.FertilizeBlockObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.FishCatchObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.GainExperienceObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.HarvestCropObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.ItemPickupObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.LaunchProjectileObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.MobKillObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.ProjectileHitObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.ShearEntityObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.SmeltItemObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.SmithingObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.TameAnimalObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.VillagerTradeObjectiveType;
 import us.eunoians.mcrpg.quest.reward.builtin.AbilityUpgradeNextTierRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.ScalableCommandRewardType;
 import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
@@ -302,7 +327,7 @@ public final class McRPGExpansion extends ContentExpansion {
 
     /**
      * Gets the native {@link QuestObjectiveTypeContentPack} for McRPG, populated with the
-     * built-in objective types (block break, mob kill).
+     * built-in objective types.
      *
      * @return The native {@link QuestObjectiveTypeContentPack} for McRPG.
      */
@@ -311,6 +336,31 @@ public final class McRPGExpansion extends ContentExpansion {
         QuestObjectiveTypeContentPack pack = new QuestObjectiveTypeContentPack(this);
         pack.addContent(new BlockBreakObjectiveType());
         pack.addContent(new MobKillObjectiveType());
+        pack.addContent(new BlockPlaceObjectiveType());
+        pack.addContent(new CraftItemObjectiveType());
+        pack.addContent(new ConsumeItemObjectiveType());
+        pack.addContent(new SmeltItemObjectiveType());
+        pack.addContent(new EnchantItemObjectiveType());
+        pack.addContent(new SmithingObjectiveType());
+        pack.addContent(new ItemPickupObjectiveType());
+        pack.addContent(new AnvilRepairObjectiveType());
+        pack.addContent(new BreedAnimalObjectiveType());
+        pack.addContent(new TameAnimalObjectiveType());
+        pack.addContent(new ShearEntityObjectiveType());
+        pack.addContent(new VillagerTradeObjectiveType());
+        pack.addContent(new FishCatchObjectiveType());
+        pack.addContent(new HarvestCropObjectiveType());
+        pack.addContent(new BucketFillObjectiveType());
+        pack.addContent(new BucketEmptyObjectiveType());
+        pack.addContent(new FertilizeBlockObjectiveType());
+        pack.addContent(new DealDamageObjectiveType());
+        pack.addContent(new DamageTakenObjectiveType());
+        pack.addContent(new ProjectileHitObjectiveType());
+        pack.addContent(new LaunchProjectileObjectiveType());
+        pack.addContent(new GainExperienceObjectiveType());
+        pack.addContent(new EnterBedObjectiveType());
+        pack.addContent(new AdvancementCompleteObjectiveType());
+        pack.addContent(new DistanceTraveledObjectiveType());
         return pack;
     }
 
