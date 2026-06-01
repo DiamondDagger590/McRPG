@@ -35,6 +35,9 @@ public class GainExperienceQuestProgressListener implements QuestProgressListene
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onGainExperience(PlayerExpChangeEvent event) {
+        if (event.getAmount() <= 0) {
+            return;
+        }
         progressQuests(questManager, event.getPlayer().getUniqueId(), new GainExperienceQuestContext(event));
     }
 }
