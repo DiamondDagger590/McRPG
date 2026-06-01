@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static us.eunoians.mcrpg.util.McRPGMethods.getMiniMessage;
+
 /**
  * Built-in objective type for tracking advancement completion progress.
  * <p>
@@ -162,7 +164,7 @@ public class AdvancementCompleteObjectiveType implements QuestObjectiveType {
     private String extractDisplayName(@NotNull String advancementKey) {
         int colonIndex = advancementKey.indexOf(':');
         String path = colonIndex >= 0 ? advancementKey.substring(colonIndex + 1) : advancementKey;
-        return path.replace('_', ' ');
+        return getMiniMessage().escapeTags(path.replace('_', ' '));
     }
 
     @NotNull
