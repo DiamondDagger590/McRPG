@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
 import us.eunoians.mcrpg.quest.source.builtin.BoardLandQuestSource;
 import us.eunoians.mcrpg.quest.source.builtin.BoardPersonalQuestSource;
 import us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource;
+import us.eunoians.mcrpg.quest.source.builtin.TutorialQuestSource;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -100,6 +101,28 @@ public class QuestSourceTest extends McRPGBaseTest {
     @Test
     void manual_getExpansionKey() {
         var source = new ManualQuestSource();
+        assertTrue(source.getExpansionKey().isPresent());
+        assertEquals(McRPGExpansion.EXPANSION_KEY, source.getExpansionKey().get());
+    }
+
+    @DisplayName("TutorialQuestSource getKey returns mcrpg:tutorial")
+    @Test
+    void tutorial_getKey() {
+        var source = new TutorialQuestSource();
+        assertEquals(new NamespacedKey("mcrpg", "tutorial"), source.getKey());
+    }
+
+    @DisplayName("TutorialQuestSource isAbandonable returns false")
+    @Test
+    void tutorial_isAbandonable() {
+        var source = new TutorialQuestSource();
+        assertFalse(source.isAbandonable());
+    }
+
+    @DisplayName("TutorialQuestSource getExpansionKey returns McRPG expansion key")
+    @Test
+    void tutorial_getExpansionKey() {
+        var source = new TutorialQuestSource();
         assertTrue(source.getExpansionKey().isPresent());
         assertEquals(McRPGExpansion.EXPANSION_KEY, source.getExpansionKey().get());
     }

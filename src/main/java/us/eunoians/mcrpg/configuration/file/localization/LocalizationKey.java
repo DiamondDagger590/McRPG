@@ -882,6 +882,60 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route STATISTIC_LOOKUP_ERROR_MESSAGE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "lookup-error-message"));
     public static final Route STATISTIC_INVALID_VALUE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "invalid-value"));
 
+    // Tutorial — quest messages (en_quest.yml, top-level "tutorial:" section)
+    private static final String TUTORIAL_HEADER = "tutorial";
+    private static final String TUTORIAL_CHAIN_HEADER = toRoutePath(TUTORIAL_HEADER, "chain");
+    public static final Route TUTORIAL_CHAIN_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_CHAIN_HEADER, "display-name"));
+    private static final String TUTORIAL_QUESTS_HEADER = toRoutePath(TUTORIAL_HEADER, "quests");
+    private static final String TUTORIAL_FIRST_STEPS_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "first-steps");
+    public static final Route TUTORIAL_FIRST_STEPS_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_FIRST_STEPS_HEADER, "display-name"));
+    public static final Route TUTORIAL_FIRST_STEPS_ON_START = Route.fromString(toRoutePath(TUTORIAL_FIRST_STEPS_HEADER, "on-start"));
+    private static final String TUTORIAL_MCRPG_MENU_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "mcrpg-menu");
+    public static final Route TUTORIAL_MCRPG_MENU_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_MCRPG_MENU_HEADER, "display-name"));
+    public static final Route TUTORIAL_MCRPG_MENU_ON_START = Route.fromString(toRoutePath(TUTORIAL_MCRPG_MENU_HEADER, "on-start"));
+    private static final String TUTORIAL_NATURAL_TALENT_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "natural-talent");
+    public static final Route TUTORIAL_NATURAL_TALENT_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_NATURAL_TALENT_HEADER, "display-name"));
+    public static final Route TUTORIAL_NATURAL_TALENT_ON_START = Route.fromString(toRoutePath(TUTORIAL_NATURAL_TALENT_HEADER, "on-start"));
+    private static final String TUTORIAL_YOUR_ARSENAL_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "your-arsenal");
+    public static final Route TUTORIAL_YOUR_ARSENAL_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_YOUR_ARSENAL_HEADER, "display-name"));
+    public static final Route TUTORIAL_YOUR_ARSENAL_ON_START = Route.fromString(toRoutePath(TUTORIAL_YOUR_ARSENAL_HEADER, "on-start"));
+    private static final String TUTORIAL_UNLEASHED_POWER_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "unleashed-power");
+    public static final Route TUTORIAL_UNLEASHED_POWER_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_UNLEASHED_POWER_HEADER, "display-name"));
+    public static final Route TUTORIAL_UNLEASHED_POWER_ON_START = Route.fromString(toRoutePath(TUTORIAL_UNLEASHED_POWER_HEADER, "on-start"));
+    private static final String TUTORIAL_COMBO_STRIKE_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "combo-strike");
+    public static final Route TUTORIAL_COMBO_STRIKE_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_COMBO_STRIKE_HEADER, "display-name"));
+    public static final Route TUTORIAL_COMBO_STRIKE_ON_START = Route.fromString(toRoutePath(TUTORIAL_COMBO_STRIKE_HEADER, "on-start"));
+    private static final String TUTORIAL_QUEST_BOARD_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "quest-board");
+    public static final Route TUTORIAL_QUEST_BOARD_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_QUEST_BOARD_HEADER, "display-name"));
+    public static final Route TUTORIAL_QUEST_BOARD_ON_START = Route.fromString(toRoutePath(TUTORIAL_QUEST_BOARD_HEADER, "on-start"));
+
+    // Generic cascade batch summary (en_quest.yml, under quest-chain.cascade)
+    private static final String QUEST_CHAIN_CASCADE_HEADER = toRoutePath(QUEST_CHAIN_HEADER, "cascade");
+    public static final Route QUEST_CHAIN_CASCADE_BATCH_HEADER = Route.fromString(toRoutePath(QUEST_CHAIN_CASCADE_HEADER, "batch-header"));
+    public static final Route QUEST_CHAIN_CASCADE_BATCH_STEP_ENTRY = Route.fromString(toRoutePath(QUEST_CHAIN_CASCADE_HEADER, "batch-step-entry"));
+
+    // Chain admin skip command (en_quest.yml, under quest-chain.admin.skip)
+    private static final String QUEST_CHAIN_ADMIN_SKIP_HEADER = toRoutePath(QUEST_CHAIN_ADMIN_HEADER, "skip");
+    public static final Route QUEST_CHAIN_ADMIN_SKIP_SUCCESS = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_SKIP_HEADER, "success"));
+    public static final Route QUEST_CHAIN_ADMIN_SKIP_ERROR_NO_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_SKIP_HEADER, "error-no-state"));
+    public static final Route QUEST_CHAIN_ADMIN_SKIP_ERROR_TERMINAL = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_SKIP_HEADER, "error-terminal"));
+
+    // Disable tutorial confirm GUI (en_gui.yml, under gui.disable-tutorial-confirm-gui)
+    private static final String DISABLE_TUTORIAL_CONFIRM_GUI_HEADER = toRoutePath(GUI_HEADER, "disable-tutorial-confirm-gui");
+    public static final Route DISABLE_TUTORIAL_CONFIRM_GUI_TITLE = Route.fromString(toRoutePath(DISABLE_TUTORIAL_CONFIRM_GUI_HEADER, "title"));
+    public static final Route DISABLE_TUTORIAL_CONFIRM_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(DISABLE_TUTORIAL_CONFIRM_GUI_HEADER, "confirm-slot.display-item"));
+    public static final Route DISABLE_TUTORIAL_INFO_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(DISABLE_TUTORIAL_CONFIRM_GUI_HEADER, "info-slot.display-item"));
+    public static final Route DISABLE_TUTORIAL_CANCEL_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(DISABLE_TUTORIAL_CONFIRM_GUI_HEADER, "cancel-slot.display-item"));
+
+    // Tutorial setting slot (en_gui.yml, under gui.player-setting-gui.tutorial-setting)
+    private static final String TUTORIAL_SETTING_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "tutorial-setting");
+    public static final Route TUTORIAL_SETTING_SLOT_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(TUTORIAL_SETTING_HEADER, "enabled.display-item"));
+    public static final Route TUTORIAL_SETTING_SLOT_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(TUTORIAL_SETTING_HEADER, "disabled.display-item"));
+    public static final Route TUTORIAL_SETTING_DISABLED_DENY_MESSAGE = Route.fromString(toRoutePath(TUTORIAL_SETTING_HEADER, "disabled.deny-message"));
+
+    // Active quest GUI — non-abandonable lore line (en_gui.yml)
+    public static final Route ACTIVE_QUEST_GUI_NON_ABANDONABLE = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.non-abandonable"));
+
     // Statistic command descriptions
     public static final Route COMMAND_DESCRIPTION_STATISTIC = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic"));
     public static final Route COMMAND_DESCRIPTION_STATISTIC_VIEW = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-view"));

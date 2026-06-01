@@ -50,6 +50,7 @@ public class QuestChainManager extends Manager<McRPG> {
 
     private final ChainPersistenceService persistenceService;
     private final ChainQuestStarter chainQuestStarter;
+    private final CascadeOrchestrator cascadeOrchestrator;
 
     /**
      * Creates a new chain manager.
@@ -60,6 +61,7 @@ public class QuestChainManager extends Manager<McRPG> {
         super(plugin);
         this.persistenceService = new ChainPersistenceService(plugin);
         this.chainQuestStarter = new ChainQuestStarter(plugin);
+        this.cascadeOrchestrator = new CascadeOrchestrator(plugin, this);
     }
 
     /**
@@ -71,6 +73,19 @@ public class QuestChainManager extends Manager<McRPG> {
     @NotNull
     public ChainPersistenceService getPersistenceService() {
         return persistenceService;
+    }
+
+    /**
+     * Returns the cascade orchestrator that wraps chain start/advance with
+     * cascade batching. All callers that need cascade-aware chain operations
+     * should call through this orchestrator rather than calling
+     * {@link #tryStartChain} or {@link #advanceChain} directly.
+     *
+     * @return the cascade orchestrator
+     */
+    @NotNull
+    public CascadeOrchestrator getCascadeOrchestrator() {
+        return cascadeOrchestrator;
     }
 
     /**
@@ -411,6 +426,43 @@ public class QuestChainManager extends Manager<McRPG> {
                 }
                 callback.accept(finalSuccess);
             });
+        });
+    }
+
+    /**
+     * Directly abandons a chain by its chain key. Transitions the chain from ACTIVE to
+     * ABANDONED, updates the player's reverse index, persists the state asynchronously,
+     * and fires {@link QuestChainAbandonEvent}. Does nothing if the player has no ACTIVE
+     * state for the given chain key.
+     * <p>
+     * This overload is intended for callers that know the chain key directly (e.g., the
+     * tutorial disable confirmation slot) and do not need to resolve it from a quest key.
+     *
+     * @param playerUUID the player UUID
+     * @param chainKey   the chain definition key to abandon
+     */
+    public void abandonChain(@NotNull UUID playerUUID, @NotNull NamespacedKey chainKey) {
+        Optional<McRPGPlayer> mcRPGPlayerOpt = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER).getPlayer(playerUUID);
+        if (mcRPGPlayerOpt.isEmpty()) {
+            plugin().getLogger().warning("[QuestChainManager] Cannot abandon chain '" + chainKey
+                    + "' — player " + playerUUID + " is not loaded");
+            return;
+        }
+        QuestChainPlayerData chainData = mcRPGPlayerOpt.get().getChainData();
+        Optional<QuestChainDefinition> definitionOpt = RegistryAccess.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_CHAIN).get(chainKey);
+        chainData.getChainState(chainKey).ifPresent(state -> {
+            if (!state.getState().isTerminal()) {
+                cancelActiveChainQuestIfExists(playerUUID, state);
+                state.abandon();
+                chainData.updateQuestKeyIndex(state);
+                plugin().getLogger().fine("[QuestChainManager] Chain '" + chainKey
+                        + "' directly abandoned for player " + playerUUID);
+                persistenceService.saveChainStateAsync(playerUUID, state);
+                definitionOpt.ifPresent(definition -> Bukkit.getPluginManager().callEvent(
+                        new QuestChainAbandonEvent(definition, Bukkit.getPlayer(playerUUID), playerUUID)));
+            }
         });
     }
 

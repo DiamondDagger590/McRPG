@@ -19,14 +19,18 @@ import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.quest.impl.scope.impl.SinglePlayerQuestScope;
+import us.eunoians.mcrpg.quest.chain.CascadeContext;
+import us.eunoians.mcrpg.quest.chain.CascadeOrchestrator;
 import us.eunoians.mcrpg.quest.message.QuestMessageDeliverer;
 import us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
@@ -44,8 +48,10 @@ public class QuestStartMessageListenerTest extends McRPGBaseTest {
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mockPlayerManager);
         when(mockPlayerManager.getPlayer(any(UUID.class))).thenReturn(java.util.Optional.empty());
         mockDeliverer = mock(QuestMessageDeliverer.class);
+        CascadeOrchestrator mockCascadeOrchestrator = mock(CascadeOrchestrator.class);
+        when(mockCascadeOrchestrator.isInCascade(any(UUID.class))).thenReturn(false);
         server.getPluginManager().registerEvents(
-                new QuestStartMessageListener(mcRPG, mockDeliverer), mcRPG);
+                new QuestStartMessageListener(mcRPG, mockDeliverer, mockCascadeOrchestrator), mcRPG);
     }
 
     @Test
@@ -118,6 +124,80 @@ public class QuestStartMessageListenerTest extends McRPGBaseTest {
         server.getPluginManager().callEvent(new QuestStartEvent(instance, def, new ManualQuestSource(), playerUUID));
 
         verify(mockDeliverer, times(2)).deliver(eq(player), any(), nullable(Route.class), any());
+    }
+
+    @Test
+    @DisplayName("Given a quest with messages and the starter is in a cascade, when QuestStartEvent fires, then messages are deferred to the cascade context")
+    public void onQuestStart_defersMessages_whenInCascade() {
+        CascadeContext cascadeContext = new CascadeContext(new NamespacedKey("mcrpg", "test_chain"));
+        CascadeOrchestrator cascadeOrch = mock(CascadeOrchestrator.class);
+        when(cascadeOrch.isInCascade(any(UUID.class))).thenReturn(true);
+        when(cascadeOrch.getCascadeContext(any(UUID.class))).thenReturn(Optional.of(cascadeContext));
+
+        HandlerList.unregisterAll(mcRPG);
+        server.getPluginManager().clearEvents();
+        QuestMessageDeliverer localDeliverer = mock(QuestMessageDeliverer.class);
+        server.getPluginManager().registerEvents(
+                new QuestStartMessageListener(mcRPG, localDeliverer, cascadeOrch), mcRPG);
+
+        QuestDefinition def = buildDefWithInlineMessage("cascade_defer_test");
+        PlayerMock player = server.addPlayer("CascadePlayer");
+        UUID playerUUID = player.getUniqueId();
+        QuestInstance instance = instanceWithScope(def, playerUUID);
+
+        server.getPluginManager().callEvent(new QuestStartEvent(instance, def, new ManualQuestSource(), playerUUID));
+
+        verifyNoInteractions(localDeliverer);
+        assertFalse(cascadeContext.getDeferredMessagesFor(def.getQuestKey()).isEmpty());
+        verify(cascadeOrch).notifyStepStarted(eq(playerUUID), eq(def.getQuestKey()));
+    }
+
+    @Test
+    @DisplayName("Given a quest with no messages and the starter is in a cascade, when QuestStartEvent fires, then notifyStepStarted is still called")
+    public void onQuestStart_notifiesStepStarted_whenInCascadeWithNoMessages() {
+        CascadeContext cascadeContext = new CascadeContext(new NamespacedKey("mcrpg", "test_chain"));
+        CascadeOrchestrator cascadeOrch = mock(CascadeOrchestrator.class);
+        when(cascadeOrch.isInCascade(any(UUID.class))).thenReturn(true);
+        when(cascadeOrch.getCascadeContext(any(UUID.class))).thenReturn(Optional.of(cascadeContext));
+
+        HandlerList.unregisterAll(mcRPG);
+        server.getPluginManager().clearEvents();
+        QuestMessageDeliverer localDeliverer = mock(QuestMessageDeliverer.class);
+        server.getPluginManager().registerEvents(
+                new QuestStartMessageListener(mcRPG, localDeliverer, cascadeOrch), mcRPG);
+
+        QuestDefinition def = QuestTestHelper.singlePhaseQuest("cascade_no_msg");
+        PlayerMock player = server.addPlayer("CascadeNoMsgPlayer");
+        UUID playerUUID = player.getUniqueId();
+        QuestInstance instance = instanceWithScope(def, playerUUID);
+
+        server.getPluginManager().callEvent(new QuestStartEvent(instance, def, new ManualQuestSource(), playerUUID));
+
+        verifyNoInteractions(localDeliverer);
+        verify(cascadeOrch).notifyStepStarted(eq(playerUUID), eq(def.getQuestKey()));
+    }
+
+    @Test
+    @DisplayName("Given a quest with messages and the starter is in a cascade but context is missing, when QuestStartEvent fires, then messages are delivered immediately")
+    public void onQuestStart_deliversImmediately_whenCascadeContextMissing() {
+        CascadeOrchestrator cascadeOrch = mock(CascadeOrchestrator.class);
+        when(cascadeOrch.isInCascade(any(UUID.class))).thenReturn(true);
+        when(cascadeOrch.getCascadeContext(any(UUID.class))).thenReturn(Optional.empty());
+
+        HandlerList.unregisterAll(mcRPG);
+        server.getPluginManager().clearEvents();
+        QuestMessageDeliverer localDeliverer = mock(QuestMessageDeliverer.class);
+        server.getPluginManager().registerEvents(
+                new QuestStartMessageListener(mcRPG, localDeliverer, cascadeOrch), mcRPG);
+
+        QuestDefinition def = buildDefWithInlineMessage("cascade_missing_ctx");
+        PlayerMock player = server.addPlayer("CascadeMissingCtxPlayer");
+        UUID playerUUID = player.getUniqueId();
+        QuestInstance instance = instanceWithScope(def, playerUUID);
+
+        server.getPluginManager().callEvent(new QuestStartEvent(instance, def, new ManualQuestSource(), playerUUID));
+
+        verify(localDeliverer, times(1)).deliver(eq(player), any(), nullable(Route.class), any());
     }
 
     /**

@@ -75,6 +75,8 @@ import us.eunoians.mcrpg.quest.reward.builtin.BoostedExperienceRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.MessageRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.RedeemableExperienceRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.RedeemableLevelsRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.SoundRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.TitleRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.ScalableCommandRewardType;
 import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
 import us.eunoians.mcrpg.quest.source.builtin.BoardLandQuestSource;
@@ -82,6 +84,7 @@ import us.eunoians.mcrpg.quest.source.builtin.BoardPersonalQuestSource;
 import us.eunoians.mcrpg.quest.impl.scope.impl.PermissionQuestScopeProvider;
 import us.eunoians.mcrpg.quest.impl.scope.impl.SinglePlayerQuestScopeProvider;
 import us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource;
+import us.eunoians.mcrpg.quest.source.builtin.TutorialQuestSource;
 import us.eunoians.mcrpg.quest.reward.builtin.AbilityUpgradeRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.CommandRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.ExperienceRewardType;
@@ -92,6 +95,7 @@ import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 import us.eunoians.mcrpg.setting.impl.KeepHandEmptySetting;
 import us.eunoians.mcrpg.setting.impl.KeepHotbarSlotEmptySetting;
 import us.eunoians.mcrpg.setting.impl.LocaleSetting;
+import us.eunoians.mcrpg.setting.impl.DisableTutorialSetting;
 import us.eunoians.mcrpg.setting.impl.QuestProgressNotificationSetting;
 import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
@@ -299,6 +303,7 @@ public final class McRPGExpansion extends ContentExpansion {
         playerSettingContent.addContent(DisableBonusExperienceConsumptionSetting.values()[0]);
         playerSettingContent.addContent(LocaleSetting.values()[0]);
         playerSettingContent.addContent(QuestProgressNotificationSetting.values()[0]);
+        playerSettingContent.addContent(DisableTutorialSetting.values()[0]);
         return playerSettingContent;
     }
 
@@ -357,6 +362,8 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new BoostedExperienceRewardType());
         pack.addContent(new RedeemableExperienceRewardType());
         pack.addContent(new RedeemableLevelsRewardType());
+        pack.addContent(new SoundRewardType());
+        pack.addContent(new TitleRewardType());
         return pack;
     }
 
@@ -386,6 +393,7 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new BoardLandQuestSource());
         pack.addContent(new AbilityUpgradeQuestSource());
         pack.addContent(new ManualQuestSource());
+        pack.addContent(new TutorialQuestSource());
         return pack;
     }
 
