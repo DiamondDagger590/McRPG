@@ -120,6 +120,16 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route MOB_HEALTH_BAR_DISPLAY_DURATION = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "health-bar-display-duration"));
     public static final Route MCMMO_CONVERSION_EQUATION = Route.fromString(toRoutePath(MCMMO_CONFIGURATION_HEADER, "conversion-equation"));
 
+    // Tutorial
+    private static final String TUTORIAL_HEADER = "tutorial";
+
+    /**
+     * Whether the tutorial quest chain auto-starts for new players. When {@code false}, no new
+     * tutorial chains will start. Existing active tutorial quests are not cancelled — only new
+     * starts are suppressed.
+     */
+    public static final Route TUTORIAL_ENABLED = Route.fromString(toRoutePath(TUTORIAL_HEADER, "enabled"));
+
     // Palette (color theming)
     private static final String PALETTE_HEADER = "palette";
     /**

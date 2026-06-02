@@ -54,5 +54,8 @@ permissions:
     description: Open the quest history GUI
     default: true
   mcrpg.tutorial.bypass:
-    description: "Reserved for future tutorial chain bypass logic. Currently unimplemented — granting this permission has no effect."
+    description: Exempt from tutorial chain auto-start. If granted mid-chain, the next step start is blocked and the chain is abandoned.
+    default: op
+  mcrpg.quest.chain.skip:
+    description: Allows use of /mcrpg quest chain skip to force-complete all remaining steps in a chain.
     default: op

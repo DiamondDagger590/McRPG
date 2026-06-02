@@ -60,6 +60,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.listener.quest.QuestCancelListener;
 import us.eunoians.mcrpg.listener.quest.QuestChainCancelListener;
 import us.eunoians.mcrpg.listener.quest.QuestChainFirstJoinListener;
+import us.eunoians.mcrpg.listener.quest.TutorialPreQuestStartListener;
 import us.eunoians.mcrpg.listener.quest.QuestChainFeedbackListener;
 import us.eunoians.mcrpg.listener.quest.QuestChainLoginListener;
 import us.eunoians.mcrpg.listener.quest.QuestChainProgressListener;
@@ -176,6 +177,7 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new BoardRotationNotificationListener(), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestStartMessageListener(plugin), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestStartAutoCompleteListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new TutorialPreQuestStartListener(plugin), plugin);
 
         // World listener
         Bukkit.getPluginManager().registerEvents(new FakeBlockBreakListener(), plugin);
