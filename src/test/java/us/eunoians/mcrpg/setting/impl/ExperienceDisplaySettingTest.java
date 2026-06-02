@@ -54,7 +54,6 @@ class ExperienceDisplaySettingTest {
         @EnumSource(ExperienceDisplaySetting.class)
         void allVariants_reachableViaCycle(ExperienceDisplaySetting start) {
             var current = start;
-            boolean cycledBack = false;
             for (int i = 0; i < ExperienceDisplaySetting.values().length; i++) {
                 current = (ExperienceDisplaySetting) current.getNextSetting().getNodeValue();
             }
