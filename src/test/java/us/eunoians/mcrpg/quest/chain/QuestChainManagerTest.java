@@ -447,6 +447,9 @@ public class QuestChainManagerTest extends McRPGBaseTest {
     @DisplayName("Given player not loaded, when abandonChain is called, then it logs a warning and does nothing")
     void abandonChain_noOp_whenPlayerNotLoaded() {
         chainManager.abandonChain(PLAYER_UUID, CHAIN_KEY);
+
+        verify(mockPlayerManager).getPlayer(PLAYER_UUID);
+        verifyNoMoreInteractions(mockPlayerManager);
     }
 
     @Test
@@ -508,7 +511,7 @@ public class QuestChainManagerTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("Given player is loaded with no chain state for the key, when abandonChain is called, then no exception is thrown")
+    @DisplayName("Given player is loaded with no chain state for the key, when abandonChain is called, then no exception is thrown and chain data is unchanged")
     void abandonChain_noOp_whenNoChainState() {
         McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
         QuestChainPlayerData playerData = new QuestChainPlayerData();
@@ -516,5 +519,8 @@ public class QuestChainManagerTest extends McRPGBaseTest {
         when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
 
         chainManager.abandonChain(PLAYER_UUID, CHAIN_KEY);
+
+        assertTrue(playerData.getChainState(CHAIN_KEY).isEmpty(),
+                "No chain state should exist after abandoning a non-existent chain");
     }
 }

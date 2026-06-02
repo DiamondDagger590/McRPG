@@ -4,7 +4,6 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.quest.chain.CascadeContext;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,12 +22,12 @@ public class CascadeFinalizeEventTest {
     @DisplayName("Given a CascadeFinalizeEvent with auto-completed steps, when getAutoCompletedSteps is called, then it returns the steps")
     public void getAutoCompletedSteps_returnsSteps() {
         UUID playerUUID = UUID.randomUUID();
-        List<CascadeContext.CascadeCompletedStep> steps = List.of(
-                new CascadeContext.CascadeCompletedStep(QUEST_A, "Quest A"),
-                new CascadeContext.CascadeCompletedStep(QUEST_B, "Quest B")
+        List<CascadeCompletedStep> steps = List.of(
+                new CascadeCompletedStep(QUEST_A, "Quest A"),
+                new CascadeCompletedStep(QUEST_B, "Quest B")
         );
         CascadeFinalizeEvent event = new CascadeFinalizeEvent(
-                CHAIN_KEY, playerUUID, null, steps, QUEST_B);
+                CHAIN_KEY, playerUUID, null, steps, QUEST_B, CascadeOutcome.SUCCESS);
 
         assertEquals(2, event.getAutoCompletedSteps().size());
         assertEquals(QUEST_A, event.getAutoCompletedSteps().get(0).questKey());
@@ -40,7 +39,8 @@ public class CascadeFinalizeEventTest {
     public void hadAutoCompletedSteps_returnsTrue_whenStepsExist() {
         CascadeFinalizeEvent event = new CascadeFinalizeEvent(
                 CHAIN_KEY, UUID.randomUUID(), null,
-                List.of(new CascadeContext.CascadeCompletedStep(QUEST_A, "Quest A")), null);
+                List.of(new CascadeCompletedStep(QUEST_A, "Quest A")), null,
+                CascadeOutcome.SUCCESS);
 
         assertTrue(event.hadAutoCompletedSteps());
     }
@@ -49,7 +49,8 @@ public class CascadeFinalizeEventTest {
     @DisplayName("Given a CascadeFinalizeEvent with no auto-completed steps, when hadAutoCompletedSteps is called, then it returns false")
     public void hadAutoCompletedSteps_returnsFalse_whenNoSteps() {
         CascadeFinalizeEvent event = new CascadeFinalizeEvent(
-                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null);
+                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null,
+                CascadeOutcome.SUCCESS);
 
         assertFalse(event.hadAutoCompletedSteps());
     }
@@ -58,7 +59,8 @@ public class CascadeFinalizeEventTest {
     @DisplayName("Given a CascadeFinalizeEvent with a last started quest key, when getLastStartedQuestKey is called, then it returns the key")
     public void getLastStartedQuestKey_returnsKey() {
         CascadeFinalizeEvent event = new CascadeFinalizeEvent(
-                CHAIN_KEY, UUID.randomUUID(), null, List.of(), QUEST_A);
+                CHAIN_KEY, UUID.randomUUID(), null, List.of(), QUEST_A,
+                CascadeOutcome.SUCCESS);
 
         assertEquals(Optional.of(QUEST_A), event.getLastStartedQuestKey());
     }
@@ -67,7 +69,8 @@ public class CascadeFinalizeEventTest {
     @DisplayName("Given a CascadeFinalizeEvent with no last started quest key, when getLastStartedQuestKey is called, then it returns empty")
     public void getLastStartedQuestKey_returnsEmpty_whenNull() {
         CascadeFinalizeEvent event = new CascadeFinalizeEvent(
-                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null);
+                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null,
+                CascadeOutcome.SUCCESS);
 
         assertEquals(Optional.empty(), event.getLastStartedQuestKey());
     }
@@ -77,7 +80,8 @@ public class CascadeFinalizeEventTest {
     public void getPlayer_returnsPlayer() {
         Player player = mock(Player.class);
         CascadeFinalizeEvent event = new CascadeFinalizeEvent(
-                CHAIN_KEY, UUID.randomUUID(), player, List.of(), null);
+                CHAIN_KEY, UUID.randomUUID(), player, List.of(), null,
+                CascadeOutcome.SUCCESS);
 
         assertEquals(player, event.getPlayer());
     }
@@ -86,7 +90,8 @@ public class CascadeFinalizeEventTest {
     @DisplayName("Given a CascadeFinalizeEvent with null player, when getPlayer is called, then it returns null")
     public void getPlayer_returnsNull_whenOffline() {
         CascadeFinalizeEvent event = new CascadeFinalizeEvent(
-                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null);
+                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null,
+                CascadeOutcome.SUCCESS);
 
         assertNull(event.getPlayer());
     }
@@ -96,18 +101,50 @@ public class CascadeFinalizeEventTest {
     public void getAutoCompletedSteps_returnsUnmodifiableList() {
         CascadeFinalizeEvent event = new CascadeFinalizeEvent(
                 CHAIN_KEY, UUID.randomUUID(), null,
-                List.of(new CascadeContext.CascadeCompletedStep(QUEST_A, "A")), null);
+                List.of(new CascadeCompletedStep(QUEST_A, "A")), null,
+                CascadeOutcome.SUCCESS);
 
         assertThrows(UnsupportedOperationException.class,
                 () -> event.getAutoCompletedSteps().add(
-                        new CascadeContext.CascadeCompletedStep(QUEST_B, "B")));
+                        new CascadeCompletedStep(QUEST_B, "B")));
+    }
+
+    @Test
+    @DisplayName("Given a CascadeFinalizeEvent with SUCCESS outcome, when getOutcome is called, then it returns SUCCESS")
+    public void getOutcome_returnsSuccess() {
+        CascadeFinalizeEvent event = new CascadeFinalizeEvent(
+                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null,
+                CascadeOutcome.SUCCESS);
+
+        assertEquals(CascadeOutcome.SUCCESS, event.getOutcome());
+    }
+
+    @Test
+    @DisplayName("Given a CascadeFinalizeEvent with DEPTH_LIMIT_REACHED outcome, when getOutcome is called, then it returns DEPTH_LIMIT_REACHED")
+    public void getOutcome_returnsDepthLimit() {
+        CascadeFinalizeEvent event = new CascadeFinalizeEvent(
+                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null,
+                CascadeOutcome.DEPTH_LIMIT_REACHED);
+
+        assertEquals(CascadeOutcome.DEPTH_LIMIT_REACHED, event.getOutcome());
+    }
+
+    @Test
+    @DisplayName("Given a CascadeFinalizeEvent with ERROR outcome, when getOutcome is called, then it returns ERROR")
+    public void getOutcome_returnsError() {
+        CascadeFinalizeEvent event = new CascadeFinalizeEvent(
+                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null,
+                CascadeOutcome.ERROR);
+
+        assertEquals(CascadeOutcome.ERROR, event.getOutcome());
     }
 
     @Test
     @DisplayName("Given a CascadeFinalizeEvent, when getHandlers is called, then it returns a non-null handler list")
     public void getHandlers_returnsNonNull() {
         CascadeFinalizeEvent event = new CascadeFinalizeEvent(
-                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null);
+                CHAIN_KEY, UUID.randomUUID(), null, List.of(), null,
+                CascadeOutcome.SUCCESS);
 
         assertNotNull(event.getHandlers());
     }

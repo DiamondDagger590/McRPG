@@ -62,8 +62,8 @@ public class QuestChainLoginListenerTest extends McRPGBaseTest {
         HandlerList.unregisterAll(mcRPG);
     }
 
-    @DisplayName("Given a PlayerLoadEvent for an McRPGPlayer, when fired, then reResolveOnLogin is called with the player's UUID")
     @Test
+    @DisplayName("Given a PlayerLoadEvent for an McRPGPlayer, when fired, then reResolveOnLogin is called with the player's UUID")
     public void onPlayerLoad_callsReResolveOnLogin() {
         PlayerMock playerMock = server.addPlayer();
         UUID uuid = playerMock.getUniqueId();
@@ -76,8 +76,8 @@ public class QuestChainLoginListenerTest extends McRPGBaseTest {
         verify(mockChainManager).reResolveOnLogin(eq(uuid), any(Runnable.class));
     }
 
-    @DisplayName("Given a login chain registered, when PlayerLoadEvent fires, then tryStartChain is called for that chain")
     @Test
+    @DisplayName("Given a login chain registered, when PlayerLoadEvent fires, then tryStartChain is called for that chain")
     public void onPlayerLoad_withLoginChain_callsTryStartChain() {
         QuestChainDefinition chain = new QuestChainDefinition.Builder(
                 CHAIN_KEY,
@@ -104,8 +104,8 @@ public class QuestChainLoginListenerTest extends McRPGBaseTest {
         verify(mockCascadeOrchestrator).tryStartChain(eq(playerMock), eq(CHAIN_KEY));
     }
 
-    @DisplayName("Given a PlayerLoadEvent for a non-McRPGPlayer CorePlayer, when fired, then neither reResolveOnLogin nor tryStartChain is called")
     @Test
+    @DisplayName("Given a PlayerLoadEvent for a non-McRPGPlayer CorePlayer, when fired, then neither reResolveOnLogin nor tryStartChain is called")
     public void onPlayerLoad_nonMcRPGPlayer_doesNothing() {
         CorePlayer genericPlayer = mock(CorePlayer.class);
         UUID uuid = UUID.randomUUID();
@@ -116,8 +116,8 @@ public class QuestChainLoginListenerTest extends McRPGBaseTest {
         verify(mockChainManager, never()).reResolveOnLogin(eq(uuid));
     }
 
-    @DisplayName("Given a chain with a non-login trigger registered, when PlayerLoadEvent fires, then tryStartChain is not called for it")
     @Test
+    @DisplayName("Given a chain with a non-login trigger registered, when PlayerLoadEvent fires, then tryStartChain is not called for it")
     public void onPlayerLoad_chainWithOtherTrigger_isIgnored() {
         NamespacedKey otherTrigger = new NamespacedKey("test", "other_trigger");
         QuestChainDefinition chain = new QuestChainDefinition.Builder(

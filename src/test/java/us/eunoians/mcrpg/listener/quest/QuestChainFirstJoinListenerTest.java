@@ -56,8 +56,8 @@ public class QuestChainFirstJoinListenerTest extends McRPGBaseTest {
         HandlerList.unregisterAll(mcRPG);
     }
 
-    @DisplayName("Given a PlayerLoadEvent for an McRPGPlayer with a first-join chain registered, when fired, then tryStartChain is called")
     @Test
+    @DisplayName("Given a PlayerLoadEvent for an McRPGPlayer with a first-join chain registered, when fired, then tryStartChain is called")
     public void onPlayerLoad_withFirstJoinChain_callsTryStartChain() {
         QuestChainDefinition chain = buildFirstJoinChain(CHAIN_KEY, QUEST_KEY);
         chainRegistry.register(chain);
@@ -72,8 +72,8 @@ public class QuestChainFirstJoinListenerTest extends McRPGBaseTest {
         verify(mockCascadeOrchestrator).tryStartChain(eq(playerMock), eq(CHAIN_KEY));
     }
 
-    @DisplayName("Given a PlayerLoadEvent with no first-join chains registered, when fired, then tryStartChain is never called")
     @Test
+    @DisplayName("Given a PlayerLoadEvent with no first-join chains registered, when fired, then tryStartChain is never called")
     public void onPlayerLoad_withNoFirstJoinChains_doesNotCallTryStartChain() {
         PlayerMock playerMock = server.addPlayer();
         McRPGPlayer mcRPGPlayer = mock(McRPGPlayer.class);
@@ -85,8 +85,8 @@ public class QuestChainFirstJoinListenerTest extends McRPGBaseTest {
         verify(mockCascadeOrchestrator, never()).tryStartChain(eq(playerMock), eq(CHAIN_KEY));
     }
 
-    @DisplayName("Given a PlayerLoadEvent for a non-McRPGPlayer CorePlayer, when fired, then tryStartChain is never called")
     @Test
+    @DisplayName("Given a PlayerLoadEvent for a non-McRPGPlayer CorePlayer, when fired, then tryStartChain is never called")
     public void onPlayerLoad_nonMcRPGPlayer_doesNothing() {
         QuestChainDefinition chain = buildFirstJoinChain(CHAIN_KEY, QUEST_KEY);
         chainRegistry.register(chain);
@@ -97,8 +97,8 @@ public class QuestChainFirstJoinListenerTest extends McRPGBaseTest {
         verify(mockCascadeOrchestrator, never()).tryStartChain(eq((Player) null), eq(CHAIN_KEY));
     }
 
-    @DisplayName("Given a chain with a non-first-join trigger registered, when PlayerLoadEvent fires, then tryStartChain is not called for it")
     @Test
+    @DisplayName("Given a chain with a non-first-join trigger registered, when PlayerLoadEvent fires, then tryStartChain is not called for it")
     public void onPlayerLoad_chainWithOtherTrigger_isIgnored() {
         QuestChainDefinition manualChain = new QuestChainDefinition.Builder(
                 new NamespacedKey("test", "manual_chain"),

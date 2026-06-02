@@ -11,9 +11,11 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.event.quest.CascadeCompletedStep;
 import us.eunoians.mcrpg.event.quest.CascadeFinalizeEvent;
+import us.eunoians.mcrpg.event.quest.CascadeOutcome;
 import us.eunoians.mcrpg.event.quest.CascadeStartEvent;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 import us.eunoians.mcrpg.quest.message.QuestMessageDeliverer;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * Manages cascade lifecycle around chain start/advance operations. A cascade occurs
@@ -91,9 +94,10 @@ public class CascadeOrchestrator {
         boolean isRoot = !activeCascades.containsKey(playerUUID);
         if (isRoot) {
             activeCascades.put(playerUUID, new CascadeContext(chainKey));
-            Bukkit.getPluginManager().callEvent(new CascadeStartEvent(chainKey, playerUUID));
+            Bukkit.getPluginManager().callEvent(new CascadeStartEvent(chainKey, playerUUID, player));
         }
 
+        CascadeOutcome outcome = CascadeOutcome.SUCCESS;
         try {
             boolean result = chainManager.tryStartChain(player, chainKey);
 
@@ -102,9 +106,12 @@ public class CascadeOrchestrator {
             }
 
             return result;
+        } catch (RuntimeException ex) {
+            outcome = CascadeOutcome.ERROR;
+            throw ex;
         } finally {
             if (isRoot) {
-                finalizeCascade(playerUUID, player);
+                finalizeCascade(playerUUID, player, outcome);
             }
         }
     }
@@ -123,7 +130,8 @@ public class CascadeOrchestrator {
         if (isRoot) {
             NamespacedKey chainKey = resolveChainKey(playerUUID, completedQuestKey);
             activeCascades.put(playerUUID, new CascadeContext(chainKey));
-            Bukkit.getPluginManager().callEvent(new CascadeStartEvent(chainKey, playerUUID));
+            Bukkit.getPluginManager().callEvent(new CascadeStartEvent(chainKey, playerUUID,
+                    Bukkit.getPlayer(playerUUID)));
         }
 
         CascadeContext cascadeContext = activeCascades.get(playerUUID);
@@ -133,9 +141,13 @@ public class CascadeOrchestrator {
                     + CASCADE_DEPTH_LIMIT + ") reached for chain '" + cascadeContext.getChainKey()
                     + "' player " + playerUUID + ". This likely indicates a chain configuration "
                     + "error — please report to the McRPG developers with your chain YAML.");
+            if (isRoot) {
+                finalizeCascade(playerUUID, Bukkit.getPlayer(playerUUID), CascadeOutcome.DEPTH_LIMIT_REACHED);
+            }
             return false;
         }
 
+        CascadeOutcome outcome = CascadeOutcome.SUCCESS;
         try {
             boolean result = chainManager.advanceChain(playerUUID, completedQuestKey);
 
@@ -145,9 +157,12 @@ public class CascadeOrchestrator {
             }
 
             return result;
+        } catch (RuntimeException ex) {
+            outcome = CascadeOutcome.ERROR;
+            throw ex;
         } finally {
             if (isRoot) {
-                finalizeCascade(playerUUID, Bukkit.getPlayer(playerUUID));
+                finalizeCascade(playerUUID, Bukkit.getPlayer(playerUUID), outcome);
             }
         }
     }
@@ -195,24 +210,38 @@ public class CascadeOrchestrator {
      * were recorded, sends a batch summary and delivers only the final step's
      * deferred messages. If no steps auto-completed, delivers all deferred messages
      * for the (only) started step normally.
+     * <p>
+     * Message delivery and batch summary sending are wrapped in a try/catch so that
+     * the {@link CascadeFinalizeEvent} always fires even if delivery throws.
      *
      * @param playerUUID the player UUID
      * @param player     the Bukkit player (may be null if disconnected mid-cascade)
+     * @param outcome    the outcome determined by the caller (may be overridden to
+     *                   {@link CascadeOutcome#ERROR} if delivery fails)
      */
-    void finalizeCascade(@NotNull UUID playerUUID, @Nullable Player player) {
+    void finalizeCascade(@NotNull UUID playerUUID, @Nullable Player player, @NotNull CascadeOutcome outcome) {
         CascadeContext context = activeCascades.remove(playerUUID);
         if (context == null) {
             return;
         }
 
+        CascadeOutcome effectiveOutcome = outcome;
+
         if (player != null && player.isOnline()) {
-            if (!context.hasAutoCompletedSteps()) {
-                context.getLastStartedQuestKey()
-                        .ifPresent(key -> deliverDeferredMessages(player, playerUUID, context, key));
-            } else {
-                context.getLastStartedQuestKey()
-                        .ifPresent(key -> deliverDeferredMessages(player, playerUUID, context, key));
-                sendCascadeBatchSummary(player, playerUUID, context);
+            try {
+                if (!context.hasAutoCompletedSteps()) {
+                    context.getLastStartedQuestKey()
+                            .ifPresent(key -> deliverDeferredMessages(player, playerUUID, context, key));
+                } else {
+                    context.getLastStartedQuestKey()
+                            .ifPresent(key -> deliverDeferredMessages(player, playerUUID, context, key));
+                    sendCascadeBatchSummary(player, playerUUID, context);
+                }
+            } catch (Exception ex) {
+                plugin.getLogger().log(Level.SEVERE,
+                        "[CascadeOrchestrator] Error delivering cascade messages for player "
+                                + playerUUID + " chain '" + context.getChainKey() + "'", ex);
+                effectiveOutcome = CascadeOutcome.ERROR;
             }
         }
 
@@ -221,7 +250,8 @@ public class CascadeOrchestrator {
                 playerUUID,
                 player,
                 context.getAutoCompletedSteps(),
-                context.getLastStartedQuestKey().orElse(null)));
+                context.getLastStartedQuestKey().orElse(null),
+                effectiveOutcome));
     }
 
     /**
@@ -276,7 +306,7 @@ public class CascadeOrchestrator {
                 .replace("<chain>", chainDisplayName);
         player.sendMessage(plugin.getMiniMessage().deserialize(header));
 
-        for (CascadeContext.CascadeCompletedStep step : context.getAutoCompletedSteps()) {
+        for (CascadeCompletedStep step : context.getAutoCompletedSteps()) {
             String entry = locManager.getLocalizedMessage(mcRPGPlayer,
                     LocalizationKey.QUEST_CHAIN_CASCADE_BATCH_STEP_ENTRY)
                     .replace("<quest>", step.displayName());

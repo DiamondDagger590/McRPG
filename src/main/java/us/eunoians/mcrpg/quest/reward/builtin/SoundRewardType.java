@@ -5,6 +5,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
@@ -13,6 +14,7 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
 
 /**
  * Reward type that plays a sound to the rewarded player.
@@ -87,8 +89,8 @@ public final class SoundRewardType implements QuestRewardType {
             McRPG.getInstance().getLogger().warning("[SoundRewardType] Unknown sound: " + soundName);
             return new SoundRewardType();
         }
-        float vol = section.contains("volume") ? ((Number) section.get("volume")).floatValue() : DEFAULT_VOLUME;
-        float pit = section.contains("pitch") ? ((Number) section.get("pitch")).floatValue() : DEFAULT_PITCH;
+        float vol = parseFloat(section.get("volume"), DEFAULT_VOLUME, "volume");
+        float pit = parseFloat(section.get("pitch"), DEFAULT_PITCH, "pitch");
         return new SoundRewardType(parsedSound, vol, pit);
     }
 
@@ -104,7 +106,13 @@ public final class SoundRewardType implements QuestRewardType {
         if (sound == null) {
             return;
         }
-        player.playSound(player.getLocation(), sound, volume, pitch);
+        try {
+            player.playSound(player.getLocation(), sound, volume, pitch);
+        } catch (Exception ex) {
+            McRPG.getInstance().getLogger().log(Level.WARNING,
+                    "[SoundRewardType] Failed to play sound " + sound.name() + " for player "
+                            + player.getName(), ex);
+        }
     }
 
     /**
@@ -145,8 +153,8 @@ public final class SoundRewardType implements QuestRewardType {
             McRPG.getInstance().getLogger().warning("[SoundRewardType] Unknown sound in serialized config: " + rawSound);
             return new SoundRewardType();
         }
-        float vol = config.containsKey("volume") ? ((Number) config.get("volume")).floatValue() : DEFAULT_VOLUME;
-        float pit = config.containsKey("pitch") ? ((Number) config.get("pitch")).floatValue() : DEFAULT_PITCH;
+        float vol = parseFloat(config.get("volume"), DEFAULT_VOLUME, "volume");
+        float pit = parseFloat(config.get("pitch"), DEFAULT_PITCH, "pitch");
         return new SoundRewardType(parsedSound, vol, pit);
     }
 
@@ -170,5 +178,26 @@ public final class SoundRewardType implements QuestRewardType {
     @Override
     public Optional<NamespacedKey> getExpansionKey() {
         return Optional.of(McRPGExpansion.EXPANSION_KEY);
+    }
+
+    /**
+     * Safely parses a numeric value from a config object, falling back to the default
+     * if the value is null or not a {@link Number}.
+     *
+     * @param raw          the raw config value (may be null or non-numeric)
+     * @param defaultValue the fallback value
+     * @param fieldName    the config field name for logging
+     * @return the parsed float, or the default
+     */
+    private static float parseFloat(@Nullable Object raw, float defaultValue, @NotNull String fieldName) {
+        if (raw == null) {
+            return defaultValue;
+        }
+        if (raw instanceof Number number) {
+            return number.floatValue();
+        }
+        McRPG.getInstance().getLogger().warning("[SoundRewardType] Expected numeric '" + fieldName
+                + "' but got " + raw.getClass().getSimpleName() + ": " + raw + " — using default " + defaultValue);
+        return defaultValue;
     }
 }

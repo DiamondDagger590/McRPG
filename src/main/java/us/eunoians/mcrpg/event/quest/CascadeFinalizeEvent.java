@@ -6,7 +6,6 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import us.eunoians.mcrpg.quest.chain.CascadeContext;
 
 import java.util.Collections;
 import java.util.List;
@@ -31,8 +30,9 @@ public class CascadeFinalizeEvent extends Event {
     private final NamespacedKey chainKey;
     private final UUID playerUUID;
     private final Player player;
-    private final List<CascadeContext.CascadeCompletedStep> autoCompletedSteps;
+    private final List<CascadeCompletedStep> autoCompletedSteps;
     private final NamespacedKey lastStartedQuestKey;
+    private final CascadeOutcome outcome;
 
     /**
      * Creates a new cascade finalize event.
@@ -42,17 +42,20 @@ public class CascadeFinalizeEvent extends Event {
      * @param player              the Bukkit player, or {@code null} if offline
      * @param autoCompletedSteps  the list of steps that auto-completed during the cascade
      * @param lastStartedQuestKey the quest key of the final step started, or {@code null}
+     * @param outcome             the outcome of the cascade
      */
     public CascadeFinalizeEvent(@NotNull NamespacedKey chainKey,
                                 @NotNull UUID playerUUID,
                                 @Nullable Player player,
-                                @NotNull List<CascadeContext.CascadeCompletedStep> autoCompletedSteps,
-                                @Nullable NamespacedKey lastStartedQuestKey) {
+                                @NotNull List<CascadeCompletedStep> autoCompletedSteps,
+                                @Nullable NamespacedKey lastStartedQuestKey,
+                                @NotNull CascadeOutcome outcome) {
         this.chainKey = chainKey;
         this.playerUUID = playerUUID;
         this.player = player;
         this.autoCompletedSteps = Collections.unmodifiableList(autoCompletedSteps);
         this.lastStartedQuestKey = lastStartedQuestKey;
+        this.outcome = outcome;
     }
 
     /**
@@ -93,7 +96,7 @@ public class CascadeFinalizeEvent extends Event {
      * @return unmodifiable list of auto-completed steps
      */
     @NotNull
-    public List<CascadeContext.CascadeCompletedStep> getAutoCompletedSteps() {
+    public List<CascadeCompletedStep> getAutoCompletedSteps() {
         return autoCompletedSteps;
     }
 
@@ -114,6 +117,17 @@ public class CascadeFinalizeEvent extends Event {
     @NotNull
     public Optional<NamespacedKey> getLastStartedQuestKey() {
         return Optional.ofNullable(lastStartedQuestKey);
+    }
+
+    /**
+     * Gets the outcome of this cascade — whether it completed successfully, was
+     * halted by the depth limit, or failed due to an internal error.
+     *
+     * @return the cascade outcome
+     */
+    @NotNull
+    public CascadeOutcome getOutcome() {
+        return outcome;
     }
 
     @NotNull

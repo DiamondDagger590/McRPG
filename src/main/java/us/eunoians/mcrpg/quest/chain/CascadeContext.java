@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.quest.chain;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.event.quest.CascadeCompletedStep;
 import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 
 import java.util.ArrayList;
@@ -113,15 +114,16 @@ public class CascadeContext {
     }
 
     /**
-     * Returns the deferred on-start messages for the given quest key, or an empty
-     * list if no messages were deferred for that key.
+     * Returns an unmodifiable view of the deferred on-start messages for the given
+     * quest key, or an empty list if no messages were deferred for that key.
      *
      * @param questKey the quest definition key to look up
-     * @return the deferred messages, or an empty list
+     * @return unmodifiable list of deferred messages, or an empty list
      */
     @NotNull
     public List<OnStartMessage> getDeferredMessagesFor(@NotNull NamespacedKey questKey) {
-        return deferredMessages.getOrDefault(questKey, List.of());
+        List<OnStartMessage> messages = deferredMessages.get(questKey);
+        return messages != null ? Collections.unmodifiableList(messages) : List.of();
     }
 
     /**
@@ -133,14 +135,4 @@ public class CascadeContext {
         return !autoCompletedSteps.isEmpty();
     }
 
-    /**
-     * Immutable record of a single auto-completed step within a cascade.
-     *
-     * @param questKey    the quest definition key
-     * @param displayName the resolved display name for summary messages
-     */
-    public record CascadeCompletedStep(
-            @NotNull NamespacedKey questKey,
-            @NotNull String displayName
-    ) {}
 }

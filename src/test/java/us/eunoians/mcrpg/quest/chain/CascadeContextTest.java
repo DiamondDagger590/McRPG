@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.quest.chain;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import us.eunoians.mcrpg.event.quest.CascadeCompletedStep;
 import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 
 import java.util.List;
@@ -66,7 +67,7 @@ public class CascadeContextTest {
         context.recordAutoCompletedStep(QUEST_A, "Quest A");
         context.recordAutoCompletedStep(QUEST_B, "Quest B");
 
-        List<CascadeContext.CascadeCompletedStep> steps = context.getAutoCompletedSteps();
+        List<CascadeCompletedStep> steps = context.getAutoCompletedSteps();
         assertEquals(2, steps.size());
         assertEquals(QUEST_A, steps.get(0).questKey());
         assertEquals("Quest A", steps.get(0).displayName());
@@ -137,9 +138,9 @@ public class CascadeContextTest {
         CascadeContext context = new CascadeContext(CHAIN_KEY);
         context.recordAutoCompletedStep(QUEST_A, "Quest A");
 
-        List<CascadeContext.CascadeCompletedStep> steps = context.getAutoCompletedSteps();
+        List<CascadeCompletedStep> steps = context.getAutoCompletedSteps();
 
         assertThrows(UnsupportedOperationException.class, () -> steps.add(
-                new CascadeContext.CascadeCompletedStep(QUEST_B, "Quest B")));
+                new CascadeCompletedStep(QUEST_B, "Quest B")));
     }
 }
