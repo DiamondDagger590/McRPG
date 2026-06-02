@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static us.eunoians.mcrpg.util.McRPGMethods.getMiniMessage;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 
 /**
  * Built-in objective type for tracking advancement completion progress.
@@ -164,7 +164,7 @@ public class AdvancementCompleteObjectiveType implements QuestObjectiveType {
     private String extractDisplayName(@NotNull String advancementKey) {
         int colonIndex = advancementKey.indexOf(':');
         String path = colonIndex >= 0 ? advancementKey.substring(colonIndex + 1) : advancementKey;
-        return getMiniMessage().escapeTags(path.replace('_', ' '));
+        return MiniMessage.miniMessage().escapeTags(path.replace('_', ' '));
     }
 
     @NotNull
