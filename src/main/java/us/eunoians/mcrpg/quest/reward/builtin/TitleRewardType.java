@@ -6,6 +6,7 @@ import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -17,6 +18,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.logging.Level;
 
 import com.diamonddagger590.mccore.registry.RegistryKey;
 
@@ -97,9 +99,9 @@ public final class TitleRewardType implements QuestRewardType {
     public TitleRewardType parseConfig(@NotNull Section section) {
         String title = section.contains("title") ? section.getString("title") : "";
         String subtitle = section.contains("subtitle") ? section.getString("subtitle") : "";
-        int fadeIn = section.contains("fade-in") ? ((Number) section.get("fade-in")).intValue() : DEFAULT_FADE_IN;
-        int stay = section.contains("stay") ? ((Number) section.get("stay")).intValue() : DEFAULT_STAY;
-        int fadeOut = section.contains("fade-out") ? ((Number) section.get("fade-out")).intValue() : DEFAULT_FADE_OUT;
+        int fadeIn = parseInt(section.get("fade-in"), DEFAULT_FADE_IN, "fade-in");
+        int stay = parseInt(section.get("stay"), DEFAULT_STAY, "stay");
+        int fadeOut = parseInt(section.get("fade-out"), DEFAULT_FADE_OUT, "fade-out");
         return new TitleRewardType(title != null ? title : "", subtitle != null ? subtitle : "",
                 fadeIn, stay, fadeOut);
     }
@@ -112,21 +114,26 @@ public final class TitleRewardType implements QuestRewardType {
      */
     @Override
     public void grant(@NotNull Player player) {
-        McRPGLocalizationManager locManager = McRPG.getInstance().registryAccess()
-                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
-        Map<String, String> paletteReplacements = locManager.getPaletteReplacements();
+        try {
+            McRPGLocalizationManager locManager = McRPG.getInstance().registryAccess()
+                    .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+            Map<String, String> paletteReplacements = locManager.getPaletteReplacements();
 
-        String resolvedTitle = applyPalette(titleStr, paletteReplacements);
-        String resolvedSubtitle = applyPalette(subtitleStr, paletteReplacements);
+            String resolvedTitle = applyPalette(titleStr, paletteReplacements);
+            String resolvedSubtitle = applyPalette(subtitleStr, paletteReplacements);
 
-        Component titleComponent = McRPG.getInstance().getMiniMessage().deserialize(resolvedTitle);
-        Component subtitleComponent = McRPG.getInstance().getMiniMessage().deserialize(resolvedSubtitle);
+            Component titleComponent = McRPG.getInstance().getMiniMessage().deserialize(resolvedTitle);
+            Component subtitleComponent = McRPG.getInstance().getMiniMessage().deserialize(resolvedSubtitle);
 
-        player.showTitle(Title.title(titleComponent, subtitleComponent,
-                Title.Times.times(
-                        Duration.ofMillis(fadeInTicks * MILLIS_PER_TICK),
-                        Duration.ofMillis(stayTicks * MILLIS_PER_TICK),
-                        Duration.ofMillis(fadeOutTicks * MILLIS_PER_TICK))));
+            player.showTitle(Title.title(titleComponent, subtitleComponent,
+                    Title.Times.times(
+                            Duration.ofMillis(fadeInTicks * MILLIS_PER_TICK),
+                            Duration.ofMillis(stayTicks * MILLIS_PER_TICK),
+                            Duration.ofMillis(fadeOutTicks * MILLIS_PER_TICK))));
+        } catch (Exception ex) {
+            McRPG.getInstance().getLogger().log(Level.WARNING,
+                    "[TitleRewardType] Failed to show title to player " + player.getName(), ex);
+        }
     }
 
     /**
@@ -158,9 +165,9 @@ public final class TitleRewardType implements QuestRewardType {
     public TitleRewardType fromSerializedConfig(@NotNull Map<String, Object> config) {
         String title = config.containsKey("title") ? config.get("title").toString() : "";
         String subtitle = config.containsKey("subtitle") ? config.get("subtitle").toString() : "";
-        int fadeIn = config.containsKey("fade-in") ? ((Number) config.get("fade-in")).intValue() : DEFAULT_FADE_IN;
-        int stay = config.containsKey("stay") ? ((Number) config.get("stay")).intValue() : DEFAULT_STAY;
-        int fadeOut = config.containsKey("fade-out") ? ((Number) config.get("fade-out")).intValue() : DEFAULT_FADE_OUT;
+        int fadeIn = parseInt(config.get("fade-in"), DEFAULT_FADE_IN, "fade-in");
+        int stay = parseInt(config.get("stay"), DEFAULT_STAY, "stay");
+        int fadeOut = parseInt(config.get("fade-out"), DEFAULT_FADE_OUT, "fade-out");
         return new TitleRewardType(title, subtitle, fadeIn, stay, fadeOut);
     }
 
@@ -200,5 +207,26 @@ public final class TitleRewardType implements QuestRewardType {
             result = result.replace("<" + entry.getKey() + ">", entry.getValue());
         }
         return result;
+    }
+
+    /**
+     * Safely parses an integer value from a config object, falling back to the default
+     * if the value is null or not a {@link Number}.
+     *
+     * @param raw          the raw config value (may be null or non-numeric)
+     * @param defaultValue the fallback value
+     * @param fieldName    the config field name for logging
+     * @return the parsed int, or the default
+     */
+    private static int parseInt(@Nullable Object raw, int defaultValue, @NotNull String fieldName) {
+        if (raw == null) {
+            return defaultValue;
+        }
+        if (raw instanceof Number number) {
+            return number.intValue();
+        }
+        McRPG.getInstance().getLogger().warning("[TitleRewardType] Expected numeric '" + fieldName
+                + "' but got " + raw.getClass().getSimpleName() + ": " + raw + " — using default " + defaultValue);
+        return defaultValue;
     }
 }

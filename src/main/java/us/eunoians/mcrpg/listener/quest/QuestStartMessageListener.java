@@ -95,9 +95,8 @@ public class QuestStartMessageListener implements Listener {
         List<OnStartMessage> messages = definition.getOnStartMessages();
         UUID starterUUID = event.getStarterUUID();
 
-        // Cascade tracking must always update lastStartedQuestKey, even when
-        // the definition has no on-start messages, so finalizeCascade delivers
-        // the correct step's deferred messages.
+        boolean starterDeferred = false;
+
         if (starterUUID != null && cascadeOrchestrator.isInCascade(starterUUID)) {
             Optional<CascadeContext> contextOpt = cascadeOrchestrator.getCascadeContext(starterUUID);
             if (contextOpt.isPresent()) {
@@ -105,20 +104,18 @@ public class QuestStartMessageListener implements Listener {
                     contextOpt.get().deferMessages(definition.getQuestKey(), messages);
                 }
                 cascadeOrchestrator.notifyStepStarted(starterUUID, definition.getQuestKey());
-                return;
+                starterDeferred = true;
+            } else {
+                mcRPG.getLogger().warning("[QuestStartMessageListener] isInCascade=true but "
+                        + "CascadeContext missing for player " + starterUUID
+                        + " — falling through to immediate delivery");
             }
-            // Context missing despite isInCascade=true — map inconsistency.
-            // Fall through to immediate delivery rather than silently dropping messages.
-            mcRPG.getLogger().warning("[QuestStartMessageListener] isInCascade=true but "
-                    + "CascadeContext missing for player " + starterUUID
-                    + " — falling through to immediate delivery");
         }
 
         if (messages.isEmpty()) {
             return;
         }
 
-        // Pre-parse locale routes once here so Route.fromString() is not called per-player inside the loop.
         List<Route> precomputedRoutes = new ArrayList<>(messages.size());
         for (OnStartMessage msg : messages) {
             precomputedRoutes.add(msg.localeKey().map(Route::fromString).orElse(null));
@@ -130,6 +127,9 @@ public class QuestStartMessageListener implements Listener {
                 .manager(McRPGManagerKey.PLAYER);
 
         for (UUID playerUUID : instance.getQuestScope().map(scope -> scope.getCurrentPlayersInScope()).orElse(Set.of())) {
+            if (starterDeferred && playerUUID.equals(starterUUID)) {
+                continue;
+            }
             Player player = Bukkit.getPlayer(playerUUID);
             if (player == null || !player.isOnline()) {
                 continue;

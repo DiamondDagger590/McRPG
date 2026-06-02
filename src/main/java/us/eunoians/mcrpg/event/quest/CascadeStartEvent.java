@@ -5,6 +5,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
 
@@ -21,16 +22,22 @@ public class CascadeStartEvent extends Event {
 
     private final NamespacedKey chainKey;
     private final UUID playerUUID;
+    private final Player player;
 
     /**
      * Creates a new cascade start event.
      *
      * @param chainKey   the chain key for which the cascade is starting
      * @param playerUUID the UUID of the player entering the cascade
+     * @param player     the Bukkit player, or {@code null} if the player is not online
+     *                   (e.g. when the cascade is initiated from an advance path where
+     *                   only the UUID is known)
      */
-    public CascadeStartEvent(@NotNull NamespacedKey chainKey, @NotNull UUID playerUUID) {
+    public CascadeStartEvent(@NotNull NamespacedKey chainKey, @NotNull UUID playerUUID,
+                             @Nullable Player player) {
         this.chainKey = chainKey;
         this.playerUUID = playerUUID;
+        this.player = player;
     }
 
     /**
@@ -51,6 +58,16 @@ public class CascadeStartEvent extends Event {
     @NotNull
     public UUID getPlayerUUID() {
         return playerUUID;
+    }
+
+    /**
+     * Gets the Bukkit player, or {@code null} if the player is not online.
+     *
+     * @return the player, or {@code null}
+     */
+    @Nullable
+    public Player getPlayer() {
+        return player;
     }
 
     @NotNull
