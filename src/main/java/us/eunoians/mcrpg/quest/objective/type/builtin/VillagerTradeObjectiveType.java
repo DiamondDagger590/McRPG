@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
@@ -103,15 +104,30 @@ public class VillagerTradeObjectiveType implements QuestObjectiveType {
         }
         if (validItems.size() == 1) {
             return localization.getLocalizedMessage(player, LocalizationKey.QUEST_OBJECTIVE_VILLAGER_TRADE_SINGLE,
-                    Map.of("count", count, "item", validItems.iterator().next().itemName()));
+                    Map.of("count", count, "item", resolveItemDisplayName(validItems.iterator().next())));
         }
         StringBuilder sb = new StringBuilder(localization.getLocalizedMessage(player,
                 LocalizationKey.QUEST_OBJECTIVE_VILLAGER_TRADE_MULTI_HEADER, Map.of("count", count)));
         for (CustomItemWrapper item : validItems) {
             sb.append("\n").append(localization.getLocalizedMessage(player,
-                    LocalizationKey.QUEST_OBJECTIVE_VILLAGER_TRADE_MULTI_ITEM, Map.of("item", item.itemName())));
+                    LocalizationKey.QUEST_OBJECTIVE_VILLAGER_TRADE_MULTI_ITEM, Map.of("item", resolveItemDisplayName(item))));
         }
         return sb.toString();
+    }
+
+    /**
+     * Resolves a human-readable display name from a {@link CustomItemWrapper}.
+     *
+     * @param wrapper the item wrapper to resolve
+     * @return the custom item identifier or a formatted material name
+     */
+    @NotNull
+    private String resolveItemDisplayName(@NotNull CustomItemWrapper wrapper) {
+        return wrapper.customItem()
+                .orElseGet(() -> wrapper.material()
+                        .map(Material::name)
+                        .map(name -> name.toLowerCase().replace('_', ' '))
+                        .orElse("unknown"));
     }
 
     @NotNull
