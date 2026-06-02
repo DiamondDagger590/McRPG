@@ -611,6 +611,14 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - Shared test helpers and fixtures go in `src/testFixtures/java/`
 - **The entire test suite must pass before a task is considered complete** — run `./gradlew verifiedShadowJar` (or `./gradlew test`) and verify zero failures across all test classes, not just tests related to the current change. Regressions in unrelated tests still block completion.
 
+#### Test Naming Conventions
+
+- **Annotation ordering:** `@DisplayName` comes **before** `@Test` (or `@ParameterizedTest`) on every test method
+- **`@DisplayName` format:** Short descriptive label — not a Given/When/Then sentence. Examples: `"getBaseValue returns constructor value"`, `"DISABLED cycles to ENABLED"`, `"fromString is case-insensitive"`
+- **Method naming:** `action_outcome_whenCondition` — the `_whenCondition` suffix is optional when the context is obvious. Examples: `getNextSetting_disabled_cyclesToEnabled`, `getBaseValue_returnsDefault`, `fromString_unknownValue_returnsEmpty`
+- **`@Nested` classes:** Use `@Nested` with `@DisplayName` to group tests by class-under-test or logical section (e.g., `@DisplayName("FlatPlayerStat")`)
+- **Parameterized tests:** Prefer `@ParameterizedTest` with `@EnumSource` over manual loops when testing all enum variants
+
 ---
 
 ## Key Utilities
