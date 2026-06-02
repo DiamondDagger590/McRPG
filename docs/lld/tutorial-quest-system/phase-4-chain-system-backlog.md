@@ -381,7 +381,12 @@ private void enforceTierableAbilityUpgradeQuestConfiguration() {
 
 **Backlog reference:** §13
 
-The bypass permission (`mcrpg.tutorial.bypass`) should only apply to the built-in tutorial chain, not to any chain that happens to use the tutorial source. The current implementation checks `chain.getSourceKey()` against `TutorialQuestSource.KEY`, which is correct for now since only the tutorial chain uses that source. However, for correctness and future-proofing, change the check to reference the tutorial chain key constant directly.
+Two complementary mechanisms for disabling the tutorial:
+
+1. **Server-wide config toggle** (`tutorial.enabled` in `config.yml`) — already implemented in Phase 3. When `false`, the tutorial chain is never started for any player. This section documents the interaction with the bypass permission and ensures the config check is evaluated before the permission check.
+2. **Per-player bypass permission** (`mcrpg.tutorial.bypass`) — allows individual players to skip the tutorial while it remains enabled server-wide (e.g., for experienced players or alt accounts).
+
+The bypass permission should only apply to the built-in tutorial chain, not to any chain that happens to use the tutorial source. The current implementation checks `chain.getSourceKey()` against `TutorialQuestSource.KEY`. For correctness and future-proofing, change the check to reference the tutorial chain key constant directly.
 
 ### 4.1 `QuestChainFirstJoinListener` Change
 
@@ -394,17 +399,28 @@ private boolean shouldBypassChain(@NotNull Player player, @NotNull QuestChainDef
             && player.hasPermission("mcrpg.tutorial.bypass");
 }
 
-// After — reference the tutorial chain key directly
+// After — config toggle check + chain-key-based bypass
 private static final NamespacedKey TUTORIAL_CHAIN_KEY =
         new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "tutorial_chain");
 
 private boolean shouldBypassChain(@NotNull Player player, @NotNull QuestChainDefinition chain) {
-    return TUTORIAL_CHAIN_KEY.equals(chain.getChainKey())
-            && player.hasPermission("mcrpg.tutorial.bypass");
+    if (!TUTORIAL_CHAIN_KEY.equals(chain.getChainKey())) {
+        return false;
+    }
+    // Server-wide toggle (tutorial.enabled in config.yml) takes precedence
+    if (!isTutorialEnabled()) {
+        return true;
+    }
+    // Per-player permission bypass
+    return player.hasPermission("mcrpg.tutorial.bypass");
 }
 ```
 
 No other changes needed. The bypass is intentionally hardcoded to the tutorial chain. Per-chain bypass infrastructure is explicitly out of scope.
+
+### 4.2 Config Reference
+
+The `tutorial.enabled` config route already exists from Phase 3. `isTutorialEnabled()` reads it via `MainConfigFile.TUTORIAL_ENABLED`. When `false`, `shouldBypassChain` returns `true` for the tutorial chain regardless of player permissions.
 
 ---
 
@@ -418,64 +434,32 @@ Three sub-items from the AbilityType enum refactor audit. None are regressions.
 
 **File:** `src/main/java/us/eunoians/mcrpg/entity/holder/LoadoutHolder.java`
 
-`getAvailableDefaultAbilities()` is a private method with semantically different intent — it returns non-unlockable abilities (always available, not gated by skill level). Migrating it to use `AbilityType` would change its filtering behavior because `AbilityType` classifies by activation pattern, not by unlock gating.
+`getAvailableDefaultAbilities()` is a private method with semantically different intent — it returns non-unlockable abilities (always available, not gated by skill level). Migrating it to use `AbilityType` would change its filtering behavior because `AbilityType` classifies by activation pattern, not by unlock gating. Tierability is also orthogonal — a tierable ability could still be always-available if it has no unlock gate.
 
-**Change:** Extract the "non-unlockable" concept into a dedicated predicate method on `Ability`:
+**Change:** Extract the "non-unlockable" concept into a dedicated predicate method on `Ability`. The check is purely about the unlock attribute — tierability is irrelevant:
 
 ```java
 /**
  * Returns whether this ability is always available to its holder without
  * requiring an explicit unlock (e.g., innate abilities that are granted
  * at skill level 0). Distinct from {@code AbilityType} which classifies
- * by activation pattern.
+ * by activation pattern, and from {@code TierableAbility} which controls
+ * tier progression.
  *
  * @return true if this ability does not require unlocking
  */
 default boolean isAlwaysAvailable() {
-    return !(this instanceof TierableAbility) ||
-           !AbilityData.hasAttribute(this, AbilityData.ABILITY_UNLOCKED_ATTRIBUTE);
+    return !AbilityData.hasAttribute(this, AbilityData.ABILITY_UNLOCKED_ATTRIBUTE);
 }
 ```
 
-Then `getAvailableDefaultAbilities()` uses `ability.isAlwaysAvailable()` instead of its current inline filter logic. This makes the intent explicit without conflating it with `AbilityType`.
+Then `getAvailableDefaultAbilities()` uses `ability.isAlwaysAvailable()` instead of its current inline filter logic. This makes the intent explicit without conflating it with `AbilityType` or `TierableAbility`.
 
-### 5.2 `resolveAbilityName` SRP Extraction
+### 5.2 `resolveAbilityName` Inline Cleanup
 
 **File:** `src/main/java/us/eunoians/mcrpg/quest/objective/type/builtin/AbilityObjectiveFilter.java`
 
-Extract `resolveAbilityName()` into a dedicated `AbilityNameResolver` collaborator:
-
-**New file:** `src/main/java/us/eunoians/mcrpg/ability/AbilityNameResolver.java`
-
-```java
-/**
- * Resolves the localized display name of an ability. Extracted from
- * {@link AbilityObjectiveFilter} to separate name resolution from
- * filter matching concerns.
- */
-public class AbilityNameResolver {
-
-    private final AbilityRegistry abilityRegistry;
-    private final McRPGLocalizationManager localizationManager;
-
-    public AbilityNameResolver(@NotNull AbilityRegistry abilityRegistry,
-                                @NotNull McRPGLocalizationManager localizationManager) {
-        this.abilityRegistry = abilityRegistry;
-        this.localizationManager = localizationManager;
-    }
-
-    /**
-     * Resolves the display name for an ability key.
-     *
-     * @param abilityKey the ability key
-     * @return the localized name, or the key's value portion as fallback
-     */
-    @NotNull
-    public String resolveAbilityName(@NotNull NamespacedKey abilityKey) { ... }
-}
-```
-
-Update `AbilityObjectiveFilter`, `PassiveAbilityFilter`, and `ActiveAbilityFilter` to accept `AbilityNameResolver` as a constructor parameter instead of accessing the registry/logger directly.
+`Ability` already provides `getDisplayName(McRPGPlayer)` and `getDisplayName()`. The inline `resolveAbilityName` in the filter should call the existing method instead of re-implementing name resolution. No new class needed — just replace the inline logic with a call to `ability.getDisplayName()` on the resolved ability.
 
 ### 5.3 New `LoadoutHolder` / Filter Tests
 
@@ -512,7 +496,7 @@ classDiagram
         COOLDOWN_LIMITED
     }
 
-    class RepeatEvaluator {
+    class ChainRepeatEvaluator {
         ~new~
         -timeProvider : TimeProvider
         +canRepeat(QuestChainDefinition, QuestChainPlayerState) boolean
@@ -521,7 +505,7 @@ classDiagram
 
     class QuestChainManager {
         ~modified~
-        -repeatEvaluator : RepeatEvaluator
+        -repeatEvaluator : ChainRepeatEvaluator
         +tryStartChain(Player, NamespacedKey) boolean
     }
 
@@ -530,15 +514,17 @@ classDiagram
         +onPlayerLoad(PlayerLoadEvent)
     }
 
-    RepeatEvaluator --> QuestChainRepeatMode
-    RepeatEvaluator --> QuestChainPlayerState
-    QuestChainManager --> RepeatEvaluator
+    ChainRepeatEvaluator --> QuestChainRepeatMode
+    ChainRepeatEvaluator --> QuestChainPlayerState
+    QuestChainManager --> ChainRepeatEvaluator
 ```
 
-### 6.2 `RepeatEvaluator` — Repeat Eligibility Logic
+### 6.2 `ChainRepeatEvaluator` — Repeat Eligibility Logic
 
 **Package:** `us.eunoians.mcrpg.quest.chain`
-**File:** `src/main/java/us/eunoians/mcrpg/quest/chain/RepeatEvaluator.java`
+**File:** `src/main/java/us/eunoians/mcrpg/quest/chain/ChainRepeatEvaluator.java`
+
+Named `ChainRepeatEvaluator` (not `RepeatEvaluator`) to clearly scope it to the chain system. The quest board has structurally similar repeat logic (`QuestRepeatMode` shares the same mode names) but uses different state shapes — board cooldowns are tracked per-slot via `BoardCooldownDAO`, while chain cooldowns use `QuestChainPlayerState.lastCompletedAt`. The boolean evaluation math (mode + count + cooldown → can-repeat) is identical, but extracting a shared utility now would require retrofitting the board's inline logic for marginal gain. If a third repeat context appears, factor out a shared `RepeatEligibility` utility then.
 
 Stateless collaborator owned by `QuestChainManager`. Extracted to keep repeat logic testable without needing a full manager.
 
@@ -547,11 +533,11 @@ Stateless collaborator owned by `QuestChainManager`. Extracted to keep repeat lo
  * Evaluates whether a chain in a terminal state is eligible for repeat re-start
  * based on the chain definition's repeat mode, cooldown, and completion limits.
  */
-public class RepeatEvaluator {
+public class ChainRepeatEvaluator {
 
     private final TimeProvider timeProvider;
 
-    public RepeatEvaluator(@NotNull TimeProvider timeProvider) {
+    public ChainRepeatEvaluator(@NotNull TimeProvider timeProvider) {
         this.timeProvider = timeProvider;
     }
 
@@ -623,7 +609,7 @@ public class RepeatEvaluator {
 
 **File:** `src/main/java/us/eunoians/mcrpg/quest/chain/QuestChainManager.java`
 
-Replace the current repeat-mode stub (which blocks all terminal states for non-ONCE chains) with actual `RepeatEvaluator` evaluation:
+Replace the current repeat-mode stub (which blocks all terminal states for non-ONCE chains) with actual `ChainRepeatEvaluator` evaluation:
 
 ```java
 // Current (Phase 2 — lines 125-130):
@@ -665,7 +651,7 @@ The login listener already evaluates login-triggered chains. The existing `trySt
 
 ### 6.6 Tests
 
-- `RepeatEvaluatorTest` — all 5 repeat modes with various state combinations:
+- `ChainRepeatEvaluatorTest` — all 5 repeat modes with various state combinations:
   - `ONCE` → always false
   - `UNLIMITED` → true for all terminal states
   - `COOLDOWN` → false when within cooldown, true after cooldown elapses
@@ -1154,7 +1140,7 @@ quest-chain:
 - `AvailabilityWindowDefinitionTest` — `isActive()` for normal ranges, year-wrapping ranges, edge cases (midnight, year boundaries)
 - `AvailabilityConfigTest` — `isCurrentlyAvailable()` with multiple windows
 - `ChainAvailabilityCheckerTest` — window transition detection, policy application
-- `RepeatEvaluatorAvailabilityTest` — repeat evaluation respects availability windows
+- `ChainRepeatEvaluatorAvailabilityTest` — repeat evaluation respects availability windows
 
 ---
 
@@ -1963,7 +1949,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 
 | Path | Type | Section |
 |------|------|---------|
-| `quest/chain/RepeatEvaluator.java` | Class | §6 |
+| `quest/chain/ChainRepeatEvaluator.java` | Class | §6 |
 | `quest/chain/availability/WindowBoundary.java` | Sealed Interface | §7 |
 | `quest/chain/availability/AvailabilityWindowDefinition.java` | Record | §7 |
 | `quest/chain/availability/AvailabilityConfig.java` | Record | §7 |
@@ -1977,7 +1963,6 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `event/quest/QuestChainExpireEvent.java` | Class | §10 |
 | `event/quest/QuestChainRestartEvent.java` | Class | §10 |
 | `event/quest/QuestChainStepRetryEvent.java` | Class | §10 |
-| `ability/AbilityNameResolver.java` | Class | §5 |
 | `command/admin/content/ContentExpansionsCommand.java` | Class | §11 |
 | `command/admin/content/ContentPacksCommand.java` | Class | §11 |
 | `command/admin/content/ContentKeysCommand.java` | Class | §11 |
@@ -1988,7 +1973,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 |------|--------|
 | `quest/impl/QuestInstanceTimestampTest.java` | §1 |
 | `quest/chain/QuestChainPlayerStateTimestampTest.java` | §1 |
-| `quest/chain/RepeatEvaluatorTest.java` | §6 |
+| `quest/chain/ChainRepeatEvaluatorTest.java` | §6 |
 | `quest/chain/availability/WindowBoundaryTest.java` | §7 |
 | `quest/chain/availability/AvailabilityWindowDefinitionTest.java` | §7 |
 | `quest/chain/availability/AvailabilityConfigTest.java` | §7 |
@@ -2001,7 +1986,6 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `quest/chain/HandleExpireSkipTest.java` | §8 |
 | `quest/QuestReloadStaleWarningTest.java` | §2 |
 | `ability/AbilityRegistrySoftDisableTest.java` | §3 |
-| `ability/AbilityNameResolverTest.java` | §5 |
 | `entity/holder/LoadoutHolderAvailableAbilitiesTest.java` | §5 |
 | `quest/objective/type/builtin/PassiveAbilityFilterTest.java` | §5 |
 | `quest/objective/type/builtin/ActiveAbilityFilterTest.java` | §5 |
