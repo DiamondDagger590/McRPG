@@ -190,145 +190,69 @@ public void loadQuestDefinitions() {
 }
 ```
 
-### 2.2 Active Instance Reconciliation (§10)
+### 2.2 Active Instance Staleness on Reload (§10)
 
-**Approach:** Cancel stale instances. When definitions change during reload, cancel active quest instances whose definitions were modified or removed, and notify affected players.
+**Approach:** Accept staleness — preserve the original HLD design. Active quest instances keep running with the definition snapshot they were created from. The registry is updated for new quest starts, but existing instances are not cancelled or reconciled.
+
+This is the explicit design from the quest system HLD:
+
+> Active quest instances keep running (they reference definitions by key; if a definition is removed, warn in console but don't kill active instances).
+
+**Rationale:** Cancelling active instances during a reload disrupts actively playing users. Instances carry their own objective thresholds and state set at creation time, so they remain internally consistent even when the registry changes. Progress listeners already resolve definitions from the registry at runtime and silently skip progress if the definition is absent — the only missing piece is a console warning.
 
 **File:** `src/main/java/us/eunoians/mcrpg/quest/QuestManager.java`
 
-Add a `reconcileActiveInstances()` method called from `loadQuestDefinitions()` after `replaceConfigDefinitions()` but before chain re-resolution:
+Add a `warnStaleDefinitions()` method called from `loadQuestDefinitions()` after `replaceConfigDefinitions()`:
 
 ```java
 public void loadQuestDefinitions() {
     cachedFinishedQuests.invalidateAll();
 
-    File questsDir = new File(plugin().getDataFolder(), QUESTS_DIRECTORY);
-    QuestLoadResult mainResult = configLoader.loadQuestsFromDirectory(questsDir);
-    Map<NamespacedKey, QuestDefinition> allDefinitions = new LinkedHashMap<>(mainResult.definitions());
-    List<Path> allChainFiles = new ArrayList<>(mainResult.chainFiles());
+    // ... existing loading logic ...
 
-    // ... board quest loading ...
-
-    Map<NamespacedKey, QuestDefinition> oldDefinitions = questDefinitionRegistry.snapshot();
     questDefinitionRegistry.replaceConfigDefinitions(allDefinitions);
 
-    reconcileActiveInstances(oldDefinitions, allDefinitions);
+    warnStaleDefinitions(allDefinitions);
     enforceTierableAbilityUpgradeQuestConfiguration();
 
     // ... chain loading and re-resolution ...
 }
 ```
 
-**`reconcileActiveInstances` flow:**
-
 ```java
 /**
- * Cancels active quest instances whose definitions changed or were removed
- * during a reload. Compares old and new definition maps by key; an instance
- * is considered stale if its definition key is absent from the new map or
- * if the definition object is not reference-equal to the old one (definitions
- * are immutable, so a new object means the YAML was re-parsed).
+ * Logs a console warning for each active quest instance whose definition
+ * key is no longer present in the registry after a reload. Active instances
+ * are NOT cancelled — they continue running with their creation-time
+ * definition snapshot. Progress listeners already handle the missing-
+ * definition case by silently skipping progress.
  *
- * @param oldDefinitions the pre-reload definition snapshot
- * @param newDefinitions the post-reload definitions
+ * @param newDefinitions the post-reload definition map
  */
-private void reconcileActiveInstances(
-        @NotNull Map<NamespacedKey, QuestDefinition> oldDefinitions,
+private void warnStaleDefinitions(
         @NotNull Map<NamespacedKey, QuestDefinition> newDefinitions) {
 
     for (Map.Entry<UUID, QuestInstance> entry : activeQuests.entrySet()) {
         QuestInstance instance = entry.getValue();
         NamespacedKey questKey = instance.getQuestDefinition().getQuestKey();
 
-        QuestDefinition newDef = newDefinitions.get(questKey);
-        QuestDefinition oldDef = oldDefinitions.get(questKey);
-
-        boolean removed = newDef == null;
-        boolean changed = oldDef != null && newDef != null && oldDef != newDef;
-
-        if (removed || changed) {
-            cancelQuestInstance(instance);
-            notifyAffectedPlayers(instance, removed);
+        if (!newDefinitions.containsKey(questKey)) {
+            plugin().getLogger().warning("[QuestManager] Active quest instance '"
+                    + questKey + "' for player " + entry.getKey()
+                    + " references a definition that was removed during reload. "
+                    + "The instance will continue running with its original "
+                    + "definition but new progress will not be tracked.");
         }
     }
 }
 ```
 
-**Player notification:**
+No player-facing notification is sent — the quest continues silently with its snapshot. The console warning alerts the server owner that a definition was removed while instances are still active.
 
-```java
-/**
- * Sends a localized chat message to all players in the cancelled quest's scope
- * explaining that their quest was cancelled due to a reload.
- *
- * @param instance the cancelled quest instance
- * @param removed  true if the definition was removed, false if changed
- */
-private void notifyAffectedPlayers(@NotNull QuestInstance instance, boolean removed) {
-    instance.getQuestScope().ifPresent(scope ->
-        scope.getCurrentPlayersInScope().forEach(uuid -> {
-            Player player = Bukkit.getPlayer(uuid);
-            if (player != null) {
-                Route messageKey = removed
-                        ? LocalizationKey.QUEST_RELOAD_DEFINITION_REMOVED
-                        : LocalizationKey.QUEST_RELOAD_DEFINITION_CHANGED;
-                // Send localized message with quest name placeholder
-            }
-        })
-    );
-}
-```
+### 2.3 Tests
 
-**New `QuestDefinitionReloadEvent`:**
-
-**File:** `src/main/java/us/eunoians/mcrpg/event/quest/QuestDefinitionReloadEvent.java`
-
-```java
-/**
- * Fired after quest definitions are reloaded, before chain re-resolution.
- * Carries the old and new definition sets for external plugin reaction.
- * Non-cancellable — the reload has already occurred.
- */
-public class QuestDefinitionReloadEvent extends Event {
-
-    private final Map<NamespacedKey, QuestDefinition> oldDefinitions;
-    private final Map<NamespacedKey, QuestDefinition> newDefinitions;
-    private final Set<NamespacedKey> removedKeys;
-    private final Set<NamespacedKey> changedKeys;
-
-    public QuestDefinitionReloadEvent(
-            @NotNull Map<NamespacedKey, QuestDefinition> oldDefinitions,
-            @NotNull Map<NamespacedKey, QuestDefinition> newDefinitions,
-            @NotNull Set<NamespacedKey> removedKeys,
-            @NotNull Set<NamespacedKey> changedKeys) { ... }
-
-    @NotNull public Map<NamespacedKey, QuestDefinition> getOldDefinitions() { ... }
-    @NotNull public Map<NamespacedKey, QuestDefinition> getNewDefinitions() { ... }
-    @NotNull public Set<NamespacedKey> getRemovedKeys() { ... }
-    @NotNull public Set<NamespacedKey> getChangedKeys() { ... }
-}
-```
-
-**`QuestDefinitionRegistry.snapshot()`** — new method that returns an unmodifiable shallow copy of the current definitions map. Called before `replaceConfigDefinitions()` to capture the pre-reload state.
-
-```java
-@NotNull
-public Map<NamespacedKey, QuestDefinition> snapshot() {
-    return Map.copyOf(definitions);
-}
-```
-
-### 2.3 Locale Keys
-
-| Key | Text |
-|-----|------|
-| `quest.reload.definition-removed` | `"<warning>Your active quest '<primary><quest_name></primary>' was cancelled because its definition was removed during a reload."` |
-| `quest.reload.definition-changed` | `"<warning>Your active quest '<primary><quest_name></primary>' was cancelled and restarted because its definition changed during a reload."` |
-
-### 2.4 Tests
-
-- `QuestReloadReconciliationTest` — verify cancellation of stale instances, notification to players, unchanged instances left untouched
 - `QuestCacheInvalidationTest` — verify `cachedFinishedQuests.invalidateAll()` is called on reload
+- `WarnStaleDefinitionsTest` — verify console warning is logged for removed definitions, no warning for unchanged definitions, and no active instances are cancelled
 
 ---
 
@@ -2016,7 +1940,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | 2 | Cache Invalidation | §11 | None | Trivial |
 | 3 | Tutorial Bypass Fix | §13 | None | Trivial |
 | 4 | Ability Unregistration | §12 | None | Small |
-| 5 | Quest Reload Reconciliation | §10 | None | Medium |
+| 5 | Quest Reload Stale Warnings | §10 | None | Small |
 | 6 | AbilityType Deferred | §9 | None | Small |
 | 7 | Chain Repeatability | §2 | §8 (Instant for cooldown math) | Medium |
 | 8 | Availability Windows (chains) | §1 | §7 (repeat evaluation for window reopen) | Large |
@@ -2053,7 +1977,6 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `event/quest/QuestChainExpireEvent.java` | Class | §10 |
 | `event/quest/QuestChainRestartEvent.java` | Class | §10 |
 | `event/quest/QuestChainStepRetryEvent.java` | Class | §10 |
-| `event/quest/QuestDefinitionReloadEvent.java` | Class | §2 |
 | `ability/AbilityNameResolver.java` | Class | §5 |
 | `command/admin/content/ContentExpansionsCommand.java` | Class | §11 |
 | `command/admin/content/ContentPacksCommand.java` | Class | §11 |
@@ -2076,7 +1999,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `quest/chain/HandleExpireRetryTest.java` | §8 |
 | `quest/chain/HandleExpireRestartChainTest.java` | §8 |
 | `quest/chain/HandleExpireSkipTest.java` | §8 |
-| `quest/QuestReloadReconciliationTest.java` | §2 |
+| `quest/QuestReloadStaleWarningTest.java` | §2 |
 | `ability/AbilityRegistrySoftDisableTest.java` | §3 |
 | `ability/AbilityNameResolverTest.java` | §5 |
 | `entity/holder/LoadoutHolderAvailableAbilitiesTest.java` | §5 |
@@ -2095,8 +2018,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `database/table/quest/QuestInstanceDAO.java` | Boundary conversion to `Instant` | §1 |
 | `database/table/quest/QuestChainStateDAO.java` | Boundary conversion, `conditions_pending` column | §1, §9 |
 | `database/table/quest/QuestChainCompletionLogDAO.java` | `skipped` column, `logSkip()`, rename `getCompletedQuestKeys` | §8 |
-| `quest/QuestManager.java` | Cache invalidation, reconciliation, `enforceTierableAbilityUpgradeQuestConfiguration` re-enable pass | §2, §3 |
-| `quest/definition/QuestDefinitionRegistry.java` | `snapshot()` method | §2 |
+| `quest/QuestManager.java` | Cache invalidation, stale definition warnings, `enforceTierableAbilityUpgradeQuestConfiguration` re-enable pass | §2, §3 |
 | `ability/AbilityRegistry.java` | `softDisabledAbilities` map, `softDisableAbility()`, `reEnableAbility()` | §3 |
 | `listener/quest/QuestChainFirstJoinListener.java` | Chain-key-based bypass check | §4 |
 | `entity/holder/LoadoutHolder.java` | `isAlwaysAvailable()` predicate | §5 |
@@ -2114,7 +2036,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `bootstrap/McRPGCommandRegistrar.java` | Register content introspection commands | §11 |
 | `configuration/file/MainConfigFile.java` | `AVAILABILITY_CHECK_INTERVAL_SECONDS` route | §7 |
 | `configuration/file/localization/LocalizationKey.java` | New locale key constants for all sections | All |
-| `src/main/resources/localization/english/en_quest.yml` | Locale entries for reload, availability, expiration, introspection | All |
+| `src/main/resources/localization/english/en_quest.yml` | Locale entries for availability, expiration, introspection | All |
 | `src/main/resources/config.yml` | `quest-chain.availability.check-interval-seconds` | §7 |
 | `plugin.yml` | `mcrpg.admin.content` permission | §11 |
 
@@ -2124,7 +2046,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 
 | # | Question | Decision | Rationale |
 |---|----------|----------|-----------|
-| 1 | How should quest reload handle active instances with changed definitions? | Cancel stale instances and notify players | Simpler than reconciliation, ensures correctness. Players lose in-progress state but aren't stuck on broken objectives. |
+| 1 | How should quest reload handle active instances with changed definitions? | Accept staleness — active instances keep running with their creation-time snapshot | Matches the original HLD design. Active instances are internally consistent (thresholds set at creation). Progress listeners already skip missing definitions. Console warnings alert the server owner. Avoids disrupting actively playing users. |
 | 2 | How should ability unregistration reversibility work? | Soft-disable via tracked set in `AbilityRegistry` with re-enable on reload | Preserves ability objects for re-registration. No new `AbilityState` needed — the registry's `softDisabledAbilities` map is the tracking mechanism. |
 | 3 | Should `ABANDONED` chains be repeat-eligible? | Yes, for non-ONCE chains | The repeat mode controls whether re-start happens, not the terminal state. For event chains, "abandon" means "gave up this attempt" not "never again." |
 | 4 | How should skip interact with restart? | Skipped steps are replayed on restart | Skip entries use a `skipped` flag in the completion log. Admin restart (non-force) treats skipped entries as NOT completed, so players get another chance at missed steps. `restart-chain` (on-quest-expire) clears the entire log, so skipped steps are replayed regardless. |
