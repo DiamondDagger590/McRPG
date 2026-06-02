@@ -1281,6 +1281,62 @@ quests:
         land_weekly_break_crops:
           description: "Harvest mixed crops"
 
+tutorial:
+  chain:
+    display-name: "McRPG Tutorial"
+
+  quests:
+    first-steps:
+      display-name: "First Steps"
+      on-start:
+        - "<primary>Welcome to McRPG! <body>As you play, your skills will level up automatically."
+        - "<body>Try breaking blocks, chopping trees, or harvesting crops to see your skills grow."
+      objective-description: "Gain a skill level"
+
+    mcrpg-menu:
+      display-name: "The McRPG Menu"
+      on-start:
+        - "<primary>Your skills are growing! <body>Open the McRPG menu to see your progress."
+        - "<body>Type <hint>/mcrpg<body> or use the configured keybind to open your menu."
+      objective-description: "Open the McRPG menu"
+
+    natural-talent:
+      display-name: "Natural Talent"
+      on-start:
+        - "<primary>Passive abilities <body>trigger automatically as you play."
+        - "<body>Keep leveling your skills \u2014 passives unlock at certain level thresholds."
+      objective-description: "Unlock a passive ability"
+
+    your-arsenal:
+      display-name: "Your Arsenal"
+      on-start:
+        - "<primary>Your loadout <body>determines which abilities are active at any time."
+        - "<body>Open the loadout menu to see your available slots and equipped abilities."
+      objective-description: "Open the loadout menu"
+
+    unleashed-power:
+      display-name: "Unleashed Power"
+      on-start:
+        - "<primary>Active abilities <body>are powerful skills you trigger with click combos."
+        - "<body>Keep leveling \u2014 active abilities unlock at higher skill levels than passives."
+      objective-description: "Unlock an active ability"
+
+    combo-strike:
+      display-name: "Combo Strike"
+      on-start:
+        - "<primary>Time to unleash! <body>Active abilities activate via click combos."
+        - "<body>Hold an allowed weapon and perform <hint>RRR<body>, <hint>RRL<body>, or <hint>RLR<body> (right/left clicks)."
+        - "<body>Each combo costs <mana>mana<body> \u2014 watch your mana bar and plan your casts."
+      objective-description: "Cast an active ability using a combo"
+
+    quest-board:
+      display-name: "The Quest Board"
+      on-start:
+        - "<primary>Congratulations! <body>You've mastered the basics of McRPG."
+        - "<body>The <hint>Quest Board<body> offers rotating challenges with bonus rewards."
+        - "<body>Type <hint>/mcrpg board<body> to browse available quests and accept one."
+      objective-description: "Accept a quest from the quest board"
+
 quest-chain:
   events:
     # Placeholders: <chain> = chain display name
@@ -1289,3 +1345,14 @@ quest-chain:
     chain-advance: "<body>Quest chain <primary><chain> <body>advanced to step <primary><step>/<total>"
     # Placeholders: <chain> = chain display name
     chain-complete: "<positive>Congratulations! <body>You've completed the <primary><chain> <body>quest chain!"
+  cascade:
+    # Placeholders: <chain> = chain display name
+    batch-header: "<primary><chain>: <body>You've already completed these steps!"
+    # Placeholders: <quest> = quest display name
+    batch-step-entry: "<body>  \u2713 <primary><quest>"
+  admin:
+    skip:
+      # Placeholders: <player> = player name, <chain_name> = chain display name, <chain_key> = chain key, <count> = steps skipped
+      success: "<positive>Skipped <primary><player><body>'s chain <primary><chain_name><body> \u2014 <primary><count><body> remaining steps completed with rewards."
+      error-no-state: "<negative>Player has no active state for chain '<primary><chain_key><body>'."
+      error-terminal: "<negative>Player's chain '<primary><chain_key><body>' is in state <primary><chain_state><body>. Use reset first."

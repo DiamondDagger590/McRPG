@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.listener.quest;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.event.HandlerList;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,6 +10,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.quest.PreQuestStartEvent;
@@ -49,6 +52,14 @@ public class TutorialPreQuestStartListenerTest extends McRPGBaseTest {
         mockPlayerManager = mock(McRPGPlayerManager.class);
         when(mockPlayerManager.getPlayer(any(UUID.class))).thenReturn(Optional.empty());
         RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).register(mockPlayerManager);
+
+        // Ensure the file manager returns a non-null config with tutorial enabled = true
+        // so that listener tests can test the bypass and setting gates independently.
+        var fileManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
+        YamlDocument mockConfig = mock(YamlDocument.class);
+        when(fileManager.getFile(FileType.MAIN_CONFIG)).thenReturn(mockConfig);
+        when(mockConfig.getBoolean(MainConfigFile.TUTORIAL_ENABLED)).thenReturn(true);
+
         server.getPluginManager().registerEvents(new TutorialPreQuestStartListener(mcRPG), mcRPG);
     }
 

@@ -289,6 +289,7 @@ gui:
       expires-none: '<body>None'
       click-to-view-details: '<hint>Click <body>to view details'
       right-click-to-abandon: '<negative>Right-click <body>to abandon'
+      non-abandonable: '<body>This quest cannot be abandoned.'
     view-history-button:
       display-item:
         material: BOOKSHELF
@@ -1265,6 +1266,31 @@ gui:
             - '<body>quest objective progress milestones.'
             - ''
             - '<hint>Click <body>to enable these notifications.'
+    # Configure the slot representing the tutorial setting.
+    # ENABLED = tutorial is active; click opens the disable-tutorial-confirm-gui.
+    # DISABLED = tutorial was permanently disabled; click plays a deny sound/message.
+    tutorial-setting:
+      enabled:
+        display-item:
+          material: KNOWLEDGE_BOOK
+          name: "<primary>Tutorial"
+          lore:
+            - "<body>Status: <positive>Enabled"
+            - ""
+            - "<body>The tutorial guides you through McRPG's"
+            - "<body>skills, abilities, and quest systems."
+            - ""
+            - "<negative>Click <body>to disable."
+      disabled:
+        display-item:
+          material: BARRIER
+          name: "<primary>Tutorial"
+          lore:
+            - "<body>Status: <negative>Disabled"
+            - ""
+            - "<body>The tutorial has been permanently disabled."
+            - "<body>Contact an admin to reset if needed."
+        deny-message: "<negative>Tutorial is permanently disabled. Ask an admin to reset it."
   # This GUI allows players to configure the allowlist of blocks for Remote Transfer.
   remote-transfer-gui:
     title: "<gui-title>Toggling Remote Transfer Items"
@@ -1593,3 +1619,44 @@ gui:
         name: "<primary>Back to History"
         lore:
           - "<hint>Click <body>to return to quest history."
+  # Confirmation GUI shown before permanently disabling the tutorial quest chain.
+  disable-tutorial-confirm-gui:
+    title: "<gui-title>Disable Tutorial?"
+    confirm-slot:
+      display-item:
+        material: LIME_WOOL
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<negative>Disable Tutorial"
+        lore:
+          - "<body>This will cancel your active tutorial quest"
+          - "<body>and prevent future tutorial steps from starting."
+          - ""
+          - "<body>You will <negative>not<body> receive unclaimed rewards."
+          - "<body>This action <negative>cannot<body> be undone."
+          - ""
+          - "<negative>Click <body>to confirm."
+    info-slot:
+      display-item:
+        material: PAPER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<warning>Warning"
+        lore:
+          - "<body>Disabling the tutorial will:"
+          - "<body>  \u2022 Cancel your current tutorial quest"
+          - "<body>  \u2022 Skip all remaining tutorial steps"
+          - "<body>  \u2022 Forfeit unclaimed tutorial rewards"
+          - ""
+          - "<body>You can still access all features normally."
+          - "<body>The tutorial just provides guided learning."
+    cancel-slot:
+      display-item:
+        material: RED_WOOL
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<primary>Cancel"
+        lore:
+          - "<body>Return to settings without changes."
+          - ""
+          - "<hint>Click <body>to go back."
