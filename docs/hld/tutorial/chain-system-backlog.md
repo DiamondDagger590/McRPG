@@ -157,14 +157,17 @@ steps:
 
 ## 5. Chain Lifecycle — Additional Events
 
-**Summary:** Additional events for third-party plugin integration beyond the initial Start/StepAdvance/Complete set.
+**Summary:** Additional events for third-party plugin integration beyond the initial Start/StepAdvance/Complete set. `QuestChainFailEvent` and `QuestChainAbandonEvent` were implemented in Phase 3 alongside the cascade infrastructure.
 
-| Event | Fires when |
-|-------|------------|
-| `QuestChainFailEvent` | Chain transitions to `FAILED` state |
-| `QuestChainExpireEvent` | Chain transitions to `EXPIRED` state (window close) |
-| `QuestChainRestartEvent` | A repeatable chain is re-started from step 1 |
-| `QuestChainStepRetryEvent` | A step's quest is retried after expiration |
+| Event | Fires when | Status |
+|-------|------------|--------|
+| `QuestChainFailEvent` | Chain transitions to `FAILED` state | **Implemented (Phase 3)** |
+| `QuestChainAbandonEvent` | Chain transitions to `ABANDONED` state | **Implemented (Phase 3)** |
+| `QuestChainExpireEvent` | Chain transitions to `EXPIRED` state (window close) | Pending (needs availability windows) |
+| `QuestChainRestartEvent` | A repeatable chain is re-started from step 1 | Pending (needs repeat modes) |
+| `QuestChainStepRetryEvent` | A step's quest is retried after expiration | Pending (needs retry behavior) |
+| `CascadeStartEvent` | A cascade begins (auto-completable chain steps) | **Implemented (Phase 3)** |
+| `CascadeFinalizeEvent` | A cascade completes (batch summary delivered) | **Implemented (Phase 3)** |
 
 All carry the chain definition, player, and relevant context. All are non-cancellable (the state transition has already occurred — these are notification events).
 
@@ -350,21 +353,14 @@ Quest reward types from 'mcrpg':
 
 ---
 
-## 13. Tutorial Chain Bypass Permission (`mcrpg.tutorial.bypass`)
+## 13. ~~Tutorial Chain Bypass Permission (`mcrpg.tutorial.bypass`)~~ — **Implemented (Phase 3)**
 
-**Summary:** `plugin.yml` declares the `mcrpg.tutorial.bypass` permission (default: op) but it is not yet wired to any behavior. The intent is that players or groups with this permission should skip or bypass tutorial chains that fire via the `mcrpg:first_join` trigger (and optionally `mcrpg:login` trigger). Granting this permission currently has no effect.
+**Status:** Implemented in Phase 3. `QuestChainFirstJoinListener` checks `player.hasPermission("mcrpg.tutorial.bypass")` before evaluating first-join chains. If the player has the permission, the listener skips chain evaluation entirely. The per-chain `bypassable` flag and `bypass-permission` YAML field were not implemented — the permission applies globally to all first-join chains. See Phase 3 LLD §2.3 for details.
 
-### Design
+### Remaining Backlog
 
-- `QuestChainFirstJoinListener` checks `player.hasPermission("mcrpg.tutorial.bypass")` before evaluating first-join chains. If the player has the permission, the listener skips chain evaluation for chains whose `auto-start.trigger` is `mcrpg:first_join`.
-- Optionally, a chain YAML flag `bypassable: true` gates whether the bypass permission applies. Chains not marked `bypassable` are evaluated regardless of the bypass permission — this allows mandatory onboarding chains to coexist with optional tutorial chains.
-- A second approach: tag chains via `bypass-permission: mcrpg.tutorial.bypass` in YAML, which is more flexible but requires schema additions.
-
-### Implementation Notes
-
-- Change `QuestChainFirstJoinListener` to check `player.hasPermission("mcrpg.tutorial.bypass")` before iterating first-join chains.
-- Consider a `QuestChainDefinition.isBypassable()` flag (default: false) so server owners control which chains respect the bypass permission.
-- Update `plugin.yml` description to remove the "unimplemented" note once wired.
+- **Per-chain `bypassable` flag:** A `QuestChainDefinition.isBypassable()` field (default: false) would let server owners control which chains respect the bypass permission. This would allow mandatory onboarding chains to coexist with optional tutorials. Currently, the bypass permission applies to all first-join chains indiscriminately.
+- **Per-chain `bypass-permission` YAML field:** More flexible than the global permission — each chain could declare its own bypass permission key in YAML. Requires schema additions to `QuestChainDefinition` and `QuestChainConfigLoader`.
 
 ---
 
@@ -378,7 +374,7 @@ Each numbered section above maps to one GitHub issue. Suggested labels and depen
 | 2 | Implement chain repeat modes (beyond ONCE) | `feature`, `quest-chain` | Phase 2 complete |
 | 3 | Implement quest expiration behaviors within chains (retry/restart/skip) | `feature`, `quest-chain` | Phase 2 complete |
 | 4 | Add availability windows to quest board templates | `feature`, `quest-board`, `scheduling` | #1 (shared availability logic) |
-| 5 | Add chain lifecycle events (fail/expire/restart/retry) | `feature`, `quest-chain`, `extensibility` | #2, #3 |
+| 5 | Add remaining chain lifecycle events (expire/restart/retry) — fail + abandon + cascade events done | `feature`, `quest-chain`, `extensibility` | #2, #3 |
 | 6 | Implement TimeGateChainCondition | `feature`, `quest-chain`, `extensibility` | Phase 2 complete |
 | 7 | Content expansion introspection commands | `feature`, `admin`, `extensibility` | None (independent) |
 | 8 | Refactor quest/chain timestamps from Long to Instant | `chore`, `refactor`, `quest` | Phase 2 complete |
@@ -386,4 +382,4 @@ Each numbered section above maps to one GitHub issue. Suggested labels and depen
 | 10 | Quest reload — active instance reconciliation | `bug`, `quest`, `reload` | None (independent) |
 | 11 | Quest reload — finished quest cache invalidation | `bug`, `quest`, `reload` | None (independent) |
 | 12 | Ability unregistration reversibility on reload | `bug`, `ability`, `reload` | None (independent) |
-| 13 | Wire `mcrpg.tutorial.bypass` permission into first-join chain logic | `feature`, `quest-chain`, `permissions` | Phase 2 complete |
+| 13 | ~~Wire bypass permission~~ (done) — remaining: per-chain `bypassable` flag + `bypass-permission` YAML field | `feature`, `quest-chain`, `permissions` | Phase 3 complete |

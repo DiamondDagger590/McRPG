@@ -1,7 +1,7 @@
 # Tutorial Quest System
 
-> **Last Updated:** 2026-05-27
-> **Status:** Phases 1–2 implemented; Phase 3 (tutorial content) pending
+> **Last Updated:** 2026-06-01
+> **Status:** All three phases implemented
 > **Scope:** First-class quest chain system, tutorial quest line, new objective/reward types, player onboarding flow
 > **Phase 1 LLD:** [phase-1-quest-engine-extensions.md](../../lld/tutorial-quest-system/phase-1-quest-engine-extensions.md)
 > **Phase 2 LLD:** [phase-2-quest-chain-system.md](../../lld/tutorial-quest-system/phase-2-quest-chain-system.md)
@@ -215,7 +215,7 @@ public class PreQuestStartEvent extends Event implements Cancellable {
 
 **Event ownership:** `PreQuestStartEvent` fires from `QuestManager.startQuest()` before instance creation. `QuestStartEvent` fires from `QuestInstance.start(definition, starterUUID)` after phase-0 activation — not from the manager. All quest starts must route through `QuestManager` so the pre-event gate cannot be bypassed (`QuestInstance.start()` is `@ApiStatus.Internal`).
 
-**Tutorial opt-out (Phase 3):** A `TutorialPreQuestStartListener` will check `DisableTutorialSetting` and cancel starts for `TutorialQuestSource`. The event shape supports this today.
+**Tutorial opt-out:** `TutorialPreQuestStartListener` checks three gates in order: (1) `tutorial.enabled` config toggle, (2) `mcrpg.tutorial.bypass` permission, (3) `DisableTutorialSetting`. If any gate applies, the `PreQuestStartEvent` is cancelled for `TutorialQuestSource`-sourced quests.
 
 ### 3. On-Start Messages on QuestDefinition — **Implemented**
 
@@ -289,9 +289,7 @@ Non-abandonable quests show a `<body>Tutorial quests cannot be abandoned.` lore 
 
 All types follow the `QuestObjectiveType` pattern. Ability-based types use `AbilityObjectiveFilter` and `AbilityType` (`Ability.getAbilityType()`). State-based objectives support **immediate** auto-complete on quest start via `QuestStartAutoCompleteListener` for the **quest starter only** (`QuestStartEvent.getStarterUUID()`).
 
-**Phase 1:** No auto-complete delay — completion is immediate when state checks pass.
-
-**Phase 3:** Optional delay and on-start message suppression during chain cascade batching (chain manager owns batch summary messaging).
+Auto-complete is immediate when state checks pass (no delay). On-start message suppression during chain cascade batching is handled by `CascadeOrchestrator` (batch summary messaging replaces individual messages for auto-completed steps).
 
 | Type Key | Kind | Trigger | Config Filters | Auto-Complete Check |
 |---|---|---|---|---|
@@ -406,12 +404,13 @@ No `config-version` bump needed — no migration logic required for this additio
 |---|---|---|
 | `mcrpg.*` | `op` | Root wildcard — grants everything below |
 | `mcrpg.admin.*` | `op` | All admin commands |
-| `mcrpg.quest.admin.*` | `op` | All quest admin commands |
-| `mcrpg.quest.admin.chain.*` | `op` | All chain admin subcommands |
-| `mcrpg.quest.admin.chain.restart` | `op` | Restart a player's chain from step 1 (preserves history) |
-| `mcrpg.quest.admin.chain.reset` | `op` | Hard reset a player's chain state (wipes history) |
-| `mcrpg.quest.admin.chain.advance` | `op` | Force-advance a player's chain to the next step |
-| `mcrpg.tutorial.bypass` | `op` | Exempt from tutorial auto-start (staff/alt accounts) |
+| `mcrpg.quest.chain.*` | `op` | All chain admin subcommands |
+| `mcrpg.quest.chain.restart` | `op` | Restart a player's chain from step 1 (preserves history) |
+| `mcrpg.quest.chain.reset` | `op` | Hard reset a player's chain state (wipes history) |
+| `mcrpg.quest.chain.advance` | `op` | Force-advance a player's chain to the next step |
+| `mcrpg.quest.chain.skip` | `op` | Force-complete all remaining steps in a player's chain |
+| `mcrpg.quest.chain.status` | `op` | View a player's chain state and progress |
+| `mcrpg.tutorial.bypass` | `op` | Exempt from tutorial auto-start (checked in `QuestChainFirstJoinListener`) |
 
 Standard Bukkit permission inheritance applies — granting `mcrpg.*` implicitly grants every child node. The `plugin.yml` `children` block declares the full hierarchy so permission plugins resolve wildcards correctly.
 
@@ -439,15 +438,15 @@ flowchart LR
     Q6 -->|"chain advances"| Q7
 ```
 
-**Auto-complete pacing (Phase 3):** Phase 1 engine auto-completes immediately for the quest starter when state checks pass. When the chain system lands (Phase 3), cascade batching will suppress on-start messages for skipped chain steps and deliver a single configurable batch summary via the localization system.
+**Auto-complete pacing:** The Phase 1 engine auto-completes immediately for the quest starter when state checks pass. The Phase 3 `CascadeOrchestrator` provides cascade batching: on-start messages for auto-completed chain steps are deferred and selectively discarded, and a configurable batch summary is delivered at cascade finalization via the localization system (`quest-chain.cascade.batch-header` / `batch-step-entry` locale keys).
 
 ### Quest 1: "First Steps"
 
-- **Auto-starts**: On first join via chain `auto-start: trigger: mcrpg:first_join` (Phase 3)
+- **Auto-starts**: On first join via chain `auto-start: trigger: mcrpg:first_join`
 - **On-start messages**: Welcome text explaining skills level up as they play (`on-start-messages:` with locale key or inline)
 - **Objective**: Have any skill at level 1 or above (`mcrpg:skill_target_level`, `target-level: 1`)
 - **Completion rewards**: 1,000 boosted XP
-- **Auto-complete**: Immediate if player already has skill level >= 1 (Phase 1 engine)
+- **Auto-complete**: Immediate if player already has skill level >= 1
 
 ### Quest 2: "The McRPG Menu"
 
@@ -606,11 +605,13 @@ Generic chain management commands (not tutorial-specific):
 
 | Command | Permission | Purpose |
 |---|---|---|
-| `/mcrpg quest admin chain restart <player> <chain>` | `mcrpg.quest.admin.chain.restart` | Restart a player's chain from step 1 — cancels the active quest, sets state back to `ACTIVE` with `current_quest` at the first step. Completion log is preserved; quests already in the log are skipped (player won't redo completed steps or re-earn their rewards). |
-| `/mcrpg quest admin chain reset <player> <chain>` | `mcrpg.quest.admin.chain.reset` | Hard reset — clears chain state, completion log entries, and completion count. Player experiences the chain as if for the first time (rewards re-granted on re-completion). |
-| `/mcrpg quest admin chain advance <player> <chain>` | `mcrpg.quest.admin.chain.advance` | Force-advance to the next step — completes the current quest (granting rewards) and starts the next step. If the player is on the last step, this completes the chain. |
+| `/mcrpg quest chain restart <player> <chain>` | `mcrpg.quest.chain.restart` | Restart a player's chain from step 1 — cancels the active quest, sets state back to `ACTIVE` with `current_quest` at the first step. Completion log is preserved; quests already in the log are skipped (player won't redo completed steps or re-earn their rewards). |
+| `/mcrpg quest chain reset <player> <chain>` | `mcrpg.quest.chain.reset` | Hard reset — clears chain state, completion log entries, and completion count. Player experiences the chain as if for the first time (rewards re-granted on re-completion). For the tutorial chain, also resets `DisableTutorialSetting` to `ENABLED`. |
+| `/mcrpg quest chain advance <player> <chain>` | `mcrpg.quest.chain.advance` | Force-advance to the next step — completes the current quest (granting rewards) and starts the next step. If the player is on the last step, this completes the chain. Delegates to `CascadeOrchestrator` for cascade-aware advancement. |
+| `/mcrpg quest chain skip <player> <chain>` | `mcrpg.quest.chain.skip` | Force-complete all remaining steps — loops `forceAdvanceChain()` until the chain leaves `ACTIVE` state. Rewards fire through the normal chain-completion path. |
+| `/mcrpg quest chain status <player> <chain>` | `mcrpg.quest.chain.status` | Display the player's current chain state, current quest step, and completion count. |
 
-**Distinction:** `restart` is for support ("player is stuck, let them retry from the top without double-dipping rewards"). `reset` is for QA/dev ("pretend this player never touched this chain"). Both cancel any currently active quest instance first.
+**Distinction:** `restart` is for support ("player is stuck, let them retry from the top without double-dipping rewards"). `reset` is for QA/dev ("pretend this player never touched this chain"). Both cancel any currently active quest instance first. `skip` is for rapid testing ("complete the entire chain without playing through it").
 
 All commands use tab-completion for online players and registered chain keys.
 
@@ -620,8 +621,8 @@ All commands use tab-completion for online players and registered chain keys.
 |---|---|---|
 | Chain key not in registry | all | Error message: "No chain definition found for '{chain}'." No state change. |
 | Player offline | all | Error message: "Player must be online." (Quest start/cancel requires Bukkit main thread interaction with the player entity.) |
-| Player has no chain state for this chain | `advance`, `restart` | Error message: "Player has no active or prior state for chain '{chain}'." |
-| Player's chain state is terminal | `advance`, `restart` | Error message: "Player's chain '{chain}' is in state {state} and cannot be advanced/restarted via this command. Use `reset` to clear it." |
+| Player has no chain state for this chain | `advance`, `restart`, `skip` | Error message: "Player has no active or prior state for chain '{chain}'." |
+| Player's chain state is terminal | `advance`, `restart`, `skip` | Error message: "Player's chain '{chain}' is in state {state} and cannot be advanced/restarted via this command. Use `reset` to clear it." |
 | Player is on the last step | `advance` | Complete the chain — grants the final quest's rewards, sets chain state to `COMPLETED`, fires `QuestChainCompleteEvent`. Success message notes the chain is now finished. |
 | All steps already in completion log | `restart` | Chain state set to `COMPLETED` immediately (all steps skipped). Message: "All steps already completed; chain marked complete." |
 | Player has no chain state for this chain | `reset` | No-op with success message: "Player has no state for chain '{chain}' — nothing to reset." (Idempotent — not an error.) |
@@ -647,7 +648,7 @@ McRPG (implemented):
 
 **Shippable value:** New objective/reward types work on any quest definition today. See [`REWARDS.md`](../../../src/main/java/us/eunoians/mcrpg/quest/REWARDS.md) and [`OBJECTIVES.md`](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md).
 
-### Phase 2 — Quest Chain System
+### Phase 2 — Quest Chain System — **Implemented**
 
 - `QuestChainDefinition`, `QuestChainStep`, `QuestChainRegistry`, `QuestChainManager`
 - `QuestChainState` enum (ACTIVE, COMPLETED, ABANDONED, FAILED, EXPIRED)
@@ -655,26 +656,32 @@ McRPG (implemented):
 - `QuestChainConfigLoader` + YAML validation
 - `QuestChainStartCondition` interface (extensible, no built-in conditions in initial release)
 - `QuestChainProgressListener`, `QuestChainFirstJoinListener`, `QuestChainLoginListener`
-- Chain lifecycle events (Start, StepAdvance, Complete)
+- Chain lifecycle events (Start, StepAdvance, Complete, Abandon, Fail)
 - `ContentHandlerType.QUEST_CHAIN` + content packs
 - Eager reload behavior + Option C logging for removed definitions
 - Repeat mode field (parsed, only `ONCE` functional initially)
 - `on-quest-expire` field on step (parsed, only `fail-chain` functional initially)
-- Generic admin commands (`/mcrpg quest admin chain reset/advance`)
+- Admin commands (`/mcrpg quest chain reset/restart/advance/status`)
 - Quest history GUI chain grouping (`QuestChainHistoryDetailGui`, `QuestChainHistorySlot`)
 - Tests
 
 **Shippable value:** The chain orchestration layer is fully functional. Third-party plugins can define chains.
 
-### Phase 3 — Tutorial Content
+### Phase 3 — Tutorial Content — **Implemented**
 
-- `TutorialQuestSource`
-- `DisableTutorialSetting` + confirmation GUI
-- `TutorialPreQuestStartListener`
-- `config.yml` tutorial toggle + permission nodes
-- 7 tutorial quest YAML definitions + `chain.yml` (using `on-start-messages:`, not `on-start-rewards`)
-- Locale entries in `en_quest.yml`
-- Auto-complete cascade batching + optional delay in chain manager
+- `TutorialQuestSource` — non-abandonable quest source
+- `DisableTutorialSetting` + `DisableTutorialConfirmGui` + setting slot
+- `TutorialPreQuestStartListener` — gates tutorial starts via config toggle, bypass permission, and player setting
+- `CascadeOrchestrator` + `CascadeContext` — same-tick recursive cascade batching with message deferral and batch summary
+- `SoundRewardType` + `TitleRewardType` — experiential reward types
+- `ChainSkipCommand` — admin command to force-complete all remaining chain steps
+- `QuestChainFirstJoinListener` bypass permission check (`mcrpg.tutorial.bypass`)
+- `ActiveQuestSlot` per-quest display-item via locale route + non-abandonable lore
+- `config.yml` tutorial toggle + `<tutorial>` palette entry + permission nodes
+- 7 tutorial quest YAML definitions + `chain.yml` (using `on-start-messages:`)
+- Locale entries in `en_quest.yml` + `en_gui.yml`
+- Chain admin command path restructure (`/mcrpg quest chain ...` — removed `admin` literal)
+- `ChainResetCommand` resets `DisableTutorialSetting` for tutorial chains
 - Tests
 
 **Shippable value:** The tutorial goes live. Players get onboarded.
@@ -704,8 +711,12 @@ McRPG (implemented):
 - `listener/quest/QuestChainLoginListener.java`
 - `database/table/quest/QuestChainStateDAO.java`
 - `database/table/quest/QuestChainCompletionLogDAO.java`
-- `command/quest/admin/QuestAdminChainResetCommand.java`
-- `command/quest/admin/QuestAdminChainAdvanceCommand.java`
+- `command/admin/chain/ChainResetCommand.java`
+- `command/admin/chain/ChainRestartCommand.java`
+- `command/admin/chain/ChainAdvanceCommand.java`
+- `command/admin/chain/ChainStatusCommand.java`
+- `command/admin/chain/ChainAdminCommandBase.java`
+- `command/admin/chain/ChainKeyParser.java`
 - `gui/quest/QuestChainHistoryDetailGui.java`
 - `gui/quest/slot/QuestChainHistorySlot.java`
 
@@ -743,19 +754,40 @@ McRPG (implemented):
 
 **Tests:** Matching `*Test.java` under `src/test/java/...` (see Phase 1 LLD).
 
-### New Files -- Phase 2 (chain system, pending)
+### New Files -- Phase 2 (chain system, implemented)
 
 - `event/quest/QuestChainStartEvent.java`, `QuestChainStepAdvanceEvent.java`, `QuestChainCompleteEvent.java`
+- `event/quest/QuestChainAbandonEvent.java`, `QuestChainFailEvent.java`
 - `quest/chain/*` (definition, manager, registry, DAOs, triggers, listeners, commands, GUI)
 
-### New Files -- Phase 3 (tutorial content, pending)
+### New Files -- Phase 3 (tutorial content, implemented)
 
+**Source + Setting (2):**
 - `quest/source/builtin/TutorialQuestSource.java`
 - `setting/impl/DisableTutorialSetting.java`
-- `listener/quest/TutorialPreQuestStartListener.java`
-- `src/main/resources/quests/tutorial/*.yml`
 
-### New Files -- Tutorial Content
+**Reward Types (2):**
+- `quest/reward/builtin/SoundRewardType.java`
+- `quest/reward/builtin/TitleRewardType.java`
+
+**GUI (5):**
+- `gui/setting/slot/DisableTutorialSettingSlot.java`
+- `gui/tutorial/DisableTutorialConfirmGui.java`
+- `gui/tutorial/slot/DisableTutorialConfirmSlot.java`
+- `gui/tutorial/slot/DisableTutorialInfoSlot.java`
+- `gui/tutorial/slot/DisableTutorialCancelSlot.java`
+
+**Listener (1):**
+- `listener/quest/TutorialPreQuestStartListener.java`
+
+**Chain infrastructure (2):**
+- `quest/chain/CascadeOrchestrator.java`
+- `quest/chain/CascadeContext.java`
+
+**Command (1):**
+- `command/admin/chain/ChainSkipCommand.java`
+
+**Quest definitions (8):**
 - `src/main/resources/quests/tutorial/chain.yml`
 - `src/main/resources/quests/tutorial/first_steps.yml`
 - `src/main/resources/quests/tutorial/mcrpg_menu.yml`
@@ -764,7 +796,7 @@ McRPG (implemented):
 - `src/main/resources/quests/tutorial/unleashed_power.yml`
 - `src/main/resources/quests/tutorial/combo_strike.yml`
 - `src/main/resources/quests/tutorial/quest_board.yml`
-- Locale entries in `en_quest.yml` for all tutorial text
+- Locale entries in `en_quest.yml` + `en_gui.yml` for all tutorial text
 
 ### Modified Files -- Phase 1 (implemented)
 
@@ -780,13 +812,26 @@ McRPG (implemented):
 - `quest/OBJECTIVES.md`, `quest/REWARDS.md` — developer guides updated
 - Loadout GUI slots, `OnAbilityUnlockListener` — use `equipAbility()` / `swapAbility()`
 
-### Modified Files -- Phase 2+ (pending)
+### Modified Files -- Phase 2 + 3 (implemented)
 
 - `ContentHandlerType.java`, `McRPGRegistryKey.java`, `McRPGManagerKey.java` — chain registry keys
-- `config.yml` — `tutorial.enabled` toggle
+- `config.yml` — `tutorial.enabled` toggle + `palette.tutorial` entry
 - `DatabaseManager` — chain state + completion log tables
 - `QuestHistoryGui.java` — chain grouping
-- `plugin.yml` — tutorial and chain admin permissions
+- `plugin.yml` — tutorial bypass, chain admin, and skip permissions
+- `quest/chain/QuestChainManager.java` — compose `CascadeOrchestrator`, expose via getter
+- `listener/quest/QuestStartMessageListener.java` — cascade deferral via `CascadeOrchestrator`
+- `listener/quest/QuestChainFirstJoinListener.java` — bypass permission check
+- `gui/quest/slot/ActiveQuestSlot.java` — per-quest display-item via locale route + non-abandonable lore
+- `expansion/McRPGExpansion.java` — register source + setting + reward types
+- `bootstrap/McRPGListenerRegistrar.java` — register `TutorialPreQuestStartListener`
+- `configuration/file/MainConfigFile.java` — `TUTORIAL_ENABLED` route
+- `configuration/file/localization/LocalizationKey.java` — all new route constants
+- `command/admin/chain/ChainResetCommand.java` — reset `DisableTutorialSetting` on tutorial chain reset
+- `command/admin/chain/ChainAdvanceCommand.java` — remove `admin` literal, delegate to `CascadeOrchestrator`
+- `command/admin/chain/ChainRestartCommand.java` — remove `admin` literal from command path
+- `command/admin/chain/ChainStatusCommand.java` — remove `admin` literal from command path
+- `bootstrap/McRPGCommandRegistrar.java` — register `ChainSkipCommand`
 
 ### McCore (shipped in `1.0.0.17-SNAPSHOT`)
 
@@ -797,6 +842,8 @@ McRPG (implemented):
 ## Related Documents
 
 - [Phase 1 LLD — Quest Engine Extensions](../../lld/tutorial-quest-system/phase-1-quest-engine-extensions.md) (implemented)
+- [Phase 2 LLD — Quest Chain System](../../lld/tutorial-quest-system/phase-2-quest-chain-system.md) (implemented)
+- [Phase 3 LLD — Tutorial Content](../../lld/tutorial-quest-system/phase-3-tutorial-content.md) (implemented)
 - [Quest OBJECTIVES.md](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md) — YAML reference for objective types
 - [Quest REWARDS.md](../../../src/main/java/us/eunoians/mcrpg/quest/REWARDS.md) — YAML reference for reward types
 - [Quest System Architecture](../quest/quest-system-architecture.md)

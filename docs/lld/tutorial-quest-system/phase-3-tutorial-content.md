@@ -4,7 +4,7 @@
 > **Phase 1 LLD:** [phase-1-quest-engine-extensions.md](phase-1-quest-engine-extensions.md) (implemented)
 > **Phase 2 LLD:** [phase-2-quest-chain-system.md](phase-2-quest-chain-system.md) (implemented)
 > **Backlog:** [chain-system-backlog.md](../../hld/tutorial/chain-system-backlog.md)
-> **Status:** Pending implementation
+> **Status:** Implemented
 
 ## Scope
 
@@ -221,7 +221,7 @@ classDiagram
     QuestChainFirstJoinListener --> CascadeOrchestrator : delegates
 ```
 
-### Diagram 5: Active Quest GUI Material Override
+### Diagram 5: Active Quest GUI Display Item Resolution
 
 ```mermaid
 classDiagram
@@ -230,15 +230,19 @@ classDiagram
     class ActiveQuestSlot {
         ~modified~
         +getItem(McRPGPlayer) ItemBuilder
-        -resolveMaterial(QuestInstance) Material
+        -resolveDisplayItemSection(McRPGPlayer, Optional~QuestDefinition~, McRPGLocalizationManager) Section
     }
 
-    class TutorialQuestSource {
-        ~new~
-        +KEY : NamespacedKey
+    class QuestDefinition {
+        +getDisplayItemRoute() Route
     }
 
-    ActiveQuestSlot --> TutorialQuestSource : checks source for material override
+    class McRPGLocalizationManager {
+        +getLocalizedSection(McRPGPlayer, Route) Section
+    }
+
+    ActiveQuestSlot --> QuestDefinition : reads display-item route
+    ActiveQuestSlot --> McRPGLocalizationManager : resolves per-quest locale section with global fallback
 ```
 
 ---
@@ -1339,36 +1343,35 @@ public final class TitleRewardType implements QuestRewardType {
 **Package:** `us.eunoians.mcrpg.command.admin.chain`
 **File:** `src/main/java/us/eunoians/mcrpg/command/admin/chain/ChainSkipCommand.java`
 
-Admin command: `/mcrpg quest chain skip <player> <chain>`. Force-completes all remaining steps in a chain — grants each step's quest rewards, logs completions, sets chain state to COMPLETED, and fires `QuestChainCompleteEvent`. Distinct from `advance` (one step) and `reset` (wipe history).
+Admin command: `/mcrpg quest chain skip <player> <chain>`. Force-completes all remaining steps in a chain by iteratively calling `QuestChainManager.forceAdvanceChain()` in a loop until the chain leaves the `ACTIVE` state. Each step goes through the normal chain-completion path — rewards fire, events fire, completions are logged. Distinct from `advance` (one step) and `reset` (wipe history).
 
-For the tutorial chain specifically, the skip command also resets `DisableTutorialSetting` is NOT modified (the player still has the tutorial "completed", which is a valid end state).
+The `DisableTutorialSetting` is NOT modified by skip (the player has the tutorial "completed", which is a valid end state). Only `chain reset` resets the setting.
 
+**Implementation:** The static `skipChain(McRPGPlayer, QuestChainDefinition)` method validates state, then loops:
+
+```java
+while (stepsSkipped < maxIterations) {
+    Optional<QuestChainPlayerState> currentState = chainData.getChainState(chain.getChainKey());
+    if (currentState.isEmpty() || currentState.get().getState() != QuestChainState.ACTIVE) {
+        break;
+    }
+    boolean advanced = chainManager.forceAdvanceChain(mcRPGPlayer.getUUID(), chain.getChainKey());
+    if (!advanced) {
+        break;
+    }
+    stepsSkipped++;
+}
 ```
-/mcrpg quest chain skip <player> <chain>
-  └─> chainManager.skipChain(playerUUID, chainKey, callback)
-      ├─> Validate: chain definition exists, player online, chain state is ACTIVE
-      ├─> Cancel currently active quest instance
-      ├─> Submit to DB executor: read completion log
-      └─> Schedule main-thread resolution:
-          ├─> For each remaining uncompleted step (in order):
-          │   ├─> Resolve QuestDefinition
-          │   ├─> Grant all quest rewards directly (via QuestRewardType.grant())
-          │   ├─> Log step to QuestChainCompletionLogDAO
-          │   └─> Fire step-level events (no QuestInstance created — rewards only)
-          ├─> Set chain state to COMPLETED
-          ├─> Increment completionCount, set lastCompletedAt
-          ├─> Fire QuestChainCompleteEvent
-          ├─> Save chain state async
-          └─> Invoke callback(true) — admin receives success message
-```
+
+Returns the number of steps skipped on success, `SKIP_ERROR_NO_STATE` (-1) if the player has no chain state, or `SKIP_ERROR_TERMINAL` (-2) if the chain is already in a terminal state.
 
 **Permission:** `mcrpg.quest.chain.skip` (child of `mcrpg.quest.chain.*`)
 
 **Fail cases:**
-- Chain key not in registry → error message
-- Player offline → error message
-- Player has no chain state → error message
-- Chain state is already terminal → error message (use `reset` first)
+- Chain key not in registry → error message (handled by `ChainKeyParser`)
+- Player not loaded as `McRPGPlayer` → error message
+- Player has no chain state → error message with `QUEST_CHAIN_ADMIN_SKIP_ERROR_NO_STATE` locale key
+- Chain state is already terminal → error message with `QUEST_CHAIN_ADMIN_SKIP_ERROR_TERMINAL` locale key (use `reset` first)
 
 ---
 
@@ -1602,10 +1605,15 @@ public static final Route TUTORIAL_ENABLED = Route.fromString("tutorial.enabled"
 
 The existing `chain reset` command (Phase 2) is modified to also reset the `DisableTutorialSetting` to `ENABLED` when resetting the tutorial chain. This ensures the one-way-door player setting can be undone via admin intervention.
 
+Implemented as a `static void resetTutorialSettingIfNeeded(McRPGPlayer, QuestChainDefinition)` helper method called in the `resetChain` callback after a successful reset:
+
 ```java
-// In resetChain() or in the command handler after reset completes:
-if (TutorialQuestSource.KEY.equals(chainDefinition.getSourceKey())) {
-    mcRPGPlayer.setSetting(DisableTutorialSetting.ENABLED);
+static void resetTutorialSettingIfNeeded(@NotNull McRPGPlayer mcRPGPlayer,
+                                         @NotNull QuestChainDefinition chain) {
+    if (!chain.getSourceKey().equals(TutorialQuestSource.KEY)) {
+        return;
+    }
+    mcRPGPlayer.setPlayerSetting(DisableTutorialSetting.ENABLED);
 }
 ```
 
@@ -1615,12 +1623,12 @@ if (TutorialQuestSource.KEY.equals(chainDefinition.getSourceKey())) {
 
 The existing chain commands (`advance`, `reset`, `restart`, `status`) currently register as `/mcrpg quest admin chain <subcommand>`. Remove the `.literal("admin")` from all command builder chains so they register as `/mcrpg quest chain <subcommand>`. The new `skip` command also uses this path.
 
-Additionally, `ChainAdvanceCommand` (and the new `ChainSkipCommand`) call through `CascadeOrchestrator` rather than `QuestChainManager` directly, ensuring cascade detection and batch summaries work for admin-triggered advances:
+Additionally, `ChainAdvanceCommand` calls through `CascadeOrchestrator` rather than `QuestChainManager` directly, ensuring cascade detection and batch summaries work for admin-triggered advances. `ChainSkipCommand` calls `QuestChainManager.forceAdvanceChain()` directly in a loop (see §1.13).
 
 ```java
-// ChainAdvanceCommand now calls:
+// ChainAdvanceCommand delegates to CascadeOrchestrator:
 CascadeOrchestrator orchestrator = chainManager.getCascadeOrchestrator();
-orchestrator.advanceChain(playerUUID, completedQuestKey);
+orchestrator.forceAdvanceChain(playerUUID, chainKey);
 ```
 
 ```java
@@ -2434,10 +2442,10 @@ Each commit boundary represents a point where the project compiles and all exist
 
 ---
 
-### Commit 9: ActiveQuestSlot Material Override + Non-Abandonable Lore
+### Commit 9: ActiveQuestSlot Per-Quest Display Item + Non-Abandonable Lore
 
 **Modified files:**
-- `gui/quest/slot/ActiveQuestSlot.java` — material override for TutorialQuestSource, non-abandonable lore line
+- `gui/quest/slot/ActiveQuestSlot.java` — per-quest display-item via locale route, non-abandonable lore line
 
 **Tests:**
 - `ActiveQuestSlotTutorialTest` — tutorial quest renders with KNOWLEDGE_BOOK material via per-quest locale display-item section, quest without per-quest display-item falls back to global template, non-abandonable lore line shown instead of right-click-to-abandon, right-click does NOT open abandon confirm for non-abandonable quests
@@ -2729,7 +2737,7 @@ Each commit boundary represents a point where the project compiles and all exist
 
 15. **SoundRewardType and TitleRewardType are GUI-invisible:** Both reward types return `isVisibleInGui() = false` and produce empty `describeForDisplay()` strings. Sound/title rewards are experiential — they don't need to show in quest reward lore. If future use cases want visibility (e.g., "Celebration!" label in lore), `isVisibleInGui()` can be made configurable per-instance.
 
-16. **Chain skip command grants rewards without QuestInstance creation:** The skip command calls `QuestRewardType.grant()` directly for each remaining step's rewards without creating `QuestInstance` objects. This is intentional: the admin is force-completing, not simulating real gameplay. Step completion is logged to `QuestChainCompletionLogDAO` for history. `QuestCompleteEvent` is NOT fired per-step (only `QuestChainCompleteEvent` fires at the end) — this prevents unintended side effects from listeners that react to individual quest completions.
+16. **Chain skip command uses `forceAdvanceChain()` in a loop:** The skip command iteratively calls `QuestChainManager.forceAdvanceChain()` until the chain leaves the `ACTIVE` state. Each call advances one step through the normal chain-completion path — creating `QuestInstance` objects, granting rewards, logging completions, and firing per-step events. A `maxIterations` guard (chain step count + 1) prevents infinite loops from misconfigured chains. The method returns the number of steps skipped, or sentinel values (`SKIP_ERROR_NO_STATE`, `SKIP_ERROR_TERMINAL`) for error conditions. This approach reuses the existing chain advancement infrastructure rather than implementing a separate bulk-completion path.
 
 ---
 
@@ -2741,7 +2749,7 @@ No remaining open items — all feedback items have been resolved into in-scope 
 
 ## File Changes Summary
 
-### New Files (21)
+### New Files (25)
 
 **Source + Setting (2):**
 - `quest/source/builtin/TutorialQuestSource.java`
@@ -2750,6 +2758,12 @@ No remaining open items — all feedback items have been resolved into in-scope 
 **Reward Types (2):**
 - `quest/reward/builtin/SoundRewardType.java`
 - `quest/reward/builtin/TitleRewardType.java`
+
+**Events (4):**
+- `event/quest/CascadeStartEvent.java`
+- `event/quest/CascadeFinalizeEvent.java`
+- `event/quest/CascadeCompletedStep.java`
+- `event/quest/CascadeOutcome.java`
 
 **GUI (5):**
 - `gui/setting/slot/DisableTutorialSettingSlot.java`
@@ -2783,7 +2797,7 @@ No remaining open items — all feedback items have been resolved into in-scope 
 - `quest/chain/QuestChainManager.java` — compose CascadeOrchestrator, expose via getter
 - `listener/quest/QuestStartMessageListener.java` — cascade deferral via CascadeOrchestrator
 - `listener/quest/QuestChainFirstJoinListener.java` — bypass check, call CascadeOrchestrator
-- `gui/quest/slot/ActiveQuestSlot.java` — material override, non-abandonable lore
+- `gui/quest/slot/ActiveQuestSlot.java` — per-quest display-item via locale route, non-abandonable lore
 - `expansion/McRPGExpansion.java` — register source + setting + reward types
 - `bootstrap/McRPGListenerRegistrar.java` — register TutorialPreQuestStartListener
 - `configuration/file/MainConfigFile.java` — TUTORIAL_ENABLED route
@@ -2797,25 +2811,17 @@ No remaining open items — all feedback items have been resolved into in-scope 
 - `src/main/resources/config.yml` — tutorial toggle + palette entry
 - `src/main/resources/plugin.yml` — updated bypass permission + skip permission
 
-### Test Files (~19)
+### Test Files (11)
 
-- `TutorialQuestSourceTest.java`
-- `DisableTutorialSettingTest.java`
-- `DisableTutorialConfirmGuiTest.java`
-- `DisableTutorialConfirmSlotTest.java`
-- `DisableTutorialCancelSlotTest.java`
-- `DisableTutorialSettingSlotTest.java`
 - `CascadeContextTest.java`
 - `CascadeOrchestratorTest.java`
-- `QuestStartMessageListenerCascadeTest.java`
+- `CascadeStartEventTest.java`
+- `CascadeFinalizeEventTest.java`
 - `TutorialPreQuestStartListenerTest.java`
 - `QuestChainFirstJoinListenerBypassTest.java`
 - `ActiveQuestSlotTutorialTest.java`
+- `MainConfigFileTutorialTest.java`
 - `TutorialQuestYamlValidationTest.java`
-- `TutorialCascadeIntegrationTest.java`
-- `TutorialDisableIntegrationTest.java`
-- `SoundRewardTypeTest.java`
-- `TitleRewardTypeTest.java`
 - `ChainSkipCommandTest.java`
 - `ChainResetCommandTutorialTest.java`
 
