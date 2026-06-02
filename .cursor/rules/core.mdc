@@ -225,7 +225,6 @@ The `SkillNameColorConsistencyTest` enforces this for all bundled skills at CI t
 
 ## Test Naming Conventions
 
-- **Annotation ordering:** `@DisplayName` before `@Test` (or `@ParameterizedTest`) on every test method
 - **`@DisplayName` format:** Short descriptive label — not Given/When/Then. Examples: `"getBaseValue returns constructor value"`, `"DISABLED cycles to ENABLED"`, `"fromString is case-insensitive"`
 - **Method naming:** `action_outcome_whenCondition` (the `_whenCondition` suffix is optional when obvious). Examples: `getNextSetting_disabled_cyclesToEnabled`, `getBaseValue_returnsDefault`, `fromString_unknownValue_returnsEmpty`
 - **`@Nested` classes:** Group tests by class-under-test or logical section with `@Nested` + `@DisplayName`
