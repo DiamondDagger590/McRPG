@@ -58,6 +58,16 @@ palette:
   skill-herbalism: "<color:#6DB86D>"
   # Woodcutting skill name
   skill-woodcutting: "<color:#B8874B>"
+  # Tutorial quest names and chain-related UI elements
+  tutorial: "<color:#E8C97A>"
+
+# ─── Tutorial ───
+# Whether the tutorial quest chain auto-starts for new players.
+# When disabled, no new tutorial chains will start. Existing active
+# tutorial quests are NOT cancelled — only new starts are suppressed.
+# Requires restart to take effect.
+tutorial:
+  enabled: true
 
 configuration:
   database:
