@@ -5,6 +5,7 @@ plugins {
     `java-library`
     `java-test-fixtures`
     `maven-publish`
+    jacoco
     id("io.github.goooler.shadow") version "8.1.7"
     kotlin("jvm")
 }
@@ -132,6 +133,15 @@ tasks.withType<ProcessResources> {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+        csv.required.set(false)
+    }
 }
 
 

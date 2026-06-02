@@ -34,7 +34,8 @@ McCore is shaded and relocated to `us.eunoians.mcrpg.mccore` in the final jar.
 |---------|-------------|
 | `./gradlew verifiedShadowJar` | Clean → test → build shaded jar **(recommended)** |
 | `./gradlew fastShadowJar` | Clean → build shaded jar (skips tests) |
-| `./gradlew test` | Run tests only |
+| `./gradlew test` | Run tests only (also generates JaCoCo report) |
+| `./gradlew jacocoTestReport` | Generate coverage report from last test run |
 | `./gradlew shadowJar` | Build shaded jar (no clean) |
 
 Output jar: `build/libs/McRPG-<version>-<git-hash>.jar`

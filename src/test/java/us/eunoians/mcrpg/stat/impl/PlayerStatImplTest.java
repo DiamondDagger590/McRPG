@@ -39,7 +39,7 @@ class PlayerStatImplTest {
         @Test
         void getRegenPerSecond_returnsZero() {
             var stat = new FlatPlayerStat(TEST_KEY, "Test", "T", 100.0);
-            assertEquals(0, stat.getRegenPerSecond());
+            assertEquals(0.0, stat.getRegenPerSecond());
         }
 
         @DisplayName("getKey returns constructor key")
@@ -114,21 +114,21 @@ class PlayerStatImplTest {
         @Test
         void getBaseValue_returnsDefault() {
             var stat = new ResourcePoolPlayerStat(TEST_KEY, "HP", "❤", 200, 5);
-            assertEquals(200, stat.getBaseValue());
+            assertEquals(200.0, stat.getBaseValue());
         }
 
         @DisplayName("getRegenPerSecond returns constructor value")
         @Test
         void getRegenPerSecond_returnsDefault() {
             var stat = new ResourcePoolPlayerStat(TEST_KEY, "HP", "❤", 200, 5);
-            assertEquals(5, stat.getRegenPerSecond());
+            assertEquals(5.0, stat.getRegenPerSecond());
         }
 
         @DisplayName("getRegenPerSecond can be zero")
         @Test
         void getRegenPerSecond_canBeZero() {
             var stat = new ResourcePoolPlayerStat(TEST_KEY, "HP", "❤", 200, 0);
-            assertEquals(0, stat.getRegenPerSecond());
+            assertEquals(0.0, stat.getRegenPerSecond());
         }
 
         @DisplayName("getReloadableBaseValue returns empty")
@@ -156,7 +156,7 @@ class PlayerStatImplTest {
         @Test
         void getBaseValue_returnsZero_whenZeroDefault() {
             var stat = new ResourcePoolPlayerStat(TEST_KEY, "HP", "❤", 0, 0);
-            assertEquals(0, stat.getBaseValue());
+            assertEquals(0.0, stat.getBaseValue());
         }
     }
 
@@ -223,10 +223,14 @@ class PlayerStatImplTest {
         @DisplayName("getReloadableContent returns both reloadables")
         @Test
         void getReloadableContent_returnsBoth() {
+            var reloadableBase = mockReloadable(100.0);
+            var reloadableRegen = mockReloadable(2.0);
             var stat = new ConfigurableResourcePoolPlayerStat(
                     TEST_KEY, "Mana", "✦", 100, 2,
-                    mockReloadable(100.0), mockReloadable(2.0));
+                    reloadableBase, reloadableRegen);
             assertEquals(2, stat.getReloadableContent().size());
+            assertTrue(stat.getReloadableContent().contains(reloadableBase));
+            assertTrue(stat.getReloadableContent().contains(reloadableRegen));
         }
 
         @DisplayName("getBaseValue returns zero when reloadable returns zero")
