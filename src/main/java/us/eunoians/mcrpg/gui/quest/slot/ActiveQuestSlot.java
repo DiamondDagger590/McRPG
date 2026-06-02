@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.gui.quest.slot;
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.event.inventory.ClickType;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -87,7 +88,8 @@ public class ActiveQuestSlot implements McRPGSlot {
                 .mapToInt(s -> s.getPhaseIndex())
                 .min().orElse(0) + 1;
 
-        ItemBuilder builder = ItemBuilder.from(localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM))
+        Section displayItemSection = resolveDisplayItemSection(mcRPGPlayer, defOpt, localizationManager);
+        ItemBuilder builder = ItemBuilder.from(displayItemSection)
                 .addPlaceholders(placeholders);
         builder.applyTagReplacements(localizationManager.getPaletteReplacements());
 
@@ -156,9 +158,37 @@ public class ActiveQuestSlot implements McRPGSlot {
             builder.addDisplayLore(localizationManager.getLocalizedMessage(
                     mcRPGPlayer,
                     LocalizationKey.ACTIVE_QUEST_GUI_RIGHT_CLICK_TO_ABANDON));
+        } else {
+            builder.addDisplayLore(localizationManager.getLocalizedMessage(
+                    mcRPGPlayer,
+                    LocalizationKey.ACTIVE_QUEST_GUI_NON_ABANDONABLE));
         }
 
         return builder;
+    }
+
+    /**
+     * Resolves the display-item section for this quest. Tries the per-quest locale route
+     * first (e.g. {@code quests.mcrpg.tutorial_1.display-item}); if the locale YAML has
+     * no section at that route, falls back to the global
+     * {@link LocalizationKey#ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM} template.
+     *
+     * @param mcRPGPlayer         the player whose locale chain determines the language
+     * @param defOpt              the quest definition, if present
+     * @param localizationManager the localization manager
+     * @return the resolved BoostedYAML section for building the display item
+     */
+    @NotNull
+    private Section resolveDisplayItemSection(@NotNull McRPGPlayer mcRPGPlayer,
+                                              @NotNull Optional<QuestDefinition> defOpt,
+                                              @NotNull McRPGLocalizationManager localizationManager) {
+        if (defOpt.isPresent()) {
+            try {
+                return localizationManager.getLocalizedSection(mcRPGPlayer, defOpt.get().getDisplayItemRoute());
+            } catch (Exception ignored) {
+            }
+        }
+        return localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM);
     }
 
     @NotNull
