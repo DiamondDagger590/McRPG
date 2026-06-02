@@ -1,0 +1,29 @@
+quests:
+  mcrpg:tutorial_combo_strike:
+    scope: mcrpg:single_player
+    repeat-mode: once
+    display:
+      name: "<tutorial>Combo Strike"
+    on-start-messages:
+      explain:
+        key: tutorial.quests.combo-strike.on-start
+    phases:
+      phase_1:
+        completion-mode: ALL
+        stages:
+          stage_1:
+            key: mcrpg:tutorial_combo_strike_stage_1
+            objectives:
+              activate_ability:
+                key: mcrpg:tutorial_combo_strike_obj
+                type: mcrpg:ability_activate
+                required-progress: 1
+                config:
+                  ability-type: ACTIVE
+    rewards:
+      boosted_xp:
+        type: mcrpg:boosted_experience
+        amount: 2000
+      redeemable_level:
+        type: mcrpg:redeemable_levels
+        amount: 1

@@ -1,0 +1,24 @@
+quest-chain-file: true
+
+chains:
+  mcrpg:tutorial_chain:
+    display-name: "McRPG Tutorial"
+    source: mcrpg:tutorial
+    auto-start:
+      trigger: mcrpg:first_join
+    repeat-mode: once
+    steps:
+      first_steps:
+        quest: mcrpg:tutorial_first_steps
+      explore_menu:
+        quest: mcrpg:tutorial_explore_menu
+      passive_unlock:
+        quest: mcrpg:tutorial_passive_unlock
+      open_loadout:
+        quest: mcrpg:tutorial_open_loadout
+      active_unlock:
+        quest: mcrpg:tutorial_active_unlock
+      combo_strike:
+        quest: mcrpg:tutorial_combo_strike
+      quest_board:
+        quest: mcrpg:tutorial_quest_board
