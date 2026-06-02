@@ -23,7 +23,7 @@ Phase 3 delivers the player-facing tutorial system — the content layer that le
 - Generic cascade batch summary locale keys (usable by any chain, not tutorial-specific)
 - `QuestStartMessageListener` modification — defer messages when cascade is active
 - `QuestChainFirstJoinListener` modification — bypass permission check
-- `ActiveQuestSlot` modification — tutorial material override (`KNOWLEDGE_BOOK`)
+- `ActiveQuestSlot` modification — per-quest display-item via locale route + non-abandonable lore
 - `SoundRewardType` — new reward type (`mcrpg:sound`) for playing sounds on quest completion
 - `TitleRewardType` — new reward type (`mcrpg:title_message`) for sending title/subtitle on completion
 - Admin command: `/mcrpg quest chain skip <player> <chain>` — force-complete all remaining steps
@@ -250,7 +250,7 @@ classDiagram
 **Package:** `us.eunoians.mcrpg.quest.source.builtin`
 **File:** `src/main/java/us/eunoians/mcrpg/quest/source/builtin/TutorialQuestSource.java`
 
-Non-abandonable quest source for tutorial chain-managed quests. Tutorial quests are visually distinct in the Active Quest GUI (`KNOWLEDGE_BOOK` material) and cannot be abandoned by the player.
+Non-abandonable quest source for tutorial chain-managed quests. Tutorial quests are visually distinct in the Active Quest GUI via per-quest `display-item` locale sections (defaulting to `KNOWLEDGE_BOOK` material) and cannot be abandoned by the player.
 
 ```java
 /**
@@ -1506,11 +1506,20 @@ private boolean shouldBypassChain(@NotNull Player player, @NotNull QuestChainDef
 }
 ```
 
-### 2.4 `ActiveQuestSlot` — Tutorial Material Override
+### 2.4 `ActiveQuestSlot` — Per-Quest Display Item + Non-Abandonable Lore
 
 **File:** `src/main/java/us/eunoians/mcrpg/gui/quest/slot/ActiveQuestSlot.java`
 
-Override the material for tutorial-sourced quests from `WRITABLE_BOOK` to `KNOWLEDGE_BOOK`. Add a non-abandonable lore line when the quest source is not abandonable.
+Resolve the display item per-quest via the locale system using `QuestDefinition.getDisplayItemRoute()`. Falls back to the global `ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM` template when no per-quest section exists. Add a non-abandonable lore line when the quest source is not abandonable.
+
+**New `QuestDefinition.getDisplayItemRoute()`:**
+
+```java
+@NotNull
+public Route getDisplayItemRoute() {
+    return Route.fromString("quests." + questKey.getNamespace() + "." + questKey.getKey() + ".display-item");
+}
+```
 
 **Modified `getItem()`:**
 
@@ -1520,18 +1529,13 @@ Override the material for tutorial-sourced quests from `WRITABLE_BOOK` to `KNOWL
 public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
     // ... existing logic ...
 
-    ItemBuilder builder = ItemBuilder.from(localizationManager.getLocalizedSection(
-            mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM))
+    Section displayItemSection = resolveDisplayItemSection(mcRPGPlayer, defOpt, localizationManager);
+    ItemBuilder builder = ItemBuilder.from(displayItemSection)
             .addPlaceholders(placeholders);
-
-    // Override material for tutorial quests
-    if (questInstance.getQuestSource() instanceof TutorialQuestSource) {
-        builder.material(Material.KNOWLEDGE_BOOK);
-    }
+    builder.applyTagReplacements(localizationManager.getPaletteReplacements());
 
     // ... existing lore building ...
 
-    // Replace abandon hint with non-abandonable notice for non-abandonable sources
     if (questInstance.getQuestSource().isAbandonable()) {
         builder.addDisplayLore(localizationManager.getLocalizedMessage(
                 mcRPGPlayer,
@@ -1544,6 +1548,32 @@ public ItemBuilder getItem(@NotNull McRPGPlayer mcRPGPlayer) {
 
     return builder;
 }
+
+@NotNull
+private Section resolveDisplayItemSection(@NotNull McRPGPlayer mcRPGPlayer,
+                                          @NotNull Optional<QuestDefinition> defOpt,
+                                          @NotNull McRPGLocalizationManager localizationManager) {
+    if (defOpt.isPresent()) {
+        try {
+            return localizationManager.getLocalizedSection(mcRPGPlayer, defOpt.get().getDisplayItemRoute());
+        } catch (Exception ignored) {
+        }
+    }
+    return localizationManager.getLocalizedSection(mcRPGPlayer, LocalizationKey.ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM);
+}
+```
+
+**Locale entry (en_quest.yml) — per tutorial quest:**
+
+```yaml
+quests:
+  mcrpg:
+    tutorial_first_steps:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
 ```
 
 ### 2.5 `McRPGExpansion` — Register Tutorial Content
@@ -2410,7 +2440,7 @@ Each commit boundary represents a point where the project compiles and all exist
 - `gui/quest/slot/ActiveQuestSlot.java` — material override for TutorialQuestSource, non-abandonable lore line
 
 **Tests:**
-- `ActiveQuestSlotTutorialTest` — tutorial quest renders with KNOWLEDGE_BOOK material, non-abandonable lore line shown instead of right-click-to-abandon, right-click does NOT open abandon confirm for non-abandonable quests
+- `ActiveQuestSlotTutorialTest` — tutorial quest renders with KNOWLEDGE_BOOK material via per-quest locale display-item section, quest without per-quest display-item falls back to global template, non-abandonable lore line shown instead of right-click-to-abandon, right-click does NOT open abandon confirm for non-abandonable quests
 
 **Compile check:** Project compiles. Tutorial quests visually distinct in Active Quest GUI.
 
@@ -2589,8 +2619,8 @@ Each commit boundary represents a point where the project compiles and all exist
 - Bypass permission only affects tutorial-sourced chains (non-tutorial chains unaffected)
 
 #### `ActiveQuestSlotTutorialTest`
-- Tutorial quest slot renders with KNOWLEDGE_BOOK material
-- Non-tutorial quest slot renders with WRITABLE_BOOK material (existing behavior)
+- Tutorial quest slot renders with KNOWLEDGE_BOOK material via per-quest locale display-item section
+- Quest without a per-quest display-item section falls back to global template (WRITABLE_BOOK)
 - Non-abandonable quest shows "cannot be abandoned" lore line
 - Non-abandonable quest does NOT show right-click-to-abandon line
 - Right-click on non-abandonable quest does NOT open abandon confirm GUI
@@ -2685,7 +2715,7 @@ Each commit boundary represents a point where the project compiles and all exist
 
 8. **Tutorial palette color `<tutorial>` vs reusing `<hint>`:** Although both default to `#E8C97A`, they are semantically distinct. `<tutorial>` identifies tutorial quest names; `<hint>` is for click instructions. Server owners might want to change one without affecting the other.
 
-9. **Active Quest GUI material override via source instanceof check:** Rather than adding a `getMaterial()` method to `QuestSource` (which would require all sources to provide materials), the slot checks specifically for `TutorialQuestSource`. This keeps the `QuestSource` interface clean and the override localized to the one source that needs it. Future sources that need material overrides can extend this pattern.
+9. **Per-quest display-item via locale route:** Rather than using `instanceof` checks to override materials per source, `QuestDefinition.getDisplayItemRoute()` returns a locale route (`quests.{ns}.{key}.display-item`). `ActiveQuestSlot` tries `getLocalizedSection()` at this route first, falling back to the global `ACTIVE_QUEST_GUI_QUEST_SLOT_DISPLAY_ITEM` template. Tutorial quests define a `display-item:` section in `en_quest.yml` with `material: KNOWLEDGE_BOOK`. This keeps the `QuestSource` interface clean, avoids `instanceof` checks, and makes per-quest display fully localizable — any key supported by `ItemBuilder.from(Section)` is honored.
 
 10. **`tutorial.enabled` config requires restart:** The check runs in `TutorialPreQuestStartListener` which reads config on every event, so technically it's hot-reloadable for *blocking* new starts. However, for enabling (changing from false to true), the `first_join` trigger has already passed for online players — they'd need to relog. Documenting "requires restart" sets correct expectations. Server owners who disable mid-session still get immediate blocking of new starts.
 

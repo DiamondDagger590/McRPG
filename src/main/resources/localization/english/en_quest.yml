@@ -444,6 +444,53 @@ quests:
   mcrpg:
 
     # ================================================================
+    #  TUTORIAL QUESTS
+    # ================================================================
+
+    tutorial_first_steps:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_explore_menu:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_passive_unlock:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_open_loadout:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_active_unlock:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_combo_strike:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_quest_board:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+
+    # ================================================================
     #  EXAMPLE QUESTS
     # ================================================================
 

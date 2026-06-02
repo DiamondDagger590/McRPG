@@ -111,6 +111,28 @@ public class QuestDefinition implements McRPGContent {
     }
 
     /**
+     * Gets the {@link Route} used to look up this quest's display item configuration
+     * in the localization system. The route follows the pattern
+     * {@code quests.{namespace}.{key}.display-item}.
+     * <p>
+     * When a localized section exists at this route, it is passed to
+     * {@link com.diamonddagger590.mccore.builder.item.impl.ItemBuilder#from(dev.dejvokep.boostedyaml.block.implementation.Section)}
+     * to build the quest's GUI icon. Any key supported by
+     * {@link com.diamonddagger590.mccore.builder.item.ItemBuilderConfigurationKeys}
+     * ({@code material}, {@code name}, {@code lore}, {@code item-flags},
+     * {@code custom-model-data}, {@code settings.glowing}, etc.) is honored.
+     * <p>
+     * If the locale file has no section at this route, callers should fall back to
+     * the global {@code active-quest-gui.quest-slot.display-item} template.
+     *
+     * @return the localization route for the display item section
+     */
+    @NotNull
+    public Route getDisplayItemRoute() {
+        return Route.fromString("quests." + questKey.getNamespace() + "." + questKey.getKey() + ".display-item");
+    }
+
+    /**
      * Gets the {@link Route} used to look up this quest's description in the localization system.
      * The route follows the pattern {@code quests.{namespace}.{key}.description}.
      *
