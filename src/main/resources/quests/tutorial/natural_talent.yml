@@ -1,0 +1,29 @@
+quests:
+  mcrpg:tutorial_passive_unlock:
+    scope: mcrpg:single_player
+    repeat-mode: once
+    display:
+      name: "<tutorial>Natural Talent"
+    on-start-messages:
+      explain:
+        key: tutorial.quests.natural-talent.on-start
+    phases:
+      phase_1:
+        completion-mode: ALL
+        stages:
+          stage_1:
+            key: mcrpg:tutorial_passive_unlock_stage_1
+            objectives:
+              unlock_passive:
+                key: mcrpg:tutorial_passive_unlock_obj
+                type: mcrpg:ability_unlock
+                required-progress: 1
+                config:
+                  ability-type: PASSIVE
+    rewards:
+      boosted_xp:
+        type: mcrpg:boosted_experience
+        amount: 1500
+      redeemable_level:
+        type: mcrpg:redeemable_levels
+        amount: 1
