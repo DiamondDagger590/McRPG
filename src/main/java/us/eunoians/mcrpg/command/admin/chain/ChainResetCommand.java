@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.command.admin.chain;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import org.jetbrains.annotations.NotNull;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -13,17 +14,21 @@ import org.incendo.cloud.minecraft.extras.RichDescription;
 import org.incendo.cloud.permission.Permission;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainManager;
+import us.eunoians.mcrpg.quest.source.builtin.TutorialQuestSource;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.setting.impl.DisableTutorialSetting;
 
 import us.eunoians.mcrpg.command.CommandPlaceholders;
 
 import java.util.Map;
+import java.util.Optional;
 
 /**
- * Command: {@code /mcrpg quest admin chain reset <player> <chain>}
+ * Command: {@code /mcrpg quest chain reset <player> <chain>}
  * <p>
  * Hard-wipes all chain state and completion log for the target player. The player will
  * experience the chain as if for the first time. Delegates to
@@ -39,7 +44,7 @@ public class ChainResetCommand extends ChainAdminCommandBase {
             CloudKey.of("chain", QuestChainDefinition.class);
 
     /**
-     * Registers the {@code /mcrpg quest admin chain reset} command.
+     * Registers the {@code /mcrpg quest chain reset} command.
      */
     public static void registerCommand() {
         McRPG plugin = McRPG.getInstance();
@@ -49,7 +54,6 @@ public class ChainResetCommand extends ChainAdminCommandBase {
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("quest")
-                .literal("admin")
                 .literal("chain")
                 .literal("reset")
                 .required(PLAYER_KEY, PlayerParser.playerParser(),
@@ -75,6 +79,12 @@ public class ChainResetCommand extends ChainAdminCommandBase {
 
                     chainManager.resetChain(target.getUniqueId(), chain.getChainKey(), success -> {
                         if (success) {
+                            Optional<McRPGPlayer> mcRPGPlayerOpt = RegistryAccess.registryAccess()
+                                    .registry(RegistryKey.MANAGER)
+                                    .manager(McRPGManagerKey.PLAYER)
+                                    .getPlayer(target.getUniqueId());
+                            mcRPGPlayerOpt.ifPresent(mcRPGPlayer ->
+                                    resetTutorialSettingIfNeeded(mcRPGPlayer, chain));
                             sender.sendMessage(lm.getLocalizedMessageAsComponent(sender,
                                     LocalizationKey.CHAIN_ADMIN_RESET_SUCCESS, placeholders));
                         } else {
@@ -83,5 +93,22 @@ public class ChainResetCommand extends ChainAdminCommandBase {
                         }
                     });
                 }));
+    }
+
+    /**
+     * Resets the {@link DisableTutorialSetting} to {@link DisableTutorialSetting#ENABLED}
+     * when the chain being reset uses the tutorial quest source. This ensures that a player
+     * whose tutorial was manually disabled can begin the chain fresh after an admin reset.
+     * No-op for non-tutorial chains.
+     *
+     * @param mcRPGPlayer the online player whose setting will be reset
+     * @param chain       the chain definition being reset
+     */
+    static void resetTutorialSettingIfNeeded(@NotNull McRPGPlayer mcRPGPlayer,
+                                             @NotNull QuestChainDefinition chain) {
+        if (!chain.getSourceKey().equals(TutorialQuestSource.KEY)) {
+            return;
+        }
+        mcRPGPlayer.setPlayerSetting(DisableTutorialSetting.ENABLED);
     }
 }

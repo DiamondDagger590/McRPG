@@ -30,6 +30,7 @@ import us.eunoians.mcrpg.command.ability.AbilityGuiCommand;
 import us.eunoians.mcrpg.command.admin.chain.ChainAdvanceCommand;
 import us.eunoians.mcrpg.command.admin.chain.ChainResetCommand;
 import us.eunoians.mcrpg.command.admin.chain.ChainRestartCommand;
+import us.eunoians.mcrpg.command.admin.chain.ChainSkipCommand;
 import us.eunoians.mcrpg.command.admin.chain.ChainStatusCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
@@ -115,6 +116,7 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         ChainAdvanceCommand.registerCommand();
         ChainRestartCommand.registerCommand();
         ChainResetCommand.registerCommand();
+        ChainSkipCommand.registerCommand();
 
         // Board Commands
         BoardCommand.registerCommand();

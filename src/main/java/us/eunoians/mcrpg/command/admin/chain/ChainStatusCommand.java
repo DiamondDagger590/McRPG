@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Command: {@code /mcrpg quest admin chain status <player> <chain>}
+ * Command: {@code /mcrpg quest chain status <player> <chain>}
  * <p>
  * Displays the target player's chain state including: current state, current step,
  * completion count, last completed timestamp, and step progress.
@@ -57,7 +57,6 @@ public class ChainStatusCommand extends ChainAdminCommandBase {
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("quest")
-                .literal("admin")
                 .literal("chain")
                 .literal("status")
                 .required(PLAYER_KEY, PlayerParser.playerParser(),

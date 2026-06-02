@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Command: {@code /mcrpg quest admin chain restart <player> <chain> [force]}
+ * Command: {@code /mcrpg quest chain restart <player> <chain> [force]}
  * <p>
  * Restarts a player's chain from step 1. Without {@code force}, completed steps are skipped.
  * With {@code force}, all steps are replayed from the beginning. Delegates to
@@ -53,7 +53,6 @@ public class ChainRestartCommand extends ChainAdminCommandBase {
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("quest")
-                .literal("admin")
                 .literal("chain")
                 .literal("restart")
                 .required(PLAYER_KEY, PlayerParser.playerParser(),
