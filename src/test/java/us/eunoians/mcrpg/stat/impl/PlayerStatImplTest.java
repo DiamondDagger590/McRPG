@@ -90,6 +90,13 @@ class PlayerStatImplTest {
             var stat = new FlatPlayerStat(TEST_KEY, "Test", "T", 10.0);
             assertEquals(Route.fromString("stat." + TEST_KEY.getKey() + ".display-symbol"), stat.getDisplaySymbolRoute());
         }
+
+        @DisplayName("getBaseValue returns zero when constructed with zero")
+        @Test
+        void getBaseValue_returnsZero_whenZeroDefault() {
+            var stat = new FlatPlayerStat(TEST_KEY, "Test", "T", 0.0);
+            assertEquals(0.0, stat.getBaseValue());
+        }
     }
 
     @Nested
@@ -131,11 +138,25 @@ class PlayerStatImplTest {
             assertTrue(stat.getReloadableBaseValue().isEmpty());
         }
 
+        @DisplayName("getReloadableRegenPerSecond returns empty")
+        @Test
+        void getReloadableRegenPerSecond_returnsEmpty() {
+            var stat = new ResourcePoolPlayerStat(TEST_KEY, "HP", "❤", 200, 5);
+            assertTrue(stat.getReloadableRegenPerSecond().isEmpty());
+        }
+
         @DisplayName("getReloadableContent returns empty set")
         @Test
         void getReloadableContent_returnsEmptySet() {
             var stat = new ResourcePoolPlayerStat(TEST_KEY, "HP", "❤", 200, 5);
             assertTrue(stat.getReloadableContent().isEmpty());
+        }
+
+        @DisplayName("getBaseValue returns zero when constructed with zero")
+        @Test
+        void getBaseValue_returnsZero_whenZeroDefault() {
+            var stat = new ResourcePoolPlayerStat(TEST_KEY, "HP", "❤", 0, 0);
+            assertEquals(0, stat.getBaseValue());
         }
     }
 
@@ -206,6 +227,24 @@ class PlayerStatImplTest {
                     TEST_KEY, "Mana", "✦", 100, 2,
                     mockReloadable(100.0), mockReloadable(2.0));
             assertEquals(2, stat.getReloadableContent().size());
+        }
+
+        @DisplayName("getBaseValue returns zero when reloadable returns zero")
+        @Test
+        void getBaseValue_returnsZero_whenReloadableReturnsZero() {
+            var stat = new ConfigurableResourcePoolPlayerStat(
+                    TEST_KEY, "Mana", "✦", 100, 2,
+                    mockReloadable(0.0), mockReloadable(2.0));
+            assertEquals(0.0, stat.getBaseValue());
+        }
+
+        @DisplayName("getRegenPerSecond returns zero when reloadable returns zero")
+        @Test
+        void getRegenPerSecond_returnsZero_whenReloadableReturnsZero() {
+            var stat = new ConfigurableResourcePoolPlayerStat(
+                    TEST_KEY, "Mana", "✦", 100, 2,
+                    mockReloadable(100.0), mockReloadable(0.0));
+            assertEquals(0.0, stat.getRegenPerSecond());
         }
 
         @DisplayName("getBaseValue reflects updated reloadable content")

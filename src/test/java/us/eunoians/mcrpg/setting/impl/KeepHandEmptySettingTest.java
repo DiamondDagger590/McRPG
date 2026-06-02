@@ -1,20 +1,21 @@
 package us.eunoians.mcrpg.setting.impl;
 
-import org.bukkit.entity.Player;
-import org.bukkit.inventory.PlayerInventory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mockbukkit.mockbukkit.entity.PlayerMock;
+import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class KeepHandEmptySettingTest {
+class KeepHandEmptySettingTest extends McRPGBaseTest {
 
     @DisplayName("DISABLED cycles to ENABLED")
     @Test
@@ -84,38 +85,40 @@ class KeepHandEmptySettingTest {
     @DisplayName("ENABLED getDeniedSlots returns the player's held item slot")
     @Test
     void getDeniedSlots_enabled_returnsHeldItemSlot() {
-        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
-        Player bukkitPlayer = mock(Player.class);
-        PlayerInventory inventory = mock(PlayerInventory.class);
-        when(inventory.getHeldItemSlot()).thenReturn(3);
-        when(bukkitPlayer.getInventory()).thenReturn(inventory);
-        when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(bukkitPlayer));
+        UUID uuid = UUID.randomUUID();
+        PlayerMock playerMock = new PlayerMock(server, "TestPlayer", uuid);
+        server.addPlayer(playerMock);
+        playerMock.getInventory().setHeldItemSlot(3);
 
-        List<Integer> denied = KeepHandEmptySetting.ENABLED.getDeniedSlots(mockPlayer);
+        McRPGPlayer mockMcRPGPlayer = mock(McRPGPlayer.class);
+        when(mockMcRPGPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(playerMock));
+
+        List<Integer> denied = KeepHandEmptySetting.ENABLED.getDeniedSlots(mockMcRPGPlayer);
         assertEquals(List.of(3), denied);
     }
 
     @DisplayName("DISABLED getDeniedSlots returns empty list")
     @Test
     void getDeniedSlots_disabled_returnsEmptyList() {
-        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
-        Player bukkitPlayer = mock(Player.class);
-        PlayerInventory inventory = mock(PlayerInventory.class);
-        when(inventory.getHeldItemSlot()).thenReturn(3);
-        when(bukkitPlayer.getInventory()).thenReturn(inventory);
-        when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(bukkitPlayer));
+        UUID uuid = UUID.randomUUID();
+        PlayerMock playerMock = new PlayerMock(server, "TestPlayer", uuid);
+        server.addPlayer(playerMock);
+        playerMock.getInventory().setHeldItemSlot(3);
 
-        List<Integer> denied = KeepHandEmptySetting.DISABLED.getDeniedSlots(mockPlayer);
+        McRPGPlayer mockMcRPGPlayer = mock(McRPGPlayer.class);
+        when(mockMcRPGPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(playerMock));
+
+        List<Integer> denied = KeepHandEmptySetting.DISABLED.getDeniedSlots(mockMcRPGPlayer);
         assertTrue(denied.isEmpty());
     }
 
     @DisplayName("ENABLED getDeniedSlots returns empty when Bukkit player is absent")
     @Test
     void getDeniedSlots_enabled_noBukkitPlayer_returnsEmptyList() {
-        McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
-        when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.empty());
+        McRPGPlayer mockMcRPGPlayer = mock(McRPGPlayer.class);
+        when(mockMcRPGPlayer.getAsBukkitPlayer()).thenReturn(Optional.empty());
 
-        List<Integer> denied = KeepHandEmptySetting.ENABLED.getDeniedSlots(mockPlayer);
+        List<Integer> denied = KeepHandEmptySetting.ENABLED.getDeniedSlots(mockMcRPGPlayer);
         assertTrue(denied.isEmpty());
     }
 
@@ -123,14 +126,15 @@ class KeepHandEmptySettingTest {
     @Test
     void getDeniedSlots_enabled_differentSlots() {
         for (int slot = 0; slot < 9; slot++) {
-            McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
-            Player bukkitPlayer = mock(Player.class);
-            PlayerInventory inventory = mock(PlayerInventory.class);
-            when(inventory.getHeldItemSlot()).thenReturn(slot);
-            when(bukkitPlayer.getInventory()).thenReturn(inventory);
-            when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(bukkitPlayer));
+            UUID uuid = UUID.randomUUID();
+            PlayerMock playerMock = new PlayerMock(server, "Slot" + slot, uuid);
+            server.addPlayer(playerMock);
+            playerMock.getInventory().setHeldItemSlot(slot);
 
-            List<Integer> denied = KeepHandEmptySetting.ENABLED.getDeniedSlots(mockPlayer);
+            McRPGPlayer mockMcRPGPlayer = mock(McRPGPlayer.class);
+            when(mockMcRPGPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(playerMock));
+
+            List<Integer> denied = KeepHandEmptySetting.ENABLED.getDeniedSlots(mockMcRPGPlayer);
             assertEquals(List.of(slot), denied);
         }
     }
