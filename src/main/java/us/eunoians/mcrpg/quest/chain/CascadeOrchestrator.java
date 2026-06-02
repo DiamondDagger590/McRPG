@@ -168,6 +168,36 @@ public class CascadeOrchestrator {
     }
 
     /**
+     * Force-advances the given chain for the player by resolving the player's current
+     * active quest key from their chain state and delegating to {@link #advanceChain}.
+     * Intended for admin commands that need to advance a chain without knowing which
+     * quest is currently active.
+     *
+     * @param playerUUID the player UUID
+     * @param chainKey   the chain to advance
+     * @return {@code true} if the chain advanced or completed
+     */
+    public boolean forceAdvanceChain(@NotNull UUID playerUUID, @NotNull NamespacedKey chainKey) {
+        Optional<McRPGPlayer> mcRPGPlayerOpt = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.PLAYER)
+                .getPlayer(playerUUID);
+        if (mcRPGPlayerOpt.isEmpty()) {
+            return false;
+        }
+        Optional<QuestChainPlayerState> stateOpt = mcRPGPlayerOpt.get().getChainData()
+                .getChainState(chainKey);
+        if (stateOpt.isEmpty() || stateOpt.get().getState() != QuestChainState.ACTIVE) {
+            return false;
+        }
+        Optional<NamespacedKey> currentQuestKeyOpt = stateOpt.get().getCurrentQuestKey();
+        if (currentQuestKeyOpt.isEmpty()) {
+            return false;
+        }
+        return advanceChain(playerUUID, currentQuestKeyOpt.get());
+    }
+
+    /**
      * Returns {@code true} if the given player is currently in a chain cascade
      * (auto-completing steps within a single tick).
      *

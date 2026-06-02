@@ -23,11 +23,12 @@ import us.eunoians.mcrpg.command.CommandPlaceholders;
 import java.util.Map;
 
 /**
- * Command: {@code /mcrpg quest admin chain advance <player> <chain>}
+ * Command: {@code /mcrpg quest chain advance <player> <chain>}
  * <p>
  * Force-completes the player's current chain step and starts the next one. If the player
  * is on the last step the chain is completed. Delegates to
- * {@link QuestChainManager#forceAdvanceChain(java.util.UUID, org.bukkit.NamespacedKey)}.
+ * {@link us.eunoians.mcrpg.quest.chain.CascadeOrchestrator#forceAdvanceChain(java.util.UUID, org.bukkit.NamespacedKey)}
+ * so on-start messages and auto-completion are handled within the cascade lifecycle.
  */
 public class ChainAdvanceCommand extends ChainAdminCommandBase {
 
@@ -48,7 +49,6 @@ public class ChainAdvanceCommand extends ChainAdminCommandBase {
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("quest")
-                .literal("admin")
                 .literal("chain")
                 .literal("advance")
                 .required(PLAYER_KEY, PlayerParser.playerParser(),
@@ -72,7 +72,8 @@ public class ChainAdvanceCommand extends ChainAdminCommandBase {
                             CommandPlaceholders.CHAIN_DISPLAY_NAME.getPlaceholder(), chain.getDisplayName(),
                             CommandPlaceholders.CHAIN_KEY.getPlaceholder(), chain.getChainKey().toString());
 
-                    boolean success = chainManager.forceAdvanceChain(target.getUniqueId(), chain.getChainKey());
+                    boolean success = chainManager.getCascadeOrchestrator()
+                            .forceAdvanceChain(target.getUniqueId(), chain.getChainKey());
                     if (success) {
                         sender.sendMessage(lm.getLocalizedMessageAsComponent(sender,
                                 LocalizationKey.CHAIN_ADMIN_ADVANCE_SUCCESS, placeholders));
