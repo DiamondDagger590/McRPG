@@ -34,7 +34,8 @@ McCore is shaded and relocated to `us.eunoians.mcrpg.mccore` in the final jar.
 |---------|-------------|
 | `./gradlew verifiedShadowJar` | Clean → test → build shaded jar **(recommended)** |
 | `./gradlew fastShadowJar` | Clean → build shaded jar (skips tests) |
-| `./gradlew test` | Run tests only |
+| `./gradlew test` | Run tests only (also generates JaCoCo report) |
+| `./gradlew jacocoTestReport` | Generate coverage report from last test run |
 | `./gradlew shadowJar` | Build shaded jar (no clean) |
 
 Output jar: `build/libs/McRPG-<version>-<git-hash>.jar`
@@ -610,6 +611,13 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - Extend `McRPGBaseTest` for any test that requires Bukkit or MockBukkit setup
 - Shared test helpers and fixtures go in `src/testFixtures/java/`
 - **The entire test suite must pass before a task is considered complete** — run `./gradlew verifiedShadowJar` (or `./gradlew test`) and verify zero failures across all test classes, not just tests related to the current change. Regressions in unrelated tests still block completion.
+
+#### Test Naming Conventions
+
+- **`@DisplayName` format:** Short descriptive label — not a Given/When/Then sentence. Examples: `"getBaseValue returns constructor value"`, `"DISABLED cycles to ENABLED"`, `"fromString is case-insensitive"`
+- **Method naming:** `action_outcome_whenCondition` — the `_whenCondition` suffix is optional when the context is obvious. Examples: `getNextSetting_disabled_cyclesToEnabled`, `getBaseValue_returnsDefault`, `fromString_unknownValue_returnsEmpty`
+- **`@Nested` classes:** Use `@Nested` with `@DisplayName` to group tests by class-under-test or logical section (e.g., `@DisplayName("FlatPlayerStat")`)
+- **Parameterized tests:** Prefer `@ParameterizedTest` with `@EnumSource` over manual loops when testing all enum variants
 
 ---
 

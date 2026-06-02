@@ -223,6 +223,13 @@ The `SkillNameColorConsistencyTest` enforces this for all bundled skills at CI t
 
 `Skill.getColoredName(McRPGPlayer)` returns the fully resolved, palette-colored skill name string for display. `ConfigurableSkill` resolves it from the locale `name:` field (which carries the `<skill-{key}>` tag) so the palette substitution happens in place. All callsites that show a skill name in player-facing text — GUI titles, ability lore, action bar, commands — must use `getColoredName()` instead of `getName()`. The only exception is when the name will be used as a command argument (e.g., `player.performCommand`), where plain text is required and `getName()` is correct.
 
+## Test Naming Conventions
+
+- **`@DisplayName` format:** Short descriptive label — not Given/When/Then. Examples: `"getBaseValue returns constructor value"`, `"DISABLED cycles to ENABLED"`, `"fromString is case-insensitive"`
+- **Method naming:** `action_outcome_whenCondition` (the `_whenCondition` suffix is optional when obvious). Examples: `getNextSetting_disabled_cyclesToEnabled`, `getBaseValue_returnsDefault`, `fromString_unknownValue_returnsEmpty`
+- **`@Nested` classes:** Group tests by class-under-test or logical section with `@Nested` + `@DisplayName`
+- **Parameterized tests:** Prefer `@ParameterizedTest` + `@EnumSource` over manual loops for enum variant coverage
+
 ## Mana Balance Framework
 
 Active abilities are balanced using a **"Slow Regen, High Stakes"** philosophy. Key parameters: 100 max pool, 2/sec passive regen (50s full recovery), three cost buckets:
