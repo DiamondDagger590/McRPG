@@ -187,6 +187,12 @@ public class StateMachineConcurrentTransitionTest {
     /**
      * Verifies the pattern holds under a higher thread count — 5 threads concurrently
      * attempting to accept the same offering. Only one must succeed.
+     * <p>
+     * Uses a dedicated fixed thread pool instead of {@code CompletableFuture.runAsync()}
+     * (which delegates to {@code ForkJoinPool.commonPool()}) because the common pool sizes
+     * itself to {@code availableProcessors() - 1}. In resource-constrained environments
+     * (CI containers, cloud VMs with 1-2 vCPUs) the common pool may have fewer threads
+     * than the barrier party count, causing the barrier to time out.
      */
     @RepeatedTest(20)
     @DisplayName("with offeringLocks pattern: exactly one acceptance across 5 concurrent threads")
@@ -197,9 +203,10 @@ public class StateMachineConcurrentTransitionTest {
         CyclicBarrier barrier = new CyclicBarrier(threadCount);
         AtomicInteger successCount = new AtomicInteger(0);
 
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        List<Future<?>> futures = new ArrayList<>();
         for (int i = 0; i < threadCount; i++) {
-            futures.add(CompletableFuture.runAsync(() -> {
+            futures.add(executor.submit(() -> {
                 try {
                     barrier.await(5, TimeUnit.SECONDS);
                     Object lock = offeringLocks.computeIfAbsent(offering.getOfferingId(), k -> new Object());
@@ -215,7 +222,10 @@ public class StateMachineConcurrentTransitionTest {
             }));
         }
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).get(10, TimeUnit.SECONDS);
+        for (Future<?> f : futures) {
+            f.get(10, TimeUnit.SECONDS);
+        }
+        executor.shutdown();
 
         assertEquals(1, successCount.get(),
                 "Exactly one acceptance must succeed across " + threadCount + " concurrent threads");
