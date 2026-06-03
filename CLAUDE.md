@@ -617,6 +617,7 @@ Use a builder when a class meets **any** of these criteria:
 - **No unbounded `Map` or `Set` fields without a documented eviction strategy** — insert-only caches are memory leaks; document the cleanup lifecycle event in Javadoc
 - **No `putHolderOnCooldown()` inside `comboActivate()`** — the combo listener (`OnComboCompleteListener`) manages cooldown application for combo-activated abilities. Calling it inside the ability causes double-cooldown
 - **No void-return `comboActivate()` or `activateAbility()`** — both return `boolean` (`true` = executed, `false` = internally cancelled). The boolean enables mana refund and conditional cooldown in callers
+- **No raw `Bukkit.getScheduler()` for repeating or delayed tasks** — use McCore's `CoreTask` hierarchy (`RepeatableCoreTask`, `DelayableCoreTask`, `ExpireableCoreTask`, etc.) which provides state tracking, pause/resume, and consistent second-based timing. Direct scheduler calls are acceptable only for one-shot main-thread rescheduling from async code (e.g., `Bukkit.getScheduler().runTask(plugin, () -> { ... })`)
 - **No roadmap or LLD phase references in Javadoc or comments** — labels like "Phase 1", "Phase 2 LLD", or "Future phases" rot immediately: they are meaningless to engineers who weren't present during planning. Describe the *what* and *why* of the code instead. For extension points, name the type or mechanism (e.g. `ContentExpansion`, `QuestTemplate`). For deprecated code, explain what changed architecturally rather than which delivery phase removed it. The only acceptable "phase" language is inside inline comments that label the sequential steps of a single async operation (e.g. `// Phase 1 (DB executor): load`, `// Phase 2 (main thread): generate`).
 
 ---
@@ -631,7 +632,7 @@ Use a builder when a class meets **any** of these criteria:
 - Keep methods focused and short — split logic into private helpers rather than long method bodies
 - Prefer instance collaborators over static helpers when encoding domain behavior
 - No section-divider comments (`// --- Section name ---` or `// ===== Section =====`) — if a class needs labeled sections, it is too large or has too many concerns. Extract a collaborator or use natural method ordering instead
-- Javadoc on all methods (public and private) with `@param` and `@return` semantics
+- Javadoc on all methods (public and private) with `@param` and `@return` semantics — this applies to every method regardless of visibility
 
 **Third-party developer mindset:** McRPG is designed to be extensible by external plugins. Any change to a public API, event, or registry should be made as if you were a third-party developer hooking in. Prefer additive, non-breaking changes; fire Bukkit events wherever an external plugin would reasonably want to intercept; document extension points clearly.
 

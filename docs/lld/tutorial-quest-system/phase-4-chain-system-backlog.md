@@ -673,7 +673,7 @@ classDiagram
     direction TB
 
     class WindowBoundary {
-        ~new sealed interface~
+        ~new interface~
         +toZonedDateTime(ZonedDateTime, int) ZonedDateTime
     }
 
@@ -710,12 +710,15 @@ classDiagram
         EXPIRE_WITH_GRACE
     }
 
+    class RepeatableCoreTask {
+        ~McCore~
+    }
+
     class ChainAvailabilityChecker {
-        ~new~
+        ~new extends RepeatableCoreTask~
         -plugin : McRPG
-        -activeGracePeriods : Map
-        +start(long) void
-        +stop() void
+        -previousAvailability : Map
+        -activeGraceTasks : Map
         +isChainAvailable(NamespacedKey) boolean
     }
 
@@ -725,20 +728,27 @@ classDiagram
     AvailabilityConfig *-- AvailabilityWindowDefinition
     AvailabilityConfig --> WindowClosePolicy
     ChainAvailabilityChecker --> AvailabilityConfig
+    ChainAvailabilityChecker --|> RepeatableCoreTask
 ```
 
-### 7.2 `WindowBoundary` — Sealed Boundary Type
+### 7.2 `WindowBoundary` — Extensible Boundary Type
 
 **Package:** `us.eunoians.mcrpg.quest.chain.availability`
 **File:** `src/main/java/us/eunoians/mcrpg/quest/chain/availability/WindowBoundary.java`
+
+The interface is **not sealed** — third-party plugins may implement custom boundary types (e.g., a boundary that resolves from an external calendar API or a cron expression). The two built-in implementations (`Fixed` and `Recurring`) cover the common cases:
+
+- **`Fixed`** — A one-time boundary with a specific date and time (includes year). Use for events that happen exactly once, like a server launch celebration or a one-time promotional event. Once the date passes, the window is permanently closed.
+- **`Recurring`** — A yearly repeating boundary defined by month-day and time (no year). Use for seasonal or holiday events that repeat every year without config changes. The YAML format uses a `--` prefix to indicate no year (e.g., `--12-01T00:00:00`).
 
 ```java
 /**
  * Represents one boundary (start or end) of an availability window.
  * Fixed boundaries have a specific year; recurring boundaries repeat yearly.
+ * Third-party plugins may implement custom boundary types for advanced
+ * scheduling needs (e.g., cron-based or external-calendar-driven boundaries).
  */
-public sealed interface WindowBoundary
-        permits WindowBoundary.Fixed, WindowBoundary.Recurring {
+public interface WindowBoundary {
 
     /**
      * Resolves this boundary to a concrete {@link ZonedDateTime} in the context
@@ -752,6 +762,12 @@ public sealed interface WindowBoundary
     @NotNull
     ZonedDateTime toZonedDateTime(@NotNull ZonedDateTime referenceNow, int yearOffset);
 
+    /**
+     * A one-time boundary at a specific date and time (includes year).
+     * Once the date passes, the window is permanently closed.
+     *
+     * @param dateTime the specific date and time for this boundary
+     */
     record Fixed(@NotNull LocalDateTime dateTime) implements WindowBoundary {
         @Override
         @NotNull
@@ -760,6 +776,14 @@ public sealed interface WindowBoundary
         }
     }
 
+    /**
+     * A yearly repeating boundary defined by month-day and time (no year).
+     * Resolves to the reference year plus the given offset, enabling
+     * year-wrapping windows (e.g., December 1 to January 3).
+     *
+     * @param monthDay the month and day for this boundary
+     * @param time     the time of day for this boundary
+     */
     record Recurring(@NotNull MonthDay monthDay, @NotNull LocalTime time) implements WindowBoundary {
         @Override
         @NotNull
@@ -884,52 +908,101 @@ public enum WindowClosePolicy {
 **Package:** `us.eunoians.mcrpg.quest.chain.availability`
 **File:** `src/main/java/us/eunoians/mcrpg/quest/chain/availability/ChainAvailabilityChecker.java`
 
-Repeating Bukkit task (configurable interval, default 60 seconds) that evaluates availability windows for all chains with `AvailabilityConfig`.
+Extends `RepeatableCoreTask` to use McCore's task system for state tracking, pause/resume, and consistent second-based timing. Checks chain availability windows at a configurable interval (default 60 seconds). When a window closes, applies the configured `WindowClosePolicy` to active chain instances.
 
 ```java
 /**
  * Scheduled task that checks chain availability windows at a configurable
  * interval. When a window closes, applies the configured
  * {@link WindowClosePolicy} to all active chain instances.
+ *
+ * <p>Extends {@link RepeatableCoreTask} to use McCore's task system for
+ * state tracking, pause/resume, and consistent second-based timing.
  */
-public class ChainAvailabilityChecker {
+public class ChainAvailabilityChecker extends RepeatableCoreTask {
 
     private final McRPG plugin;
     private final Map<NamespacedKey, Boolean> previousAvailability = new HashMap<>();
     private final Map<NamespacedKey, Integer> activeGraceTasks = new HashMap<>();
-    private int taskId = -1;
 
-    public ChainAvailabilityChecker(@NotNull McRPG plugin) {
+    /**
+     * Constructs a new availability checker.
+     *
+     * @param plugin          the plugin instance
+     * @param checkIntervalSeconds the interval in seconds between availability checks
+     */
+    public ChainAvailabilityChecker(@NotNull McRPG plugin, double checkIntervalSeconds) {
+        super(plugin, 0, checkIntervalSeconds);
         this.plugin = plugin;
     }
 
     /**
-     * Starts the repeating availability check task.
-     *
-     * @param intervalTicks the interval in Bukkit ticks (20 ticks = 1 second)
+     * Called when the initial delay completes (delay is 0, so this fires
+     * immediately). Performs startup reconciliation to detect windows that
+     * closed while the server was offline.
      */
-    public void start(long intervalTicks) {
-        taskId = Bukkit.getScheduler().runTaskTimer(plugin, this::checkAllChains,
-                intervalTicks, intervalTicks).getTaskId();
+    @Override
+    protected void onDelayComplete() {
+        reconcileOnStartup();
     }
 
     /**
-     * Stops the task and cancels any pending grace period tasks.
+     * Called at the start of each check interval. No-op — all work is done
+     * on interval completion.
      */
-    public void stop() {
-        if (taskId != -1) {
-            Bukkit.getScheduler().cancelTask(taskId);
-            taskId = -1;
-        }
+    @Override
+    protected void onIntervalStart() {
+        // No-op
+    }
+
+    /**
+     * Called at the end of each interval. Checks all chains with availability
+     * configs, detects window transitions (open → closed, closed → open),
+     * and applies the appropriate policy.
+     */
+    @Override
+    protected void onIntervalComplete() {
+        checkAllChains();
+    }
+
+    /**
+     * Called when the task is paused. Cancels any pending grace period tasks.
+     */
+    @Override
+    protected void onIntervalPause() {
         activeGraceTasks.values().forEach(id -> Bukkit.getScheduler().cancelTask(id));
         activeGraceTasks.clear();
     }
+
+    /**
+     * Called when the task is resumed. Re-snapshots current availability state
+     * so the first post-resume check detects transitions correctly.
+     */
+    @Override
+    protected void onIntervalResume() {
+        snapshotCurrentAvailability();
+    }
+
+    /**
+     * Detects windows that closed while the server was offline and applies
+     * the configured close policy. Called once on task startup. Iterates all
+     * chains with availability configs: if a chain is currently unavailable
+     * but has active player states, the window must have closed during downtime.
+     */
+    private void reconcileOnStartup() { ... }
 
     /**
      * Checks all chains with availability configs. Detects window transitions
      * (open → closed, closed → open) and applies the appropriate policy.
      */
     private void checkAllChains() { ... }
+
+    /**
+     * Snapshots the current availability state of all chains with configs
+     * into {@code previousAvailability}. Used on startup and resume to
+     * establish a baseline for transition detection.
+     */
+    private void snapshotCurrentAvailability() { ... }
 
     /**
      * Applies the window-close policy to all active instances of a chain.
@@ -951,6 +1024,8 @@ public class ChainAvailabilityChecker {
      * Expires all active instances of a chain across all online players.
      * Sets chain state to EXPIRED, cancels active quest instances, fires
      * {@link QuestChainExpireEvent}.
+     *
+     * @param chainKey the chain key to expire
      */
     private void expireActiveInstances(@NotNull NamespacedKey chainKey) { ... }
 
@@ -958,6 +1033,8 @@ public class ChainAvailabilityChecker {
      * The ALLOW_FINISH policy does not cancel active instances. It only
      * blocks new starts — this is handled by {@code tryStartChain}'s
      * availability check. No active instance mutation needed.
+     *
+     * @param chainKey the chain key (unused — documented for policy completeness)
      */
     private void blockNewStarts(@NotNull NamespacedKey chainKey) {
         // No-op: tryStartChain already checks isChainAvailable()
@@ -966,6 +1043,9 @@ public class ChainAvailabilityChecker {
     /**
      * Starts a grace period for the chain. Sends warning messages to affected
      * players immediately. After the grace period, applies EXPIRE_ACTIVE.
+     *
+     * @param chainKey   the chain key
+     * @param definition the chain definition (provides grace period duration)
      */
     private void startGracePeriod(@NotNull NamespacedKey chainKey,
                                    @NotNull QuestChainDefinition definition) { ... }
@@ -982,14 +1062,17 @@ public class ChainAvailabilityChecker {
         QuestChainRegistry registry = plugin.registryAccess()
                 .registry(McRPGRegistryKey.QUEST_CHAIN);
         return registry.get(chainKey)
-                .map(def -> def.getAvailabilityConfig() == null
-                        || def.getAvailabilityConfig().isCurrentlyAvailable())
+                .map(def -> def.getAvailabilityConfig()
+                        .map(AvailabilityConfig::isCurrentlyAvailable)
+                        .orElse(true))
                 .orElse(false);
     }
 }
 ```
 
-**Eviction strategy:** `previousAvailability` is bounded by the number of chains with availability configs (small, finite set defined by YAML). `activeGraceTasks` entries are removed when the grace period completes or the task is stopped.
+**Startup reconciliation:** When the server starts (or the task is created on reload), `reconcileOnStartup()` runs once in `onDelayComplete()`. It iterates all chains with availability configs: if a chain is currently unavailable but has online players with active chain states, the window closed during server downtime. The configured `WindowClosePolicy` is applied retroactively. For `EXPIRE_WITH_GRACE`, the grace period starts from the reconciliation time (not from when the window actually closed, since that time is unknown).
+
+**Eviction strategy:** `previousAvailability` is bounded by the number of chains with availability configs (small, finite set defined by YAML). `activeGraceTasks` entries are removed when the grace period completes or the task is paused/stopped.
 
 ### 7.7 `QuestChainDefinition` Changes
 
@@ -1000,10 +1083,24 @@ Add optional `AvailabilityConfig` field:
 ```java
 private final AvailabilityConfig availabilityConfig;
 
-@Nullable public AvailabilityConfig getAvailabilityConfig() { return availabilityConfig; }
+/**
+ * Returns the availability window configuration for this chain, if any.
+ *
+ * @return the availability config, or empty if the chain has no time restrictions
+ */
+@NotNull public Optional<AvailabilityConfig> getAvailabilityConfig() {
+    return Optional.ofNullable(availabilityConfig);
+}
 
 // Builder addition:
 private AvailabilityConfig availabilityConfig;
+
+/**
+ * Sets the availability window configuration for this chain.
+ *
+ * @param config the availability config, or null for no time restrictions
+ * @return this builder
+ */
 @NotNull public Builder availabilityConfig(@Nullable AvailabilityConfig config) { ... }
 ```
 
@@ -1013,8 +1110,9 @@ Add availability check before repeat evaluation:
 
 ```java
 // After resolving definition, before state check:
-if (definition.getAvailabilityConfig() != null
-        && !definition.getAvailabilityConfig().isCurrentlyAvailable()) {
+if (definition.getAvailabilityConfig()
+        .map(config -> !config.isCurrentlyAvailable())
+        .orElse(false)) {
     return false;
 }
 ```
@@ -1075,7 +1173,14 @@ Add optional `AvailabilityConfig` field to `QuestTemplate`:
 ```java
 private final AvailabilityConfig availabilityConfig;
 
-@Nullable public AvailabilityConfig getAvailabilityConfig() { return availabilityConfig; }
+/**
+ * Returns the availability window configuration for this template, if any.
+ *
+ * @return the availability config, or empty if the template has no time restrictions
+ */
+@NotNull public Optional<AvailabilityConfig> getAvailabilityConfig() {
+    return Optional.ofNullable(availabilityConfig);
+}
 ```
 
 **File:** `src/main/java/us/eunoians/mcrpg/quest/board/generation/QuestPool.java`
@@ -1084,8 +1189,9 @@ Filter templates by availability before weighted selection:
 
 ```java
 // In template selection logic, before adding to eligible pool:
-if (template.getAvailabilityConfig() != null
-        && !template.getAvailabilityConfig().isCurrentlyAvailable()) {
+if (template.getAvailabilityConfig()
+        .map(config -> !config.isCurrentlyAvailable())
+        .orElse(false)) {
     continue;
 }
 ```
@@ -1132,14 +1238,16 @@ quest-chain:
 
 ### 7.14 Bootstrap Wiring
 
-`ChainAvailabilityChecker` is created and started in `QuestChainManager`'s initialization, after chain definitions are loaded. Stopped in the manager's shutdown hook. Restarted on reload (stop → rebuild `previousAvailability` → start).
+`ChainAvailabilityChecker` is created in `QuestChainManager`'s initialization after chain definitions are loaded, with the interval from `MainConfigFile.AVAILABILITY_CHECK_INTERVAL_SECONDS`. Started via `runTask()` (sync, main thread). On shutdown, cancelled via `cancelTask()`. On reload: cancel the existing task, create a new `ChainAvailabilityChecker` instance, and start it — the new instance runs `reconcileOnStartup()` in `onDelayComplete()` to pick up any window changes from the reloaded config.
+
+**Server restart behavior:** On fresh server start, `reconcileOnStartup()` detects chains whose windows closed during downtime by checking all chains with availability configs against currently loaded player states. Any chain that is currently unavailable but has active player states gets the configured `WindowClosePolicy` applied retroactively.
 
 ### 7.15 Tests
 
 - `WindowBoundaryTest` — fixed and recurring boundary resolution
 - `AvailabilityWindowDefinitionTest` — `isActive()` for normal ranges, year-wrapping ranges, edge cases (midnight, year boundaries)
 - `AvailabilityConfigTest` — `isCurrentlyAvailable()` with multiple windows
-- `ChainAvailabilityCheckerTest` — window transition detection, policy application
+- `ChainAvailabilityCheckerTest` — window transition detection, policy application, startup reconciliation (chain unavailable with active states → policy applied on startup)
 - `ChainRepeatEvaluatorAvailabilityTest` — repeat evaluation respects availability windows
 
 ---
