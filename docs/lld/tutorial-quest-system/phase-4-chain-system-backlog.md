@@ -679,6 +679,18 @@ classDiagram
         +toZonedDateTime(ZonedDateTime, int) ZonedDateTime
     }
 
+    class WindowBoundaryType {
+        ~new interface~
+        +getKey() NamespacedKey
+        +parse(Section, File, Logger) WindowBoundary
+    }
+
+    class WindowBoundaryTypeRegistry {
+        ~new~
+        +register(WindowBoundaryType)
+        +get(NamespacedKey) Optional~WindowBoundaryType~
+    }
+
     class FixedBoundary {
         ~new record~
         -dateTime : LocalDateTime
@@ -727,6 +739,8 @@ classDiagram
 
     FixedBoundary ..|> WindowBoundary
     RecurringBoundary ..|> WindowBoundary
+    WindowBoundaryType --> WindowBoundary
+    WindowBoundaryTypeRegistry --> WindowBoundaryType
     AvailabilityWindowDefinition *-- WindowBoundary
     AvailabilityConfig *-- AvailabilityWindowDefinition
     AvailabilityConfig --> WindowClosePolicy
@@ -797,6 +811,60 @@ public interface WindowBoundary {
     }
 }
 ```
+
+**Same-type boundary enforcement:** Both boundaries in an `AvailabilityWindowDefinition` must use the same `WindowBoundaryType`. Mixing `Fixed` start with `Recurring` end (or vice versa) creates ambiguous windows — a fixed date of 2025-12-20 paired with a recurring end of Jan 5 (no year) has no deterministic interpretation. The config loader validates this at parse time and logs a `WARNING` + skips the window if the types differ.
+
+#### `WindowBoundaryType` — Extensible Boundary Deserialization
+
+**Package:** `us.eunoians.mcrpg.quest.chain.availability`
+**File:** `src/main/java/us/eunoians/mcrpg/quest/chain/availability/WindowBoundaryType.java`
+
+Keyed by `NamespacedKey`, responsible for deserializing a YAML config section into a `WindowBoundary` instance. Without a registry, the YAML loader would only know about `Fixed` and `Recurring` — custom types from third-party plugins would be invisible.
+
+```java
+/**
+ * Extensible interface defining how a specific boundary type is deserialized
+ * from a YAML config section. Registered in {@link WindowBoundaryTypeRegistry}.
+ */
+public interface WindowBoundaryType {
+
+    /**
+     * Returns the unique key identifying this boundary type in config files.
+     *
+     * @return the boundary type key (e.g., {@code mcrpg:fixed})
+     */
+    @NotNull
+    NamespacedKey getKey();
+
+    /**
+     * Parses a window boundary from a YAML config section.
+     *
+     * @param section the YAML section containing boundary configuration
+     * @param file    source file for error reporting
+     * @param logger  logger for warning messages
+     * @return the parsed boundary, or empty if the section is invalid
+     */
+    @NotNull
+    Optional<WindowBoundary> parse(@NotNull Section section, @NotNull File file,
+                                    @NotNull Logger logger);
+}
+```
+
+**Built-in implementations:** `FixedWindowBoundaryType` (key: `mcrpg:fixed`), `RecurringWindowBoundaryType` (key: `mcrpg:recurring`).
+
+#### `WindowBoundaryTypeRegistry`
+
+**Package:** `us.eunoians.mcrpg.quest.chain.availability`
+**File:** `src/main/java/us/eunoians/mcrpg/quest/chain/availability/WindowBoundaryTypeRegistry.java`
+
+Accessed via `McRPGRegistryKey.WINDOW_BOUNDARY_TYPE`. Standard registry pattern — `register(WindowBoundaryType)`, `get(NamespacedKey)`.
+
+#### `WindowBoundaryTypeContentPack`
+
+**Package:** `us.eunoians.mcrpg.expansion.content`
+**File:** `src/main/java/us/eunoians/mcrpg/expansion/content/WindowBoundaryTypeContentPack.java`
+
+Standard content pack for third-party registration via `ContentExpansion.getExpansionContent()`.
 
 ### 7.3 `AvailabilityWindowDefinition` — Named Window
 
@@ -1184,10 +1252,9 @@ private static AvailabilityConfig parseAvailabilityConfig(
         @NotNull Section section, @NotNull File file) { ... }
 ```
 
-**Window boundary parsing:**
-- Strings starting with `--` (e.g., `--12-01T00:00:00`) → `RecurringBoundary`
-- Full ISO-8601 strings (e.g., `2026-12-01T00:00:00`) → `FixedBoundary`
-- Invalid formats → `WARNING` log, skip the window
+**Window boundary parsing:** Each boundary is a YAML section with a `type` key that maps to a `WindowBoundaryType` in the registry. The loader resolves the type via `WindowBoundaryTypeRegistry.get(key)` and delegates parsing to the matched type. If the type key is unrecognized, the loader logs a `WARNING` and skips the window.
+
+After parsing both boundaries, the loader validates same-type enforcement: if `from` and `until` resolve to different `WindowBoundaryType` keys, the window is skipped with a `WARNING` log explaining that mixed boundary types are not supported.
 
 ### 7.10 YAML Schema (Chains)
 
@@ -1200,11 +1267,36 @@ auto-start:
 availability:
   windows:
     holiday-period:
-      from: "--12-01T00:00:00"
-      until: "--01-03T23:59:59"
+      from:
+        type: "mcrpg:recurring"
+        month-day: "--12-01"
+        time: "00:00:00"
+      until:
+        type: "mcrpg:recurring"
+        month-day: "--01-03"
+        time: "23:59:59"
   timezone: "America/New_York"
   on-window-close: expire-active
   grace-period: 48h
+```
+
+**One-time event example (Fixed boundaries):**
+
+```yaml
+key: mcrpg:launch_event
+source: mcrpg:manual
+availability:
+  windows:
+    launch-week:
+      from:
+        type: "mcrpg:fixed"
+        date: "2026-06-01T00:00:00"
+      until:
+        type: "mcrpg:fixed"
+        date: "2026-06-08T23:59:59"
+  timezone: "America/New_York"
+  on-window-close: expire-with-grace
+  grace-period: 24h
 ```
 
 **Defaults:**
@@ -1254,8 +1346,14 @@ templates:
     availability:
       windows:
         holiday:
-          from: "--12-01T00:00:00"
-          until: "--01-03T23:59:59"
+          from:
+            type: "mcrpg:recurring"
+            month-day: "--12-01"
+            time: "00:00:00"
+          until:
+            type: "mcrpg:recurring"
+            month-day: "--01-03"
+            time: "23:59:59"
       timezone: "America/New_York"
     # ... rest of template definition
 ```
@@ -1332,8 +1430,14 @@ quests:
     availability:
       windows:
         holiday:
-          from: "--12-01T00:00:00"
-          until: "--01-03T23:59:59"
+          from:
+            type: "mcrpg:recurring"
+            month-day: "--12-01"
+            time: "00:00:00"
+          until:
+            type: "mcrpg:recurring"
+            month-day: "--01-03"
+            time: "23:59:59"
       timezone: "America/New_York"
       on-window-close: expire-with-grace
       grace-period: 24h
@@ -1399,8 +1503,10 @@ quest-chain:
 ### 7.17 Tests
 
 - `WindowBoundaryTest` — fixed and recurring boundary resolution
+- `WindowBoundaryTypeRegistryTest` — register/get boundary types, parse via registry, reject unrecognized type keys
 - `AvailabilityWindowDefinitionTest` — `isActive()` for normal ranges, year-wrapping ranges, edge cases (midnight, year boundaries)
 - `AvailabilityConfigTest` — `isCurrentlyAvailable()` with multiple windows
+- `AvailabilityConfigParseTest` — same-type boundary enforcement: reject mixed Fixed/Recurring pairs, accept matching pairs
 - `AvailabilityWindowCheckerTest` — window transition detection, policy application, startup reconciliation (chain unavailable with active states → policy applied on startup)
 - `ChainRepeatEvaluatorAvailabilityTest` — repeat evaluation respects availability windows
 - `QuestDefinitionAvailabilityTest` — `startQuest()` returns empty when quest is outside its availability window; succeeds when window is active; no availability config always permits start
@@ -1982,7 +2088,7 @@ If a `TimeGateCondition` is present on the step, the unlock date/countdown is ap
 
 **File:** `src/main/java/us/eunoians/mcrpg/quest/chain/QuestChainStep.java`
 
-Add optional preview fields:
+Add an optional pre-built preview `ItemStack`:
 
 ```java
 /**
@@ -1992,30 +2098,53 @@ Add optional preview fields:
  * @param onQuestExpire  behavior when the step's quest expires
  * @param maxRetries     max retry count (-1 for unlimited)
  * @param conditions     conditions that must be met before the step starts
- * @param previewName    display name for the locked GUI state (null = use quest locale or generic fallback)
- * @param previewDescription display description for the locked GUI state (null = use quest locale or generic fallback)
- * @param previewMaterial display material for the locked GUI slot (null = use quest display item or BARRIER)
+ * @param previewItem    pre-built display item for the locked GUI state,
+ *                       built at config load time via {@code ItemBuilder.from(Section)}.
+ *                       Null if no {@code preview:} section is configured — the GUI
+ *                       falls back to the quest definition's locale display or a generic item.
  */
 public record QuestChainStep(
         @NotNull NamespacedKey questKey,
         @NotNull String onQuestExpire,
         int maxRetries,
         @NotNull List<QuestChainStartCondition> conditions,
-        @Nullable String previewName,
-        @Nullable String previewDescription,
-        @Nullable String previewMaterial
+        @Nullable ItemStack previewItem
 ) {
 
     /**
-     * Creates a step with no preview metadata and no conditions.
+     * Creates a step with no preview item and no conditions.
      *
      * @param questKey the quest definition key
      * @return the step
      */
     @NotNull
     public static QuestChainStep simple(@NotNull NamespacedKey questKey) {
-        return new QuestChainStep(questKey, "fail-chain", -1, List.of(), null, null, null);
+        return new QuestChainStep(questKey, "fail-chain", -1, List.of(), null);
     }
+}
+```
+
+#### Config Loading
+
+The chain config loader reads the optional `preview:` section and builds the `ItemStack` at load time using McCore's `ItemBuilder`. The builder is initialized with defaults (BARRIER material, generic name/lore), then `ItemBuilder.from(Section)` applies any overrides from the config. Server owners only need to specify the fields they want to customize — unspecified fields keep their defaults.
+
+**File:** `src/main/java/us/eunoians/mcrpg/configuration/QuestChainConfigLoader.java`
+
+```java
+/**
+ * Builds a preview item from the step's "preview:" YAML section. Starts with
+ * defaults (BARRIER, generic name/lore) and applies overrides via
+ * {@code ItemBuilder.from(section)}.
+ *
+ * @param section the "preview" YAML section
+ * @return the built preview item
+ */
+@NotNull
+private static ItemStack buildPreviewItem(@NotNull Section section) {
+    ItemBuilder builder = ItemBuilder.of(Material.BARRIER)
+            .name(DEFAULT_PREVIEW_NAME)
+            .lore(DEFAULT_PREVIEW_LORE);
+    return ItemBuilder.from(section, builder).build();
 }
 ```
 
@@ -2032,12 +2161,12 @@ steps:
         after: "2026-12-15T00:00:00"
         timezone: "America/New_York"
     preview:
-      name: "A Winter Mystery"
-      description: "Something awaits in the frozen north..."
       material: SNOWBALL
+      name: "A Winter Mystery"
+      lore: "Something awaits in the frozen north..."
 ```
 
-All preview fields are optional flat keys under `preview:`. No lists. If the entire `preview:` section is omitted, the GUI falls back to the quest definition's locale display or the generic locked text.
+All preview fields are optional flat keys under `preview:` — server owners only configure the fields they want to override. Unspecified fields use defaults (BARRIER, generic name, generic lore). The `preview:` section follows the same key format as any `ItemBuilder.from(Section)` call. If the entire `preview:` section is omitted, the GUI falls back to the quest definition's locale display or the generic locked item.
 
 #### Locale Keys for Locked State
 
@@ -2068,32 +2197,25 @@ The chain detail GUI renders gated steps as a single slot. The slot's constructi
 private ItemStack buildGatedStepItem(@NotNull QuestChainStep step,
                                       @NotNull McRPGPlayer player,
                                       @Nullable QuestDefinition definition) {
-    String name;
-    String description;
-    Material material;
+    ItemStack baseItem;
 
     if (definition != null) {
-        // Level 1: quest definition exists — use locale display
-        name = resolveQuestDisplayName(definition, player);
-        description = resolveQuestDescription(definition, player);
-        material = resolveQuestDisplayMaterial(definition);
-    } else if (step.previewName() != null) {
-        // Level 2: preview metadata on step
-        name = step.previewName();
-        description = step.previewDescription();
-        material = step.previewMaterial() != null
-                ? Material.valueOf(step.previewMaterial())
-                : Material.BARRIER;
+        // Level 1: quest definition exists — use locale display item
+        baseItem = resolveQuestDisplayItem(definition, player);
+    } else if (step.previewItem() != null) {
+        // Level 2: pre-built preview item from config
+        baseItem = step.previewItem().clone();
     } else {
-        // Level 3: generic fallback
-        name = localize(player, LocalizationKey.CHAIN_PREVIEW_LOCKED_TITLE);
-        description = localize(player, LocalizationKey.CHAIN_PREVIEW_LOCKED_DESCRIPTION);
-        material = Material.BARRIER;
+        // Level 3: generic fallback from locale
+        baseItem = ItemBuilder.of(Material.BARRIER)
+                .name(localize(player, LocalizationKey.CHAIN_PREVIEW_LOCKED_TITLE))
+                .lore(localize(player, LocalizationKey.CHAIN_PREVIEW_LOCKED_DESCRIPTION))
+                .build();
     }
 
-    // Append condition info (countdown or generic "not met")
-    String conditionLine = resolveConditionDisplay(step, player);
-    // ... build ItemStack with name, description, conditionLine, material ...
+    // Append condition info (countdown or generic "not met") to lore
+    appendConditionDisplay(baseItem, step, player);
+    return baseItem;
 }
 ```
 
@@ -2371,9 +2493,14 @@ Dependencies are documented inline. Items without dependencies can be implemente
 |------|------|---------|
 | `quest/chain/ChainRepeatEvaluator.java` | Class | §6 |
 | `quest/chain/availability/WindowBoundary.java` | Interface | §7 |
+| `quest/chain/availability/WindowBoundaryType.java` | Interface | §7 |
+| `quest/chain/availability/WindowBoundaryTypeRegistry.java` | Class | §7 |
+| `quest/chain/availability/builtin/FixedWindowBoundaryType.java` | Class | §7 |
+| `quest/chain/availability/builtin/RecurringWindowBoundaryType.java` | Class | §7 |
 | `quest/chain/availability/AvailabilityWindowDefinition.java` | Record | §7 |
 | `quest/chain/availability/AvailabilityConfig.java` | Record | §7 |
 | `quest/chain/availability/WindowClosePolicy.java` | Enum | §7 |
+| `expansion/content/WindowBoundaryTypeContentPack.java` | Class | §7 |
 | `quest/availability/AvailabilityWindowChecker.java` | Class | §7 |
 | `quest/chain/condition/QuestChainStartConditionType.java` | Interface | §9 |
 | `quest/chain/condition/QuestChainStartConditionTypeRegistry.java` | Class | §9 |
@@ -2395,6 +2522,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `quest/chain/QuestChainPlayerStateTimestampTest.java` | §1 |
 | `quest/chain/ChainRepeatEvaluatorTest.java` | §6 |
 | `quest/chain/availability/WindowBoundaryTest.java` | §7 |
+| `quest/chain/availability/WindowBoundaryTypeRegistryTest.java` | §7 |
 | `quest/chain/availability/AvailabilityWindowDefinitionTest.java` | §7 |
 | `quest/chain/availability/AvailabilityConfigTest.java` | §7 |
 | `quest/availability/AvailabilityWindowCheckerTest.java` | §7 |
@@ -2432,7 +2560,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `entity/holder/LoadoutHolder.java` | `isAlwaysAvailable()` predicate | §5 |
 | `quest/objective/type/builtin/AbilityObjectiveFilter.java` | Extract `resolveAbilityName` to `AbilityNameResolver` | §5 |
 | `quest/chain/QuestChainDefinition.java` | `availabilityConfig` field + builder setter | §7 |
-| `quest/chain/QuestChainStep.java` | Preview metadata fields (`previewName`, `previewDescription`, `previewMaterial`) | §9 |
+| `quest/chain/QuestChainStep.java` | `previewItem` field (pre-built `ItemStack` from `ItemBuilder.from(Section)`) | §9 |
 | `quest/chain/QuestChainManager.java` | Repeat evaluation, availability check, expiration behaviors, condition wiring, retry counters, missing-definition-stays-parked logic | §6, §7, §8, §9 |
 | `quest/chain/QuestChainConfigLoader.java` | Parse `availability:` and `conditions:` sections, extract shared availability parser | §7, §9 |
 | `configuration/QuestConfigLoader.java` | Parse `availability:` section on quest definitions | §7 |
@@ -2440,9 +2568,9 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `quest/board/template/QuestTemplate.java` | `availabilityConfig` field | §7 |
 | `quest/board/generation/QuestPool.java` | Filter by template availability | §7 |
 | `expansion/ContentExpansionManager.java` | `getRegisteredExpansions()`, `getContentPacks()` | §11 |
-| `registry/McRPGRegistryKey.java` | `QUEST_CHAIN_CONDITION_TYPE` key | §9 |
-| `expansion/content/ContentHandlerType.java` | `QUEST_CHAIN_START_CONDITION` entry | §9 |
-| `expansion/McRPGExpansion.java` | Register `TimeGateChainConditionType`, `QuestChainStartConditionContentPack` | §9 |
+| `registry/McRPGRegistryKey.java` | `QUEST_CHAIN_CONDITION_TYPE` key, `WINDOW_BOUNDARY_TYPE` key | §7, §9 |
+| `expansion/content/ContentHandlerType.java` | `QUEST_CHAIN_START_CONDITION` entry, `WINDOW_BOUNDARY_TYPE` entry | §7, §9 |
+| `expansion/McRPGExpansion.java` | Register `TimeGateChainConditionType`, `QuestChainStartConditionContentPack`, `FixedWindowBoundaryType`, `RecurringWindowBoundaryType`, `WindowBoundaryTypeContentPack` | §7, §9 |
 | `bootstrap/McRPGCommandRegistrar.java` | Register content introspection commands | §11 |
 | `configuration/file/MainConfigFile.java` | `AVAILABILITY_CHECK_INTERVAL_SECONDS` route | §7 |
 | `configuration/file/localization/LocalizationKey.java` | New locale key constants for all sections | All |
