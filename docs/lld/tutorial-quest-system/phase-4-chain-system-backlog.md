@@ -15,7 +15,8 @@ Phase 4 delivers all remaining backlog items from `chain-system-backlog.md`: fun
 - Chain repeat modes: `UNLIMITED`, `COOLDOWN`, `LIMITED`, `COOLDOWN_LIMITED` (backlog §2)
 - Quest expiration behaviors within chains: `retry`, `restart-chain`, `skip` (backlog §3)
 - Availability windows on quest board templates (backlog §4)
-- Availability windows on standalone quest definitions (gates `QuestManager.startQuest()`)
+- Availability windows on standalone quest definitions with close policy support (gates `QuestManager.startQuest()`, cancels active instances on window close)
+- Chain step preview metadata for gated/locked step GUI rendering
 - Chain lifecycle events: `QuestChainExpireEvent`, `QuestChainRestartEvent`, `QuestChainStepRetryEvent` (backlog §5)
 - `TimeGateChainCondition` — first built-in `QuestChainStartCondition` + wiring (backlog §6)
 - Content expansion introspection commands (backlog §7)
@@ -715,12 +716,13 @@ classDiagram
         ~McCore~
     }
 
-    class ChainAvailabilityChecker {
+    class AvailabilityWindowChecker {
         ~new extends RepeatableCoreTask~
         -plugin : McRPG
-        -previousAvailability : Map
+        -previousChainAvailability : Map
         -activeGraceTasks : Map
         +isChainAvailable(NamespacedKey) boolean
+        +isQuestAvailable(NamespacedKey) boolean
     }
 
     FixedBoundary ..|> WindowBoundary
@@ -728,8 +730,8 @@ classDiagram
     AvailabilityWindowDefinition *-- WindowBoundary
     AvailabilityConfig *-- AvailabilityWindowDefinition
     AvailabilityConfig --> WindowClosePolicy
-    ChainAvailabilityChecker --> AvailabilityConfig
-    ChainAvailabilityChecker --|> RepeatableCoreTask
+    AvailabilityWindowChecker --> AvailabilityConfig
+    AvailabilityWindowChecker --|> RepeatableCoreTask
 ```
 
 ### 7.2 `WindowBoundary` — Extensible Boundary Type
@@ -904,43 +906,45 @@ public enum WindowClosePolicy {
 }
 ```
 
-### 7.6 `ChainAvailabilityChecker` — Scheduled Task
+### 7.6 `AvailabilityWindowChecker` — Scheduled Task
 
-**Package:** `us.eunoians.mcrpg.quest.chain.availability`
-**File:** `src/main/java/us/eunoians/mcrpg/quest/chain/availability/ChainAvailabilityChecker.java`
+**Package:** `us.eunoians.mcrpg.quest.availability`
+**File:** `src/main/java/us/eunoians/mcrpg/quest/availability/AvailabilityWindowChecker.java`
 
-Extends `RepeatableCoreTask` to use McCore's task system for state tracking, pause/resume, and consistent second-based timing. Checks chain availability windows at a configurable interval (default 60 seconds). When a window closes, applies the configured `WindowClosePolicy` to active chain instances.
+Shared checker for both chain and quest availability windows. Extends `RepeatableCoreTask` for state tracking, pause/resume, and second-based timing. Each interval runs two scan passes: one for chains (with `WindowClosePolicy` enforcement) and one for standalone quests (same policy enforcement). Board templates are not scanned — they are filtered at generation time in `QuestPool`.
 
 ```java
 /**
- * Scheduled task that checks chain availability windows at a configurable
- * interval. When a window closes, applies the configured
- * {@link WindowClosePolicy} to all active chain instances.
+ * Scheduled task that checks availability windows for chains and standalone
+ * quests at a configurable interval. When a window closes, applies the
+ * configured {@link WindowClosePolicy} to active instances.
  *
- * <p>Extends {@link RepeatableCoreTask} to use McCore's task system for
- * state tracking, pause/resume, and consistent second-based timing.
+ * <p>Two scan passes per interval: chains (via {@link QuestChainRegistry})
+ * and standalone quests (via {@link QuestDefinitionRegistry}). Board
+ * templates are filtered at generation time and are not scanned here.
  */
-public class ChainAvailabilityChecker extends RepeatableCoreTask {
+public class AvailabilityWindowChecker extends RepeatableCoreTask {
 
     private final McRPG plugin;
-    private final Map<NamespacedKey, Boolean> previousAvailability = new HashMap<>();
+    private final Map<NamespacedKey, Boolean> previousChainAvailability = new HashMap<>();
+    private final Map<NamespacedKey, Boolean> previousQuestAvailability = new HashMap<>();
     private final Map<NamespacedKey, Integer> activeGraceTasks = new HashMap<>();
 
     /**
-     * Constructs a new availability checker.
+     * Constructs a new availability window checker.
      *
-     * @param plugin          the plugin instance
-     * @param checkIntervalSeconds the interval in seconds between availability checks
+     * @param plugin               the plugin instance
+     * @param checkIntervalSeconds the interval in seconds between checks
      */
-    public ChainAvailabilityChecker(@NotNull McRPG plugin, double checkIntervalSeconds) {
+    public AvailabilityWindowChecker(@NotNull McRPG plugin, double checkIntervalSeconds) {
         super(plugin, 0, checkIntervalSeconds);
         this.plugin = plugin;
     }
 
     /**
      * Called when the initial delay completes (delay is 0, so this fires
-     * immediately). Performs startup reconciliation to detect windows that
-     * closed while the server was offline.
+     * immediately). Performs startup reconciliation for both chains and
+     * quests to detect windows that closed while the server was offline.
      */
     @Override
     protected void onDelayComplete() {
@@ -957,13 +961,13 @@ public class ChainAvailabilityChecker extends RepeatableCoreTask {
     }
 
     /**
-     * Called at the end of each interval. Checks all chains with availability
-     * configs, detects window transitions (open → closed, closed → open),
-     * and applies the appropriate policy.
+     * Called at the end of each interval. Runs the chain scan pass and the
+     * quest scan pass sequentially.
      */
     @Override
     protected void onIntervalComplete() {
         checkAllChains();
+        checkAllQuests();
     }
 
     /**
@@ -977,7 +981,7 @@ public class ChainAvailabilityChecker extends RepeatableCoreTask {
 
     /**
      * Called when the task is resumed. Re-snapshots current availability state
-     * so the first post-resume check detects transitions correctly.
+     * for both chains and quests.
      */
     @Override
     protected void onIntervalResume() {
@@ -986,9 +990,8 @@ public class ChainAvailabilityChecker extends RepeatableCoreTask {
 
     /**
      * Detects windows that closed while the server was offline and applies
-     * the configured close policy. Called once on task startup. Iterates all
-     * chains with availability configs: if a chain is currently unavailable
-     * but has active player states, the window must have closed during downtime.
+     * the configured close policy for both chains and quests. Called once
+     * on task startup.
      */
     private void reconcileOnStartup() { ... }
 
@@ -999,9 +1002,15 @@ public class ChainAvailabilityChecker extends RepeatableCoreTask {
     private void checkAllChains() { ... }
 
     /**
-     * Snapshots the current availability state of all chains with configs
-     * into {@code previousAvailability}. Used on startup and resume to
-     * establish a baseline for transition detection.
+     * Checks all quest definitions with availability configs. Detects window
+     * transitions and applies the appropriate policy to active quest instances.
+     */
+    private void checkAllQuests() { ... }
+
+    /**
+     * Snapshots the current availability state of all chains and quests
+     * with configs. Used on startup and resume to establish a baseline
+     * for transition detection.
      */
     private void snapshotCurrentAvailability() { ... }
 
@@ -1009,15 +1018,31 @@ public class ChainAvailabilityChecker extends RepeatableCoreTask {
      * Applies the window-close policy to all active instances of a chain.
      *
      * @param chainKey   the chain key
-     * @param definition the chain definition
+     * @param config     the availability config
      */
-    private void applyWindowClosePolicy(@NotNull NamespacedKey chainKey,
-                                         @NotNull QuestChainDefinition definition) {
-        AvailabilityConfig config = definition.getAvailabilityConfig();
+    private void applyChainClosePolicy(@NotNull NamespacedKey chainKey,
+                                        @NotNull AvailabilityConfig config) {
         switch (config.onWindowClose()) {
-            case EXPIRE_ACTIVE -> expireActiveInstances(chainKey);
-            case ALLOW_FINISH -> blockNewStarts(chainKey);
-            case EXPIRE_WITH_GRACE -> startGracePeriod(chainKey, definition);
+            case EXPIRE_ACTIVE -> expireActiveChainInstances(chainKey);
+            case ALLOW_FINISH -> { /* No-op: tryStartChain checks isChainAvailable() */ }
+            case EXPIRE_WITH_GRACE -> startChainGracePeriod(chainKey, config);
+        }
+    }
+
+    /**
+     * Applies the window-close policy to all active quest instances matching
+     * the given definition key. Delegates cancellation to
+     * {@link QuestManager#cancelQuestInstance}.
+     *
+     * @param questKey the quest definition key
+     * @param config   the availability config
+     */
+    private void applyQuestClosePolicy(@NotNull NamespacedKey questKey,
+                                        @NotNull AvailabilityConfig config) {
+        switch (config.onWindowClose()) {
+            case EXPIRE_ACTIVE -> cancelActiveQuestInstances(questKey);
+            case ALLOW_FINISH -> { /* No-op: startQuest() checks isQuestAvailable() */ }
+            case EXPIRE_WITH_GRACE -> startQuestGracePeriod(questKey, config);
         }
     }
 
@@ -1028,36 +1053,42 @@ public class ChainAvailabilityChecker extends RepeatableCoreTask {
      *
      * @param chainKey the chain key to expire
      */
-    private void expireActiveInstances(@NotNull NamespacedKey chainKey) { ... }
+    private void expireActiveChainInstances(@NotNull NamespacedKey chainKey) { ... }
 
     /**
-     * The ALLOW_FINISH policy does not cancel active instances. It only
-     * blocks new starts — this is handled by {@code tryStartChain}'s
-     * availability check. No active instance mutation needed.
+     * Cancels all active quest instances matching the given definition key
+     * across all online players. Sets quest state to CANCELLED, fires
+     * {@link QuestCancelEvent}.
      *
-     * @param chainKey the chain key (unused — documented for policy completeness)
+     * @param questKey the quest definition key to cancel
      */
-    private void blockNewStarts(@NotNull NamespacedKey chainKey) {
-        // No-op: tryStartChain already checks isChainAvailable()
-    }
+    private void cancelActiveQuestInstances(@NotNull NamespacedKey questKey) { ... }
 
     /**
      * Starts a grace period for the chain. Sends warning messages to affected
      * players immediately. After the grace period, applies EXPIRE_ACTIVE.
      *
-     * @param chainKey   the chain key
-     * @param definition the chain definition (provides grace period duration)
+     * @param chainKey the chain key
+     * @param config   the availability config (provides grace period duration)
      */
-    private void startGracePeriod(@NotNull NamespacedKey chainKey,
-                                   @NotNull QuestChainDefinition definition) { ... }
+    private void startChainGracePeriod(@NotNull NamespacedKey chainKey,
+                                        @NotNull AvailabilityConfig config) { ... }
 
     /**
-     * Public API for checking chain availability. Used by
-     * {@link QuestChainManager#tryStartChain}.
+     * Starts a grace period for the quest. Sends warning messages to affected
+     * players immediately. After the grace period, cancels active instances.
+     *
+     * @param questKey the quest definition key
+     * @param config   the availability config (provides grace period duration)
+     */
+    private void startQuestGracePeriod(@NotNull NamespacedKey questKey,
+                                        @NotNull AvailabilityConfig config) { ... }
+
+    /**
+     * Checks whether a chain is currently available.
      *
      * @param chainKey the chain key
-     * @return true if the chain is currently available (no availability config,
-     *         or at least one window is active)
+     * @return true if the chain has no availability config or at least one window is active
      */
     public boolean isChainAvailable(@NotNull NamespacedKey chainKey) {
         QuestChainRegistry registry = plugin.registryAccess()
@@ -1068,12 +1099,28 @@ public class ChainAvailabilityChecker extends RepeatableCoreTask {
                         .orElse(true))
                 .orElse(false);
     }
+
+    /**
+     * Checks whether a quest definition is currently available.
+     *
+     * @param questKey the quest definition key
+     * @return true if the quest has no availability config or at least one window is active
+     */
+    public boolean isQuestAvailable(@NotNull NamespacedKey questKey) {
+        QuestDefinitionRegistry registry = plugin.registryAccess()
+                .registry(McRPGRegistryKey.QUEST_DEFINITION);
+        return registry.get(questKey)
+                .map(def -> def.getAvailabilityConfig()
+                        .map(AvailabilityConfig::isCurrentlyAvailable)
+                        .orElse(true))
+                .orElse(false);
+    }
 }
 ```
 
-**Startup reconciliation:** When the server starts (or the task is created on reload), `reconcileOnStartup()` runs once in `onDelayComplete()`. It iterates all chains with availability configs: if a chain is currently unavailable but has online players with active chain states, the window closed during server downtime. The configured `WindowClosePolicy` is applied retroactively. For `EXPIRE_WITH_GRACE`, the grace period starts from the reconciliation time (not from when the window actually closed, since that time is unknown).
+**Startup reconciliation:** When the server starts (or the task is created on reload), `reconcileOnStartup()` runs once in `onDelayComplete()`. It iterates all chains and quest definitions with availability configs. If an entry is currently unavailable but has active instances (chain player states or quest instances), the window closed during server downtime and the configured `WindowClosePolicy` is applied retroactively. For `EXPIRE_WITH_GRACE`, the grace period starts from reconciliation time (not from when the window actually closed, since that time is unknown).
 
-**Eviction strategy:** `previousAvailability` is bounded by the number of chains with availability configs (small, finite set defined by YAML). `activeGraceTasks` entries are removed when the grace period completes or the task is paused/stopped.
+**Eviction strategy:** `previousChainAvailability` and `previousQuestAvailability` are bounded by the number of chains/quests with availability configs (small, finite sets defined by YAML). `activeGraceTasks` entries are removed when the grace period completes or the task is paused/stopped.
 
 ### 7.7 `QuestChainDefinition` Changes
 
@@ -1268,7 +1315,11 @@ public Optional<QuestInstance> startQuest(@NotNull QuestDefinition definition,
 }
 ```
 
-No `WindowClosePolicy` is applied to standalone quests — active instances follow their own expiration rules (the `expiration` `Duration` on `QuestDefinition`). When the window closes, the quest simply stops being startable. This is consistent with the board template approach and the "accept staleness" model from §2.2.
+**Window close policy for standalone quests:** Unlike chain availability (which transitions chain state to `EXPIRED`), quest window close delegates to `QuestManager.cancelQuestInstance()` — setting the quest state to `CANCELLED` and firing `QuestCancelEvent`. This reuses the existing quest cancellation path rather than introducing a new state.
+
+The distinction from the quest's own `expiration` duration is important: `expiration` is relative to start time ("expires 7 days after accept"), while `on-window-close` is absolute ("expires when the Christmas event ends on January 3rd"). A player who starts the quest on January 2nd should not get the full relative expiration if the event window closes on January 3rd.
+
+`AvailabilityWindowChecker` handles both chain and quest scans in the same interval (see §7.6). For board-sourced quests, the window close policy on the `QuestTemplate` is not enforced by the checker — board rotation expiration already handles those. The checker only applies close policies to quest definitions registered directly in `QuestDefinitionRegistry`.
 
 **YAML schema (quest definitions):**
 
@@ -1284,11 +1335,15 @@ quests:
           from: "--12-01T00:00:00"
           until: "--01-03T23:59:59"
       timezone: "America/New_York"
+      on-window-close: expire-with-grace
+      grace-period: 24h
     phases:
       # ... normal phase definition ...
 ```
 
-The `on-window-close` and `grace-period` fields are ignored on standalone quests — those are chain-only settings. If present in quest YAML, the parser logs a warning and skips them.
+**Defaults** (same as chains):
+- `on-window-close`: `expire-active` if omitted
+- `grace-period`: required only when `on-window-close` is `expire-with-grace`
 
 **File:** `src/main/java/us/eunoians/mcrpg/configuration/QuestConfigLoader.java`
 
@@ -1332,10 +1387,12 @@ quest-chain:
 |-----|------|
 | `quest-chain.availability.grace-period-warning` | `"<warning>The '<primary><chain_name></primary>' event is ending soon! You have <primary><duration></primary> to finish."` |
 | `quest-chain.availability.expired` | `"<warning>The '<primary><chain_name></primary>' event has ended. Your progress has been expired."` |
+| `quest.availability.grace-period-warning` | `"<warning>The quest '<primary><quest_name></primary>' is ending soon! You have <primary><duration></primary> to finish."` |
+| `quest.availability.expired` | `"<warning>The quest '<primary><quest_name></primary>' has ended and been cancelled."` |
 
 ### 7.16 Bootstrap Wiring
 
-`ChainAvailabilityChecker` is created in `QuestChainManager`'s initialization after chain definitions are loaded, with the interval from `MainConfigFile.AVAILABILITY_CHECK_INTERVAL_SECONDS`. Started via `runTask()` (sync, main thread). On shutdown, cancelled via `cancelTask()`. On reload: cancel the existing task, create a new `ChainAvailabilityChecker` instance, and start it — the new instance runs `reconcileOnStartup()` in `onDelayComplete()` to pick up any window changes from the reloaded config.
+`AvailabilityWindowChecker` is created in `QuestChainManager`'s initialization after chain definitions are loaded, with the interval from `MainConfigFile.AVAILABILITY_CHECK_INTERVAL_SECONDS`. Started via `runTask()` (sync, main thread). On shutdown, cancelled via `cancelTask()`. On reload: cancel the existing task, create a new `AvailabilityWindowChecker` instance, and start it — the new instance runs `reconcileOnStartup()` in `onDelayComplete()` to pick up any window changes from the reloaded config.
 
 **Server restart behavior:** On fresh server start, `reconcileOnStartup()` detects chains whose windows closed during downtime by checking all chains with availability configs against currently loaded player states. Any chain that is currently unavailable but has active player states gets the configured `WindowClosePolicy` applied retroactively.
 
@@ -1344,7 +1401,7 @@ quest-chain:
 - `WindowBoundaryTest` — fixed and recurring boundary resolution
 - `AvailabilityWindowDefinitionTest` — `isActive()` for normal ranges, year-wrapping ranges, edge cases (midnight, year boundaries)
 - `AvailabilityConfigTest` — `isCurrentlyAvailable()` with multiple windows
-- `ChainAvailabilityCheckerTest` — window transition detection, policy application, startup reconciliation (chain unavailable with active states → policy applied on startup)
+- `AvailabilityWindowCheckerTest` — window transition detection, policy application, startup reconciliation (chain unavailable with active states → policy applied on startup)
 - `ChainRepeatEvaluatorAvailabilityTest` — repeat evaluation respects availability windows
 - `QuestDefinitionAvailabilityTest` — `startQuest()` returns empty when quest is outside its availability window; succeeds when window is active; no availability config always permits start
 
@@ -1822,8 +1879,16 @@ if (state.isConditionsPending()) {
     QuestChainStep currentStep = definition.findStepByQuestKey(
             state.getCurrentQuestKey().orElse(null)).orElse(null);
     if (currentStep != null && evaluateConditions(player, currentStep.conditions())) {
+        // Conditions met — try to resolve the quest definition
+        QuestDefinition questDef = resolveQuestDefinition(currentStep.questKey());
+        if (questDef == null) {
+            // Definition not yet registered — stay parked, log warning
+            plugin().getLogger().warning("[QuestChainManager] Conditions met for chain step '"
+                    + currentStep.questKey() + "' but quest definition not found. "
+                    + "The step will remain pending until the definition is registered.");
+            return;
+        }
         state.setConditionsPending(false);
-        // Start the step's quest
         startQuestForChain(playerUUID, questDef, definition);
         saveChainStateAsync(playerUUID, state);
     }
@@ -1899,12 +1964,161 @@ steps:
         timezone: "America/New_York"
 ```
 
-### 9.11 Tests
+### 9.11 Chain Step Preview Metadata
+
+When a chain step is gated (`conditionsPending = true`) or references a quest definition that doesn't yet exist in the registry, the GUI needs to render a meaningful "locked" state. Preview metadata lives on the chain step — not on the quest definition — because it describes the step's presentation while the player waits, which is independent of the quest's identity.
+
+#### Resolution Order
+
+The GUI resolves display info for a gated step in this order:
+
+1. **Quest definition exists** — use the quest's locale display name, locale description, and display item. Objectives and rewards are hidden behind locked placeholders.
+2. **Quest definition absent, step has `preview:` metadata** — use the preview fields. The quest key may reference a definition the server owner hasn't created yet.
+3. **Quest definition absent, no preview metadata** — use generic locale fallback ("Next Step", "Coming soon").
+
+If a `TimeGateCondition` is present on the step, the unlock date/countdown is appended automatically regardless of which resolution level was used. For non-time conditions where the unlock time is not deterministic, a generic "Requirements not yet met" message is shown instead.
+
+#### `QuestChainStep` Changes
+
+**File:** `src/main/java/us/eunoians/mcrpg/quest/chain/QuestChainStep.java`
+
+Add optional preview fields:
+
+```java
+/**
+ * A single step in a quest chain.
+ *
+ * @param questKey       the quest definition key for this step
+ * @param onQuestExpire  behavior when the step's quest expires
+ * @param maxRetries     max retry count (-1 for unlimited)
+ * @param conditions     conditions that must be met before the step starts
+ * @param previewName    display name for the locked GUI state (null = use quest locale or generic fallback)
+ * @param previewDescription display description for the locked GUI state (null = use quest locale or generic fallback)
+ * @param previewMaterial display material for the locked GUI slot (null = use quest display item or BARRIER)
+ */
+public record QuestChainStep(
+        @NotNull NamespacedKey questKey,
+        @NotNull String onQuestExpire,
+        int maxRetries,
+        @NotNull List<QuestChainStartCondition> conditions,
+        @Nullable String previewName,
+        @Nullable String previewDescription,
+        @Nullable String previewMaterial
+) {
+
+    /**
+     * Creates a step with no preview metadata and no conditions.
+     *
+     * @param questKey the quest definition key
+     * @return the step
+     */
+    @NotNull
+    public static QuestChainStep simple(@NotNull NamespacedKey questKey) {
+        return new QuestChainStep(questKey, "fail-chain", -1, List.of(), null, null, null);
+    }
+}
+```
+
+#### YAML Schema
+
+```yaml
+steps:
+  part_two:
+    quest: mcrpg:event_part_2
+    on-quest-expire: fail-chain
+    conditions:
+      time-gate:
+        type: mcrpg:time_gate
+        after: "2026-12-15T00:00:00"
+        timezone: "America/New_York"
+    preview:
+      name: "A Winter Mystery"
+      description: "Something awaits in the frozen north..."
+      material: SNOWBALL
+```
+
+All preview fields are optional flat keys under `preview:`. No lists. If the entire `preview:` section is omitted, the GUI falls back to the quest definition's locale display or the generic locked text.
+
+#### Locale Keys for Locked State
+
+| Key | Default | When used |
+|-----|---------|-----------|
+| `quest-chain.preview.locked-title` | `"<primary>Next Step"` | No quest definition and no preview name |
+| `quest-chain.preview.locked-description` | `"<body>This step has not been revealed yet."` | No quest definition and no preview description |
+| `quest-chain.preview.unlocks-on` | `"<body>Unlocks on <primary><date></primary>"` | TimeGateCondition present, absolute date display |
+| `quest-chain.preview.unlocks-in` | `"<body>Unlocks in <primary><duration></primary>"` | TimeGateCondition present, countdown display |
+| `quest-chain.preview.requirements-not-met` | `"<body>Requirements not yet met."` | Non-time condition, unlock time not deterministic |
+| `quest-chain.preview.objectives-hidden` | `"<body>??? Objectives"` | Quest definition exists but objectives are hidden |
+| `quest-chain.preview.rewards-hidden` | `"<body>??? Rewards"` | Quest definition exists but rewards are hidden |
+
+#### GUI Rendering
+
+The chain detail GUI renders gated steps as a single slot. The slot's construction depends on the resolution level:
+
+```java
+/**
+ * Builds the display ItemStack for a gated chain step.
+ *
+ * @param step       the gated chain step
+ * @param player     the viewing player (for locale resolution)
+ * @param definition the quest definition, or null if not registered
+ * @return the display item
+ */
+@NotNull
+private ItemStack buildGatedStepItem(@NotNull QuestChainStep step,
+                                      @NotNull McRPGPlayer player,
+                                      @Nullable QuestDefinition definition) {
+    String name;
+    String description;
+    Material material;
+
+    if (definition != null) {
+        // Level 1: quest definition exists — use locale display
+        name = resolveQuestDisplayName(definition, player);
+        description = resolveQuestDescription(definition, player);
+        material = resolveQuestDisplayMaterial(definition);
+    } else if (step.previewName() != null) {
+        // Level 2: preview metadata on step
+        name = step.previewName();
+        description = step.previewDescription();
+        material = step.previewMaterial() != null
+                ? Material.valueOf(step.previewMaterial())
+                : Material.BARRIER;
+    } else {
+        // Level 3: generic fallback
+        name = localize(player, LocalizationKey.CHAIN_PREVIEW_LOCKED_TITLE);
+        description = localize(player, LocalizationKey.CHAIN_PREVIEW_LOCKED_DESCRIPTION);
+        material = Material.BARRIER;
+    }
+
+    // Append condition info (countdown or generic "not met")
+    String conditionLine = resolveConditionDisplay(step, player);
+    // ... build ItemStack with name, description, conditionLine, material ...
+}
+```
+
+#### Iterative Content Design Workflow
+
+This design supports the following server owner workflow:
+
+1. Create a chain with 4 steps. Steps 1-2 reference real quest definitions. Steps 3-4 reference quest keys that don't exist yet but have `preview:` metadata.
+2. Event starts. Players work through steps 1-2. Step 3 is gated by a `TimeGateCondition`.
+3. The GUI shows step 3's preview name ("A Winter Mystery") with a countdown to the unlock date.
+4. Before the gate date, the server owner creates step 3's full quest definition and reloads.
+5. The GUI now shows the quest's real locale display name (resolution level 1). Objectives/rewards remain hidden behind locked placeholders until the gate resolves.
+6. Gate date arrives. `conditionsPending` clears. The quest starts normally.
+7. Repeat for step 4.
+
+If the server owner doesn't create the definition before the gate resolves, the chain manager detects "definition not found" and keeps the step in `conditionsPending` state rather than failing the chain. A console warning is logged. When the definition is eventually added and reloaded, the next login re-evaluation picks it up.
+
+### 9.12 Tests
 
 - `TimeGateConditionTest` — evaluates true after time, false before
 - `TimeGateConditionTypeParseTest` — parses YAML correctly, defaults timezone
 - `ConditionPendingAdvancementTest` — chain parks at step when conditions not met
 - `ConditionPendingLoginResolutionTest` — conditions re-evaluated on login, quest started when met
+- `GatedStepPreviewResolutionTest` — verify three-level resolution order: definition exists → preview metadata → generic fallback
+- `GatedStepMissingDefinitionTest` — chain stays in conditionsPending when gate resolves but definition is absent; starts after reload adds definition
 
 ---
 
@@ -1919,7 +2133,7 @@ Three new events. All are non-cancellable notification events fired after the st
 **Package:** `us.eunoians.mcrpg.event.quest`
 **File:** `src/main/java/us/eunoians/mcrpg/event/quest/QuestChainExpireEvent.java`
 
-Fired when a chain transitions to `EXPIRED` state via `ChainAvailabilityChecker`.
+Fired when a chain transitions to `EXPIRED` state via `AvailabilityWindowChecker`.
 
 ```java
 /**
@@ -2160,7 +2374,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `quest/chain/availability/AvailabilityWindowDefinition.java` | Record | §7 |
 | `quest/chain/availability/AvailabilityConfig.java` | Record | §7 |
 | `quest/chain/availability/WindowClosePolicy.java` | Enum | §7 |
-| `quest/chain/availability/ChainAvailabilityChecker.java` | Class | §7 |
+| `quest/availability/AvailabilityWindowChecker.java` | Class | §7 |
 | `quest/chain/condition/QuestChainStartConditionType.java` | Interface | §9 |
 | `quest/chain/condition/QuestChainStartConditionTypeRegistry.java` | Class | §9 |
 | `quest/chain/condition/builtin/TimeGateChainConditionType.java` | Class | §9 |
@@ -2183,11 +2397,13 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `quest/chain/availability/WindowBoundaryTest.java` | §7 |
 | `quest/chain/availability/AvailabilityWindowDefinitionTest.java` | §7 |
 | `quest/chain/availability/AvailabilityConfigTest.java` | §7 |
-| `quest/chain/availability/ChainAvailabilityCheckerTest.java` | §7 |
+| `quest/availability/AvailabilityWindowCheckerTest.java` | §7 |
 | `quest/QuestDefinitionAvailabilityTest.java` | §7 |
 | `quest/chain/condition/builtin/TimeGateConditionTest.java` | §9 |
 | `quest/chain/condition/builtin/TimeGateConditionTypeParseTest.java` | §9 |
 | `quest/chain/ConditionPendingTest.java` | §9 |
+| `quest/chain/GatedStepPreviewResolutionTest.java` | §9 |
+| `quest/chain/GatedStepMissingDefinitionTest.java` | §9 |
 | `quest/chain/HandleExpireRetryTest.java` | §8 |
 | `quest/chain/HandleExpireRestartChainTest.java` | §8 |
 | `quest/chain/HandleExpireSkipTest.java` | §8 |
@@ -2216,7 +2432,8 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `entity/holder/LoadoutHolder.java` | `isAlwaysAvailable()` predicate | §5 |
 | `quest/objective/type/builtin/AbilityObjectiveFilter.java` | Extract `resolveAbilityName` to `AbilityNameResolver` | §5 |
 | `quest/chain/QuestChainDefinition.java` | `availabilityConfig` field + builder setter | §7 |
-| `quest/chain/QuestChainManager.java` | Repeat evaluation, availability check, expiration behaviors, condition wiring, retry counters | §6, §7, §8, §9 |
+| `quest/chain/QuestChainStep.java` | Preview metadata fields (`previewName`, `previewDescription`, `previewMaterial`) | §9 |
+| `quest/chain/QuestChainManager.java` | Repeat evaluation, availability check, expiration behaviors, condition wiring, retry counters, missing-definition-stays-parked logic | §6, §7, §8, §9 |
 | `quest/chain/QuestChainConfigLoader.java` | Parse `availability:` and `conditions:` sections, extract shared availability parser | §7, §9 |
 | `configuration/QuestConfigLoader.java` | Parse `availability:` section on quest definitions | §7 |
 | `listener/quest/QuestChainLoginListener.java` | Conditions-pending re-evaluation on login | §9 |
