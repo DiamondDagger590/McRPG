@@ -8,13 +8,14 @@
 
 ## Scope
 
-Phase 4 delivers all remaining backlog items from `chain-system-backlog.md`: functional repeat modes beyond `ONCE`, time-based availability windows for chains and board templates, quest expiration behaviors (retry/restart-chain/skip), the first built-in `QuestChainStartCondition`, content introspection commands, timestamp modernization, reload safety fixes, and ability unregistration reversibility. This is a single LLD covering 13 backlog items with a unified implementation order.
+Phase 4 delivers all remaining backlog items from `chain-system-backlog.md`: functional repeat modes beyond `ONCE`, time-based availability windows for chains, board templates, and standalone quests, quest expiration behaviors (retry/restart-chain/skip), the first built-in `QuestChainStartCondition`, content introspection commands, timestamp modernization, reload safety fixes, and ability unregistration reversibility. This is a single LLD covering 13 backlog items with a unified implementation order.
 
 **In scope:**
 - Chain availability windows with three on-window-close policies (backlog §1)
 - Chain repeat modes: `UNLIMITED`, `COOLDOWN`, `LIMITED`, `COOLDOWN_LIMITED` (backlog §2)
 - Quest expiration behaviors within chains: `retry`, `restart-chain`, `skip` (backlog §3)
 - Availability windows on quest board templates (backlog §4)
+- Availability windows on standalone quest definitions (gates `QuestManager.startQuest()`)
 - Chain lifecycle events: `QuestChainExpireEvent`, `QuestChainRestartEvent`, `QuestChainStepRetryEvent` (backlog §5)
 - `TimeGateChainCondition` — first built-in `QuestChainStartCondition` + wiring (backlog §6)
 - Content expansion introspection commands (backlog §7)
@@ -1212,7 +1213,103 @@ templates:
     # ... rest of template definition
 ```
 
-### 7.12 Config Route
+### 7.12 Standalone Quest Availability
+
+**File:** `src/main/java/us/eunoians/mcrpg/quest/definition/QuestDefinition.java`
+
+Add optional `AvailabilityConfig` field to `QuestDefinition`:
+
+```java
+private final AvailabilityConfig availabilityConfig;
+
+/**
+ * Returns the availability window configuration for this quest, if any.
+ * When present and no window is currently active, {@link QuestManager#startQuest}
+ * will refuse to start new instances.
+ *
+ * @return the availability config, or empty if the quest has no time restrictions
+ */
+@NotNull public Optional<AvailabilityConfig> getAvailabilityConfig() {
+    return Optional.ofNullable(availabilityConfig);
+}
+
+// Builder addition:
+private AvailabilityConfig availabilityConfig;
+
+/**
+ * Sets the availability window configuration for this quest.
+ *
+ * @param config the availability config, or null for no time restrictions
+ * @return this builder
+ */
+@NotNull public Builder availabilityConfig(@Nullable AvailabilityConfig config) { ... }
+```
+
+**File:** `src/main/java/us/eunoians/mcrpg/quest/QuestManager.java`
+
+Add availability check at the top of `startQuest()` (the 4-parameter overload), before the `PreQuestStartEvent`:
+
+```java
+@NotNull
+public Optional<QuestInstance> startQuest(@NotNull QuestDefinition definition,
+                                          @NotNull UUID initialPlayerUUID,
+                                          @NotNull Map<String, Object> variables,
+                                          @NotNull QuestSource questSource) {
+    // Availability window gate
+    if (definition.getAvailabilityConfig()
+            .map(config -> !config.isCurrentlyAvailable())
+            .orElse(false)) {
+        plugin().getLogger().info("[QuestManager] Quest '" + definition.getQuestKey()
+                + "' is outside its availability window — start blocked.");
+        return Optional.empty();
+    }
+
+    // ... existing PreQuestStartEvent, scope resolution, etc. ...
+}
+```
+
+No `WindowClosePolicy` is applied to standalone quests — active instances follow their own expiration rules (the `expiration` `Duration` on `QuestDefinition`). When the window closes, the quest simply stops being startable. This is consistent with the board template approach and the "accept staleness" model from §2.2.
+
+**YAML schema (quest definitions):**
+
+```yaml
+quests:
+  christmas_delivery:
+    key: mcrpg:christmas_delivery
+    scope: mcrpg:single_player
+    expiration: 168h
+    availability:
+      windows:
+        holiday:
+          from: "--12-01T00:00:00"
+          until: "--01-03T23:59:59"
+      timezone: "America/New_York"
+    phases:
+      # ... normal phase definition ...
+```
+
+The `on-window-close` and `grace-period` fields are ignored on standalone quests — those are chain-only settings. If present in quest YAML, the parser logs a warning and skips them.
+
+**File:** `src/main/java/us/eunoians/mcrpg/configuration/QuestConfigLoader.java`
+
+Parse the `availability:` section when loading quest definitions. Reuses the same `parseAvailabilityConfig()` helper from `QuestChainConfigLoader` — extract it to a shared static utility on `AvailabilityConfig` or a common loader helper:
+
+```java
+/**
+ * Parses an availability configuration from a YAML section. Shared
+ * between quest and chain config loaders.
+ *
+ * @param section the "availability" YAML section
+ * @param file    source file for error reporting
+ * @param logger  logger for warning messages
+ * @return the parsed config, or null if invalid
+ */
+@Nullable
+static AvailabilityConfig parseAvailabilityConfig(
+        @NotNull Section section, @NotNull File file, @NotNull Logger logger) { ... }
+```
+
+### 7.14 Config Route
 
 **File:** `src/main/java/us/eunoians/mcrpg/configuration/file/MainConfigFile.java`
 
@@ -1229,26 +1326,27 @@ quest-chain:
     check-interval-seconds: 60
 ```
 
-### 7.13 Locale Keys
+### 7.15 Locale Keys
 
 | Key | Text |
 |-----|------|
 | `quest-chain.availability.grace-period-warning` | `"<warning>The '<primary><chain_name></primary>' event is ending soon! You have <primary><duration></primary> to finish."` |
 | `quest-chain.availability.expired` | `"<warning>The '<primary><chain_name></primary>' event has ended. Your progress has been expired."` |
 
-### 7.14 Bootstrap Wiring
+### 7.16 Bootstrap Wiring
 
 `ChainAvailabilityChecker` is created in `QuestChainManager`'s initialization after chain definitions are loaded, with the interval from `MainConfigFile.AVAILABILITY_CHECK_INTERVAL_SECONDS`. Started via `runTask()` (sync, main thread). On shutdown, cancelled via `cancelTask()`. On reload: cancel the existing task, create a new `ChainAvailabilityChecker` instance, and start it — the new instance runs `reconcileOnStartup()` in `onDelayComplete()` to pick up any window changes from the reloaded config.
 
 **Server restart behavior:** On fresh server start, `reconcileOnStartup()` detects chains whose windows closed during downtime by checking all chains with availability configs against currently loaded player states. Any chain that is currently unavailable but has active player states gets the configured `WindowClosePolicy` applied retroactively.
 
-### 7.15 Tests
+### 7.17 Tests
 
 - `WindowBoundaryTest` — fixed and recurring boundary resolution
 - `AvailabilityWindowDefinitionTest` — `isActive()` for normal ranges, year-wrapping ranges, edge cases (midnight, year boundaries)
 - `AvailabilityConfigTest` — `isCurrentlyAvailable()` with multiple windows
 - `ChainAvailabilityCheckerTest` — window transition detection, policy application, startup reconciliation (chain unavailable with active states → policy applied on startup)
 - `ChainRepeatEvaluatorAvailabilityTest` — repeat evaluation respects availability windows
+- `QuestDefinitionAvailabilityTest` — `startQuest()` returns empty when quest is outside its availability window; succeeds when window is active; no availability config always permits start
 
 ---
 
@@ -2058,7 +2156,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | Path | Type | Section |
 |------|------|---------|
 | `quest/chain/ChainRepeatEvaluator.java` | Class | §6 |
-| `quest/chain/availability/WindowBoundary.java` | Sealed Interface | §7 |
+| `quest/chain/availability/WindowBoundary.java` | Interface | §7 |
 | `quest/chain/availability/AvailabilityWindowDefinition.java` | Record | §7 |
 | `quest/chain/availability/AvailabilityConfig.java` | Record | §7 |
 | `quest/chain/availability/WindowClosePolicy.java` | Enum | §7 |
@@ -2086,6 +2184,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `quest/chain/availability/AvailabilityWindowDefinitionTest.java` | §7 |
 | `quest/chain/availability/AvailabilityConfigTest.java` | §7 |
 | `quest/chain/availability/ChainAvailabilityCheckerTest.java` | §7 |
+| `quest/QuestDefinitionAvailabilityTest.java` | §7 |
 | `quest/chain/condition/builtin/TimeGateConditionTest.java` | §9 |
 | `quest/chain/condition/builtin/TimeGateConditionTypeParseTest.java` | §9 |
 | `quest/chain/ConditionPendingTest.java` | §9 |
@@ -2110,14 +2209,16 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `database/table/quest/QuestInstanceDAO.java` | Boundary conversion to `Instant` | §1 |
 | `database/table/quest/QuestChainStateDAO.java` | Boundary conversion, `conditions_pending` column | §1, §9 |
 | `database/table/quest/QuestChainCompletionLogDAO.java` | `skipped` column, `logSkip()`, rename `getCompletedQuestKeys` | §8 |
-| `quest/QuestManager.java` | Cache invalidation, stale definition warnings, `enforceTierableAbilityUpgradeQuestConfiguration` re-enable pass | §2, §3 |
+| `quest/QuestManager.java` | Cache invalidation, stale definition warnings, `enforceTierableAbilityUpgradeQuestConfiguration` re-enable pass, availability check in `startQuest()` | §2, §3, §7 |
+| `quest/definition/QuestDefinition.java` | `availabilityConfig` field + builder setter | §7 |
 | `ability/AbilityRegistry.java` | `softDisabledAbilities` map, `softDisableAbility()`, `reEnableAbility()` | §3 |
 | `listener/quest/QuestChainFirstJoinListener.java` | Chain-key-based bypass check | §4 |
 | `entity/holder/LoadoutHolder.java` | `isAlwaysAvailable()` predicate | §5 |
 | `quest/objective/type/builtin/AbilityObjectiveFilter.java` | Extract `resolveAbilityName` to `AbilityNameResolver` | §5 |
 | `quest/chain/QuestChainDefinition.java` | `availabilityConfig` field + builder setter | §7 |
 | `quest/chain/QuestChainManager.java` | Repeat evaluation, availability check, expiration behaviors, condition wiring, retry counters | §6, §7, §8, §9 |
-| `quest/chain/QuestChainConfigLoader.java` | Parse `availability:` and `conditions:` sections | §7, §9 |
+| `quest/chain/QuestChainConfigLoader.java` | Parse `availability:` and `conditions:` sections, extract shared availability parser | §7, §9 |
+| `configuration/QuestConfigLoader.java` | Parse `availability:` section on quest definitions | §7 |
 | `listener/quest/QuestChainLoginListener.java` | Conditions-pending re-evaluation on login | §9 |
 | `quest/board/template/QuestTemplate.java` | `availabilityConfig` field | §7 |
 | `quest/board/generation/QuestPool.java` | Filter by template availability | §7 |
