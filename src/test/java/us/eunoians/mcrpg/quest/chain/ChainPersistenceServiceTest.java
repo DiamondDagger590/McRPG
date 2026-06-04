@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -126,7 +127,7 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
     @DisplayName("Given a dirty state with pending advancements, When flushChainStatesSync is called, Then advancement log entries are included in the transaction")
     void flushChainStatesSync_replaysAdvancements_whenStateHasPending() throws SQLException {
         QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        state.recordAdvancement(QUEST_KEY, 1000L, 1);
+        state.recordAdvancement(QUEST_KEY, Instant.ofEpochMilli(1000L), 1);
         assertTrue(state.isDirty());
         assertEquals(1, state.getPendingAdvancements().size());
 
@@ -172,7 +173,7 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
     @DisplayName("Given pending advancements added before flush, When flushChainStatesSync completes, Then advancements are cleared")
     void flushChainStatesSync_clearsPendingAdvancements_afterSuccessfulFlush() throws SQLException {
         QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        state.recordAdvancement(QUEST_KEY, 1000L, 1);
+        state.recordAdvancement(QUEST_KEY, Instant.ofEpochMilli(1000L), 1);
         assertEquals(1, state.getPendingAdvancements().size());
 
         QuestChainPlayerData chainData = new QuestChainPlayerData();
@@ -193,7 +194,7 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
     @DisplayName("Given pending advancements fail to persist, When flushChainStatesSync fails, Then advancements are NOT cleared")
     void flushChainStatesSync_retainsPendingAdvancements_whenFlushFails() throws SQLException {
         QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        state.recordAdvancement(QUEST_KEY, 1000L, 1);
+        state.recordAdvancement(QUEST_KEY, Instant.ofEpochMilli(1000L), 1);
         assertEquals(1, state.getPendingAdvancements().size());
 
         QuestChainPlayerData chainData = new QuestChainPlayerData();
@@ -214,7 +215,7 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
         // saveChainStateAsync must snapshot without clearing so the sync flush at logout
         // can replay entries if the async write was skipped or failed.
         QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        state.recordAdvancement(QUEST_KEY, 1000L, 1);
+        state.recordAdvancement(QUEST_KEY, Instant.ofEpochMilli(1000L), 1);
         assertEquals(1, state.getPendingAdvancements().size(), "Precondition: one pending advancement");
 
         // Mock database manager with a no-op executor so the async task is never executed.

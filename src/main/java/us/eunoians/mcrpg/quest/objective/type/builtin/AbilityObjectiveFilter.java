@@ -4,7 +4,6 @@ import com.diamonddagger590.mccore.registry.RegistryAccess;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.AbilityType;
@@ -12,7 +11,6 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.Optional;
-import java.util.logging.Level;
 
 /**
  * Shared filter logic for ability-based quest objective types.
@@ -108,21 +106,18 @@ public final class AbilityObjectiveFilter {
 
     /**
      * Resolves the display name for the filtered ability by looking up the ability in the registry
-     * and calling {@link Ability#getName()}. Falls back to the key's string value if the ability
-     * is not registered.
+     * and delegating to {@link Ability#getName()}. Falls back to the raw key if the ability is
+     * not registered.
      *
      * @param abilityKey the ability key to resolve
      * @return the ability's display name from the registry, or the raw key as a fallback
      */
     @NotNull
     public String resolveAbilityName(@NotNull NamespacedKey abilityKey) {
-        try {
-            AbilityRegistry abilityRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY);
-            return abilityRegistry.getRegisteredAbility(abilityKey).getName();
-        } catch (Exception e) {
-            McRPG.getInstance().getLogger().log(Level.WARNING,
-                    "Could not resolve ability name for key '" + abilityKey + "' — using raw key as fallback", e);
+        AbilityRegistry abilityRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY);
+        if (!abilityRegistry.registered(abilityKey)) {
             return abilityKey.getKey();
         }
+        return abilityRegistry.getRegisteredAbility(abilityKey).getName();
     }
 }

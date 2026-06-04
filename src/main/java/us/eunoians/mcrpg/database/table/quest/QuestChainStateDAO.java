@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -100,7 +101,7 @@ public class QuestChainStateDAO {
                     String stateStr = rs.getString("state");
                     int completionCount = rs.getInt("completion_count");
                     long lastCompletedAtRaw = rs.getLong("last_completed_at");
-                    Long lastCompletedAt = rs.wasNull() ? null : lastCompletedAtRaw;
+                    Instant lastCompletedAt = rs.wasNull() ? null : Instant.ofEpochMilli(lastCompletedAtRaw);
 
                     NamespacedKey chainKey = parseNamespacedKey(chainKeyStr);
                     if (chainKey == null) {
@@ -157,7 +158,7 @@ public class QuestChainStateDAO {
             statement.setInt(5, state.getCompletionCount());
             var lastCompletedOpt = state.getLastCompletedAt();
             if (lastCompletedOpt.isPresent()) {
-                statement.setLong(6, lastCompletedOpt.get());
+                statement.setLong(6, lastCompletedOpt.get().toEpochMilli());
             } else {
                 statement.setNull(6, Types.BIGINT);
             }

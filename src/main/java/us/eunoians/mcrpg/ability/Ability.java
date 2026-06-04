@@ -199,6 +199,21 @@ public interface Ability extends McRPGContent {
     }
 
     /**
+     * Returns whether this ability is always available to its holder without requiring an
+     * explicit unlock (e.g., innate abilities granted at skill level 0). An ability is
+     * considered always-available when it does not carry the unlock attribute.
+     * <p>
+     * Distinct from {@link AbilityType} which classifies by activation pattern, and from
+     * {@link us.eunoians.mcrpg.ability.impl.type.TierableAbility TierableAbility} which
+     * controls tier progression.
+     *
+     * @return {@code true} if this ability does not require unlocking
+     */
+    default boolean isAlwaysAvailable() {
+        return !(this instanceof UnlockableAbility);
+    }
+
+    /**
      * Gets the default {@link Statistic} definitions that should be tracked for this ability.
      * <p>
      * Subinterfaces like {@link us.eunoians.mcrpg.ability.impl.type.ActiveAbility} override this

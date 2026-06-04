@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
 
+import java.time.Instant;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -51,7 +53,7 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
     @DisplayName("Given active state, When complete is called, Then state is COMPLETED with incremented count")
     public void complete_setsCompleted_andIncrementsCount() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
-        long timestamp = 1_000_000L;
+        Instant timestamp = Instant.ofEpochMilli(1_000_000L);
         state.complete(timestamp);
 
         assertEquals(QuestChainState.COMPLETED, state.getState());
@@ -99,7 +101,7 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
     @DisplayName("Given completed state with history, When hardReset is called, Then count is cleared and state is ACTIVE")
     public void hardReset_clearsCountAndTimestamp_andSetsActive() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
-        state.complete(999L);
+        state.complete(Instant.ofEpochMilli(999L));
         state.clearDirty();
 
         state.hardReset(questKeyA);
@@ -176,12 +178,12 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
         assertTrue(state.getPendingAdvancements().isEmpty());
 
-        state.recordAdvancement(questKeyA, 1000L, 1);
+        state.recordAdvancement(questKeyA, Instant.ofEpochMilli(1000L), 1);
 
         assertEquals(1, state.getPendingAdvancements().size());
         var adv = state.getPendingAdvancements().get(0);
         assertEquals(questKeyA, adv.questKey());
-        assertEquals(1000L, adv.completedAt());
+        assertEquals(Instant.ofEpochMilli(1000L), adv.completedAt());
         assertEquals(1, adv.completionNumber());
     }
 
@@ -189,8 +191,8 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
     @DisplayName("Given a state with pending advancements, When clearPendingAdvancements is called, Then list is empty")
     public void clearPendingAdvancements_removesAllEntries() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
-        state.recordAdvancement(questKeyA, 1000L, 1);
-        state.recordAdvancement(questKeyB, 2000L, 1);
+        state.recordAdvancement(questKeyA, Instant.ofEpochMilli(1000L), 1);
+        state.recordAdvancement(questKeyB, Instant.ofEpochMilli(2000L), 1);
         assertEquals(2, state.getPendingAdvancements().size());
 
         state.clearPendingAdvancements();
@@ -202,8 +204,8 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
     @DisplayName("Given multiple advancements recorded, When getPendingAdvancements is called, Then entries preserve insertion order")
     public void recordAdvancement_preservesInsertionOrder() {
         var state = QuestChainPlayerState.newActive(chainKey, questKeyA);
-        state.recordAdvancement(questKeyA, 1000L, 1);
-        state.recordAdvancement(questKeyB, 2000L, 1);
+        state.recordAdvancement(questKeyA, Instant.ofEpochMilli(1000L), 1);
+        state.recordAdvancement(questKeyB, Instant.ofEpochMilli(2000L), 1);
 
         var advancements = state.getPendingAdvancements();
         assertEquals(2, advancements.size());
@@ -217,7 +219,7 @@ public class QuestChainPlayerStateTest extends McRPGBaseTest {
         var state = new QuestChainPlayerState(chainKey, questKeyA, QuestChainState.ACTIVE, 0, null);
         assertFalse(state.isDirty(), "State must start clean");
 
-        state.recordAdvancement(questKeyA, 1000L, 1);
+        state.recordAdvancement(questKeyA, Instant.ofEpochMilli(1000L), 1);
 
         assertTrue(state.isDirty(),
                 "recordAdvancement must mark state dirty so logout flush picks it up even without a normal state mutation");

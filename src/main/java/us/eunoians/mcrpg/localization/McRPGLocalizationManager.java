@@ -166,7 +166,7 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
     }
 
     /**
-     * Formats an epoch-millis timestamp as a locale-aware date string using the player's
+     * Formats an {@link java.time.Instant} as a locale-aware date string using the player's
      * locale chain head. Uses {@link java.time.format.FormatStyle#MEDIUM} (e.g. "Jan 15, 2025"
      * in en_US). Dates are displayed in UTC.
      * <p>
@@ -174,16 +174,16 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
      * locale resolution via {@link #getLocaleChain(McRPGPlayer)}.
      *
      * @param mcRPGPlayer the player whose locale chain head determines the date format
-     * @param epochMillis the timestamp in epoch milliseconds to format
+     * @param instant     the timestamp to format
      * @return the formatted date string
      */
     @NotNull
-    public String formatDisplayDate(@NotNull McRPGPlayer mcRPGPlayer, long epochMillis) {
+    public String formatDisplayDate(@NotNull McRPGPlayer mcRPGPlayer, @NotNull java.time.Instant instant) {
         Locale locale = getLocaleChain(mcRPGPlayer).getNodeValue();
         return java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM)
                 .withLocale(locale)
                 .withZone(java.time.ZoneOffset.UTC)
-                .format(java.time.Instant.ofEpochMilli(epochMillis));
+                .format(instant);
     }
 
     /**

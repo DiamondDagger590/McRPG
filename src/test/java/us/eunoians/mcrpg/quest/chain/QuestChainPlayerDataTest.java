@@ -6,6 +6,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
 
+import java.time.Instant;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -57,7 +59,7 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
     public void getActiveChains_returnsOnlyActiveStates() {
         var active = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
         var completed = QuestChainPlayerState.newActive(chainKeyB, questKeyB);
-        completed.complete(1000L);
+        completed.complete(Instant.ofEpochMilli(1000L));
 
         data.putChainState(active);
         data.putChainState(completed);
@@ -96,7 +98,7 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
     @DisplayName("Given terminal state, When putChainState, Then questKeyToChainKey index is not populated")
     public void putChainState_doesNotPopulateIndex_forTerminalState() {
         var state = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
-        state.complete(1000L);
+        state.complete(Instant.ofEpochMilli(1000L));
         data.putChainState(state);
 
         assertTrue(data.getChainKeyForCurrentQuest(questKeyA).isEmpty());

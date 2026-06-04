@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -97,7 +98,7 @@ public class QuestChainCompletionLogDAO {
      * @param playerUUID       the player UUID
      * @param chainKey         the chain key (string form)
      * @param questKey         the completed quest key (string form)
-     * @param completedAt      the completion timestamp in epoch millis
+     * @param completedAt      the completion timestamp
      * @param completionNumber which chain completion this belongs to (1-based)
      * @return list containing the insert statement (un-executed)
      */
@@ -106,7 +107,7 @@ public class QuestChainCompletionLogDAO {
                                                         @NotNull UUID playerUUID,
                                                         @NotNull String chainKey,
                                                         @NotNull String questKey,
-                                                        long completedAt,
+                                                        @NotNull Instant completedAt,
                                                         int completionNumber) {
         List<PreparedStatement> statements = new ArrayList<>();
         try {
@@ -117,7 +118,7 @@ public class QuestChainCompletionLogDAO {
             statement.setString(1, playerUUID.toString());
             statement.setString(2, chainKey);
             statement.setString(3, questKey);
-            statement.setLong(4, completedAt);
+            statement.setLong(4, completedAt.toEpochMilli());
             statement.setInt(5, completionNumber);
             statements.add(statement);
         } catch (SQLException e) {
@@ -264,7 +265,7 @@ public class QuestChainCompletionLogDAO {
                     runs.add(new ChainCompletionRun(
                             chainKey,
                             rs.getInt("completion_number"),
-                            rs.getLong("last_step_at"),
+                            Instant.ofEpochMilli(rs.getLong("last_step_at")),
                             rs.getInt("step_count")
                     ));
                 }
@@ -329,7 +330,7 @@ public class QuestChainCompletionLogDAO {
             statement.setInt(3, completionNumber);
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
-                    steps.add(new ChainStepRecord(rs.getString("quest_key"), rs.getLong("completed_at")));
+                    steps.add(new ChainStepRecord(rs.getString("quest_key"), Instant.ofEpochMilli(rs.getLong("completed_at"))));
                 }
             }
         } catch (SQLException e) {
@@ -344,8 +345,8 @@ public class QuestChainCompletionLogDAO {
      * A single step's completion within a chain run.
      *
      * @param questKey    the quest definition key (string form)
-     * @param completedAt the completion timestamp in epoch millis
+     * @param completedAt the completion timestamp
      */
-    public record ChainStepRecord(@NotNull String questKey, long completedAt) {
+    public record ChainStepRecord(@NotNull String questKey, @NotNull Instant completedAt) {
     }
 }

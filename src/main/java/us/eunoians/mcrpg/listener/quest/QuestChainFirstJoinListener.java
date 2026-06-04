@@ -14,8 +14,8 @@ import us.eunoians.mcrpg.quest.chain.CascadeOrchestrator;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
 import us.eunoians.mcrpg.quest.chain.trigger.builtin.FirstJoinChainAutoStartTrigger;
-import us.eunoians.mcrpg.quest.source.builtin.TutorialQuestSource;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * Listens on {@link PlayerLoadEvent} at {@link EventPriority#MONITOR} and evaluates all
@@ -71,16 +71,22 @@ public class QuestChainFirstJoinListener implements Listener {
         }
     }
 
+    private static final NamespacedKey TUTORIAL_CHAIN_KEY =
+            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "tutorial_chain");
+
     /**
      * Checks whether a player should bypass a specific chain's auto-start.
-     * Currently only checks the tutorial bypass permission for tutorial-sourced chains.
+     * Only applies to the built-in tutorial chain — other chains that happen to
+     * use the tutorial source are not affected.
      *
      * @param player the player
      * @param chain  the chain definition
      * @return {@code true} if the chain should not auto-start for this player
      */
     private boolean shouldBypassChain(@NotNull Player player, @NotNull QuestChainDefinition chain) {
-        return TutorialQuestSource.KEY.equals(chain.getSourceKey())
-                && player.hasPermission("mcrpg.tutorial.bypass");
+        if (!TUTORIAL_CHAIN_KEY.equals(chain.getChainKey())) {
+            return false;
+        }
+        return player.hasPermission("mcrpg.tutorial.bypass");
     }
 }

@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.quest.impl.scope.impl.SinglePlayerQuestScope;
 import us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -81,7 +82,7 @@ public class QuestManagerMemoryTest extends McRPGBaseTest {
                 UUID.randomUUID(),
                 new NamespacedKey("mcrpg", "single_player"),
                 QuestState.COMPLETED,
-                null, 1000L, 2000L, null,
+                null, Instant.ofEpochMilli(1000L), Instant.ofEpochMilli(2000L), null,
                 new ManualQuestSource(), null
         );
         assertEquals(QuestState.COMPLETED, instance.getQuestState());
@@ -95,7 +96,7 @@ public class QuestManagerMemoryTest extends McRPGBaseTest {
                 UUID.randomUUID(),
                 new NamespacedKey("mcrpg", "single_player"),
                 QuestState.CANCELLED,
-                null, 1000L, 2000L, null,
+                null, Instant.ofEpochMilli(1000L), Instant.ofEpochMilli(2000L), null,
                 new ManualQuestSource(), null
         );
         assertEquals(QuestState.CANCELLED, instance.getQuestState());
@@ -123,7 +124,7 @@ public class QuestManagerMemoryTest extends McRPGBaseTest {
                 UUID.randomUUID(),
                 new NamespacedKey("mcrpg", "single_player"),
                 QuestState.IN_PROGRESS,
-                null, 1000L, null, null,
+                null, Instant.ofEpochMilli(1000L), null, null,
                 new ManualQuestSource(), null
         );
         assertEquals(QuestState.IN_PROGRESS, instance.getQuestState());

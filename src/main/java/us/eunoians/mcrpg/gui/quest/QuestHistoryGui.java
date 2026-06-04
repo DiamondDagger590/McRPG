@@ -31,6 +31,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -144,7 +145,7 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
                                                @NotNull List<ChainCompletionRun> chainRuns,
                                                @NotNull Set<String> chainQuestKeys,
                                                boolean ascending) {
-        record TimestampedSlot(McRPGSlot slot, long timestamp) {
+        record TimestampedSlot(McRPGSlot slot, Instant timestamp) {
         }
 
         List<TimestampedSlot> entries = new ArrayList<>();
@@ -159,8 +160,8 @@ public class QuestHistoryGui extends McRPGPaginatedGui implements KeyedGui {
         }
 
         Comparator<TimestampedSlot> comparator = ascending
-                ? Comparator.comparingLong(TimestampedSlot::timestamp)
-                : Comparator.comparingLong(TimestampedSlot::timestamp).reversed();
+                ? Comparator.comparing(TimestampedSlot::timestamp)
+                : Comparator.comparing(TimestampedSlot::timestamp).reversed();
         entries.sort(comparator);
 
         return entries.stream().map(TimestampedSlot::slot).toList();

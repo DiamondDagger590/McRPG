@@ -18,6 +18,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -118,7 +119,7 @@ public class QuestChainManagerTest extends McRPGBaseTest {
         McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
         QuestChainPlayerData playerData = new QuestChainPlayerData();
         QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        state.complete(1000L);
+        state.complete(Instant.ofEpochMilli(1000L));
         playerData.putChainState(state);
         when(mockPlayer.getChainData()).thenReturn(playerData);
         when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));
@@ -393,7 +394,7 @@ public class QuestChainManagerTest extends McRPGBaseTest {
         chainManager.restartChain(PLAYER_UUID, staleChainKey, false, callbackResult::set);
 
         // Simulate advanceChain completing the chain between the async DB read and the callback.
-        state.complete(System.currentTimeMillis());
+        state.complete(Instant.now());
         assertEquals(QuestChainState.COMPLETED, state.getState());
         int completionCountBeforeTick = state.getCompletionCount();
 
@@ -500,7 +501,7 @@ public class QuestChainManagerTest extends McRPGBaseTest {
         McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
         QuestChainPlayerData playerData = new QuestChainPlayerData();
         QuestChainPlayerState state = QuestChainPlayerState.newActive(CHAIN_KEY, QUEST_KEY);
-        state.complete(System.currentTimeMillis());
+        state.complete(Instant.now());
         playerData.putChainState(state);
         when(mockPlayer.getChainData()).thenReturn(playerData);
         when(mockPlayerManager.getPlayer(PLAYER_UUID)).thenReturn(Optional.of(mockPlayer));

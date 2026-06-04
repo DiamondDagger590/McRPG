@@ -37,6 +37,8 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -57,9 +59,9 @@ public class QuestInstance {
     private final NamespacedKey scopeType;
     private QuestState questState;
     private QuestScope questScope;
-    private Long startTime;
-    private Long endTime;
-    private Long expirationTime;
+    private Instant startTime;
+    private Instant endTime;
+    private Instant expirationTime;
 
     private final List<QuestStageInstance> questStageInstances;
     private volatile boolean dirty;
@@ -95,8 +97,8 @@ public class QuestInstance {
         }
 
         definition.getExpiration().ifPresent(expiration -> {
-            long now = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
-            this.expirationTime = now + expiration.toMillis();
+            Instant now = McRPG.getInstance().getTimeProvider().now();
+            this.expirationTime = now.plus(expiration);
         });
 
         for (QuestPhaseDefinition phaseDef : definition.getPhases()) {
@@ -129,15 +131,15 @@ public class QuestInstance {
      * @param scopeType        the scope type key
      * @param questState       the persisted state
      * @param questScope       the scope, or {@code null} if not yet loaded
-     * @param startTime        the start timestamp in epoch millis, or {@code null}
-     * @param endTime          the end timestamp in epoch millis, or {@code null}
-     * @param expirationTime   the expiration timestamp in epoch millis, or {@code null}
+     * @param startTime        the start timestamp, or {@code null}
+     * @param endTime          the end timestamp, or {@code null}
+     * @param expirationTime   the expiration timestamp, or {@code null}
      * @param questSource      the source that originated this quest
      * @param scopeDisplayName the display name for the scope context, or {@code null}
      */
     public QuestInstance(@NotNull NamespacedKey questKey, @NotNull UUID questUUID, @NotNull NamespacedKey scopeType,
                          @NotNull QuestState questState, @Nullable QuestScope questScope,
-                         @Nullable Long startTime, @Nullable Long endTime, @Nullable Long expirationTime,
+                         @Nullable Instant startTime, @Nullable Instant endTime, @Nullable Instant expirationTime,
                          @NotNull QuestSource questSource, @Nullable String scopeDisplayName) {
         this.questKey = questKey;
         this.questUUID = questUUID;
@@ -324,33 +326,32 @@ public class QuestInstance {
     }
 
     /**
-     * Gets the timestamp (epoch millis) when this quest was activated, if it has been started.
+     * Gets the timestamp when this quest was activated, if it has been started.
      *
      * @return an {@link Optional} containing the start time, or empty if not yet started
      */
     @NotNull
-    public Optional<Long> getStartTime() {
+    public Optional<Instant> getStartTime() {
         return Optional.ofNullable(startTime);
     }
 
     /**
-     * Gets the timestamp (epoch millis) when this quest ended (completed or cancelled),
-     * if it has ended.
+     * Gets the timestamp when this quest ended (completed or cancelled), if it has ended.
      *
      * @return an {@link Optional} containing the end time, or empty if still active
      */
     @NotNull
-    public Optional<Long> getEndTime() {
+    public Optional<Instant> getEndTime() {
         return Optional.ofNullable(endTime);
     }
 
     /**
-     * Gets the timestamp (epoch millis) at which this quest expires, if it has an expiration.
+     * Gets the timestamp at which this quest expires, if it has an expiration.
      *
      * @return an {@link Optional} containing the expiration time, or empty if the quest does not expire
      */
     @NotNull
-    public Optional<Long> getExpirationTime() {
+    public Optional<Instant> getExpirationTime() {
         return Optional.ofNullable(expirationTime);
     }
 
@@ -423,9 +424,9 @@ public class QuestInstance {
     /**
      * Sets the expiration timestamp for this quest instance.
      *
-     * @param expirationTime the expiration time in epoch millis, or {@code null} to remove expiration
+     * @param expirationTime the expiration time, or {@code null} to remove expiration
      */
-    public void setExpirationTime(@Nullable Long expirationTime) {
+    public void setExpirationTime(@Nullable Instant expirationTime) {
         this.expirationTime = expirationTime;
     }
 
@@ -438,7 +439,7 @@ public class QuestInstance {
         if (expirationTime == null) {
             return false;
         }
-        return McRPG.getInstance().getTimeProvider().now().toEpochMilli() >= expirationTime;
+        return !McRPG.getInstance().getTimeProvider().now().isBefore(expirationTime);
     }
 
     /**
@@ -543,7 +544,7 @@ public class QuestInstance {
     private void cancelInternal(boolean isExpiration) {
         if (questState == QuestState.IN_PROGRESS || questState == QuestState.NOT_STARTED) {
             questState = QuestState.CANCELLED;
-            endTime = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+            endTime = McRPG.getInstance().getTimeProvider().now();
             for (QuestStageInstance stage : questStageInstances) {
                 stage.cancel();
             }
@@ -596,8 +597,9 @@ public class QuestInstance {
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.MAIN_CONFIG)
                 .getInt(MainConfigFile.QUEST_PENDING_REWARDS_EXPIRY_DAYS, 30);
-        long now = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
-        long expiresAt = now + TimeUnit.DAYS.toMillis(expiryDays);
+        Instant now = McRPG.getInstance().getTimeProvider().now();
+        long nowMillis = now.toEpochMilli();
+        long expiresAt = nowMillis + TimeUnit.DAYS.toMillis(expiryDays);
 
         Database database = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
@@ -610,7 +612,7 @@ public class QuestInstance {
                             reward.getKey(),
                             reward.serializeConfig(),
                             questKey,
-                            now,
+                            nowMillis,
                             expiresAt
                     );
                     for (PreparedStatement stmt : PendingRewardDAO.savePendingReward(connection, pending)) {
@@ -639,7 +641,7 @@ public class QuestInstance {
     private void activate() {
         if (questState == QuestState.NOT_STARTED) {
             questState = QuestState.IN_PROGRESS;
-            startTime = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+            startTime = McRPG.getInstance().getTimeProvider().now();
         }
     }
 
@@ -650,7 +652,7 @@ public class QuestInstance {
     private void markAsCompleted() {
         if (questState == QuestState.IN_PROGRESS && endTime == null) {
             questState = QuestState.COMPLETED;
-            endTime = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+            endTime = McRPG.getInstance().getTimeProvider().now();
         }
     }
 }

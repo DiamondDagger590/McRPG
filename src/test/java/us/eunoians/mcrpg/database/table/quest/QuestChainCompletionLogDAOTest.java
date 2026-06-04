@@ -10,6 +10,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -47,7 +48,7 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
                 PLAYER_UUID,
                 CHAIN_KEY.toString(),
                 QUEST_KEY_A.toString(),
-                System.currentTimeMillis(),
+                Instant.now(),
                 1
         );
 
@@ -186,7 +187,7 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
         assertEquals(2, runs.size());
         assertEquals(CHAIN_KEY, runs.get(0).chainKey());
         assertEquals(1, runs.get(0).completionNumber());
-        assertEquals(2000L, runs.get(0).completedAt());
+        assertEquals(Instant.ofEpochMilli(2000L), runs.get(0).completedAt());
         assertEquals(3, runs.get(0).stepCount());
     }
 
@@ -226,9 +227,9 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
 
         assertEquals(2, steps.size());
         assertEquals(QUEST_KEY_A.toString(), steps.get(0).questKey());
-        assertEquals(1000L, steps.get(0).completedAt());
+        assertEquals(Instant.ofEpochMilli(1000L), steps.get(0).completedAt());
         assertEquals(QUEST_KEY_B.toString(), steps.get(1).questKey());
-        assertEquals(2000L, steps.get(1).completedAt());
+        assertEquals(Instant.ofEpochMilli(2000L), steps.get(1).completedAt());
     }
 
     @Test

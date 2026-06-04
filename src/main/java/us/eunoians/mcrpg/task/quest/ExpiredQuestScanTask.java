@@ -114,11 +114,11 @@ public final class ExpiredQuestScanTask extends CancelableCoreTask {
             if (quest.isNearExpiryNotified()) {
                 continue;
             }
-            Optional<Long> expOpt = quest.getExpirationTime();
+            var expOpt = quest.getExpirationTime();
             if (expOpt.isEmpty()) {
                 continue;
             }
-            long timeUntilExpiry = expOpt.get() - now;
+            long timeUntilExpiry = expOpt.get().toEpochMilli() - now;
             if (timeUntilExpiry <= 0) {
                 continue; // handled by the expire pass
             }
@@ -262,7 +262,7 @@ public final class ExpiredQuestScanTask extends CancelableCoreTask {
         if (quests.size() == 1) {
             QuestInstance quest = quests.iterator().next();
             String questName = resolveQuestName(quest, mcRPGPlayer, definitionRegistry);
-            String timeRemaining = formatTimeRemaining(quest.getExpirationTime().orElse(now) - now);
+            String timeRemaining = formatTimeRemaining(quest.getExpirationTime().map(java.time.Instant::toEpochMilli).orElse(now) - now);
 
             player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
                     mcRPGPlayer, LocalizationKey.QUEST_NEAR_EXPIRY_SINGLE_NOTIFICATION,
@@ -274,7 +274,7 @@ public final class ExpiredQuestScanTask extends CancelableCoreTask {
 
             for (QuestInstance quest : quests) {
                 String questName = resolveQuestName(quest, mcRPGPlayer, definitionRegistry);
-                String timeRemaining = formatTimeRemaining(quest.getExpirationTime().orElse(now) - now);
+                String timeRemaining = formatTimeRemaining(quest.getExpirationTime().map(java.time.Instant::toEpochMilli).orElse(now) - now);
                 player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
                         mcRPGPlayer, LocalizationKey.QUEST_NEAR_EXPIRY_BATCH_ENTRY,
                         Map.of("quest_name", questName, "time_remaining", timeRemaining)));

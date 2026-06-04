@@ -1094,6 +1094,8 @@ public class QuestManager extends Manager<McRPG> {
      * definitions in the registry with the newly parsed ones.
      */
     public void loadQuestDefinitions() {
+        cachedFinishedQuests.invalidateAll();
+
         File questsDir = new File(plugin().getDataFolder(), QUESTS_DIRECTORY);
         if (!questsDir.exists()) {
             questsDir.mkdirs();
@@ -1112,6 +1114,7 @@ public class QuestManager extends Manager<McRPG> {
         }
 
         questDefinitionRegistry.replaceConfigDefinitions(allDefinitions);
+        warnStaleDefinitions(allDefinitions);
         enforceTierableAbilityUpgradeQuestConfiguration();
 
         // Phase B: load chain definitions (quest definitions are now in the registry)
@@ -1126,8 +1129,30 @@ public class QuestManager extends Manager<McRPG> {
     }
 
     /**
+     * Logs a console warning for each active quest instance whose definition key is no
+     * longer present in the registry after a reload. Active instances are NOT cancelled —
+     * they continue running with their creation-time definition snapshot.
+     *
+     * @param newDefinitions the post-reload definition map
+     */
+    private void warnStaleDefinitions(@NotNull Map<NamespacedKey, QuestDefinition> newDefinitions) {
+        for (Map.Entry<UUID, QuestInstance> entry : activeQuests.entrySet()) {
+            QuestInstance instance = entry.getValue();
+            NamespacedKey questKey = instance.getQuestKey();
+            if (!newDefinitions.containsKey(questKey)) {
+                plugin().getLogger().warning("[QuestManager] Active quest instance '"
+                        + questKey + "' (UUID " + instance.getQuestUUID()
+                        + ") references a definition that was removed during reload. "
+                        + "The instance will continue running with its original definition.");
+            }
+        }
+    }
+
+    /**
      * Validates that all tierable abilities can resolve a usable upgrade quest definition.
-     * If not, the ability is unregistered to prevent broken upgrade flows at runtime.
+     * If not, the ability is soft-disabled to prevent broken upgrade flows at runtime.
+     * On reload, previously soft-disabled abilities are re-evaluated first and restored
+     * if their quest definition reappears.
      * <p>
      * This runs after quest definitions are (re)loaded, so both configured quest keys and
      * inferred defaults can be checked against the registry.
@@ -1136,7 +1161,20 @@ public class QuestManager extends Manager<McRPG> {
         AbilityRegistry abilityRegistry = RegistryAccess.registryAccess()
                 .registry(McRPGRegistryKey.ABILITY);
 
-        for (NamespacedKey abilityKey : abilityRegistry.getAllAbilities()) {
+        for (NamespacedKey abilityKey : new ArrayList<>(abilityRegistry.getSoftDisabledAbilities().keySet())) {
+            Ability ability = abilityRegistry.getSoftDisabledAbilities().get(abilityKey);
+            if (!(ability instanceof TierableAbility tierableAbility)) {
+                continue;
+            }
+            Optional<QuestDefinition> defOpt = resolveUpgradeQuestDefinition(tierableAbility, 2);
+            if (defOpt.isPresent()) {
+                abilityRegistry.reEnableAbility(abilityKey);
+                plugin().getLogger().info("[QuestManager] Re-enabled ability '"
+                        + abilityKey + "' — upgrade quest definition restored");
+            }
+        }
+
+        for (NamespacedKey abilityKey : new ArrayList<>(abilityRegistry.getAllAbilities())) {
             Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
             if (!(ability instanceof TierableAbility tierableAbility)) {
                 continue;
@@ -1148,12 +1186,10 @@ public class QuestManager extends Manager<McRPG> {
 
             Optional<QuestDefinition> defOpt = resolveUpgradeQuestDefinition(tierableAbility, 2);
             if (defOpt.isEmpty()) {
-                Optional<NamespacedKey> questKeyOpt = tierableAbility.getUpgradeQuestKey(2);
-                NamespacedKey resolvedKey = questKeyOpt.orElse(null);
-                plugin().getLogger().severe("[TierableAbility] " + abilityKey
-                        + " resolves upgrade quest key '" + resolvedKey + "' for tier 2, but no usable quest definition exists."
-                        + " Unregistering ability.");
-                abilityRegistry.unregisterAbility(abilityKey);
+                abilityRegistry.softDisableAbility(abilityKey);
+                plugin().getLogger().warning("[QuestManager] Soft-disabled ability '"
+                        + abilityKey + "' — upgrade quest definition not found. "
+                        + "Fix the quest YAML and run /mcrpg admin reload to restore.");
             }
         }
     }

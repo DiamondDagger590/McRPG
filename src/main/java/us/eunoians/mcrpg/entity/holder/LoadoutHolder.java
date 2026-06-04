@@ -166,7 +166,12 @@ public class LoadoutHolder extends AbilityHolder {
      * that are 'default abilities', or ones that don't require unlocking to use.
      */
     private Set<NamespacedKey> getAvailableDefaultAbilities() {
-        return getAvailableAbilities().stream().filter(namespacedKey -> !(McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(namespacedKey) instanceof UnlockableAbility)).collect(Collectors.toSet());
+        return getAvailableAbilities().stream()
+                .filter(key -> McRPG.getInstance().registryAccess()
+                        .registry(McRPGRegistryKey.ABILITY)
+                        .getRegisteredAbility(key)
+                        .isAlwaysAvailable())
+                .collect(Collectors.toSet());
     }
 
     /**

@@ -8,6 +8,7 @@ import us.eunoians.mcrpg.quest.chain.QuestChainPlayerState;
 import us.eunoians.mcrpg.quest.chain.QuestChainState;
 
 import java.sql.Connection;
+import java.time.Instant;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -121,7 +122,7 @@ public class QuestChainStateDAOTest extends McRPGBaseTest {
 
         assertEquals(1, states.size());
         assertTrue(states.get(0).getLastCompletedAt().isPresent());
-        assertEquals(expectedTimestamp, states.get(0).getLastCompletedAt().get());
+        assertEquals(Instant.ofEpochMilli(expectedTimestamp), states.get(0).getLastCompletedAt().get());
     }
 
     @Test

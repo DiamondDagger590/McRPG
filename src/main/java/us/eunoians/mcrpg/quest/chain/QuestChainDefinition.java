@@ -4,6 +4,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
+import us.eunoians.mcrpg.quest.chain.availability.AvailabilityConfig;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public final class QuestChainDefinition implements McRPGContent {
     private final Duration repeatCooldown;
     private final int maxCompletions;
     private final String onQuestExpireDefault;
+    private final AvailabilityConfig availabilityConfig;
     private final Map<NamespacedKey, Integer> stepIndex;
 
     private QuestChainDefinition(@NotNull NamespacedKey chainKey,
@@ -46,6 +48,7 @@ public final class QuestChainDefinition implements McRPGContent {
                                  @Nullable Duration repeatCooldown,
                                  int maxCompletions,
                                  @NotNull String onQuestExpireDefault,
+                                 @Nullable AvailabilityConfig availabilityConfig,
                                  @NotNull Map<NamespacedKey, Integer> stepIndex) {
         this.chainKey = chainKey;
         this.displayName = displayName;
@@ -56,6 +59,7 @@ public final class QuestChainDefinition implements McRPGContent {
         this.repeatCooldown = repeatCooldown;
         this.maxCompletions = maxCompletions;
         this.onQuestExpireDefault = onQuestExpireDefault;
+        this.availabilityConfig = availabilityConfig;
         this.stepIndex = Map.copyOf(stepIndex);
     }
 
@@ -146,13 +150,24 @@ public final class QuestChainDefinition implements McRPGContent {
 
     /**
      * Gets the default expiration behavior applied to steps that do not override it.
-     * Only {@code "fail-chain"} is functional in the current implementation.
      *
      * @return the default on-quest-expire behavior string
      */
     @NotNull
     public String getOnQuestExpireDefault() {
         return onQuestExpireDefault;
+    }
+
+    /**
+     * Returns the availability window configuration for this chain, if any.
+     * When present and no window is currently active, {@link QuestChainManager#tryStartChain}
+     * will refuse to start new instances.
+     *
+     * @return the availability config, or empty if the chain has no time restrictions
+     */
+    @NotNull
+    public Optional<AvailabilityConfig> getAvailabilityConfig() {
+        return Optional.ofNullable(availabilityConfig);
     }
 
     /**
@@ -219,6 +234,7 @@ public final class QuestChainDefinition implements McRPGContent {
         private Duration repeatCooldown;
         private int maxCompletions = -1;
         private String onQuestExpireDefault = "fail-chain";
+        private AvailabilityConfig availabilityConfig;
 
         /**
          * @param chainKey            unique key for this chain
@@ -298,6 +314,18 @@ public final class QuestChainDefinition implements McRPGContent {
         }
 
         /**
+         * Sets the availability window configuration for this chain.
+         *
+         * @param config the availability config, or null for no time restrictions
+         * @return this builder
+         */
+        @NotNull
+        public Builder availabilityConfig(@Nullable AvailabilityConfig config) {
+            this.availabilityConfig = config;
+            return this;
+        }
+
+        /**
          * Builds the chain definition. Validates that steps is non-empty and contains no
          * duplicate quest keys. Builds the stepIndex map. If {@code displayName} was not set,
          * defaults to the chain key's value portion.
@@ -330,7 +358,7 @@ public final class QuestChainDefinition implements McRPGContent {
             return new QuestChainDefinition(
                     chainKey, resolvedDisplayName, sourceKey, autoStartTriggerKey,
                     steps, repeatMode, repeatCooldown, maxCompletions,
-                    onQuestExpireDefault, index);
+                    onQuestExpireDefault, availabilityConfig, index);
         }
     }
 }

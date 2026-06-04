@@ -109,15 +109,15 @@ public class QuestDetailOverviewSlot implements McRPGSlot {
         if (questInstance != null) {
             placeholders.put("quest_state", questInstance.getQuestState().name());
             questInstance.getStartTime().ifPresent(t ->
-                    placeholders.put("start_time", dateFormat.format(Instant.ofEpochMilli(t))));
+                    placeholders.put("start_time", dateFormat.format(t)));
             questInstance.getEndTime().ifPresent(t ->
-                    placeholders.put("end_time", dateFormat.format(Instant.ofEpochMilli(t))));
+                    placeholders.put("end_time", dateFormat.format(t)));
             questInstance.getExpirationTime().ifPresent(t ->
-                    placeholders.put("expiration_time", dateFormat.format(Instant.ofEpochMilli(t))));
+                    placeholders.put("expiration_time", dateFormat.format(t)));
         } else if (completionRecord != null) {
             placeholders.put("quest_state", localizationManager
                     .getLocalizedMessage(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_STATE_COMPLETED));
-            placeholders.put("completed_date", dateFormat.format(Instant.ofEpochMilli(completionRecord.completedAt())));
+            placeholders.put("completed_date", dateFormat.format(completionRecord.completedAt()));
         } else {
             String previewLabel = localizationManager
                     .getLocalizedMessage(mcRPGPlayer, LocalizationKey.QUEST_DETAIL_GUI_STATE_PREVIEW);

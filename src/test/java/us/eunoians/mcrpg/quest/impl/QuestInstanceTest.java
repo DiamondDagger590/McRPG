@@ -22,6 +22,7 @@ import us.eunoians.mcrpg.quest.impl.stage.QuestStageState;
 import us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -196,7 +197,7 @@ public class QuestInstanceTest extends McRPGBaseTest {
     @Test
     public void isExpired_returnsTrue_whenExpirationPassed() {
         QuestInstance instance = QuestTestHelper.newQuestInstance(definition);
-        instance.setExpirationTime(1L);
+        instance.setExpirationTime(Instant.ofEpochMilli(1L));
         assertTrue(instance.isExpired());
     }
 

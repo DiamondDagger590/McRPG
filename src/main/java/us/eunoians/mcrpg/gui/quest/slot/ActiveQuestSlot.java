@@ -126,7 +126,7 @@ public class ActiveQuestSlot implements McRPGSlot {
 
         String timeRemaining = questInstance.getExpirationTime()
                 .map(expiry -> {
-                    long remaining = expiry - McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+                    long remaining = expiry.toEpochMilli() - McRPG.getInstance().getTimeProvider().now().toEpochMilli();
                     if (remaining <= 0) {
                         return localizationManager.getLocalizedMessage(
                                 mcRPGPlayer,

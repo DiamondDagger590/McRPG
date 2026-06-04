@@ -28,6 +28,7 @@ import us.eunoians.mcrpg.quest.source.builtin.BoardPersonalQuestSource;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -77,7 +78,7 @@ public class QuestManagerRescopeExpirySweepTest extends McRPGBaseTest {
         QuestDefinition definition = QuestTestHelper.singlePhaseQuest("rescope_expired_sweep");
         QuestInstance quest = spy(QuestTestHelper.startedQuestWithPlayer(definition, playerUUID));
         UUID questUUID = quest.getQuestUUID();
-        quest.setExpirationTime(mcRPG.getTimeProvider().now().toEpochMilli() - 1_000L);
+        quest.setExpirationTime(mcRPG.getTimeProvider().now().minusMillis(1_000L));
         questManager.trackActiveQuest(quest);
 
         @SuppressWarnings("unchecked")
@@ -99,7 +100,7 @@ public class QuestManagerRescopeExpirySweepTest extends McRPGBaseTest {
         QuestDefinition definition = QuestTestHelper.singlePhaseQuest("rescope_non_expired_sweep");
         QuestInstance quest = spy(QuestTestHelper.startedQuestWithPlayer(definition, playerUUID));
         UUID questUUID = quest.getQuestUUID();
-        quest.setExpirationTime(mcRPG.getTimeProvider().now().toEpochMilli() + 60_000L);
+        quest.setExpirationTime(mcRPG.getTimeProvider().now().plusMillis(60_000L));
         questManager.trackActiveQuest(quest);
 
         @SuppressWarnings("unchecked")
@@ -133,7 +134,7 @@ public class QuestManagerRescopeExpirySweepTest extends McRPGBaseTest {
         scope.setPlayerInScope(mcRPGPlayer.getUUID());
         quest.setQuestScope(scope);
         quest.start(definition);
-        quest.setExpirationTime(mcRPG.getTimeProvider().now().toEpochMilli() - 1_000L);
+        quest.setExpirationTime(mcRPG.getTimeProvider().now().minusMillis(1_000L));
         questManager.trackActiveQuest(quest);
 
         @SuppressWarnings("unchecked")

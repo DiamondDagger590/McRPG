@@ -4,6 +4,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -30,16 +31,16 @@ public class QuestChainPlayerState {
      * can replay entries whose async write was cancelled.
      *
      * @param questKey         the quest key that was completed
-     * @param completedAt      the completion timestamp in epoch millis
+     * @param completedAt      the completion timestamp
      * @param completionNumber which chain completion run this belongs to (1-based)
      */
-    public record PendingAdvancement(@NotNull NamespacedKey questKey, long completedAt, int completionNumber) {}
+    public record PendingAdvancement(@NotNull NamespacedKey questKey, @NotNull Instant completedAt, int completionNumber) {}
 
     private final NamespacedKey chainKey;
     private NamespacedKey currentQuestKey;
     private QuestChainState state;
     private int completionCount;
-    private Long lastCompletedAt;
+    private Instant lastCompletedAt;
     private final AtomicInteger dirtyVersion = new AtomicInteger(0);
     private final List<PendingAdvancement> pendingAdvancements = new ArrayList<>();
 
@@ -51,13 +52,13 @@ public class QuestChainPlayerState {
      * @param currentQuestKey the current step's quest key ({@code null} for terminal states)
      * @param state           the chain state
      * @param completionCount the number of times this chain has been completed
-     * @param lastCompletedAt the last completion timestamp in epoch millis ({@code null} if never)
+     * @param lastCompletedAt the last completion timestamp ({@code null} if never)
      */
     public QuestChainPlayerState(@NotNull NamespacedKey chainKey,
                                  @Nullable NamespacedKey currentQuestKey,
                                  @NotNull QuestChainState state,
                                  int completionCount,
-                                 @Nullable Long lastCompletedAt) {
+                                 @Nullable Instant lastCompletedAt) {
         this.chainKey = chainKey;
         this.currentQuestKey = currentQuestKey;
         this.state = state;
@@ -120,12 +121,12 @@ public class QuestChainPlayerState {
     }
 
     /**
-     * Gets the last completion timestamp in epoch millis.
+     * Gets the last completion timestamp.
      *
      * @return the last completion time, or empty if never completed
      */
     @NotNull
-    public Optional<Long> getLastCompletedAt() {
+    public Optional<Instant> getLastCompletedAt() {
         return Optional.ofNullable(lastCompletedAt);
     }
 
@@ -191,10 +192,10 @@ public class QuestChainPlayerState {
      * clears them only after a successful transaction.
      *
      * @param questKey         the completed quest key
-     * @param completedAt      the completion timestamp in epoch millis
+     * @param completedAt      the completion timestamp
      * @param completionNumber which chain completion run this belongs to (1-based)
      */
-    public void recordAdvancement(@NotNull NamespacedKey questKey, long completedAt, int completionNumber) {
+    public void recordAdvancement(@NotNull NamespacedKey questKey, @NotNull Instant completedAt, int completionNumber) {
         pendingAdvancements.add(new PendingAdvancement(questKey, completedAt, completionNumber));
         dirtyVersion.incrementAndGet();
     }
@@ -242,9 +243,9 @@ public class QuestChainPlayerState {
      * Marks the chain as completed, increments the completion count, and records
      * the completion timestamp.
      *
-     * @param completedAt the completion timestamp in epoch millis
+     * @param completedAt the completion timestamp
      */
-    public void complete(long completedAt) {
+    public void complete(@NotNull Instant completedAt) {
         this.state = QuestChainState.COMPLETED;
         this.currentQuestKey = null;
         this.completionCount++;

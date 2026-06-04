@@ -90,7 +90,7 @@ public class ChainStatusCommand extends ChainAdminCommandBase {
                             .map(NamespacedKey::toString)
                             .orElse("none");
                     String lastCompleted = state.getLastCompletedAt()
-                            .map(ts -> TIMESTAMP_FORMAT.format(Instant.ofEpochMilli(ts)))
+                            .map(TIMESTAMP_FORMAT::format)
                             .orElse("never");
                     int totalSteps = chain.getSteps().size();
                     Map<String, String> basePlaceholders = Map.of(

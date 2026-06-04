@@ -22,8 +22,11 @@ import us.eunoians.mcrpg.exception.ability.AbilityNotRegisteredException;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.Skill;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -40,6 +43,7 @@ public class AbilityRegistry implements Registry<Ability> {
     private final Map<NamespacedKey, Ability> abilities;
     private final Map<NamespacedKey, Set<NamespacedKey>> abilitiesWithSkills;
     private final Set<NamespacedKey> abilitiesWithoutSkills;
+    private final Map<NamespacedKey, Ability> softDisabledAbilities;
     //TODO find a new home for these two
     private final Map<NamespacedKey, EntityAlliedCheck> entityAlliedFunctions;
     private final Map<NamespacedKey, AlliedAttackCheck> alliedAttackCheckFunctions;
@@ -49,6 +53,7 @@ public class AbilityRegistry implements Registry<Ability> {
         abilities = new HashMap<>();
         abilitiesWithSkills = new HashMap<>();
         abilitiesWithoutSkills = new HashSet<>();
+        softDisabledAbilities = new LinkedHashMap<>();
         entityAlliedFunctions = new HashMap<>();
         alliedAttackCheckFunctions = new HashMap<>();
     }
@@ -157,6 +162,61 @@ public class AbilityRegistry implements Registry<Ability> {
 
         Bukkit.getPluginManager().callEvent(new AbilityUnregisterEvent(ability));
 
+    }
+
+    /**
+     * Soft-disables an ability by removing it from the active registry and retaining it
+     * in a tracked set for re-registration on reload. Fires {@link AbilityUnregisterEvent}.
+     *
+     * @param abilityKey the ability key to soft-disable
+     */
+    public void softDisableAbility(@NotNull NamespacedKey abilityKey) {
+        Ability ability = abilities.remove(abilityKey);
+        if (ability == null) {
+            return;
+        }
+
+        if (ability instanceof SkillAbility skillAbility) {
+            NamespacedKey skillKey = skillAbility.getSkillKey();
+            if (abilitiesWithSkills.containsKey(skillKey)) {
+                Set<NamespacedKey> skillAbilities = abilitiesWithSkills.get(skillKey);
+                skillAbilities.remove(abilityKey);
+                if (skillAbilities.isEmpty()) {
+                    abilitiesWithSkills.remove(skillKey);
+                }
+            }
+        } else {
+            abilitiesWithoutSkills.remove(abilityKey);
+        }
+
+        softDisabledAbilities.put(abilityKey, ability);
+        Bukkit.getPluginManager().callEvent(new AbilityUnregisterEvent(ability));
+    }
+
+    /**
+     * Returns all soft-disabled abilities for re-registration evaluation.
+     *
+     * @return unmodifiable view of soft-disabled abilities
+     */
+    @NotNull
+    public Map<NamespacedKey, Ability> getSoftDisabledAbilities() {
+        return Collections.unmodifiableMap(softDisabledAbilities);
+    }
+
+    /**
+     * Re-registers a previously soft-disabled ability. Removes it from the soft-disabled
+     * set and adds it back to the active registry.
+     *
+     * @param abilityKey the ability key to re-register
+     * @return {@code true} if the ability was re-registered, {@code false} if not found
+     */
+    public boolean reEnableAbility(@NotNull NamespacedKey abilityKey) {
+        Ability ability = softDisabledAbilities.remove(abilityKey);
+        if (ability == null) {
+            return false;
+        }
+        register(ability);
+        return true;
     }
 
     /**

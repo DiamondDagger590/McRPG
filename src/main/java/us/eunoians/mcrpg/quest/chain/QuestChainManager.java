@@ -51,6 +51,7 @@ public class QuestChainManager extends Manager<McRPG> {
     private final ChainPersistenceService persistenceService;
     private final ChainQuestStarter chainQuestStarter;
     private final CascadeOrchestrator cascadeOrchestrator;
+    private final ChainRepeatEvaluator repeatEvaluator;
 
     /**
      * Creates a new chain manager.
@@ -62,6 +63,7 @@ public class QuestChainManager extends Manager<McRPG> {
         this.persistenceService = new ChainPersistenceService(plugin);
         this.chainQuestStarter = new ChainQuestStarter(plugin);
         this.cascadeOrchestrator = new CascadeOrchestrator(plugin, this);
+        this.repeatEvaluator = new ChainRepeatEvaluator(plugin.getTimeProvider());
     }
 
     /**
@@ -89,6 +91,16 @@ public class QuestChainManager extends Manager<McRPG> {
     }
 
     /**
+     * Returns the repeat evaluator used by this manager.
+     *
+     * @return the chain repeat evaluator
+     */
+    @NotNull
+    public ChainRepeatEvaluator getRepeatEvaluator() {
+        return repeatEvaluator;
+    }
+
+    /**
      * Attempts to start a chain for a player. If the chain is already ACTIVE or the player
      * is blocked by the repeat mode, returns false silently.
      *
@@ -106,6 +118,13 @@ public class QuestChainManager extends Manager<McRPG> {
         }
         QuestChainDefinition definition = definitionOpt.get();
 
+        if (definition.getAvailabilityConfig()
+                .map(config -> !config.isCurrentlyAvailable(
+                        plugin().getTimeProvider().now().atZone(config.timezone())))
+                .orElse(false)) {
+            return false;
+        }
+
         Optional<McRPGPlayer> mcRPGPlayerOpt = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.PLAYER).getPlayer(player.getUniqueId());
         if (mcRPGPlayerOpt.isEmpty()) {
@@ -122,16 +141,19 @@ public class QuestChainManager extends Manager<McRPG> {
             if (state.getState() == QuestChainState.ACTIVE) {
                 return false;
             }
-            if (state.getState().isTerminal() && definition.getRepeatMode() == QuestChainRepeatMode.ONCE) {
-                return false;
-            }
-            if (state.getState().isTerminal() && state.getState().isRepeatEligible()) {
+            if (state.getState().isTerminal() && !repeatEvaluator.canRepeat(definition, state)) {
                 return false;
             }
         }
 
-        QuestChainStep firstStep = definition.getSteps().get(0);
-        QuestChainPlayerState newState = QuestChainPlayerState.newActive(chainKey, firstStep.questKey());
+        QuestChainStep firstStep = definition.getSteps().getFirst();
+        QuestChainPlayerState newState;
+        if (existingState.isPresent()) {
+            newState = existingState.get();
+            newState.resetToStep(firstStep.questKey());
+        } else {
+            newState = QuestChainPlayerState.newActive(chainKey, firstStep.questKey());
+        }
         chainData.putChainState(newState);
 
         if (!chainQuestStarter.startStepQuest(player.getUniqueId(), definition, firstStep)) {
@@ -198,7 +220,7 @@ public class QuestChainManager extends Manager<McRPG> {
                 // Record that the current step completed even though the next could not start.
                 // Re-resolution on next login detects this via the completion log and retries.
                 int failedCompletionNumber = state.getCompletionCount() + 1;
-                long failedCompletedAt = plugin().getTimeProvider().now().toEpochMilli();
+                var failedCompletedAt = plugin().getTimeProvider().now();
                 state.recordAdvancement(completedQuestKey, failedCompletedAt, failedCompletionNumber);
                 persistenceService.saveChainStateAsync(playerUUID, state);
                 plugin().getLogger().warning("[QuestChainManager] Failed to start next step '" + nextStep.questKey()
@@ -208,7 +230,7 @@ public class QuestChainManager extends Manager<McRPG> {
             }
 
             int completionNumber = state.getCompletionCount() + 1;
-            long completedAt = plugin().getTimeProvider().now().toEpochMilli();
+            var completedAt = plugin().getTimeProvider().now();
             QuestChainStep completedStep = definition.getStep(completedQuestKey).orElse(
                     QuestChainStep.simple(completedQuestKey));
             state.advance(nextStep.questKey());
@@ -223,7 +245,7 @@ public class QuestChainManager extends Manager<McRPG> {
 
         } else {
             int completionNumber = state.getCompletionCount() + 1;
-            long completedAt = plugin().getTimeProvider().now().toEpochMilli();
+            var completedAt = plugin().getTimeProvider().now();
             state.recordAdvancement(completedQuestKey, completedAt, completionNumber);
             state.complete(completedAt);
             chainData.updateQuestKeyIndex(state);
@@ -360,7 +382,7 @@ public class QuestChainManager extends Manager<McRPG> {
                     callback.accept(started);
                 } else {
                     oldQuestKey.ifPresent(key -> cancelQuestByKey(playerUUID, key));
-                    state.complete(plugin().getTimeProvider().now().toEpochMilli());
+                    state.complete(plugin().getTimeProvider().now());
                     chainData.updateQuestKeyIndex(state);
                     Bukkit.getPluginManager().callEvent(
                             new QuestChainCompleteEvent(definition, player, playerUUID, state.getCompletionCount(), ChainCompletionSource.RESTART));
@@ -683,7 +705,7 @@ public class QuestChainManager extends Manager<McRPG> {
                         + "' (previous step removed)");
                 persistenceService.saveChainStateAsync(playerUUID, state);
             } else {
-                state.complete(plugin().getTimeProvider().now().toEpochMilli());
+                state.complete(plugin().getTimeProvider().now());
                 plugin().getLogger().fine("[QuestChainManager] Re-resolved chain '" + chainKey
                         + "' for player " + playerUUID + ": all steps completed, marking COMPLETED");
                 Bukkit.getPluginManager().callEvent(
