@@ -4,7 +4,9 @@ import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
-import us.eunoians.mcrpg.database.table.quest.QuestChainCompletionLogDAO.ChainStepRecord;
+import us.eunoians.mcrpg.database.table.quest.chain.ChainCompletionRun;
+import us.eunoians.mcrpg.database.table.quest.chain.QuestChainCompletionLogDAO;
+import us.eunoians.mcrpg.database.table.quest.chain.QuestChainCompletionLogDAO.ChainStepRecord;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

@@ -7,6 +7,7 @@ import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.incendo.cloud.CommandManager;
 import org.incendo.cloud.key.CloudKey;
+import org.incendo.cloud.minecraft.extras.RichDescription;
 import org.incendo.cloud.parser.standard.StringParser;
 import org.incendo.cloud.permission.Permission;
 import org.jetbrains.annotations.NotNull;
@@ -68,7 +69,7 @@ public class ContentKeysCommand extends AdminBaseCommand {
                 .literal("content")
                 .literal("keys")
                 .required(PACK_TYPE_KEY, StringParser.stringParser(),
-                        org.incendo.cloud.minecraft.extras.RichDescription.richDescription(
+                        RichDescription.richDescription(
                                 mm.deserialize("<gray>Pack type (e.g. Ability, Skill, Statistic)")))
                 .permission(Permission.anyOf(ROOT_PERMISSION, ADMIN_BASE_PERMISSION, CONTENT_PERMISSION))
                 .handler(ctx -> {

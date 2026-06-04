@@ -265,7 +265,7 @@ public final class QuestTemplateEngine {
             @NotNull Map<String, String> templateDisplay,
             @NotNull List<TemplatePhaseDefinition> filteredPhases,
             @NotNull List<QuestPhaseDefinition> phases) {
-        Map<String, String> remapped = new java.util.LinkedHashMap<>(templateDisplay);
+        Map<String, String> remapped = new LinkedHashMap<>(templateDisplay);
 
         for (int phaseIdx = 0; phaseIdx < filteredPhases.size() && phaseIdx < phases.size(); phaseIdx++) {
             TemplatePhaseDefinition templatePhase = filteredPhases.get(phaseIdx);

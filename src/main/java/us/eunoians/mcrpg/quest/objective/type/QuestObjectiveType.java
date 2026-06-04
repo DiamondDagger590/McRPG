@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.quest.objective.type;
 
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
@@ -92,7 +93,7 @@ public interface QuestObjectiveType extends McRPGContent {
      * @param player the player starting the quest
      * @return the initial progress to grant (0 if none)
      */
-    default long checkInitialProgress(@NotNull org.bukkit.entity.Player player) {
+    default long checkInitialProgress(@NotNull Player player) {
         return 0;
     }
 

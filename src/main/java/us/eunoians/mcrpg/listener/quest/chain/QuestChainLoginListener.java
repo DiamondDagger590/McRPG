@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener.quest;
+package us.eunoians.mcrpg.listener.quest.chain;
 
 import com.diamonddagger590.mccore.event.player.PlayerLoadEvent;
 import com.diamonddagger590.mccore.player.CorePlayer;

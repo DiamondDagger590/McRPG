@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.event.quest;
+package us.eunoians.mcrpg.event.quest.chain;
 
 /**
  * Describes how a quest chain completion was triggered, allowing listeners on

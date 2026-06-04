@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
@@ -66,7 +67,7 @@ public final class McRPGPlayerSaveTask extends CancelableCoreTask {
             });
             lastSeenTimeTransaction.executeTransaction();
         } catch (SQLException e) {
-            getPlugin().getLogger().log(java.util.logging.Level.SEVERE, "Failed to save player data during periodic save task", e);
+            getPlugin().getLogger().log(Level.SEVERE, "Failed to save player data during periodic save task", e);
         }
     }
 

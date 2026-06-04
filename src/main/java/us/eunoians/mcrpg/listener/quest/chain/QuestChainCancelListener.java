@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener.quest;
+package us.eunoians.mcrpg.listener.quest.chain;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;

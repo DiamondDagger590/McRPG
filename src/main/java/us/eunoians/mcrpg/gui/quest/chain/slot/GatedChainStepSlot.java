@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.gui.quest.slot;
+package us.eunoians.mcrpg.gui.quest.chain.slot;
 
 import com.diamonddagger590.mccore.builder.item.impl.ItemBuilder;
 import com.diamonddagger590.mccore.registry.RegistryAccess;

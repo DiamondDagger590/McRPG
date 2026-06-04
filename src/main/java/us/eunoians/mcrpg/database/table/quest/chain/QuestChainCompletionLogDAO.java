@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.database.table.quest;
+package us.eunoians.mcrpg.database.table.quest.chain;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;

@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener.quest;
+package us.eunoians.mcrpg.listener.quest.chain;
 
 import net.kyori.adventure.text.Component;
 import org.bukkit.entity.Player;
@@ -9,9 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.event.quest.QuestChainCompleteEvent;
-import us.eunoians.mcrpg.event.quest.QuestChainStartEvent;
-import us.eunoians.mcrpg.event.quest.QuestChainStepAdvanceEvent;
+import us.eunoians.mcrpg.event.quest.chain.QuestChainCompleteEvent;
+import us.eunoians.mcrpg.event.quest.chain.QuestChainStartEvent;
+import us.eunoians.mcrpg.event.quest.chain.QuestChainStepAdvanceEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 

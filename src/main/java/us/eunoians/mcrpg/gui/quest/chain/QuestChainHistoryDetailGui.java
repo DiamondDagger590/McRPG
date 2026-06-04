@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.gui.quest;
+package us.eunoians.mcrpg.gui.quest.chain;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.exception.CorePlayerOfflineException;
@@ -16,13 +16,14 @@ import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
-import us.eunoians.mcrpg.database.table.quest.QuestChainCompletionLogDAO;
+import us.eunoians.mcrpg.database.table.quest.chain.QuestChainCompletionLogDAO;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.gui.quest.QuestHistoryGui;
 import us.eunoians.mcrpg.gui.common.McRPGPaginatedGui;
 import us.eunoians.mcrpg.gui.common.slot.McRPGPreviousGuiSlot;
-import us.eunoians.mcrpg.gui.quest.slot.ChainHistoryEmptySlot;
-import us.eunoians.mcrpg.gui.quest.slot.ChainHistoryLoadingSlot;
-import us.eunoians.mcrpg.gui.quest.slot.ChainStepCompletionSlot;
+import us.eunoians.mcrpg.gui.quest.chain.slot.ChainHistoryEmptySlot;
+import us.eunoians.mcrpg.gui.quest.chain.slot.ChainHistoryLoadingSlot;
+import us.eunoians.mcrpg.gui.quest.chain.slot.ChainStepCompletionSlot;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;

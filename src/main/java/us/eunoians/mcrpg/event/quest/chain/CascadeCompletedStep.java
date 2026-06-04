@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.event.quest;
+package us.eunoians.mcrpg.event.quest.chain;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;

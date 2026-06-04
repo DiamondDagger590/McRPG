@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Mutable per-player state for a single quest chain. Loaded eagerly at join from
- * {@link us.eunoians.mcrpg.database.table.quest.QuestChainStateDAO} and mutated by
+ * {@link us.eunoians.mcrpg.database.table.quest.chain.QuestChainStateDAO} and mutated by
  * {@link QuestChainManager}.
  * <p>
  * When a chain reaches a terminal state ({@code COMPLETED}, {@code ABANDONED},

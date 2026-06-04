@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.event.quest;
+package us.eunoians.mcrpg.event.quest.chain;
 
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;

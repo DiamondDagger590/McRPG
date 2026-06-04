@@ -4,6 +4,7 @@ import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.database.table.quest.chain.QuestChainStateDAO;
 import us.eunoians.mcrpg.quest.chain.QuestChainPlayerState;
 import us.eunoians.mcrpg.quest.chain.QuestChainState;
 

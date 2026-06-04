@@ -7,8 +7,8 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
-import us.eunoians.mcrpg.database.table.quest.QuestChainCompletionLogDAO;
-import us.eunoians.mcrpg.database.table.quest.QuestChainStateDAO;
+import us.eunoians.mcrpg.database.table.quest.chain.QuestChainCompletionLogDAO;
+import us.eunoians.mcrpg.database.table.quest.chain.QuestChainStateDAO;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;

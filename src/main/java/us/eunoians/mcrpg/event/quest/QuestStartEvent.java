@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.event.quest;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.quest.source.QuestSource;
@@ -28,7 +29,7 @@ public class QuestStartEvent extends QuestEvent {
     public QuestStartEvent(@NotNull QuestInstance questInstance,
                            @NotNull QuestDefinition questDefinition,
                            @NotNull QuestSource questSource,
-                           @org.jetbrains.annotations.Nullable UUID starterUUID) {
+                           @Nullable UUID starterUUID) {
         super(questInstance);
         this.questDefinition = questDefinition;
         this.questSource = questSource;
@@ -74,7 +75,7 @@ public class QuestStartEvent extends QuestEvent {
      *
      * @return the starter's UUID, or {@code null} if system-initiated
      */
-    @org.jetbrains.annotations.Nullable
+    @Nullable
     public UUID getStarterUUID() {
         return starterUUID;
     }

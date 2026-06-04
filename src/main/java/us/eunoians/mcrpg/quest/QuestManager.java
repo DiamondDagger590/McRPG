@@ -1225,7 +1225,7 @@ public class QuestManager extends Manager<McRPG> {
             }
         }
 
-        List<String> defaultResources = new java.util.ArrayList<>(List.of(
+        List<String> defaultResources = new ArrayList<>(List.of(
                 DEFAULT_QUEST_RESOURCE,
                 DEFAULT_SWORDS_UPGRADE_QUEST_RESOURCE,
                 DEFAULT_MINING_UPGRADE_QUEST_RESOURCE,

@@ -3,7 +3,7 @@ package us.eunoians.mcrpg.quest.chain;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.event.quest.CascadeCompletedStep;
+import us.eunoians.mcrpg.event.quest.chain.CascadeCompletedStep;
 import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 
 import java.util.List;

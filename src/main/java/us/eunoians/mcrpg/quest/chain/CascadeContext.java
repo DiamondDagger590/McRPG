@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.quest.chain;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
-import us.eunoians.mcrpg.event.quest.CascadeCompletedStep;
+import us.eunoians.mcrpg.event.quest.chain.CascadeCompletedStep;
 import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 
 import java.util.ArrayList;

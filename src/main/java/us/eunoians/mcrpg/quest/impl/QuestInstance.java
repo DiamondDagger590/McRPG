@@ -475,7 +475,7 @@ public class QuestInstance {
      * @param starterUUID the UUID of the player who initiated the quest start, or {@code null} if system-initiated
      */
     @ApiStatus.Internal
-    public void start(@NotNull QuestDefinition definition, @org.jetbrains.annotations.Nullable UUID starterUUID) {
+    public void start(@NotNull QuestDefinition definition, @Nullable UUID starterUUID) {
         activate();
         for (QuestStageInstance stage : getStagesForPhase(0)) {
             stage.activate();

@@ -10,8 +10,8 @@ import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
-import us.eunoians.mcrpg.event.quest.CascadeFinalizeEvent;
-import us.eunoians.mcrpg.event.quest.CascadeStartEvent;
+import us.eunoians.mcrpg.event.quest.chain.CascadeFinalizeEvent;
+import us.eunoians.mcrpg.event.quest.chain.CascadeStartEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Optional;

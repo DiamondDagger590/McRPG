@@ -8,6 +8,7 @@ import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -404,7 +405,7 @@ public class McRPGPlayer extends CorePlayer {
         // Save resource pool stats (mana, etc.) — only persist pools that have a regen component
         // since flat stats don't have a meaningful current/persisted value.
         PlayerStatRegistry statRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.PLAYER_STAT);
-        Map<org.bukkit.NamespacedKey, Double> statsToSave = new LinkedHashMap<>();
+        Map<NamespacedKey, Double> statsToSave = new LinkedHashMap<>();
         for (PlayerStat stat : statRegistry.allStats()) {
             if (stat.isResourcePool()) {
                 playerStatData.getInstance(stat.getKey())

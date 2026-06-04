@@ -59,6 +59,7 @@ import us.eunoians.mcrpg.world.WorldManager;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
 
 /**
  * This bootstrap is the main bootstrap used to initialize McRPG
@@ -164,7 +165,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
                         lunarClientHook.ifPresent(pluginHook -> pluginHook.clearCooldowns(mcRPGPlayer.getUUID()));
                     }
                 } catch (SQLException e) {
-                    getPlugin().getLogger().log(java.util.logging.Level.SEVERE, "Failed to save player data during shutdown", e);
+                    getPlugin().getLogger().log(Level.SEVERE, "Failed to save player data during shutdown", e);
                 }
                 if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.QUEST)) {
                     try (Connection connection = database.getConnection()) {
@@ -174,7 +175,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
                         }
                         questBatch.executeTransaction();
                     } catch (SQLException e) {
-                        getPlugin().getLogger().log(java.util.logging.Level.SEVERE, "Failed to save quest data during shutdown", e);
+                        getPlugin().getLogger().log(Level.SEVERE, "Failed to save quest data during shutdown", e);
                     }
                 }
                 database.shutdown();

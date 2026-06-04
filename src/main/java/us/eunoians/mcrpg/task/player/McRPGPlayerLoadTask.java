@@ -157,11 +157,11 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
      */
     private void sendLoginNearExpiryReminder() {
         McRPGPlayer mcRPGPlayer = getCorePlayer();
-        Optional<org.bukkit.entity.Player> playerOpt = mcRPGPlayer.getAsBukkitPlayer();
+        Optional<Player> playerOpt = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOpt.isEmpty()) {
             return;
         }
-        org.bukkit.entity.Player player = playerOpt.get();
+        Player player = playerOpt.get();
 
         long thresholdMs = loadNearExpiryThresholdMs();
         long lookaheadMs = (long) (thresholdMs * 1.5);
@@ -199,7 +199,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             String questName = definitionRegistry.get(quest.getQuestKey())
                     .map(def -> def.getDisplayName(mcRPGPlayer))
                     .orElse(quest.getQuestKey().getKey());
-            String timeRemaining = formatTimeRemaining(quest.getExpirationTime().map(java.time.Instant::toEpochMilli).orElse(now) - now);
+            String timeRemaining = formatTimeRemaining(quest.getExpirationTime().map(Instant::toEpochMilli).orElse(now) - now);
 
             player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
                     mcRPGPlayer, LocalizationKey.QUEST_NEAR_EXPIRY_SINGLE_NOTIFICATION,
@@ -213,7 +213,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
                 String questName = definitionRegistry.get(quest.getQuestKey())
                         .map(def -> def.getDisplayName(mcRPGPlayer))
                         .orElse(quest.getQuestKey().getKey());
-                String timeRemaining = formatTimeRemaining(quest.getExpirationTime().map(java.time.Instant::toEpochMilli).orElse(now) - now);
+                String timeRemaining = formatTimeRemaining(quest.getExpirationTime().map(Instant::toEpochMilli).orElse(now) - now);
                 player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
                         mcRPGPlayer, LocalizationKey.QUEST_NEAR_EXPIRY_BATCH_ENTRY,
                         Map.of("quest_name", questName, "time_remaining", timeRemaining)));
