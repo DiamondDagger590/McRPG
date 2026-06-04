@@ -941,11 +941,14 @@ public record AvailabilityConfig(
 
     /**
      * Checks whether any window in this config is currently active.
+     * Accepts the current time as a parameter to preserve testability
+     * via {@link TimeProvider} — callers pass
+     * {@code timeProvider.now().atZone(config.timezone())}.
      *
+     * @param now the current time in the config's timezone
      * @return true if at least one window is active
      */
-    public boolean isCurrentlyAvailable() {
-        ZonedDateTime now = ZonedDateTime.now(timezone);
+    public boolean isCurrentlyAvailable(@NotNull ZonedDateTime now) {
         return windows.values().stream().anyMatch(w -> w.isActive(now));
     }
 }
@@ -1163,7 +1166,8 @@ public class AvailabilityWindowChecker extends RepeatableCoreTask {
                 .registry(McRPGRegistryKey.QUEST_CHAIN);
         return registry.get(chainKey)
                 .map(def -> def.getAvailabilityConfig()
-                        .map(AvailabilityConfig::isCurrentlyAvailable)
+                        .map(config -> config.isCurrentlyAvailable(
+                                plugin.getTimeProvider().now().atZone(config.timezone())))
                         .orElse(true))
                 .orElse(false);
     }
@@ -1179,7 +1183,8 @@ public class AvailabilityWindowChecker extends RepeatableCoreTask {
                 .registry(McRPGRegistryKey.QUEST_DEFINITION);
         return registry.get(questKey)
                 .map(def -> def.getAvailabilityConfig()
-                        .map(AvailabilityConfig::isCurrentlyAvailable)
+                        .map(config -> config.isCurrentlyAvailable(
+                                plugin.getTimeProvider().now().atZone(config.timezone())))
                         .orElse(true))
                 .orElse(false);
     }
@@ -1227,7 +1232,8 @@ Add availability check before repeat evaluation:
 ```java
 // After resolving definition, before state check:
 if (definition.getAvailabilityConfig()
-        .map(config -> !config.isCurrentlyAvailable())
+        .map(config -> !config.isCurrentlyAvailable(
+                plugin().getTimeProvider().now().atZone(config.timezone())))
         .orElse(false)) {
     return false;
 }
@@ -1304,6 +1310,14 @@ availability:
 - `on-window-close`: `expire-active` if omitted
 - `grace-period`: required only when `on-window-close` is `expire-with-grace`
 
+**YAML inline documentation:** All new config keys must include `#` comments in the bundled defaults explaining:
+- `on-window-close`: what each policy does — `expire-active` cancels immediately, `allow-finish` blocks new starts but lets active instances complete, `expire-with-grace` warns players then cancels after the grace period
+- `grace-period`: accepted format (`48h`, `30m`, `7d`) with examples
+- `timezone`: valid timezone IDs with examples (`America/New_York`, `UTC`)
+- `check-interval-seconds`: valid range guidance (minimum 10, default 60) and that lower values increase main-thread load
+- `from`/`until` boundary sections: the `type` key and what each built-in type expects (`mcrpg:fixed` needs `date`, `mcrpg:recurring` needs `month-day` and `time`)
+- Reload safety: note that availability configs are re-parsed on `/mcrpg admin reload` — no restart required
+
 ### 7.11 Board Template Availability (§4)
 
 **File:** `src/main/java/us/eunoians/mcrpg/quest/board/template/QuestTemplate.java`
@@ -1330,7 +1344,8 @@ Filter templates by availability before weighted selection:
 ```java
 // In template selection logic, before adding to eligible pool:
 if (template.getAvailabilityConfig()
-        .map(config -> !config.isCurrentlyAvailable())
+        .map(config -> !config.isCurrentlyAvailable(
+                plugin.getTimeProvider().now().atZone(config.timezone())))
         .orElse(false)) {
     continue;
 }
@@ -1402,7 +1417,8 @@ public Optional<QuestInstance> startQuest(@NotNull QuestDefinition definition,
                                           @NotNull QuestSource questSource) {
     // Availability window gate
     if (definition.getAvailabilityConfig()
-            .map(config -> !config.isCurrentlyAvailable())
+            .map(config -> !config.isCurrentlyAvailable(
+                    plugin().getTimeProvider().now().atZone(config.timezone())))
             .orElse(false)) {
         plugin().getLogger().info("[QuestManager] Quest '" + definition.getQuestKey()
                 + "' is outside its availability window — start blocked.");
@@ -1497,6 +1513,8 @@ quest-chain:
 ### 7.16 Bootstrap Wiring
 
 `AvailabilityWindowChecker` is created in `QuestChainManager`'s initialization after chain definitions are loaded, with the interval from `MainConfigFile.AVAILABILITY_CHECK_INTERVAL_SECONDS`. Started via `runTask()` (sync, main thread). On shutdown, cancelled via `cancelTask()`. On reload: cancel the existing task, create a new `AvailabilityWindowChecker` instance, and start it — the new instance runs `reconcileOnStartup()` in `onDelayComplete()` to pick up any window changes from the reloaded config.
+
+**Reload safety:** All availability window configs (chains, quests, and templates) are fully reload-safe. On `/mcrpg admin reload`, the existing `AvailabilityWindowChecker` task is cancelled, a new instance is created with the reloaded config, and `reconcileOnStartup()` runs to detect any windows that changed state during the reload. The `check-interval-seconds` config value is also re-read on reload. No server restart is required for any availability-related config change.
 
 **Server restart behavior:** On fresh server start, `reconcileOnStartup()` detects chains whose windows closed during downtime by checking all chains with availability configs against currently loaded player states. Any chain that is currently unavailable but has active player states gets the configured `WindowClosePolicy` applied retroactively.
 
@@ -1779,7 +1797,7 @@ classDiagram
     class QuestChainStartCondition {
         ~existing interface~
         +getKey() NamespacedKey
-        +evaluate(Player) boolean
+        +evaluate(Player, Instant) boolean
     }
 
     class QuestChainStartConditionType {
@@ -1943,9 +1961,9 @@ public record TimeGateCondition(
     }
 
     @Override
-    public boolean evaluate(@NotNull Player player) {
-        ZonedDateTime now = ZonedDateTime.now(timezone);
-        return !now.toLocalDateTime().isBefore(after);
+    public boolean evaluate(@NotNull Player player, @NotNull Instant now) {
+        ZonedDateTime zonedNow = now.atZone(timezone);
+        return !zonedNow.toLocalDateTime().isBefore(after);
     }
 }
 ```
@@ -2168,6 +2186,8 @@ steps:
 
 All preview fields are optional flat keys under `preview:` — server owners only configure the fields they want to override. Unspecified fields use defaults (BARRIER, generic name, generic lore). The `preview:` section follows the same key format as any `ItemBuilder.from(Section)` call. If the entire `preview:` section is omitted, the GUI falls back to the quest definition's locale display or the generic locked item.
 
+**MiniMessage resolution:** The `ItemStack` built at config load time stores raw strings for name and lore. At display time, the Level 2 rendering path resolves the item's name and lore through `McRPGLocalizationManager` before showing it to the player — this enables palette tags (`<primary>`, `<body>`) and placeholder resolution. Server owners can use MiniMessage tags in `name:` and `lore:` values. The `preview:` YAML should include a `#` comment noting MiniMessage support.
+
 #### Locale Keys for Locked State
 
 | Key | Default | When used |
@@ -2180,9 +2200,25 @@ All preview fields are optional flat keys under `preview:` — server owners onl
 | `quest-chain.preview.objectives-hidden` | `"<body>??? Objectives"` | Quest definition exists but objectives are hidden |
 | `quest-chain.preview.rewards-hidden` | `"<body>??? Rewards"` | Quest definition exists but rewards are hidden |
 
+#### `GatedChainStepSlot`
+
+**Package:** `us.eunoians.mcrpg.gui.quest.slot`
+**File:** `src/main/java/us/eunoians/mcrpg/gui/quest/slot/GatedChainStepSlot.java`
+
+Implements `McRPGSlot`. Clicking a gated step slot sends the player a localized message explaining why the step is locked (condition not met, quest not available yet, etc.) and plays a deny sound. The slot's `onClick` returns `true` to prevent item movement.
+
+```java
+/**
+ * Slot representing a gated (locked) chain step in the chain detail GUI.
+ * Displays a preview item based on a three-level resolution order and
+ * provides click feedback explaining the lock reason.
+ */
+public class GatedChainStepSlot implements McRPGSlot { ... }
+```
+
 #### GUI Rendering
 
-The chain detail GUI renders gated steps as a single slot. The slot's construction depends on the resolution level:
+The chain detail GUI renders gated steps using `GatedChainStepSlot`. The slot's item construction depends on the resolution level:
 
 ```java
 /**
@@ -2203,8 +2239,8 @@ private ItemStack buildGatedStepItem(@NotNull QuestChainStep step,
         // Level 1: quest definition exists — use locale display item
         baseItem = resolveQuestDisplayItem(definition, player);
     } else if (step.previewItem() != null) {
-        // Level 2: pre-built preview item from config
-        baseItem = step.previewItem().clone();
+        // Level 2: pre-built preview item — resolve name/lore through MiniMessage
+        baseItem = resolvePreviewItemDisplay(step.previewItem().clone(), player);
     } else {
         // Level 3: generic fallback from locale
         baseItem = ItemBuilder.of(Material.BARRIER)
@@ -2248,21 +2284,22 @@ If the server owner doesn't create the definition before the gate resolves, the 
 
 **Backlog reference:** §5
 
-Three new events. All are non-cancellable notification events fired after the state transition has occurred.
+Three new events. `QuestChainExpireEvent` is cancellable (fired before the state transition, allowing addons like premium event passes to veto expiration). The other two are non-cancellable notification events fired after the state transition has occurred.
 
 ### 10.1 `QuestChainExpireEvent`
 
 **Package:** `us.eunoians.mcrpg.event.quest`
 **File:** `src/main/java/us/eunoians/mcrpg/event/quest/QuestChainExpireEvent.java`
 
-Fired when a chain transitions to `EXPIRED` state via `AvailabilityWindowChecker`.
+Fired **before** a chain transitions to `EXPIRED` state via `AvailabilityWindowChecker`. Cancellable — if cancelled, the chain remains in its current state and the expiration is skipped for this check interval. This enables third-party plugins to implement exemptions (e.g., premium event passes, staff overrides).
 
 ```java
 /**
- * Fired when a chain transitions to {@link QuestChainState#EXPIRED} because
- * its availability window closed. Non-cancellable.
+ * Fired before a chain transitions to {@link QuestChainState#EXPIRED} because
+ * its availability window closed. Cancellable — cancelling prevents the
+ * expiration for this check interval.
  */
-public class QuestChainExpireEvent extends Event {
+public class QuestChainExpireEvent extends Event implements Cancellable {
 
     private final QuestChainDefinition chainDefinition;
     private final UUID playerUUID;
@@ -2442,11 +2479,11 @@ mcrpg.admin.content:
 
 | Key | Text |
 |-----|------|
-| `admin.content.expansions-header` | `"<gui-title>Registered Expansions:"` |
+| `admin.content.expansions-header` | `"<primary>Registered Expansions:"` |
 | `admin.content.expansion-entry` | `"  <primary><name></primary> <body>(<count> content packs)"` |
-| `admin.content.packs-header` | `"<gui-title>Content packs for '<primary><expansion></primary>':"` |
+| `admin.content.packs-header` | `"<primary>Content packs for '<primary><expansion></primary>':"` |
 | `admin.content.pack-entry` | `"  <primary><pack_type></primary> <body>(<count> entries)"` |
-| `admin.content.keys-header` | `"<gui-title>Registered <primary><pack_type></primary> keys:"` |
+| `admin.content.keys-header` | `"<primary>Registered <primary><pack_type></primary> keys:"` |
 | `admin.content.key-entry` | `"  <primary><key></primary> <body>(<expansion>)"` |
 | `admin.content.no-expansion` | `"<negative>No expansion found with key '<primary><key></primary>'."` |
 | `admin.content.page-nav` | `"<hint>[Previous] <body>Page <primary><page></primary>/<primary><total></primary> <hint>[Next]"` |
@@ -2507,6 +2544,7 @@ Dependencies are documented inline. Items without dependencies can be implemente
 | `quest/chain/condition/builtin/TimeGateChainConditionType.java` | Class | §9 |
 | `quest/chain/condition/builtin/TimeGateCondition.java` | Record | §9 |
 | `expansion/content/QuestChainStartConditionContentPack.java` | Class | §9 |
+| `gui/quest/slot/GatedChainStepSlot.java` | Class | §9 |
 | `event/quest/QuestChainExpireEvent.java` | Class | §10 |
 | `event/quest/QuestChainRestartEvent.java` | Class | §10 |
 | `event/quest/QuestChainStepRetryEvent.java` | Class | §10 |
