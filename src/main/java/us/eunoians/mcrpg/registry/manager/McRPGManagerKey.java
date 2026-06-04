@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.display.DisplayManager;
@@ -47,4 +48,5 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
     ManagerKey<ComboManager> COMBO = create(ComboManager.class);
     /** Retrieves the {@link McRPGStatisticCacheManager} used to cache offline player statistic lookups. */
     ManagerKey<McRPGStatisticCacheManager> STATISTIC_CACHE = create(McRPGStatisticCacheManager.class);
+    ManagerKey<CombatTrackerManager> COMBAT_TRACKER = create(CombatTrackerManager.class);
 }
