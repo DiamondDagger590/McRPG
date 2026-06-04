@@ -362,8 +362,6 @@ Example — player at 10 stacks stops attacking (shed interval: 1.5s):
 
 This creates the Warwick/Lethal Tempo-style ramp-down: the effect fades gradually through each Haste tier rather than vanishing abruptly. No flicker, no jarring re-application — Paper handles the display priority natively.
 
-**Stack visibility:** The action bar HUD displays a compact stack indicator (e.g., `⚔ 7`) while Ramping Frenzy stacks are active, giving the player clear visibility into their current count and the ramp-down progress. Without this, stacks are effectively obfuscated since the Haste effect alone doesn't communicate how many stacks remain within a tier.
-
 #### Haste Tier Mapping
 
 Stack count maps to Haste level in groups of 3, scaling up to Haste V:
@@ -567,7 +565,7 @@ ability-configuration:
 
 **Decision:** Ramping Frenzy maintains a continuous Haste effect that downgrades smoothly as stacks shed, rather than applying discrete short pulses on each shed event.
 
-**Why:** Rapid short Haste pulses (e.g., 0.75s each) are jarring and hard for players to read — the effect flickers and there's no intuitive way to tell how many stacks remain. Paper's potion system supports multiple concurrent effects, displaying only the highest level and longest remaining duration. By applying overlapping Haste effects with duration = `shed_interval × 2`, level transitions happen seamlessly: the old higher-level effect naturally expires and the lower one takes over. Combined with an action bar stack counter (`⚔ 7`), the player gets clear, smooth feedback on both their Haste level and remaining stacks.
+**Why:** Rapid short Haste pulses (e.g., 0.75s each) are jarring and hard for players to read — the effect flickers and there's no intuitive way to tell how many stacks remain. Paper's potion system supports multiple concurrent effects, displaying only the highest level and longest remaining duration. By applying overlapping Haste effects with duration = `shed_interval × 2`, level transitions happen seamlessly: the old higher-level effect naturally expires and the lower one takes over. The player reads their current Haste level from the vanilla potion effect indicator — no custom HUD element needed.
 
 ---
 
@@ -581,4 +579,4 @@ ability-configuration:
 
 4. **Session persistence across server restarts:** Do active combat sessions survive a server restart/reload? Leaning toward no — sessions are transient in-memory state. A restart clears all sessions. Combat log punishment would need to handle the edge case of a crash during combat separately (probably outside scope).
 
-5. **Display integration:** Should the action bar HUD show an "in combat" indicator? A crossed-swords icon or combat timer would give players visibility into their combat state and when it's safe to log out. Not blocking for the combat tracker itself, but a natural follow-up.
+5. **Display integration:** Should there be any visual indicator that a player is "in combat" (e.g., a subtitle message, sound cue on combat enter/exit)? This would help players know when it's safe to log out. Not blocking for the combat tracker itself, but a natural follow-up.
