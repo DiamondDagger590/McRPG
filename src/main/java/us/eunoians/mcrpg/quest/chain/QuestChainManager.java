@@ -23,10 +23,14 @@ import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import us.eunoians.mcrpg.event.quest.QuestChainRestartEvent;
+import us.eunoians.mcrpg.event.quest.QuestChainStepRetryEvent;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +56,20 @@ public class QuestChainManager extends Manager<McRPG> {
     private final ChainQuestStarter chainQuestStarter;
     private final CascadeOrchestrator cascadeOrchestrator;
     private final ChainRepeatEvaluator repeatEvaluator;
+    private final Map<RetryKey, Integer> retryCounters = new HashMap<>();
+
+    /**
+     * Composite key for tracking per-step retry counts. In-memory only — server
+     * restart resets counters to prevent permanent lockout from misconfigured durations.
+     *
+     * @param playerUUID the player UUID
+     * @param chainKey   the chain key
+     * @param questKey   the step quest key
+     */
+    private record RetryKey(@NotNull UUID playerUUID,
+                            @NotNull NamespacedKey chainKey,
+                            @NotNull NamespacedKey questKey) {
+    }
 
     /**
      * Creates a new chain manager.
@@ -216,9 +234,23 @@ public class QuestChainManager extends Manager<McRPG> {
 
         if (nextStepOpt.isPresent()) {
             QuestChainStep nextStep = nextStepOpt.get();
+
+            if (player != null && !nextStep.conditions().isEmpty()
+                    && !evaluateConditions(player, nextStep.conditions())) {
+                int completionNumber = state.getCompletionCount() + 1;
+                var completedAt = plugin().getTimeProvider().now();
+                state.recordAdvancement(completedQuestKey, completedAt, completionNumber);
+                state.advance(nextStep.questKey());
+                state.setConditionsPending(true);
+                chainData.updateQuestKeyIndex(state);
+                persistenceService.saveChainStateAsync(playerUUID, state);
+                plugin().getLogger().fine("[QuestChainManager] Chain '" + chainKey
+                        + "' for player " + playerUUID + " parked at step '" + nextStep.questKey()
+                        + "' — conditions not met");
+                return true;
+            }
+
             if (!chainQuestStarter.startStepQuest(playerUUID, definition, nextStep)) {
-                // Record that the current step completed even though the next could not start.
-                // Re-resolution on next login detects this via the completion log and retries.
                 int failedCompletionNumber = state.getCompletionCount() + 1;
                 var failedCompletedAt = plugin().getTimeProvider().now();
                 state.recordAdvancement(completedQuestKey, failedCompletedAt, failedCompletionNumber);
@@ -344,7 +376,7 @@ public class QuestChainManager extends Manager<McRPG> {
         database.getDatabaseExecutorService().submit(() -> {
             Set<NamespacedKey> completedKeys;
             try (Connection connection = database.getConnection()) {
-                Set<String> rawKeys = QuestChainCompletionLogDAO.getCompletedQuestKeys(
+                Set<String> rawKeys = QuestChainCompletionLogDAO.getNonSkippedCompletedQuestKeys(
                         connection, playerUUID, chainKey.toString());
                 completedKeys = rawKeys.stream()
                         .map(NamespacedKey::fromString)
@@ -552,19 +584,255 @@ public class QuestChainManager extends Manager<McRPG> {
             String expireAction = definition.getStep(expiredQuestKey)
                     .map(QuestChainStep::onQuestExpire)
                     .orElse("fail-chain");
-            if (!"fail-chain".equals(expireAction)) {
-                plugin().getLogger().warning("[QuestChainManager] Chain '" + chainKey
-                        + "' step '" + expiredQuestKey + "' has unsupported on-quest-expire value '"
-                        + expireAction + "' — defaulting to fail-chain");
+            switch (expireAction) {
+                case "fail-chain" -> handleExpireFail(playerUUID, chainKey, definition, state, chainData);
+                case "retry" -> handleExpireRetry(playerUUID, chainKey, definition, state, chainData, expiredQuestKey);
+                case "restart-chain" -> handleExpireRestartChain(playerUUID, chainKey, definition, state, chainData);
+                case "skip" -> handleExpireSkip(playerUUID, chainKey, definition, state, chainData, expiredQuestKey);
+                default -> {
+                    plugin().getLogger().warning("[QuestChainManager] Unknown on-quest-expire value '"
+                            + expireAction + "' for chain '" + chainKey + "' step '"
+                            + expiredQuestKey + "' — defaulting to fail-chain");
+                    handleExpireFail(playerUUID, chainKey, definition, state, chainData);
+                }
             }
+        });
+    }
+
+    /**
+     * Handles the {@code fail-chain} expiration behavior. Sets the chain to FAILED
+     * and fires {@link QuestChainFailEvent}.
+     *
+     * @param playerUUID the player UUID
+     * @param chainKey   the chain key
+     * @param definition the chain definition
+     * @param state      the player's chain state
+     * @param chainData  the player's chain data container
+     */
+    private void handleExpireFail(@NotNull UUID playerUUID,
+                                   @NotNull NamespacedKey chainKey,
+                                   @NotNull QuestChainDefinition definition,
+                                   @NotNull QuestChainPlayerState state,
+                                   @NotNull QuestChainPlayerData chainData) {
+        state.fail();
+        chainData.updateQuestKeyIndex(state);
+        clearRetryCountersForChain(playerUUID, chainKey);
+        plugin().getLogger().fine("[QuestChainManager] Chain '" + chainKey
+                + "' failed for player " + playerUUID + " (on-quest-expire: fail-chain)");
+        persistenceService.saveChainStateAsync(playerUUID, state);
+        Bukkit.getPluginManager().callEvent(
+                new QuestChainFailEvent(definition, Bukkit.getPlayer(playerUUID), playerUUID));
+    }
+
+    /**
+     * Handles the {@code retry} expiration behavior. Re-starts the same step quest if
+     * the retry limit has not been exhausted. Falls back to fail-chain on limit exhaustion.
+     *
+     * @param playerUUID      the player UUID
+     * @param chainKey        the chain key
+     * @param definition      the chain definition
+     * @param state           the player's chain state
+     * @param chainData       the player's chain data container
+     * @param expiredQuestKey the expired quest's definition key
+     */
+    private void handleExpireRetry(@NotNull UUID playerUUID,
+                                    @NotNull NamespacedKey chainKey,
+                                    @NotNull QuestChainDefinition definition,
+                                    @NotNull QuestChainPlayerState state,
+                                    @NotNull QuestChainPlayerData chainData,
+                                    @NotNull NamespacedKey expiredQuestKey) {
+        QuestChainStep step = definition.getStep(expiredQuestKey).orElse(null);
+        if (step == null) {
+            handleExpireFail(playerUUID, chainKey, definition, state, chainData);
+            return;
+        }
+        RetryKey retryKey = new RetryKey(playerUUID, chainKey, expiredQuestKey);
+        int maxRetries = step.maxRetries();
+        int used = retryCounters.getOrDefault(retryKey, 0);
+
+        if (maxRetries >= 0 && used >= maxRetries) {
+            retryCounters.remove(retryKey);
+            handleExpireFail(playerUUID, chainKey, definition, state, chainData);
+            return;
+        }
+
+        retryCounters.put(retryKey, used + 1);
+
+        if (!chainQuestStarter.startStepQuest(playerUUID, definition, step)) {
+            handleExpireFail(playerUUID, chainKey, definition, state, chainData);
+            return;
+        }
+
+        Player player = Bukkit.getPlayer(playerUUID);
+        if (player != null) {
+            Bukkit.getPluginManager().callEvent(
+                    new QuestChainStepRetryEvent(definition, player, step, used + 1, maxRetries));
+        }
+        plugin().getLogger().info("[QuestChainManager] Retrying step '"
+                + expiredQuestKey + "' for chain '" + chainKey
+                + "' (attempt " + (used + 2) + "/" + (maxRetries < 0 ? "unlimited" : maxRetries + 1) + ")");
+    }
+
+    /**
+     * Handles the {@code restart-chain} expiration behavior. Resets the chain to step 1,
+     * clears the completion log, and starts the first step quest.
+     *
+     * @param playerUUID the player UUID
+     * @param chainKey   the chain key
+     * @param definition the chain definition
+     * @param state      the player's chain state
+     * @param chainData  the player's chain data container
+     */
+    private void handleExpireRestartChain(@NotNull UUID playerUUID,
+                                           @NotNull NamespacedKey chainKey,
+                                           @NotNull QuestChainDefinition definition,
+                                           @NotNull QuestChainPlayerState state,
+                                           @NotNull QuestChainPlayerData chainData) {
+        clearRetryCountersForChain(playerUUID, chainKey);
+        QuestChainStep firstStep = definition.getSteps().getFirst();
+        state.resetToStep(firstStep.questKey());
+        chainData.updateQuestKeyIndex(state);
+
+        if (!chainQuestStarter.startStepQuest(playerUUID, definition, firstStep)) {
             state.fail();
             chainData.updateQuestKeyIndex(state);
-            plugin().getLogger().fine("[QuestChainManager] Chain '" + chainKey
-                    + "' failed for player " + playerUUID + " — quest '" + expiredQuestKey
-                    + "' expired (on-quest-expire: fail-chain)");
             persistenceService.saveChainStateAsync(playerUUID, state);
+            return;
+        }
+
+        Player player = Bukkit.getPlayer(playerUUID);
+        if (player != null) {
             Bukkit.getPluginManager().callEvent(
-                    new QuestChainFailEvent(definition, Bukkit.getPlayer(playerUUID), playerUUID));
+                    new QuestChainRestartEvent(definition, player, QuestChainRestartEvent.RestartReason.QUEST_EXPIRE_RESTART_CHAIN));
+        }
+        persistenceService.saveChainStateAsync(playerUUID, state);
+        clearCompletionLogAsync(playerUUID, chainKey);
+        plugin().getLogger().fine("[QuestChainManager] Restarted chain '" + chainKey
+                + "' from step 1 for player " + playerUUID + " (on-quest-expire: restart-chain)");
+    }
+
+    /**
+     * Handles the {@code skip} expiration behavior. Logs the skipped step in the completion
+     * log and advances to the next step. If this was the last step, completes the chain.
+     *
+     * @param playerUUID      the player UUID
+     * @param chainKey        the chain key
+     * @param definition      the chain definition
+     * @param state           the player's chain state
+     * @param chainData       the player's chain data container
+     * @param skippedQuestKey the skipped quest's definition key
+     */
+    private void handleExpireSkip(@NotNull UUID playerUUID,
+                                   @NotNull NamespacedKey chainKey,
+                                   @NotNull QuestChainDefinition definition,
+                                   @NotNull QuestChainPlayerState state,
+                                   @NotNull QuestChainPlayerData chainData,
+                                   @NotNull NamespacedKey skippedQuestKey) {
+        logStepSkippedAsync(playerUUID, chainKey, skippedQuestKey, state.getCompletionCount() + 1);
+
+        Optional<QuestChainStep> nextStep = definition.getNextStep(skippedQuestKey);
+        Player player = Bukkit.getPlayer(playerUUID);
+
+        if (nextStep.isEmpty()) {
+            state.complete(plugin().getTimeProvider().now());
+            chainData.updateQuestKeyIndex(state);
+            Bukkit.getPluginManager().callEvent(
+                    new QuestChainCompleteEvent(definition, player, playerUUID,
+                            state.getCompletionCount(), ChainCompletionSource.ADVANCEMENT));
+            persistenceService.saveChainStateAsync(playerUUID, state);
+            plugin().getLogger().fine("[QuestChainManager] Chain '" + chainKey
+                    + "' completed for player " + playerUUID + " (last step skipped)");
+            return;
+        }
+
+        if (!chainQuestStarter.startStepQuest(playerUUID, definition, nextStep.get())) {
+            state.fail();
+            chainData.updateQuestKeyIndex(state);
+            persistenceService.saveChainStateAsync(playerUUID, state);
+            return;
+        }
+
+        state.advance(nextStep.get().questKey());
+        chainData.updateQuestKeyIndex(state);
+        if (player != null) {
+            QuestChainStep completedStep = definition.getStep(skippedQuestKey)
+                    .orElse(QuestChainStep.simple(skippedQuestKey));
+            Bukkit.getPluginManager().callEvent(
+                    new QuestChainStepAdvanceEvent(definition, player, playerUUID, completedStep, nextStep.get()));
+        }
+        persistenceService.saveChainStateAsync(playerUUID, state);
+        plugin().getLogger().fine("[QuestChainManager] Skipped step '" + skippedQuestKey
+                + "' in chain '" + chainKey + "' for player " + playerUUID + ", advanced to '"
+                + nextStep.get().questKey() + "'");
+    }
+
+    /**
+     * Clears retry counters for all steps in a chain for a player.
+     *
+     * @param playerUUID the player UUID
+     * @param chainKey   the chain key
+     */
+    private void clearRetryCountersForChain(@NotNull UUID playerUUID, @NotNull NamespacedKey chainKey) {
+        retryCounters.entrySet().removeIf(e ->
+                e.getKey().playerUUID().equals(playerUUID) && e.getKey().chainKey().equals(chainKey));
+    }
+
+    /**
+     * Clears all retry counters for a player. Called on player disconnect.
+     *
+     * @param playerUUID the player UUID
+     */
+    public void clearRetryCountersForPlayer(@NotNull UUID playerUUID) {
+        retryCounters.entrySet().removeIf(e -> e.getKey().playerUUID().equals(playerUUID));
+    }
+
+    /**
+     * Asynchronously deletes all completion log entries for a chain.
+     *
+     * @param playerUUID the player UUID
+     * @param chainKey   the chain key
+     */
+    private void clearCompletionLogAsync(@NotNull UUID playerUUID, @NotNull NamespacedKey chainKey) {
+        var database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE).getDatabase();
+        database.getDatabaseExecutorService().submit(() -> {
+            try (Connection connection = database.getConnection()) {
+                List<PreparedStatement> statements = QuestChainCompletionLogDAO.deleteForChain(
+                        connection, playerUUID, chainKey.toString());
+                new FailSafeTransaction(connection, statements).executeTransaction();
+            } catch (SQLException e) {
+                plugin().getLogger().log(Level.SEVERE,
+                        "[QuestChainManager] Failed to clear completion log for chain '"
+                                + chainKey + "', player " + playerUUID, e);
+            }
+        });
+    }
+
+    /**
+     * Asynchronously logs a skipped step in the completion log.
+     *
+     * @param playerUUID       the player UUID
+     * @param chainKey         the chain key
+     * @param questKey         the skipped quest key
+     * @param completionNumber the current completion number
+     */
+    private void logStepSkippedAsync(@NotNull UUID playerUUID,
+                                      @NotNull NamespacedKey chainKey,
+                                      @NotNull NamespacedKey questKey,
+                                      int completionNumber) {
+        var database = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE).getDatabase();
+        database.getDatabaseExecutorService().submit(() -> {
+            try (Connection connection = database.getConnection()) {
+                List<PreparedStatement> statements = QuestChainCompletionLogDAO.logSkip(
+                        connection, playerUUID, chainKey.toString(), questKey.toString(),
+                        plugin().getTimeProvider().now(), completionNumber);
+                new FailSafeTransaction(connection, statements).executeTransaction();
+            } catch (SQLException e) {
+                plugin().getLogger().log(Level.SEVERE,
+                        "[QuestChainManager] Failed to log skipped step '" + questKey
+                                + "' for chain '" + chainKey + "', player " + playerUUID, e);
+            }
         });
     }
 
@@ -676,16 +944,29 @@ public class QuestChainManager extends Manager<McRPG> {
             }
             QuestChainDefinition definition = definitionOpt.get();
             Optional<NamespacedKey> currentQuestOpt = state.getCurrentQuestKey();
+
+            if (state.isConditionsPending() && currentQuestOpt.isPresent()) {
+                Player player = Bukkit.getPlayer(playerUUID);
+                QuestChainStep currentStep = definition.getStep(currentQuestOpt.get()).orElse(null);
+                if (currentStep != null && player != null && evaluateConditions(player, currentStep.conditions())) {
+                    state.setConditionsPending(false);
+                    if (chainQuestStarter.startStepQuest(playerUUID, definition, currentStep)) {
+                        plugin().getLogger().fine("[QuestChainManager] Conditions met on login for chain '"
+                                + chainKey + "' step '" + currentStep.questKey() + "' for player " + playerUUID);
+                        persistenceService.saveChainStateAsync(playerUUID, state);
+                    } else {
+                        plugin().getLogger().warning("[QuestChainManager] Conditions met for chain '"
+                                + chainKey + "' step '" + currentStep.questKey()
+                                + "' but quest start failed for player " + playerUUID);
+                    }
+                }
+                continue;
+            }
+
             Set<NamespacedKey> completedKeys = new HashSet<>(completionsByChain.getOrDefault(chainKey, Set.of()));
-            // Merge in-memory pending advancements: these are steps recorded by advanceChain
-            // that may not yet be in the DB (async write pending or failed). Without this merge,
-            // re-resolution would treat a stuck chain as healthy in-progress and skip it.
             state.getPendingAdvancements().stream()
                     .map(QuestChainPlayerState.PendingAdvancement::questKey)
                     .forEach(completedKeys::add);
-            // Skip only if the current step still exists in the definition AND has not been
-            // completed yet. If the step is completed but the next couldn't start (stuck state),
-            // fall through to findFirstUncompletedStep so it can retry or complete the chain.
             if (currentQuestOpt.isPresent() && definition.getStep(currentQuestOpt.get()).isPresent()
                     && !completedKeys.contains(currentQuestOpt.get())) {
                 continue;
@@ -788,6 +1069,27 @@ public class QuestChainManager extends Manager<McRPG> {
             plugin().getLogger().fine("[QuestChainManager] No chain states found for player " + playerUUID);
         }
         return states;
+    }
+
+    /**
+     * Evaluates all conditions on a chain step. Returns {@code true} if all conditions pass
+     * or if the step has no conditions.
+     *
+     * @param player     the player to evaluate against
+     * @param conditions the conditions to evaluate
+     * @return {@code true} if all conditions are satisfied
+     */
+    private boolean evaluateConditions(@NotNull Player player, @NotNull List<QuestChainStartCondition> conditions) {
+        if (conditions.isEmpty()) {
+            return true;
+        }
+        var now = plugin().getTimeProvider().now();
+        for (QuestChainStartCondition condition : conditions) {
+            if (!condition.evaluate(player, now)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**

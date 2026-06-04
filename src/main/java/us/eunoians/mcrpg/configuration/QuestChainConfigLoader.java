@@ -269,7 +269,7 @@ public class QuestChainConfigLoader {
                 }
             }
 
-            steps.add(new QuestChainStep(questKey, List.of(), onQuestExpire, -1));
+            steps.add(new QuestChainStep(questKey, List.of(), onQuestExpire, -1, null));
         }
 
         if (steps.isEmpty()) {

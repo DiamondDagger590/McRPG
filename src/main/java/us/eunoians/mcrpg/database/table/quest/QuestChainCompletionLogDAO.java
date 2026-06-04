@@ -36,7 +36,7 @@ import java.util.logging.Level;
 public class QuestChainCompletionLogDAO {
 
     public static final String TABLE_NAME = "mcrpg_quest_chain_completion_log";
-    private static final int CURRENT_TABLE_VERSION = 1;
+    private static final int CURRENT_TABLE_VERSION = 2;
 
     /**
      * Attempts to create the chain completion log table if it does not already exist.
@@ -88,6 +88,16 @@ public class QuestChainCompletionLogDAO {
             }
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
         }
+        if (lastStoredVersion < 2) {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "ALTER TABLE " + TABLE_NAME + " ADD COLUMN skipped BOOLEAN NOT NULL DEFAULT FALSE")) {
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                McRPG.getInstance().getLogger().log(Level.SEVERE,
+                        "[QuestChainCompletionLogDAO] Failed to add skipped column during migration", e);
+            }
+            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 2);
+        }
     }
 
     /**
@@ -128,24 +138,61 @@ public class QuestChainCompletionLogDAO {
     }
 
     /**
-     * Returns the set of quest definition keys a player has completed within a specific
-     * chain (across all completion numbers). Used during restart re-resolution to identify
-     * which steps can be skipped.
+     * Returns an un-executed {@link PreparedStatement} list that records a chain step as
+     * skipped (quest expired with "skip" behavior). Logged with {@code skipped = true}.
+     *
+     * @param connection       the database connection
+     * @param playerUUID       the player UUID
+     * @param chainKey         the chain key (string form)
+     * @param questKey         the skipped quest key (string form)
+     * @param skippedAt        the skip timestamp
+     * @param completionNumber which chain run this belongs to
+     * @return list containing the insert statement (un-executed)
+     */
+    @NotNull
+    public static List<PreparedStatement> logSkip(@NotNull Connection connection,
+                                                   @NotNull UUID playerUUID,
+                                                   @NotNull String chainKey,
+                                                   @NotNull String questKey,
+                                                   @NotNull Instant skippedAt,
+                                                   int completionNumber) {
+        List<PreparedStatement> statements = new ArrayList<>();
+        try {
+            PreparedStatement statement = connection.prepareStatement(
+                    "INSERT OR REPLACE INTO " + TABLE_NAME +
+                            " (player_uuid, chain_key, quest_key, completed_at, completion_number, skipped) " +
+                            "VALUES (?, ?, ?, ?, ?, TRUE)");
+            statement.setString(1, playerUUID.toString());
+            statement.setString(2, chainKey);
+            statement.setString(3, questKey);
+            statement.setLong(4, skippedAt.toEpochMilli());
+            statement.setInt(5, completionNumber);
+            statements.add(statement);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return statements;
+    }
+
+    /**
+     * Returns the set of quest definition keys a player has completed (not skipped) within
+     * a specific chain (across all completion numbers). Skipped entries are excluded so
+     * that admin restart replays skipped steps.
      *
      * @param connection the database connection
      * @param playerUUID the player UUID
      * @param chainKey   the chain key (string form)
-     * @return set of completed quest key strings
+     * @return set of non-skipped completed quest key strings
      * @throws SQLException if a database error occurs
      */
     @NotNull
-    public static Set<String> getCompletedQuestKeys(@NotNull Connection connection,
-                                                     @NotNull UUID playerUUID,
-                                                     @NotNull String chainKey) throws SQLException {
+    public static Set<String> getNonSkippedCompletedQuestKeys(@NotNull Connection connection,
+                                                               @NotNull UUID playerUUID,
+                                                               @NotNull String chainKey) throws SQLException {
         Set<String> keys = new HashSet<>();
         try (PreparedStatement statement = connection.prepareStatement(
                 "SELECT DISTINCT quest_key FROM " + TABLE_NAME +
-                        " WHERE player_uuid = ? AND chain_key = ?")) {
+                        " WHERE player_uuid = ? AND chain_key = ? AND skipped = FALSE")) {
             statement.setString(1, playerUUID.toString());
             statement.setString(2, chainKey);
             try (ResultSet rs = statement.executeQuery()) {

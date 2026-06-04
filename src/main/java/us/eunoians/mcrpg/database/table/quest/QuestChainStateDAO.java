@@ -31,7 +31,7 @@ import java.util.logging.Level;
 public class QuestChainStateDAO {
 
     public static final String TABLE_NAME = "mcrpg_quest_chain_state";
-    private static final int CURRENT_TABLE_VERSION = 1;
+    private static final int CURRENT_TABLE_VERSION = 2;
 
     /**
      * Attempts to create the chain state table if it does not already exist.
@@ -76,6 +76,16 @@ public class QuestChainStateDAO {
         if (lastStoredVersion == 0) {
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
         }
+        if (lastStoredVersion < 2) {
+            try (PreparedStatement ps = connection.prepareStatement(
+                    "ALTER TABLE " + TABLE_NAME + " ADD COLUMN conditions_pending BOOLEAN NOT NULL DEFAULT FALSE")) {
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                McRPG.getInstance().getLogger().log(Level.SEVERE,
+                        "[QuestChainStateDAO] Failed to add conditions_pending column during migration", e);
+            }
+            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 2);
+        }
     }
 
     /**
@@ -91,7 +101,7 @@ public class QuestChainStateDAO {
                                                                   @NotNull UUID playerUUID) throws SQLException {
         List<QuestChainPlayerState> states = new ArrayList<>();
         try (PreparedStatement statement = connection.prepareStatement(
-                "SELECT chain_key, current_quest, state, completion_count, last_completed_at " +
+                "SELECT chain_key, current_quest, state, completion_count, last_completed_at, conditions_pending " +
                         "FROM " + TABLE_NAME + " WHERE player_uuid = ?")) {
             statement.setString(1, playerUUID.toString());
             try (ResultSet rs = statement.executeQuery()) {
@@ -120,7 +130,13 @@ public class QuestChainStateDAO {
                         chainState = QuestChainState.ACTIVE;
                     }
 
-                    states.add(new QuestChainPlayerState(chainKey, currentQuest, chainState, completionCount, lastCompletedAt));
+                    QuestChainPlayerState playerState = new QuestChainPlayerState(chainKey, currentQuest, chainState, completionCount, lastCompletedAt);
+                    boolean conditionsPending = rs.getBoolean("conditions_pending");
+                    if (conditionsPending) {
+                        playerState.setConditionsPending(true);
+                        playerState.clearDirty();
+                    }
+                    states.add(playerState);
                 }
             }
         }
@@ -144,8 +160,8 @@ public class QuestChainStateDAO {
         try {
             PreparedStatement statement = connection.prepareStatement(
                     "INSERT OR REPLACE INTO " + TABLE_NAME +
-                            " (player_uuid, chain_key, current_quest, state, completion_count, last_completed_at) " +
-                            "VALUES (?, ?, ?, ?, ?, ?)");
+                            " (player_uuid, chain_key, current_quest, state, completion_count, last_completed_at, conditions_pending) " +
+                            "VALUES (?, ?, ?, ?, ?, ?, ?)");
             statement.setString(1, playerUUID.toString());
             statement.setString(2, state.getChainKey().toString());
             var currentQuestOpt = state.getCurrentQuestKey();
@@ -162,6 +178,7 @@ public class QuestChainStateDAO {
             } else {
                 statement.setNull(6, Types.BIGINT);
             }
+            statement.setBoolean(7, state.isConditionsPending());
             statements.add(statement);
         } catch (SQLException e) {
             throw new RuntimeException(e);

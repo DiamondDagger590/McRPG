@@ -58,8 +58,8 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("Given a ResultSet with two quest keys, When getCompletedQuestKeys is called, Then both keys are returned")
-    void getCompletedQuestKeys_returnsAllDistinctKeys() throws SQLException {
+    @DisplayName("Given a ResultSet with two quest keys, When getNonSkippedCompletedQuestKeys is called, Then both keys are returned")
+    void getNonSkippedCompletedQuestKeys_returnsAllDistinctKeys() throws SQLException {
         Connection mockConnection = mock(Connection.class);
         PreparedStatement mockStatement = mock(PreparedStatement.class);
         ResultSet mockResultSet = mock(ResultSet.class);
@@ -69,7 +69,7 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
         when(mockResultSet.getString("quest_key"))
                 .thenReturn(QUEST_KEY_A.toString(), QUEST_KEY_B.toString());
 
-        Set<String> keys = QuestChainCompletionLogDAO.getCompletedQuestKeys(
+        Set<String> keys = QuestChainCompletionLogDAO.getNonSkippedCompletedQuestKeys(
                 mockConnection, PLAYER_UUID, CHAIN_KEY.toString());
 
         assertEquals(2, keys.size());
@@ -78,8 +78,8 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("Given an empty ResultSet, When getCompletedQuestKeys is called, Then an empty set is returned")
-    void getCompletedQuestKeys_returnsEmptySet_whenNoRows() throws SQLException {
+    @DisplayName("Given an empty ResultSet, When getNonSkippedCompletedQuestKeys is called, Then an empty set is returned")
+    void getNonSkippedCompletedQuestKeys_returnsEmptySet_whenNoRows() throws SQLException {
         Connection mockConnection = mock(Connection.class);
         PreparedStatement mockStatement = mock(PreparedStatement.class);
         ResultSet mockResultSet = mock(ResultSet.class);
@@ -87,7 +87,7 @@ public class QuestChainCompletionLogDAOTest extends McRPGBaseTest {
         when(mockStatement.executeQuery()).thenReturn(mockResultSet);
         when(mockResultSet.next()).thenReturn(false);
 
-        Set<String> keys = QuestChainCompletionLogDAO.getCompletedQuestKeys(
+        Set<String> keys = QuestChainCompletionLogDAO.getNonSkippedCompletedQuestKeys(
                 mockConnection, PLAYER_UUID, CHAIN_KEY.toString());
 
         assertNotNull(keys);

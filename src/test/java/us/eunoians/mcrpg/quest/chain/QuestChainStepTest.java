@@ -28,8 +28,8 @@ public class QuestChainStepTest extends McRPGBaseTest {
     @DisplayName("Given two steps with same questKey, When compared, Then they are equal")
     public void questChainStep_isEqualToOtherWithSameData() {
         var questKey = new NamespacedKey("mcrpg", "quest_a");
-        var step1 = new QuestChainStep(questKey, List.of(), "fail-chain", -1);
-        var step2 = new QuestChainStep(questKey, List.of(), "fail-chain", -1);
+        var step1 = new QuestChainStep(questKey, List.of(), "fail-chain", -1, null);
+        var step2 = new QuestChainStep(questKey, List.of(), "fail-chain", -1, null);
 
         assertEquals(step1, step2);
     }

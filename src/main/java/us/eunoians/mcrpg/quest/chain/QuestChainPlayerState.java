@@ -41,6 +41,7 @@ public class QuestChainPlayerState {
     private QuestChainState state;
     private int completionCount;
     private Instant lastCompletedAt;
+    private boolean conditionsPending;
     private final AtomicInteger dirtyVersion = new AtomicInteger(0);
     private final List<PendingAdvancement> pendingAdvancements = new ArrayList<>();
 
@@ -226,6 +227,26 @@ public class QuestChainPlayerState {
      */
     public boolean isActive() {
         return state == QuestChainState.ACTIVE;
+    }
+
+    /**
+     * Returns whether this chain step is waiting for start conditions to be met.
+     *
+     * @return {@code true} if conditions are pending
+     */
+    public boolean isConditionsPending() {
+        return conditionsPending;
+    }
+
+    /**
+     * Sets the conditions-pending flag. When {@code true}, the chain is ACTIVE at a step
+     * whose start conditions have not yet been met — the step's quest has not been started.
+     *
+     * @param pending whether conditions are pending
+     */
+    public void setConditionsPending(boolean pending) {
+        this.conditionsPending = pending;
+        dirtyVersion.incrementAndGet();
     }
 
     /**

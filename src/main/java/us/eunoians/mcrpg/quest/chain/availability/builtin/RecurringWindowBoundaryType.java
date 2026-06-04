@@ -31,6 +31,17 @@ public class RecurringWindowBoundaryType implements WindowBoundaryType {
         return KEY;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return empty — this is a built-in boundary type not provided by an expansion
+     */
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getExpansionKey() {
+        return Optional.empty();
+    }
+
     @Override
     @NotNull
     public Optional<WindowBoundary> parse(@NotNull Section section, @NotNull File file,
