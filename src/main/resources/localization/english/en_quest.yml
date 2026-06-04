@@ -1455,3 +1455,11 @@ quest-chain:
       success: "<positive>Skipped <primary><player><body>'s chain <primary><chain_name><body> \u2014 <primary><count><body> remaining steps completed with rewards."
       error-no-state: "<negative>Player has no active state for chain '<primary><chain_key><body>'."
       error-terminal: "<negative>Player's chain '<primary><chain_key><body>' is in state <primary><chain_state><body>. Use reset first."
+  preview:
+    # Placeholders: <step_number> = 1-based step index
+    locked-title: "<negative>Step <step_number> — Locked"
+    locked-description: "<body>This step is not yet available."
+    # Placeholders: <step_number> = 1-based step index, <quest_name> = display name
+    step-title: "<primary>Step <step_number>: <body><quest_name>"
+    objectives-hidden: "<body>??? Objectives"
+    rewards-hidden: "<body>??? Rewards"

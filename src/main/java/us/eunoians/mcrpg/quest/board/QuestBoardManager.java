@@ -191,7 +191,7 @@ public class QuestBoardManager extends Manager<McRPG> {
         this.templateConfig = new ReloadableTemplateConfig(boardConfig, templateRegistry, conditionRegistry, primaryTemplatesDir);
         this.templateConfig.getContent();
 
-        this.questPool = new QuestPool(definitionRegistry, templateRegistry, plugin().getLogger());
+        this.questPool = new QuestPool(definitionRegistry, templateRegistry, plugin().getLogger(), plugin.getTimeProvider());
 
         // 7. Load current rotations from DB and check for missed rotations
         Database database = plugin.registryAccess()

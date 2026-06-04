@@ -11,8 +11,11 @@ import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 import us.eunoians.mcrpg.expansion.handler.ContentPackProcessor;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -78,6 +81,34 @@ public class ContentExpansionManager extends Manager<McRPG> {
     @NotNull
     public Optional<ContentExpansion> getContentExpansion(@NotNull NamespacedKey namespacedKey) {
         return Optional.ofNullable(contentExpansions.get(namespacedKey));
+    }
+
+    /**
+     * Gets an unmodifiable {@link Collection} of all registered {@link ContentExpansion} instances.
+     *
+     * @return An unmodifiable {@link Collection} of all registered {@link ContentExpansion} instances.
+     */
+    @NotNull
+    public Collection<ContentExpansion> getRegisteredExpansions() {
+        return Collections.unmodifiableCollection(contentExpansions.values());
+    }
+
+    /**
+     * Gets an {@link Optional} containing a {@link List} of {@link McRPGContentPack}s provided by
+     * the {@link ContentExpansion} matching the given {@link NamespacedKey}. Returns empty if no
+     * expansion is registered for the given key.
+     *
+     * @param expansionKey The {@link NamespacedKey} of the expansion to look up.
+     * @return An {@link Optional} containing the content packs for the expansion, or empty if the
+     *         expansion is not registered.
+     */
+    @NotNull
+    public Optional<List<McRPGContentPack<?>>> getContentPacks(@NotNull NamespacedKey expansionKey) {
+        ContentExpansion expansion = contentExpansions.get(expansionKey);
+        if (expansion == null) {
+            return Optional.empty();
+        }
+        return Optional.of(List.copyOf(expansion.getExpansionContent()));
     }
 
     /**

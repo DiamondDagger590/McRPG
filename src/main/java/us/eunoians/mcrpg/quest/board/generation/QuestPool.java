@@ -15,6 +15,8 @@ import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 
+import com.diamonddagger590.mccore.util.TimeProvider;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -36,13 +38,24 @@ public class QuestPool {
     private final QuestDefinitionRegistry definitionRegistry;
     private final QuestTemplateRegistry templateRegistry;
     private final Logger logger;
+    private final TimeProvider timeProvider;
 
+    /**
+     * Creates a new quest pool.
+     *
+     * @param definitionRegistry the hand-crafted quest definition registry
+     * @param templateRegistry   the template registry
+     * @param logger             the logger for generation warnings
+     * @param timeProvider       the time provider used for evaluating template availability windows
+     */
     public QuestPool(@NotNull QuestDefinitionRegistry definitionRegistry,
                      @NotNull QuestTemplateRegistry templateRegistry,
-                     @NotNull Logger logger) {
+                     @NotNull Logger logger,
+                     @NotNull TimeProvider timeProvider) {
         this.definitionRegistry = definitionRegistry;
         this.templateRegistry = templateRegistry;
         this.logger = logger;
+        this.timeProvider = timeProvider;
     }
 
     /**
@@ -106,7 +119,7 @@ public class QuestPool {
      */
     @NotNull
     public List<QuestTemplate> getEligibleTemplates(@NotNull NamespacedKey rolledRarity) {
-        return templateRegistry.getEligibleTemplates(rolledRarity);
+        return filterByAvailability(templateRegistry.getEligibleTemplates(rolledRarity));
     }
 
     /**
@@ -121,7 +134,7 @@ public class QuestPool {
     @NotNull
     public List<QuestTemplate> getEligibleTemplates(@NotNull NamespacedKey rolledRarity,
                                                      @Nullable NamespacedKey scopeProviderKey) {
-        return templateRegistry.getEligibleTemplates(rolledRarity, scopeProviderKey);
+        return filterByAvailability(templateRegistry.getEligibleTemplates(rolledRarity, scopeProviderKey));
     }
 
     /**
@@ -141,7 +154,7 @@ public class QuestPool {
     public List<QuestTemplate> getEligibleTemplates(@NotNull NamespacedKey rolledRarity,
                                                      @Nullable NamespacedKey scopeProviderKey,
                                                      @Nullable ConditionContext context) {
-        return templateRegistry.getEligibleTemplates(rolledRarity, scopeProviderKey).stream()
+        return filterByAvailability(templateRegistry.getEligibleTemplates(rolledRarity, scopeProviderKey)).stream()
                 .filter(t -> t.getPrerequisite()
                         .map(prereq -> context != null && prereq.evaluate(context))
                         .orElse(true))
@@ -472,6 +485,25 @@ public class QuestPool {
         if (total <= 0) return random.nextBoolean();
 
         return random.nextInt(total) < effectiveHc;
+    }
+
+    /**
+     * Filters out templates whose availability window is not currently active.
+     * Templates without an {@link us.eunoians.mcrpg.quest.chain.availability.AvailabilityConfig}
+     * are always included (no time restriction). Templates with an availability config
+     * are included only if at least one window is currently active.
+     *
+     * @param templates the unfiltered template list
+     * @return a new list containing only currently-available templates
+     */
+    @NotNull
+    private List<QuestTemplate> filterByAvailability(@NotNull List<QuestTemplate> templates) {
+        return templates.stream()
+                .filter(t -> t.getAvailabilityConfig()
+                        .map(config -> config.isCurrentlyAvailable(
+                                timeProvider.now().atZone(config.timezone())))
+                        .orElse(true))
+                .toList();
     }
 
     /**

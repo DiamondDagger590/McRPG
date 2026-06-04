@@ -69,7 +69,7 @@ public class QuestPoolTest extends McRPGBaseTest {
         registry = new QuestDefinitionRegistry();
         templateRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.QUEST_TEMPLATE);
         templateEngine = mock(QuestTemplateEngine.class);
-        questPool = new QuestPool(registry, templateRegistry, mcRPG.getLogger());
+        questPool = new QuestPool(registry, templateRegistry, mcRPG.getLogger(), mcRPG.getTimeProvider());
     }
 
     private static final NamespacedKey SINGLE_PLAYER_SCOPE = new NamespacedKey("mcrpg", "single_player");

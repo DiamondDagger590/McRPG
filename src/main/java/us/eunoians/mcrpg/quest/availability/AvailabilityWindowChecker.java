@@ -2,7 +2,7 @@ package us.eunoians.mcrpg.quest.availability;
 
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.task.core.RepeatableCoreTask;
+import com.diamonddagger590.mccore.task.core.CancelableCoreTask;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -47,7 +47,7 @@ import java.util.Optional;
  * via {@link #snapshotCurrentAvailability()}, so stale keys from unregistered definitions
  * are naturally evicted.
  */
-public final class AvailabilityWindowChecker extends RepeatableCoreTask {
+public final class AvailabilityWindowChecker extends CancelableCoreTask {
 
     private final McRPG plugin;
     private final Map<NamespacedKey, Boolean> previousChainAvailability;
@@ -159,6 +159,17 @@ public final class AvailabilityWindowChecker extends RepeatableCoreTask {
     @Override
     protected void onIntervalResume() {
         // No-op
+    }
+
+    /**
+     * Cancels all pending grace period tasks when this checker is cancelled.
+     */
+    @Override
+    protected void onCancel() {
+        for (Integer taskId : activeGraceTasks.values()) {
+            Bukkit.getScheduler().cancelTask(taskId);
+        }
+        activeGraceTasks.clear();
     }
 
     /**

@@ -38,6 +38,8 @@ import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
+import us.eunoians.mcrpg.quest.chain.availability.WindowBoundaryTypeRegistry;
+import us.eunoians.mcrpg.quest.chain.condition.QuestChainStartConditionTypeRegistry;
 import us.eunoians.mcrpg.quest.chain.trigger.ChainAutoStartTriggerRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
@@ -96,6 +98,8 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new TemplateConditionRegistry());
         registryAccess.register(new QuestChainRegistry());
         registryAccess.register(new ChainAutoStartTriggerRegistry());
+        registryAccess.register(new WindowBoundaryTypeRegistry());
+        registryAccess.register(new QuestChainStartConditionTypeRegistry());
         registryAccess.register(new PlayerStatRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestChainManager(mcRPG));

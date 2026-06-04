@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.quest.board.template.condition.TemplateCondition;
 import us.eunoians.mcrpg.quest.board.template.variable.TemplateVariable;
 
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
+import us.eunoians.mcrpg.quest.chain.availability.AvailabilityConfig;
 
 import java.util.Collections;
 import java.util.List;
@@ -44,6 +45,7 @@ public final class QuestTemplate implements McRPGContent {
     private final TemplateCondition prerequisite;
     private final NamespacedKey expansionKey;
     private final Map<String, String> inlineDisplay;
+    private final AvailabilityConfig availabilityConfig;
 
     /**
      * Convenience constructor for templates without a reward distribution config,
@@ -137,8 +139,8 @@ public final class QuestTemplate implements McRPGContent {
     }
 
     /**
-     * Full constructor. Defensively copies all mutable collections; a {@code null}
-     * {@code inlineDisplay} is stored as an empty map.
+     * Constructor with all fields except availability config. Defensively copies all
+     * mutable collections; a {@code null} {@code inlineDisplay} is stored as an empty map.
      *
      * @param key                  the unique key identifying this template
      * @param displayNameRoute     the localization route for the template's display name
@@ -167,6 +169,44 @@ public final class QuestTemplate implements McRPGContent {
                          @Nullable TemplateCondition prerequisite,
                          @Nullable NamespacedKey expansionKey,
                          @Nullable Map<String, String> inlineDisplay) {
+        this(key, displayNameRoute, boardEligible, scopeProviderKey, supportedRarities,
+                rarityOverrides, variables, phases, rewards, rewardDistribution, prerequisite, expansionKey,
+                inlineDisplay, null);
+    }
+
+    /**
+     * Full constructor. Defensively copies all mutable collections; a {@code null}
+     * {@code inlineDisplay} is stored as an empty map.
+     *
+     * @param key                  the unique key identifying this template
+     * @param displayNameRoute     the localization route for the template's display name
+     * @param boardEligible        whether the template may appear on quest boards
+     * @param scopeProviderKey     the key of the quest scope provider
+     * @param supportedRarities    the set of rarity keys this template supports
+     * @param rarityOverrides      per-rarity overrides for reward scaling
+     * @param variables            the template variables available for expression substitution
+     * @param phases               the phase definitions that make up the quest structure
+     * @param rewards              the reward definitions granted on completion
+     * @param rewardDistribution   optional group reward distribution config; {@code null} for solo distribution
+     * @param prerequisite         optional condition evaluated before offering this template to a player
+     * @param expansionKey         the key of the {@link us.eunoians.mcrpg.expansion.ContentExpansion} that owns this template, or {@code null}
+     * @param inlineDisplay        optional map of locale code to inline display name override; {@code null} treated as empty
+     * @param availabilityConfig   optional time-based availability window config; {@code null} if always available
+     */
+    public QuestTemplate(@NotNull NamespacedKey key,
+                         @NotNull Route displayNameRoute,
+                         boolean boardEligible,
+                         @NotNull NamespacedKey scopeProviderKey,
+                         @NotNull Set<NamespacedKey> supportedRarities,
+                         @NotNull Map<NamespacedKey, RarityOverride> rarityOverrides,
+                         @NotNull Map<String, TemplateVariable> variables,
+                         @NotNull List<TemplatePhaseDefinition> phases,
+                         @NotNull List<TemplateRewardDefinition> rewards,
+                         @Nullable RewardDistributionConfig rewardDistribution,
+                         @Nullable TemplateCondition prerequisite,
+                         @Nullable NamespacedKey expansionKey,
+                         @Nullable Map<String, String> inlineDisplay,
+                         @Nullable AvailabilityConfig availabilityConfig) {
         this.key = key;
         this.displayNameRoute = displayNameRoute;
         this.boardEligible = boardEligible;
@@ -180,6 +220,7 @@ public final class QuestTemplate implements McRPGContent {
         this.prerequisite = prerequisite;
         this.expansionKey = expansionKey;
         this.inlineDisplay = inlineDisplay != null ? Map.copyOf(inlineDisplay) : Collections.emptyMap();
+        this.availabilityConfig = availabilityConfig;
     }
 
     /**
@@ -361,6 +402,21 @@ public final class QuestTemplate implements McRPGContent {
     @NotNull
     public Map<String, String> getInlineDisplay() {
         return inlineDisplay;
+    }
+
+    /**
+     * Returns the optional time-based availability window configuration for this template.
+     * When present, the template is only eligible for board generation while at least one
+     * window is active. Templates without an availability config are always eligible.
+     * <p>
+     * Board templates do not need an on-window-close policy — they simply stop appearing
+     * in new rotations. Existing accepted quest instances follow normal quest expiration rules.
+     *
+     * @return the availability config, or empty if the template has no time-based restriction
+     */
+    @NotNull
+    public Optional<AvailabilityConfig> getAvailabilityConfig() {
+        return Optional.ofNullable(availabilityConfig);
     }
 
     /**

@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.quest.chain.availability;
 
+import com.diamonddagger590.mccore.registry.Registry;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,7 +12,7 @@ import java.util.Optional;
  * Registry for {@link WindowBoundaryType} implementations. Accessed via
  * {@link us.eunoians.mcrpg.registry.McRPGRegistryKey#WINDOW_BOUNDARY_TYPE}.
  */
-public class WindowBoundaryTypeRegistry {
+public class WindowBoundaryTypeRegistry implements Registry<WindowBoundaryType> {
 
     private final Map<NamespacedKey, WindowBoundaryType> types = new LinkedHashMap<>();
 
@@ -20,8 +21,20 @@ public class WindowBoundaryTypeRegistry {
      *
      * @param type the boundary type to register
      */
+    @Override
     public void register(@NotNull WindowBoundaryType type) {
         types.put(type.getKey(), type);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param type the boundary type to check
+     * @return {@code true} if a type with the same key is registered
+     */
+    @Override
+    public boolean registered(@NotNull WindowBoundaryType type) {
+        return types.containsKey(type.getKey());
     }
 
     /**
@@ -33,15 +46,5 @@ public class WindowBoundaryTypeRegistry {
     @NotNull
     public Optional<WindowBoundaryType> get(@NotNull NamespacedKey key) {
         return Optional.ofNullable(types.get(key));
-    }
-
-    /**
-     * Checks whether a boundary type is registered.
-     *
-     * @param key the boundary type key
-     * @return {@code true} if registered
-     */
-    public boolean registered(@NotNull NamespacedKey key) {
-        return types.containsKey(key);
     }
 }

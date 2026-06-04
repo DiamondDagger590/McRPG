@@ -1040,6 +1040,14 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_CHAIN_ADMIN_SKIP_ERROR_NO_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_SKIP_HEADER, "error-no-state"));
     public static final Route QUEST_CHAIN_ADMIN_SKIP_ERROR_TERMINAL = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_SKIP_HEADER, "error-terminal"));
 
+    // Chain preview — gated step slot (en_quest.yml, under quest-chain.preview)
+    private static final String QUEST_CHAIN_PREVIEW_HEADER = toRoutePath(QUEST_CHAIN_HEADER, "preview");
+    public static final Route CHAIN_PREVIEW_LOCKED_TITLE = Route.fromString(toRoutePath(QUEST_CHAIN_PREVIEW_HEADER, "locked-title"));
+    public static final Route CHAIN_PREVIEW_LOCKED_DESCRIPTION = Route.fromString(toRoutePath(QUEST_CHAIN_PREVIEW_HEADER, "locked-description"));
+    public static final Route CHAIN_PREVIEW_STEP_TITLE = Route.fromString(toRoutePath(QUEST_CHAIN_PREVIEW_HEADER, "step-title"));
+    public static final Route CHAIN_PREVIEW_OBJECTIVES_HIDDEN = Route.fromString(toRoutePath(QUEST_CHAIN_PREVIEW_HEADER, "objectives-hidden"));
+    public static final Route CHAIN_PREVIEW_REWARDS_HIDDEN = Route.fromString(toRoutePath(QUEST_CHAIN_PREVIEW_HEADER, "rewards-hidden"));
+
     // Disable tutorial confirm GUI (en_gui.yml, under gui.disable-tutorial-confirm-gui)
     private static final String DISABLE_TUTORIAL_CONFIRM_GUI_HEADER = toRoutePath(GUI_HEADER, "disable-tutorial-confirm-gui");
     public static final Route DISABLE_TUTORIAL_CONFIRM_GUI_TITLE = Route.fromString(toRoutePath(DISABLE_TUTORIAL_CONFIRM_GUI_HEADER, "title"));

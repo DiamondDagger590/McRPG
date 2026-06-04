@@ -12,6 +12,8 @@ import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
+import us.eunoians.mcrpg.quest.chain.availability.WindowBoundaryTypeRegistry;
+import us.eunoians.mcrpg.quest.chain.condition.QuestChainStartConditionTypeRegistry;
 import us.eunoians.mcrpg.quest.chain.trigger.ChainAutoStartTriggerRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProviderRegistry;
@@ -85,4 +87,26 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
      * retroactively create a {@link us.eunoians.mcrpg.stat.instance.PlayerStatInstance} for that player.
      */
     RegistryKey<PlayerStatRegistry> PLAYER_STAT = create(PlayerStatRegistry.class);
+
+    /**
+     * Retrieves the {@link WindowBoundaryTypeRegistry} containing all registered
+     * {@link us.eunoians.mcrpg.quest.chain.availability.WindowBoundaryType} factories.
+     * <p>
+     * Built-in types: {@code mcrpg:fixed}, {@code mcrpg:recurring}.
+     * Third-party boundary types can be registered via
+     * {@link us.eunoians.mcrpg.expansion.content.WindowBoundaryTypeContentPack} in a
+     * {@link us.eunoians.mcrpg.expansion.ContentExpansion}.
+     */
+    RegistryKey<WindowBoundaryTypeRegistry> WINDOW_BOUNDARY_TYPE = create(WindowBoundaryTypeRegistry.class);
+
+    /**
+     * Retrieves the {@link QuestChainStartConditionTypeRegistry} containing all registered
+     * {@link us.eunoians.mcrpg.quest.chain.condition.QuestChainStartConditionType} factories.
+     * <p>
+     * Built-in types: {@code mcrpg:time_gate}.
+     * Third-party condition types can be registered via
+     * {@link us.eunoians.mcrpg.expansion.content.QuestChainStartConditionContentPack} in a
+     * {@link us.eunoians.mcrpg.expansion.ContentExpansion}.
+     */
+    RegistryKey<QuestChainStartConditionTypeRegistry> QUEST_CHAIN_CONDITION_TYPE = create(QuestChainStartConditionTypeRegistry.class);
 }

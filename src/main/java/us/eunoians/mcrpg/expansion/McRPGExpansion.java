@@ -29,6 +29,8 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.ChainAutoStartTriggerContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestChainStartConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.WindowBoundaryTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
@@ -48,6 +50,9 @@ import us.eunoians.mcrpg.quest.board.distribution.builtin.QuestAcceptorDistribut
 import us.eunoians.mcrpg.quest.board.distribution.builtin.TopPlayersDistributionType;
 import us.eunoians.mcrpg.quest.board.template.condition.ChanceCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.CompletionPrerequisiteCondition;
+import us.eunoians.mcrpg.quest.chain.availability.builtin.FixedWindowBoundaryType;
+import us.eunoians.mcrpg.quest.chain.availability.builtin.RecurringWindowBoundaryType;
+import us.eunoians.mcrpg.quest.chain.condition.builtin.TimeGateChainConditionType;
 import us.eunoians.mcrpg.quest.chain.trigger.builtin.FirstJoinChainAutoStartTrigger;
 import us.eunoians.mcrpg.quest.chain.trigger.builtin.LoginChainAutoStartTrigger;
 import us.eunoians.mcrpg.quest.chain.trigger.builtin.ManualChainAutoStartTrigger;
@@ -163,7 +168,8 @@ public final class McRPGExpansion extends ContentExpansion {
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
                 getRewardDistributionTypeContent(), getTemplateConditionContent(),
-                getChainAutoStartTriggerContent(), getQuestChainContent());
+                getChainAutoStartTriggerContent(), getQuestChainContent(),
+                getChainStartConditionTypeContent(), getWindowBoundaryTypeContent());
     }
 
     @NotNull
@@ -534,5 +540,32 @@ public final class McRPGExpansion extends ContentExpansion {
     @NotNull
     private QuestChainContentPack getQuestChainContent() {
         return new QuestChainContentPack(this);
+    }
+
+    /**
+     * Gets the native {@link QuestChainStartConditionContentPack} for McRPG, populated with the
+     * built-in condition type ({@code mcrpg:time_gate}).
+     *
+     * @return The native {@link QuestChainStartConditionContentPack} for McRPG.
+     */
+    @NotNull
+    private QuestChainStartConditionContentPack getChainStartConditionTypeContent() {
+        QuestChainStartConditionContentPack pack = new QuestChainStartConditionContentPack(this);
+        pack.addContent(new TimeGateChainConditionType());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link WindowBoundaryTypeContentPack} for McRPG, populated with the
+     * built-in boundary types ({@code mcrpg:fixed} and {@code mcrpg:recurring}).
+     *
+     * @return The native {@link WindowBoundaryTypeContentPack} for McRPG.
+     */
+    @NotNull
+    private WindowBoundaryTypeContentPack getWindowBoundaryTypeContent() {
+        WindowBoundaryTypeContentPack pack = new WindowBoundaryTypeContentPack(this);
+        pack.addContent(new FixedWindowBoundaryType());
+        pack.addContent(new RecurringWindowBoundaryType());
+        return pack;
     }
 }

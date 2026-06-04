@@ -170,6 +170,15 @@ public final class MainConfigFile extends ConfigFile {
     /** Pitch of the failure sound. */
     public static final Route COMBO_FAILURE_SOUND_PITCH = Route.fromString(toRoutePath(COMBO_FAILURE_HEADER, "pitch"));
 
+    // Chain availability
+    private static final String CHAIN_AVAILABILITY_HEADER = toRoutePath(CONFIGURATION_HEADER, "chain-availability");
+    /**
+     * Interval in seconds between availability window checks for quest chains.
+     * Lower values detect window transitions faster but increase tick overhead.
+     */
+    public static final Route CHAIN_AVAILABILITY_CHECK_INTERVAL_SECONDS = Route.fromString(
+            toRoutePath(CHAIN_AVAILABILITY_HEADER, "check-interval-seconds"));
+
     // Statistics
     private static final String STATISTICS_HEADER = toRoutePath(CONFIGURATION_HEADER, "statistics");
     private static final String STATISTICS_CACHE_HEADER = toRoutePath(STATISTICS_HEADER, "cache");

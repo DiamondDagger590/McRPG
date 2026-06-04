@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.expansion.content.ChainAutoStartTriggerContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestChainContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestChainStartConditionContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestObjectiveTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestRarityContentPack;
@@ -22,6 +23,9 @@ import us.eunoians.mcrpg.expansion.content.PlayerStatContentPack;
 import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.expansion.content.StatisticContentPack;
 import us.eunoians.mcrpg.expansion.content.TemplateConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.WindowBoundaryTypeContentPack;
+import us.eunoians.mcrpg.quest.chain.availability.WindowBoundaryTypeRegistry;
+import us.eunoians.mcrpg.quest.chain.condition.QuestChainStartConditionTypeRegistry;
 import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
@@ -216,6 +220,32 @@ public enum ContentHandlerType {
         if (mcRPGContent instanceof ChainAutoStartTriggerContentPack triggerContent) {
             triggerContent.getContent().forEach(trigger ->
                     mcRPG.registryAccess().registry(McRPGRegistryKey.CHAIN_AUTO_START_TRIGGER).register(trigger));
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link QuestChainStartConditionContentPack}s by registering
+     * each {@link us.eunoians.mcrpg.quest.chain.condition.QuestChainStartConditionType} into the
+     * {@link QuestChainStartConditionTypeRegistry}.
+     */
+    QUEST_CHAIN_START_CONDITION((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof QuestChainStartConditionContentPack conditionContent) {
+            conditionContent.getContent().forEach(type ->
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.QUEST_CHAIN_CONDITION_TYPE).register(type));
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link WindowBoundaryTypeContentPack}s by registering
+     * each {@link us.eunoians.mcrpg.quest.chain.availability.WindowBoundaryType} into the
+     * {@link WindowBoundaryTypeRegistry}.
+     */
+    WINDOW_BOUNDARY_TYPE((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof WindowBoundaryTypeContentPack boundaryContent) {
+            boundaryContent.getContent().forEach(type ->
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.WINDOW_BOUNDARY_TYPE).register(type));
             return true;
         }
         return false;

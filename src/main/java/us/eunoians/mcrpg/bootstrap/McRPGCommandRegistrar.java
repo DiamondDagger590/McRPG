@@ -63,6 +63,9 @@ import us.eunoians.mcrpg.command.skill.SkillGuiCommand;
 import us.eunoians.mcrpg.command.statistic.StatisticListCommand;
 import us.eunoians.mcrpg.command.statistic.StatisticResetCommand;
 import us.eunoians.mcrpg.command.statistic.StatisticSetCommand;
+import us.eunoians.mcrpg.command.admin.content.ContentExpansionsCommand;
+import us.eunoians.mcrpg.command.admin.content.ContentKeysCommand;
+import us.eunoians.mcrpg.command.admin.content.ContentPacksCommand;
 import us.eunoians.mcrpg.command.statistic.StatisticViewCommand;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -121,6 +124,11 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         // Board Commands
         BoardCommand.registerCommand();
         ScopedBoardCommand.registerCommand();
+
+        // Content Introspection Commands
+        ContentExpansionsCommand.registerCommand();
+        ContentPacksCommand.registerCommand();
+        ContentKeysCommand.registerCommand();
 
         // Board Admin Commands
         BoardAdminRotateCommand.registerCommand();

@@ -86,6 +86,10 @@ configuration:
   expired-quest-scan-task:
     # How often to scan for and expire stale quests (in seconds)
     frequency: 43200
+  chain-availability:
+    # How often (in seconds) the availability window checker runs.
+    # Detects open/close transitions and applies close policies.
+    check-interval-seconds: 60
   quest-pending-rewards:
     # How many days pending rewards for offline players are kept before expiring
     expiry-days: 30

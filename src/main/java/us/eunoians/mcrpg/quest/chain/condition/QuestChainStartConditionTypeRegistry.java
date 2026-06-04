@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.quest.chain.condition;
 
+import com.diamonddagger590.mccore.registry.Registry;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,7 +19,7 @@ import java.util.Optional;
  *
  * @see QuestChainStartConditionType
  */
-public class QuestChainStartConditionTypeRegistry {
+public class QuestChainStartConditionTypeRegistry implements Registry<QuestChainStartConditionType> {
 
     private final Map<NamespacedKey, QuestChainStartConditionType> types = new LinkedHashMap<>();
 
@@ -28,8 +29,20 @@ public class QuestChainStartConditionTypeRegistry {
      *
      * @param type the condition type to register
      */
+    @Override
     public void register(@NotNull QuestChainStartConditionType type) {
         types.put(type.getKey(), type);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param type the condition type to check
+     * @return {@code true} if a type with the same key is registered
+     */
+    @Override
+    public boolean registered(@NotNull QuestChainStartConditionType type) {
+        return types.containsKey(type.getKey());
     }
 
     /**
@@ -41,16 +54,6 @@ public class QuestChainStartConditionTypeRegistry {
     @NotNull
     public Optional<QuestChainStartConditionType> get(@NotNull NamespacedKey key) {
         return Optional.ofNullable(types.get(key));
-    }
-
-    /**
-     * Checks whether a condition type is registered under the given key.
-     *
-     * @param key the condition type key
-     * @return {@code true} if a type with the given key is registered
-     */
-    public boolean registered(@NotNull NamespacedKey key) {
-        return types.containsKey(key);
     }
 
     /**
