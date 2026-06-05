@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.ability.impl.type;
 
+import org.mockbukkit.mockbukkit.entity.PlayerMock;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
@@ -8,6 +10,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGBaseTest;
@@ -19,7 +22,10 @@ import us.eunoians.mcrpg.ability.attribute.AbilityCooldownAttribute;
 import us.eunoians.mcrpg.builder.item.ability.AbilityItemBuilder;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -29,9 +35,14 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(McRPGPlayerExtension.class)
 class CooldownableAbilityTest extends McRPGBaseTest {
 
     private StubCooldownableAbility ability;
@@ -185,6 +196,40 @@ class CooldownableAbilityTest extends McRPGBaseTest {
         void includesCooldownAttributeKey() {
             Set<NamespacedKey> attributes = ability.getApplicableAttributes();
             assertTrue(attributes.contains(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY));
+        }
+    }
+
+    @Nested
+    @DisplayName("notifyCooldownActive")
+    class NotifyCooldownActive {
+
+        @Test
+        @DisplayName("sends localized message to online player")
+        void sendsLocalizedMessage_toOnlinePlayer(@NotNull McRPGPlayer mcRPGPlayer) {
+            McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
+                    .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+            Component stubComponent = Component.text("Ability is on cooldown");
+            when(localizationManager.getLocalizedMessageAsComponent(any(McRPGPlayer.class), any(), anyMap()))
+                    .thenReturn(stubComponent);
+
+            PlayerMock playerMock = addPlayerToServer(mcRPGPlayer);
+
+            ability.notifyCooldownActive(mcRPGPlayer);
+
+            verify(localizationManager).getLocalizedMessageAsComponent(any(McRPGPlayer.class), any(), anyMap());
+            playerMock.assertSaid(stubComponent);
+        }
+
+        @Test
+        @DisplayName("does nothing when player is offline")
+        void doesNothing_whenPlayerOffline(@NotNull McRPGPlayer mcRPGPlayer) {
+            McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess()
+                    .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+
+            ability.notifyCooldownActive(mcRPGPlayer);
+
+            verify(localizationManager, never())
+                    .getLocalizedMessageAsComponent(any(McRPGPlayer.class), any(), anyMap());
         }
     }
 

@@ -31,6 +31,7 @@ You are a test engineer reviewing whether this change is adequately tested and w
 - [ ] Are shared test helpers and fixtures placed in `src/testFixtures/java/` — not duplicated across test classes?
 - [ ] Does any test call `MockBukkit.unmock()` in `@AfterEach`? `McRPGBaseTest` manages this at suite level; per-test unmocking corrupts shared state.
 - [ ] Is `McRPGBaseTest.addPlayerToServer()` used when join-event side effects matter OR when simulating player behaviour on the server — not bare `PlayerMock` construction in those scenarios?
+- [ ] When a test needs an `McRPGPlayer` instance, does it use `@ExtendWith(McRPGPlayerExtension.class)` with a method parameter instead of manually constructing the player and registering the `McRPGPlayerManager`? The extension handles creation, `spy()` wrapping, manager registration, and cleanup.
 
 **Bukkit-Dependent vs. Pure-Java Separation**
 - [ ] Does any class mix pure logic (math, data transformation) with Bukkit API calls, with only the pure logic tested? Extract the pure logic into a testable helper.
