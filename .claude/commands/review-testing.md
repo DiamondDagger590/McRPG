@@ -7,7 +7,7 @@ Adopt the Testing Auditor Persona. You are a test engineer reviewing whether thi
 **Coverage Completeness**
 - For every new public method with non-trivial logic (>3 lines), is there a corresponding test?
 - For every ability component change, does a test cover both the pass and fail branch of `shouldActivate()`?
-- Are edge cases covered: empty collections, zero values, null holders, already-on-cooldown, invalid input?
+- Are edge cases covered: empty collections, zero values, already-on-cooldown, invalid input? Do NOT flag missing null-input tests — null parameters are guarded by `@NotNull` annotations and are not expected runtime states.
 - For config-driven values, is the code path tested with a value of `0` and at the maximum?
 - If a bug was fixed, is there a regression test?
 - Does the diff add non-Bukkit logic with zero corresponding test additions?
@@ -26,6 +26,7 @@ Adopt the Testing Auditor Persona. You are a test engineer reviewing whether thi
 **Bukkit-Dependent vs. Pure-Java Separation**
 - Does any class mix pure logic with Bukkit API calls where only the pure logic is tested? Extract the pure logic.
 - Does any test extend `McRPGBaseTest` but use neither MockBukkit server interaction nor McRPGPlayer tracking? In that narrow case, a plain JUnit test would suffice.
+- **NOT a violation:** Tests that use simple Bukkit data classes (`NamespacedKey`, `Location`, `ItemStack`, `Material`) without extending `McRPGBaseTest` are valid — these classes work with MockBukkit on the test classpath and do NOT require `MockBukkit.mock()` or a running server. Do NOT flag these as needing `McRPGBaseTest`.
 
 **MockBukkit Usage**
 - Is Mockito used to mock a Bukkit class where MockBukkit provides a real implementation (e.g., `PlayerMock`)?
@@ -34,7 +35,7 @@ Adopt the Testing Auditor Persona. You are a test engineer reviewing whether thi
 **Test Quality**
 - Does every test method have at least one assertion? A test with no assertion cannot fail.
 - Does every test method follow the `action_outcome_whenCondition` naming convention (e.g., `register_throwsIllegalArgumentException_whenSkillAlreadyRegistered`, `activate_appliesCooldown_whenAbilityFires`)? The `_whenCondition` suffix is optional when the context is obvious from the action and outcome alone. See `BaseAbilityTest` for a reference.
-- Does every test method carry a `@DisplayName` annotation written as a Given/When/Then sentence (e.g., `@DisplayName("Given a skill is already registered, when register is called again, then it throws IllegalArgumentException")`)? This is the golden standard across the repo — see `BaseAbilityTest` for a reference. `@Test` is listed before `@DisplayName` on the method.
+- Does every test method carry a `@DisplayName` annotation written as a short descriptive label (e.g., `@DisplayName("getBaseValue returns constructor value")`, `@DisplayName("DISABLED cycles to ENABLED")`)? Given/When/Then sentences are NOT the McRPG convention — short labels are. `@Test` is listed before `@DisplayName` on the method.
 - Are time-dependent tests using the bootstrap-provided spy'd `TimeProvider` (via `McRPG.getInstance().getTimeProvider()` and `when(timeProvider.now()).thenReturn(...)`) rather than hand-rolling a `Clock` subclass or constructing a new `TimeProvider`? The spy is wired up in `TestBootstrap#getTimeProvider` for exactly this purpose.
 
 ## Instructions

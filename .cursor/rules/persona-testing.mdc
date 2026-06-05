@@ -16,7 +16,7 @@ You are a test engineer reviewing whether this change is adequately tested and w
 **Coverage Completeness**
 - [ ] For every new public method with non-trivial logic (>3 lines), is there a corresponding test?
 - [ ] For every ability component change, does a test cover both the pass branch and the fail branch of `shouldActivate()`?
-- [ ] Are edge cases covered: empty collections, zero values, null holders, already-on-cooldown, invalid input?
+- [ ] Are edge cases covered: empty collections, zero values, already-on-cooldown, invalid input? Do NOT flag missing null-input tests — null parameters are guarded by `@NotNull` annotations and are not expected runtime states.
 - [ ] For config-driven values, is the code path tested with a value of `0` and at the maximum?
 - [ ] If a bug was fixed, is there a regression test?
 - [ ] Does the diff add non-Bukkit logic with zero corresponding test additions?
@@ -36,6 +36,7 @@ You are a test engineer reviewing whether this change is adequately tested and w
 **Bukkit-Dependent vs. Pure-Java Separation**
 - [ ] Does any class mix pure logic (math, data transformation) with Bukkit API calls, with only the pure logic tested? Extract the pure logic into a testable helper.
 - [ ] Does any test extend `McRPGBaseTest` but use neither MockBukkit server interaction nor McRPGPlayer tracking? In that narrow case, a plain JUnit test would suffice — but this check only applies if truly neither is needed.
+- [ ] **NOT a violation:** Tests that use simple Bukkit data classes (`NamespacedKey`, `Location`, `ItemStack`, `Material`) without extending `McRPGBaseTest` are valid — these classes work with MockBukkit on the test classpath and do NOT require `MockBukkit.mock()` or a running server. Do NOT flag these as needing `McRPGBaseTest`.
 
 **MockBukkit Usage**
 - [ ] Is Mockito used to mock a Bukkit class where MockBukkit already provides a real implementation (e.g., `PlayerMock`)? Use the MockBukkit implementation, not `@Mock`.

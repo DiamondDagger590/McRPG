@@ -26,6 +26,7 @@ import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import com.diamonddagger590.mccore.util.TimeProvider;
 
 import java.time.Instant;
 import java.util.Optional;
@@ -45,12 +46,18 @@ import static org.mockito.Mockito.when;
 @ExtendWith(McRPGPlayerExtension.class)
 class CooldownableAbilityTest extends McRPGBaseTest {
 
+    private static final Instant FIXED_NOW = Instant.ofEpochMilli(1_000_000L);
+
     private StubCooldownableAbility ability;
     private AbilityHolder holder;
     private AbilityAttributeRegistry attributeRegistry;
+    private TimeProvider timeProvider;
 
     @BeforeEach
     void setUp() {
+        timeProvider = mcRPG.getTimeProvider();
+        when(timeProvider.now()).thenReturn(FIXED_NOW);
+
         attributeRegistry = new AbilityAttributeRegistry();
         RegistryAccess.registryAccess().register(attributeRegistry);
 
@@ -86,7 +93,7 @@ class CooldownableAbilityTest extends McRPGBaseTest {
         @Test
         @DisplayName("returns false when cooldown has expired")
         void returnsFalse_whenCooldownExpired() {
-            long pastTime = mcRPG.getTimeProvider().now().toEpochMilli() - 5000;
+            long pastTime = FIXED_NOW.toEpochMilli() - 5000;
             AbilityData data = new AbilityData(ability.getAbilityKey());
             data.addAttribute(new AbilityCooldownAttribute(pastTime));
             holder.addAbilityData(data);
@@ -97,7 +104,7 @@ class CooldownableAbilityTest extends McRPGBaseTest {
         @Test
         @DisplayName("returns true when cooldown is still active")
         void returnsTrue_whenCooldownActive() {
-            long futureTime = mcRPG.getTimeProvider().now().toEpochMilli() + 10000;
+            long futureTime = FIXED_NOW.toEpochMilli() + 10000;
             AbilityData data = new AbilityData(ability.getAbilityKey());
             data.addAttribute(new AbilityCooldownAttribute(futureTime));
             holder.addAbilityData(data);
@@ -119,7 +126,7 @@ class CooldownableAbilityTest extends McRPGBaseTest {
         @Test
         @DisplayName("returns stored cooldown value")
         void returnsStoredCooldownValue() {
-            long cooldownEnd = mcRPG.getTimeProvider().now().toEpochMilli() + 15000;
+            long cooldownEnd = FIXED_NOW.toEpochMilli() + 15000;
             AbilityData data = new AbilityData(ability.getAbilityKey());
             data.addAttribute(new AbilityCooldownAttribute(cooldownEnd));
             holder.addAbilityData(data);
@@ -156,12 +163,11 @@ class CooldownableAbilityTest extends McRPGBaseTest {
             AbilityData data = new AbilityData(ability.getAbilityKey());
             holder.addAbilityData(data);
 
-            long beforeCooldown = mcRPG.getTimeProvider().now().toEpochMilli();
             long appliedCooldown = ability.putHolderOnCooldown(holder, 10);
 
             assertEquals(10, appliedCooldown);
             long storedCooldown = ability.getCooldownForHolder(holder);
-            assertEquals(beforeCooldown + 10000, storedCooldown);
+            assertEquals(FIXED_NOW.toEpochMilli() + 10000, storedCooldown);
         }
 
         @Test

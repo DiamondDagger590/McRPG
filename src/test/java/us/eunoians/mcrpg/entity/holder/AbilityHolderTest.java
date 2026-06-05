@@ -9,7 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockbukkit.mockbukkit.MockBukkit;
+
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGBaseTest;
@@ -435,6 +435,10 @@ class AbilityHolderTest extends McRPGBaseTest {
             server.getScheduler().performTicks(3 * 20L);
 
             server.getPluginManager().assertEventNotFired(AbilityCooldownExpireEvent.class);
+
+            server.getScheduler().performTicks(7 * 20L);
+
+            server.getPluginManager().assertEventFired(AbilityCooldownExpireEvent.class);
         }
     }
 
