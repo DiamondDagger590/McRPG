@@ -154,8 +154,8 @@ class CooldownableAbilityTest extends McRPGBaseTest {
         }
 
         @Test
-        @DisplayName("fires AbilityPutOnCooldownEvent")
-        void firesAbilityPutOnCooldownEvent() {
+        @DisplayName("puts holder on cooldown after application")
+        void putsHolderOnCooldown_afterApplication() {
             AbilityData data = new AbilityData(ability.getAbilityKey());
             holder.addAbilityData(data);
 
