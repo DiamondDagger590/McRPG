@@ -424,6 +424,7 @@ public class AbilityHolder {
                 }
             };
             delayableCoreTask.runTask();
+            abilityCooldownExpireTasks.put(abilityKey, delayableCoreTask.getBukkitTaskId());
         }
     }
 

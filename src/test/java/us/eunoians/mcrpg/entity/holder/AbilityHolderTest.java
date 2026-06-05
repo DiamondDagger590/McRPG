@@ -1,16 +1,28 @@
 package us.eunoians.mcrpg.entity.holder;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
+import org.bukkit.event.Event;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockbukkit.mockbukkit.MockBukkit;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.ability.BaseAbility;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.MockAbility;
+import us.eunoians.mcrpg.ability.impl.type.SkillAbility;
+import us.eunoians.mcrpg.builder.item.ability.AbilityItemBuilder;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
+import us.eunoians.mcrpg.event.ability.AbilityCooldownExpireEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.Optional;
@@ -21,10 +33,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
+@ExtendWith(McRPGPlayerExtension.class)
 class AbilityHolderTest extends McRPGBaseTest {
 
     private AbilityHolder holder;
+    private AbilityRegistry abilityRegistry;
     private MockAbility mockAbility;
     private NamespacedKey abilityKey;
 
@@ -33,7 +48,7 @@ class AbilityHolderTest extends McRPGBaseTest {
         AbilityAttributeRegistry attributeRegistry = new AbilityAttributeRegistry();
         RegistryAccess.registryAccess().register(attributeRegistry);
 
-        AbilityRegistry abilityRegistry = new AbilityRegistry(mcRPG);
+        abilityRegistry = new AbilityRegistry(mcRPG);
         RegistryAccess.registryAccess().register(abilityRegistry);
 
         mockAbility = new MockAbility(mcRPG);
@@ -223,6 +238,45 @@ class AbilityHolderTest extends McRPGBaseTest {
         }
 
         @Test
+        @DisplayName("addActiveAbility with duration makes ability active immediately")
+        void addActiveAbility_withDuration_makesAbilityActiveImmediately() {
+            holder.addActiveAbility(abilityKey, 5);
+            assertTrue(holder.isAbilityActive(abilityKey));
+        }
+
+        @Test
+        @DisplayName("addActiveAbility with duration auto-removes after elapsed time")
+        void addActiveAbility_withDuration_autoRemovesAfterElapsedTime() {
+            holder.addActiveAbility(abilityKey, 5);
+            assertTrue(holder.isAbilityActive(abilityKey));
+
+            server.getScheduler().performTicks(5 * 20L);
+
+            assertFalse(holder.isAbilityActive(abilityKey));
+        }
+
+        @Test
+        @DisplayName("addActiveAbility by ability with duration auto-removes after elapsed time")
+        void addActiveAbility_byAbility_withDuration_autoRemovesAfterElapsedTime() {
+            holder.addActiveAbility(mockAbility, 3);
+            assertTrue(holder.isAbilityActive(mockAbility));
+
+            server.getScheduler().performTicks(3 * 20L);
+
+            assertFalse(holder.isAbilityActive(mockAbility));
+        }
+
+        @Test
+        @DisplayName("addActiveAbility with duration stays active before time elapses")
+        void addActiveAbility_withDuration_staysActiveBeforeTimeElapses() {
+            holder.addActiveAbility(abilityKey, 5);
+
+            server.getScheduler().performTicks(4 * 20L);
+
+            assertTrue(holder.isAbilityActive(abilityKey));
+        }
+
+        @Test
         @DisplayName("removeActiveAbility by key makes ability inactive")
         void removeActiveAbility_byKey_makesAbilityInactive() {
             holder.addActiveAbility(abilityKey);
@@ -250,22 +304,6 @@ class AbilityHolderTest extends McRPGBaseTest {
         @Test
         @DisplayName("getCurrentlyActiveAbilities returns empty set initially")
         void getCurrentlyActiveAbilities_returnsEmptySet_initially() {
-            assertTrue(holder.getCurrentlyActiveAbilities().isEmpty());
-        }
-    }
-
-    @Nested
-    @DisplayName("Cleanup")
-    class Cleanup {
-
-        @Test
-        @DisplayName("cleanupHolder clears active abilities")
-        void cleanupHolder_clearsActiveAbilities() {
-            holder.addActiveAbility(abilityKey);
-            assertTrue(holder.isAbilityActive(abilityKey));
-
-            holder.cleanupHolder();
-            assertFalse(holder.isAbilityActive(abilityKey));
             assertTrue(holder.getCurrentlyActiveAbilities().isEmpty());
         }
     }
@@ -308,6 +346,247 @@ class AbilityHolderTest extends McRPGBaseTest {
             UUID uuid = UUID.randomUUID();
             AbilityHolder uuidHolder = new AbilityHolder(mcRPG, uuid);
             assertEquals(uuid, uuidHolder.getUUID());
+        }
+    }
+
+    @Nested
+    @DisplayName("getPlugin")
+    class GetPlugin {
+
+        @Test
+        @DisplayName("returns the plugin passed in constructor")
+        void returnsPlugin() {
+            assertSame(mcRPG, holder.getPlugin());
+        }
+    }
+
+    @Nested
+    @DisplayName("Cooldown expire notification timer")
+    class CooldownExpireNotificationTimer {
+
+        @BeforeEach
+        void clearSchedulerAndEventHistory() {
+            server.getScheduler().cancelTasks(mcRPG);
+            server.getPluginManager().clearEvents();
+        }
+
+        @Test
+        @DisplayName("fires AbilityCooldownExpireEvent after cooldown elapses for online player")
+        void firesEvent_afterCooldownElapses(@NotNull McRPGPlayer mcRPGPlayer) {
+            addPlayerToServer(mcRPGPlayer);
+            AbilityHolder playerHolder = mcRPGPlayer.asSkillHolder();
+
+            playerHolder.startCooldownExpireNotificationTimer(mockAbility, 3);
+            server.getScheduler().performTicks(3 * 20L);
+
+            server.getPluginManager().assertEventFired(AbilityCooldownExpireEvent.class);
+        }
+
+        @Test
+        @DisplayName("does not fire event before cooldown elapses")
+        void doesNotFireEvent_beforeCooldownElapses(@NotNull McRPGPlayer mcRPGPlayer) {
+            addPlayerToServer(mcRPGPlayer);
+            AbilityHolder playerHolder = mcRPGPlayer.asSkillHolder();
+
+            playerHolder.startCooldownExpireNotificationTimer(mockAbility, 5);
+            server.getScheduler().performTicks(4 * 20L);
+
+            server.getPluginManager().assertEventNotFired(AbilityCooldownExpireEvent.class);
+        }
+
+        @Test
+        @DisplayName("does not schedule timer for non-player entity")
+        void doesNotScheduleTimer_forNonPlayerEntity() {
+            holder.startCooldownExpireNotificationTimer(mockAbility, 3);
+            server.getScheduler().performTicks(3 * 20L);
+
+            server.getPluginManager().assertEventNotFired(AbilityCooldownExpireEvent.class);
+        }
+
+        @Test
+        @DisplayName("removeCooldownExpireNotificationTimer prevents event from firing")
+        void removeCooldownExpireNotificationTimer_preventsEvent(@NotNull McRPGPlayer mcRPGPlayer) {
+            addPlayerToServer(mcRPGPlayer);
+            AbilityHolder playerHolder = mcRPGPlayer.asSkillHolder();
+
+            playerHolder.startCooldownExpireNotificationTimer(mockAbility, 5);
+            playerHolder.removeCooldownExpireNotificationTimer(mockAbility);
+            server.getScheduler().performTicks(5 * 20L);
+
+            server.getPluginManager().assertEventNotFired(AbilityCooldownExpireEvent.class);
+        }
+
+        @Test
+        @DisplayName("removeCooldownExpireNotificationTimer is safe when no timer exists")
+        void removeCooldownExpireNotificationTimer_safeWhenNoTimer() {
+            holder.removeCooldownExpireNotificationTimer(mockAbility);
+            holder.removeCooldownExpireNotificationTimer(abilityKey);
+        }
+
+        @Test
+        @DisplayName("starting new timer replaces existing timer")
+        void startingNewTimer_replacesExistingTimer(@NotNull McRPGPlayer mcRPGPlayer) {
+            addPlayerToServer(mcRPGPlayer);
+            AbilityHolder playerHolder = mcRPGPlayer.asSkillHolder();
+
+            playerHolder.startCooldownExpireNotificationTimer(abilityKey, 3);
+            playerHolder.startCooldownExpireNotificationTimer(abilityKey, 10);
+
+            server.getScheduler().performTicks(3 * 20L);
+
+            server.getPluginManager().assertEventNotFired(AbilityCooldownExpireEvent.class);
+        }
+    }
+
+    @Nested
+    @DisplayName("getAllAbilityDataForSkill")
+    class GetAllAbilityDataForSkill {
+
+        private StubSkillAbility skillAbility;
+        private NamespacedKey skillKey;
+
+        @BeforeEach
+        void setUpSkillAbility() {
+            skillKey = new NamespacedKey(mcRPG, "test-skill");
+            skillAbility = new StubSkillAbility(mcRPG, skillKey);
+            abilityRegistry.register(skillAbility);
+        }
+
+        @Test
+        @DisplayName("returns empty set when no abilities belong to skill")
+        void returnsEmptySet_whenNoAbilitiesBelongToSkill() {
+            NamespacedKey otherSkillKey = new NamespacedKey(mcRPG, "other-skill");
+            Set<AbilityData> result = holder.getAllAbilityDataForSkill(otherSkillKey);
+            assertTrue(result.isEmpty());
+        }
+
+        @Test
+        @DisplayName("returns ability data for abilities belonging to skill")
+        void returnsAbilityData_forAbilitiesBelongingToSkill() {
+            AbilityData data = new AbilityData(skillAbility.getAbilityKey());
+            holder.addAbilityData(data);
+
+            Set<AbilityData> result = holder.getAllAbilityDataForSkill(skillKey);
+            assertEquals(1, result.size());
+            assertTrue(result.contains(data));
+        }
+
+        @Test
+        @DisplayName("auto-creates ability data for skill abilities without stored data")
+        void autoCreatesAbilityData_forSkillAbilitiesWithoutStoredData() {
+            Set<AbilityData> result = holder.getAllAbilityDataForSkill(skillKey);
+            assertEquals(1, result.size());
+        }
+
+        @Test
+        @DisplayName("does not include non-skill abilities")
+        void doesNotIncludeNonSkillAbilities() {
+            AbilityData mockData = new AbilityData(abilityKey);
+            holder.addAbilityData(mockData);
+
+            Set<AbilityData> result = holder.getAllAbilityDataForSkill(skillKey);
+            assertFalse(result.stream().anyMatch(d -> d.getAbilityKey().equals(abilityKey)));
+        }
+    }
+
+    @Nested
+    @DisplayName("Cleanup")
+    class Cleanup {
+
+        @BeforeEach
+        void clearSchedulerAndEventHistory() {
+            server.getScheduler().cancelTasks(mcRPG);
+            server.getPluginManager().clearEvents();
+        }
+
+        @Test
+        @DisplayName("cleanupHolder clears active abilities")
+        void cleanupHolder_clearsActiveAbilities() {
+            holder.addActiveAbility(abilityKey);
+            assertTrue(holder.isAbilityActive(abilityKey));
+
+            holder.cleanupHolder();
+            assertFalse(holder.isAbilityActive(abilityKey));
+            assertTrue(holder.getCurrentlyActiveAbilities().isEmpty());
+        }
+
+        @Test
+        @DisplayName("cleanupHolder cancels cooldown expire timers")
+        void cleanupHolder_cancelsCooldownExpireTimers(@NotNull McRPGPlayer mcRPGPlayer) {
+            addPlayerToServer(mcRPGPlayer);
+            AbilityHolder playerHolder = mcRPGPlayer.asSkillHolder();
+
+            playerHolder.startCooldownExpireNotificationTimer(mockAbility, 5);
+            playerHolder.cleanupHolder();
+
+            server.getScheduler().performTicks(5 * 20L);
+
+            server.getPluginManager().assertEventNotFired(AbilityCooldownExpireEvent.class);
+        }
+    }
+
+    private static final class StubSkillAbility extends BaseAbility implements SkillAbility {
+
+        private final NamespacedKey skillKey;
+
+        StubSkillAbility(@NotNull McRPG plugin, @NotNull NamespacedKey skillKey) {
+            super(plugin, new NamespacedKey(plugin, "stub-skill-ability"));
+            this.skillKey = skillKey;
+        }
+
+        @Override
+        public @NotNull NamespacedKey getSkillKey() {
+            return skillKey;
+        }
+
+        @Override
+        public boolean activateAbility(@NotNull AbilityHolder holder, @NotNull Event event) {
+            return true;
+        }
+
+        @Override
+        public boolean isAbilityEnabled() {
+            return true;
+        }
+
+        @Override
+        public boolean isPassive() {
+            return false;
+        }
+
+        @Override
+        public @NotNull String getDatabaseName() {
+            return "stub_skill_ability";
+        }
+
+        @Override
+        public @NotNull String getName(@NotNull McRPGPlayer player) {
+            return "Stub Skill Ability";
+        }
+
+        @Override
+        public @NotNull String getName() {
+            return "Stub Skill Ability";
+        }
+
+        @Override
+        public @NotNull Component getDisplayName(@NotNull McRPGPlayer player) {
+            return Component.text("Stub Skill Ability");
+        }
+
+        @Override
+        public @NotNull Component getDisplayName() {
+            return Component.text("Stub Skill Ability");
+        }
+
+        @Override
+        public @NotNull AbilityItemBuilder getDisplayItemBuilder(@NotNull McRPGPlayer player) {
+            return mock(AbilityItemBuilder.class);
+        }
+
+        @Override
+        public @NotNull Optional<NamespacedKey> getExpansionKey() {
+            return Optional.empty();
         }
     }
 }
