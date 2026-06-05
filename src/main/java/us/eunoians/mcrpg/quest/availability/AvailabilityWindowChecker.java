@@ -16,7 +16,6 @@ import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainPlayerData;
 import us.eunoians.mcrpg.quest.chain.QuestChainPlayerState;
 import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
-import us.eunoians.mcrpg.quest.chain.QuestChainState;
 import us.eunoians.mcrpg.quest.chain.availability.AvailabilityConfig;
 import us.eunoians.mcrpg.quest.chain.availability.WindowClosePolicy;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
@@ -26,7 +25,9 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -35,11 +36,20 @@ import java.util.Optional;
  * standalone quest definitions. When a window transitions from available to unavailable,
  * the configured {@link WindowClosePolicy} is applied to any active instances.
  * <p>
+ * This task runs on Bukkit's async scheduler thread. Each interval tick follows a
+ * two-phase pattern: availability transitions are computed on the async thread (pure
+ * time-based comparisons against immutable config), then side effects (event firing,
+ * state mutation, grace period scheduling) are applied on the main thread via
+ * {@code Bukkit.getScheduler().runTask()}.
+ * <p>
  * The checker maintains per-key previous-availability snapshots to detect open-to-close
  * transitions. Only transitions trigger policy enforcement; steady-state checks are no-ops.
+ * The snapshot maps are published via {@code volatile} writes on the main thread so the
+ * async compute phase can read them safely.
  * <p>
  * Grace period tasks are tracked by Bukkit task ID so they can be cancelled if the window
  * re-opens before the grace period expires (e.g., overlapping windows or config reload).
+ * All {@code activeGraceTasks} access is confined to the main thread.
  * <p>
  * Eviction: {@code previousChainAvailability}, {@code previousQuestAvailability}, and
  * {@code activeGraceTasks} are bounded by the number of registered definitions with
@@ -50,8 +60,8 @@ import java.util.Optional;
 public final class AvailabilityWindowChecker extends CancelableCoreTask {
 
     private final McRPG plugin;
-    private final Map<NamespacedKey, Boolean> previousChainAvailability;
-    private final Map<NamespacedKey, Boolean> previousQuestAvailability;
+    private volatile Map<NamespacedKey, Boolean> previousChainAvailability;
+    private volatile Map<NamespacedKey, Boolean> previousQuestAvailability;
     private final Map<NamespacedKey, Integer> activeGraceTasks;
 
     /**
@@ -112,18 +122,18 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
         if (definitionOpt.isEmpty()) {
             return false;
         }
-        // QuestDefinition does not yet carry AvailabilityConfig; always available.
         return true;
     }
 
     /**
-     * Called when the initial delay completes. Reconciles the current availability state
-     * against any active chain or quest instances that may have become unavailable while
-     * the server was offline.
+     * Called when the initial delay completes. Computes which chains are currently
+     * unavailable on the async thread, then hops to the main thread to apply
+     * close policies and build the initial availability snapshot.
      */
     @Override
     protected void onDelayComplete() {
-        reconcileOnStartup();
+        List<PendingTransition> startupTransitions = computeStartupReconciliation();
+        Bukkit.getScheduler().runTask(plugin, () -> applyStartupReconciliation(startupTransitions));
     }
 
     /**
@@ -135,14 +145,20 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
     }
 
     /**
-     * Called each time a full check interval completes. Checks all chains and quests
-     * for availability window transitions and applies close policies as needed.
+     * Called each time a full check interval completes on the async thread. Computes
+     * availability transitions, then schedules a main-thread task to apply side effects
+     * (event firing, state mutation, grace period management) and refresh the snapshot.
      */
     @Override
     protected void onIntervalComplete() {
-        checkAllChains();
-        checkAllQuests();
-        snapshotCurrentAvailability();
+        List<PendingTransition> chainTransitions = computeChainTransitions();
+        List<PendingTransition> questTransitions = computeQuestTransitions();
+
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            chainTransitions.forEach(this::applyChainTransition);
+            questTransitions.forEach(this::applyQuestTransition);
+            snapshotCurrentAvailability();
+        });
     }
 
     /**
@@ -173,15 +189,18 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
     }
 
     /**
-     * Reconciles availability state on first startup. For any chain or quest definition
-     * that has an availability config and is currently unavailable, applies the close
-     * policy to expire or cancel active instances that may have been started before the
-     * window closed (e.g., server was offline during the transition).
+     * Computes which chains are currently unavailable at server startup. Called on the
+     * async thread during {@link #onDelayComplete()}. Only performs pure time-based
+     * comparisons against immutable config — no side effects.
+     *
+     * @return transitions for chains that need close policy applied
      */
-    private void reconcileOnStartup() {
+    @NotNull
+    private List<PendingTransition> computeStartupReconciliation() {
         QuestChainRegistry chainRegistry = RegistryAccess.registryAccess()
                 .registry(McRPGRegistryKey.QUEST_CHAIN);
 
+        List<PendingTransition> transitions = new ArrayList<>();
         for (QuestChainDefinition definition : chainRegistry.allChains()) {
             Optional<AvailabilityConfig> configOpt = definition.getAvailabilityConfig();
             if (configOpt.isEmpty()) {
@@ -189,28 +208,44 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
             }
             AvailabilityConfig config = configOpt.get();
             boolean available = config.isCurrentlyAvailable(currentTimeInZone(config));
-            previousChainAvailability.put(definition.getChainKey(), available);
-
             if (!available) {
-                applyChainClosePolicy(definition.getChainKey(), config);
+                transitions.add(new PendingTransition(definition.getChainKey(), config, true, false));
             }
         }
+        return transitions;
+    }
 
-        // Quest definitions do not yet have AvailabilityConfig, so no reconciliation needed.
+    /**
+     * Applies startup reconciliation on the main thread. Applies close policies for
+     * chains that were found to be unavailable, then builds the initial availability
+     * snapshot for subsequent interval checks.
+     *
+     * @param transitions the transitions computed by {@link #computeStartupReconciliation()}
+     */
+    private void applyStartupReconciliation(@NotNull List<PendingTransition> transitions) {
+        for (PendingTransition transition : transitions) {
+            applyChainClosePolicy(transition.key(), transition.config());
+        }
+        snapshotCurrentAvailability();
 
         plugin.getLogger().info("[AvailabilityWindowChecker] Startup reconciliation complete. "
                 + "Tracking " + previousChainAvailability.size() + " chain availability window(s).");
     }
 
     /**
-     * Iterates all registered chain definitions that have an {@link AvailabilityConfig} and
-     * detects transitions from available to unavailable. When a close transition is detected,
-     * the configured {@link WindowClosePolicy} is applied.
+     * Computes chain availability transitions by comparing current window state against
+     * the previous snapshot. Called on the async thread. Reads the volatile snapshot
+     * reference once for a consistent view.
+     *
+     * @return transitions that need to be applied on the main thread
      */
-    private void checkAllChains() {
+    @NotNull
+    private List<PendingTransition> computeChainTransitions() {
         QuestChainRegistry chainRegistry = RegistryAccess.registryAccess()
                 .registry(McRPGRegistryKey.QUEST_CHAIN);
+        Map<NamespacedKey, Boolean> chainAvailability = this.previousChainAvailability;
 
+        List<PendingTransition> transitions = new ArrayList<>();
         for (QuestChainDefinition definition : chainRegistry.allChains()) {
             Optional<AvailabilityConfig> configOpt = definition.getAvailabilityConfig();
             if (configOpt.isEmpty()) {
@@ -219,39 +254,71 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
             AvailabilityConfig config = configOpt.get();
             NamespacedKey chainKey = definition.getChainKey();
             boolean nowAvailable = config.isCurrentlyAvailable(currentTimeInZone(config));
-            boolean wasAvailable = previousChainAvailability.getOrDefault(chainKey, true);
+            boolean wasAvailable = chainAvailability.getOrDefault(chainKey, true);
 
             if (wasAvailable && !nowAvailable) {
-                plugin.getLogger().info("[AvailabilityWindowChecker] Chain '" + chainKey
-                        + "' window closed. Applying close policy: " + config.onWindowClose());
-                applyChainClosePolicy(chainKey, config);
+                transitions.add(new PendingTransition(chainKey, config, true, false));
             } else if (!wasAvailable && nowAvailable) {
-                cancelGraceTask(chainKey);
-                plugin.getLogger().info("[AvailabilityWindowChecker] Chain '" + chainKey
-                        + "' window opened.");
+                transitions.add(new PendingTransition(chainKey, config, false, true));
             }
+        }
+        return transitions;
+    }
 
-            previousChainAvailability.put(chainKey, nowAvailable);
+    /**
+     * Computes quest availability transitions. Currently returns an empty list because
+     * {@link QuestDefinition} does not yet carry an {@link AvailabilityConfig}.
+     *
+     * @return transitions that need to be applied on the main thread
+     */
+    @NotNull
+    private List<PendingTransition> computeQuestTransitions() {
+        return List.of();
+    }
+
+    /**
+     * Applies a single chain availability transition on the main thread. Handles
+     * both window-close (apply close policy) and window-reopen (cancel grace task).
+     *
+     * @param transition the transition to apply
+     */
+    private void applyChainTransition(@NotNull PendingTransition transition) {
+        if (transition.windowReopened()) {
+            cancelGraceTask(transition.key());
+            plugin.getLogger().info("[AvailabilityWindowChecker] Chain '" + transition.key()
+                    + "' window opened.");
+        }
+        if (transition.windowClosed()) {
+            plugin.getLogger().info("[AvailabilityWindowChecker] Chain '" + transition.key()
+                    + "' window closed. Applying close policy: " + transition.config().onWindowClose());
+            applyChainClosePolicy(transition.key(), transition.config());
         }
     }
 
     /**
-     * Iterates all registered quest definitions that have an {@link AvailabilityConfig} and
-     * detects transitions from available to unavailable. When a close transition is detected,
-     * the configured {@link WindowClosePolicy} is applied.
-     * <p>
-     * Currently a no-op because {@link QuestDefinition} does not yet carry an
-     * {@link AvailabilityConfig}.
+     * Applies a single quest availability transition on the main thread. Handles
+     * both window-close (apply close policy) and window-reopen (cancel grace task).
+     *
+     * @param transition the transition to apply
      */
-    private void checkAllQuests() {
-        // QuestDefinition does not yet carry AvailabilityConfig.
-        // When it does, this method will mirror checkAllChains() but iterate
-        // QuestDefinitionRegistry and call applyQuestClosePolicy().
+    private void applyQuestTransition(@NotNull PendingTransition transition) {
+        if (transition.windowReopened()) {
+            cancelGraceTask(transition.key());
+            plugin.getLogger().info("[AvailabilityWindowChecker] Quest '" + transition.key()
+                    + "' window opened.");
+        }
+        if (transition.windowClosed()) {
+            plugin.getLogger().info("[AvailabilityWindowChecker] Quest '" + transition.key()
+                    + "' window closed. Applying close policy: " + transition.config().onWindowClose());
+            applyQuestClosePolicy(transition.key(), transition.config());
+        }
     }
 
     /**
-     * Rebuilds the current availability snapshots from the registry. Called after each
-     * check interval so that stale keys from unregistered definitions are evicted.
+     * Rebuilds the current availability snapshots from the registry. Called on the main
+     * thread after applying transitions so that stale keys from unregistered definitions
+     * are evicted. The resulting maps are published via volatile write for safe reads
+     * by the async compute phase.
      */
     private void snapshotCurrentAvailability() {
         QuestChainRegistry chainRegistry = RegistryAccess.registryAccess()
@@ -264,15 +331,14 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
                 newChainSnapshot.put(definition.getChainKey(), available);
             });
         }
-        previousChainAvailability.clear();
-        previousChainAvailability.putAll(newChainSnapshot);
+        previousChainAvailability = newChainSnapshot;
 
         // Quest snapshot will be added when QuestDefinition gains AvailabilityConfig.
     }
 
     /**
      * Applies the configured close policy for a chain whose availability window has closed.
-     * Switches on the policy:
+     * Must be called on the main thread.
      * <ul>
      *     <li>{@link WindowClosePolicy#EXPIRE_ACTIVE} — immediately expires all active instances</li>
      *     <li>{@link WindowClosePolicy#ALLOW_FINISH} — no-op; players are allowed to finish</li>
@@ -295,7 +361,7 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
 
     /**
      * Applies the configured close policy for a quest whose availability window has closed.
-     * Switches on the policy:
+     * Must be called on the main thread.
      * <ul>
      *     <li>{@link WindowClosePolicy#EXPIRE_ACTIVE} — immediately cancels all active instances</li>
      *     <li>{@link WindowClosePolicy#ALLOW_FINISH} — no-op; players are allowed to finish</li>
@@ -318,8 +384,8 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
 
     /**
      * Expires all active chain instances for online players whose chain state matches the
-     * given chain key and is currently {@link QuestChainState#ACTIVE}. Fires a cancellable
-     * {@link QuestChainExpireEvent} per player before transitioning the state.
+     * given chain key and is currently active. Fires a cancellable {@link QuestChainExpireEvent}
+     * per player before transitioning the state. Must be called on the main thread.
      *
      * @param chainKey the chain definition key to expire
      */
@@ -367,7 +433,7 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
     /**
      * Cancels all active quest instances whose definition key matches the given quest key.
      * Iterates the {@link QuestManager}'s active quest pool and calls
-     * {@link QuestInstance#cancel()} on matching instances.
+     * {@link QuestInstance#cancel()} on matching instances. Must be called on the main thread.
      *
      * @param questKey the quest definition key to cancel instances for
      */
@@ -393,7 +459,8 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
     /**
      * Schedules a delayed task that will expire all active chain instances for the given
      * chain key after the grace period defined in the availability config. The scheduled
-     * task ID is tracked so it can be cancelled if the window re-opens.
+     * task ID is tracked so it can be cancelled if the window re-opens. Must be called
+     * on the main thread.
      *
      * @param chainKey the chain definition key
      * @param config   the availability config containing the grace period duration
@@ -426,7 +493,8 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
     /**
      * Schedules a delayed task that will cancel all active quest instances for the given
      * quest key after the grace period defined in the availability config. The scheduled
-     * task ID is tracked so it can be cancelled if the window re-opens.
+     * task ID is tracked so it can be cancelled if the window re-opens. Must be called
+     * on the main thread.
      *
      * @param questKey the quest definition key
      * @param config   the availability config containing the grace period duration
@@ -458,7 +526,7 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
 
     /**
      * Cancels an active grace period task for the given key, if one exists. Used when a
-     * window re-opens before the grace period expires.
+     * window re-opens before the grace period expires. Must be called on the main thread.
      *
      * @param key the chain or quest definition key
      */
@@ -482,4 +550,20 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
     private ZonedDateTime currentTimeInZone(@NotNull AvailabilityConfig config) {
         return plugin.getTimeProvider().now().atZone(config.timezone());
     }
+
+    /**
+     * Immutable carrier for an availability window transition detected during the async
+     * compute phase. Consumed on the main thread to apply the corresponding side effects.
+     *
+     * @param key            the chain or quest definition key
+     * @param config         the availability config for the definition
+     * @param windowClosed   {@code true} if the window transitioned from available to unavailable
+     * @param windowReopened {@code true} if the window transitioned from unavailable to available
+     */
+    private record PendingTransition(
+            @NotNull NamespacedKey key,
+            @NotNull AvailabilityConfig config,
+            boolean windowClosed,
+            boolean windowReopened
+    ) {}
 }
