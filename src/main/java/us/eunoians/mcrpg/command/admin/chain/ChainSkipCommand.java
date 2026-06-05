@@ -37,7 +37,7 @@ import java.util.Optional;
  * Each step is advanced via
  * {@link QuestChainManager#forceAdvanceChain(java.util.UUID, org.bukkit.NamespacedKey)}
  * in a loop until the chain leaves the {@link QuestChainState#ACTIVE} state. Rewards
- * and the {@link us.eunoians.mcrpg.event.quest.QuestChainCompleteEvent} fire through
+ * and the {@link us.eunoians.mcrpg.event.quest.chain.QuestChainCompleteEvent} fire through
  * the normal chain-completion path.
  */
 public class ChainSkipCommand extends ChainAdminCommandBase {
@@ -136,7 +136,7 @@ public class ChainSkipCommand extends ChainAdminCommandBase {
      * advanced via {@link QuestChainManager#forceAdvanceChain} until the chain transitions
      * out of {@link QuestChainState#ACTIVE}.
      * <p>
-     * Rewards and the {@link us.eunoians.mcrpg.event.quest.QuestChainCompleteEvent} fire
+     * Rewards and the {@link us.eunoians.mcrpg.event.quest.chain.QuestChainCompleteEvent} fire
      * through the normal chain-completion path inside {@code forceAdvanceChain}.
      *
      * @param mcRPGPlayer the player whose chain will be skipped

@@ -152,7 +152,10 @@ src/main/java/us/eunoians/mcrpg/
 │       ├── QuestDetailGui.java
 │       ├── QuestHistoryGui.java
 │       ├── QuestAbandonConfirmGui.java
-│       └── slot/                       # Detail, overview, reward, phase, abandon, history slots
+│       ├── slot/                       # Detail, overview, reward, phase, abandon, history slots
+│       └── chain/                      # Quest chain history GUI
+│           ├── QuestChainHistoryDetailGui.java
+│           └── slot/                   # Chain-specific slots (history, step, gated)
 ├── listener/
 │   ├── ability/                        # Per-skill ability Bukkit event listeners
 │   │   ├── AbilityListener.java        # Interface with activateAbilities() default and passive mana checks
@@ -168,10 +171,17 @@ src/main/java/us/eunoians/mcrpg/
 │       ├── QuestCompleteListener.java
 │       ├── QuestCancelListener.java
 │       ├── QuestFeedbackListener.java
-│       └── AbilityUpgradeQuestListener.java
+│       ├── AbilityUpgradeQuestListener.java
+│       └── chain/                      # Quest chain lifecycle listeners
+│           ├── QuestChainCancelListener.java
+│           ├── QuestChainFeedbackListener.java
+│           ├── QuestChainFirstJoinListener.java
+│           ├── QuestChainLoginListener.java
+│           └── QuestChainProgressListener.java
 ├── event/
 │   ├── ability/                        # Custom Bukkit events per ability activation
 │   └── quest/                          # QuestStartEvent, QuestCompleteEvent, QuestCancelEvent, etc.
+│       └── chain/                      # Quest chain events and cascade events
 ├── database/table/
 │   ├── SkillDAO.java                   # Skill data persistence
 │   ├── LoadoutAbilityDAO.java          # Loadout slot persistence
@@ -182,7 +192,8 @@ src/main/java/us/eunoians/mcrpg/
 │   │   ├── QuestObjectiveContributionDAO.java
 │   │   ├── QuestCompletionLogDAO.java
 │   │   ├── PendingRewardDAO.java
-│   │   └── scope/                      # Per-scope-type DAOs (SinglePlayer, Permission, Land)
+│   │   ├── scope/                      # Per-scope-type DAOs (SinglePlayer, Permission, Land)
+│   │   └── chain/                      # Quest chain state and completion log DAOs
 │   └── board/                          # Board rotation, offering, cooldown, personal tracking DAOs
 │       ├── BoardRotationDAO.java
 │       ├── BoardOfferingDAO.java
