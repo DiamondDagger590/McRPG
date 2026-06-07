@@ -282,12 +282,24 @@ class BleedManagerTest extends McRPGBaseTest {
             assertTrue(bleedManager.isEntityBleeding(entity));
         }
 
-        @DisplayName("holder overload starts bleeding")
+        @DisplayName("holder overload with null holder starts bleeding")
         @Test
-        void startBleeding_holderOverload_startsBleeding() {
+        void startBleeding_holderOverload_nullHolder_startsBleeding() {
             LivingEntity entity = spawnEntity(org.bukkit.entity.Zombie.class);
 
             bleedManager.startBleeding(null, entity);
+
+            assertTrue(bleedManager.isEntityBleeding(entity));
+        }
+
+        @DisplayName("holder overload with non-null holder starts bleeding")
+        @Test
+        void startBleeding_holderOverload_nonNullHolder_startsBleeding() {
+            LivingEntity entity = spawnEntity(org.bukkit.entity.Zombie.class);
+            us.eunoians.mcrpg.entity.holder.AbilityHolder holder =
+                    new us.eunoians.mcrpg.entity.holder.AbilityHolder(mcRPG, UUID.randomUUID());
+
+            bleedManager.startBleeding(holder, entity, 3, 1.0);
 
             assertTrue(bleedManager.isEntityBleeding(entity));
         }
