@@ -1,10 +1,20 @@
 package us.eunoians.mcrpg.localization;
 
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.util.LinkedNode;
+import net.kyori.adventure.audience.Audience;
+import org.bukkit.entity.Player;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -16,6 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class McRPGDisplayDecimalFormatterTest {
 
@@ -284,7 +296,255 @@ class McRPGDisplayDecimalFormatterTest {
         void formatDisplayDecimal_playerOverload_throwsWithoutManager() {
             assertThrows(
                     NullPointerException.class,
-                    () -> formatter.formatDisplayDecimal((us.eunoians.mcrpg.entity.player.McRPGPlayer) null, 1.0));
+                    () -> formatter.formatDisplayDecimal((McRPGPlayer) null, 1.0));
+        }
+
+        @DisplayName("no-arg constructor formatter throws NullPointerException on Audience double overload")
+        @Test
+        void formatDisplayDecimal_audienceDoubleOverload_throwsWithoutManager() {
+            Audience audience = mock(Audience.class);
+            assertThrows(
+                    NullPointerException.class,
+                    () -> formatter.formatDisplayDecimal(audience, 1.0));
+        }
+
+        @DisplayName("no-arg constructor formatter throws NullPointerException on Audience float overload")
+        @Test
+        void formatDisplayDecimal_audienceFloatOverload_throwsWithoutManager() {
+            Audience audience = mock(Audience.class);
+            assertThrows(
+                    NullPointerException.class,
+                    () -> formatter.formatDisplayDecimal(audience, 1.0f));
+        }
+
+        @DisplayName("no-arg constructor formatter throws NullPointerException on Audience custom digits overload")
+        @Test
+        void formatDisplayDecimal_audienceCustomDigitsOverload_throwsWithoutManager() {
+            Audience audience = mock(Audience.class);
+            assertThrows(
+                    NullPointerException.class,
+                    () -> formatter.formatDisplayDecimal(audience, 1.0, 1, 2));
+        }
+
+        @DisplayName("no-arg constructor formatter throws NullPointerException on Audience float custom digits overload")
+        @Test
+        void formatDisplayDecimal_audienceFloatCustomDigitsOverload_throwsWithoutManager() {
+            Audience audience = mock(Audience.class);
+            assertThrows(
+                    NullPointerException.class,
+                    () -> formatter.formatDisplayDecimal(audience, 1.0f, 1, 2));
+        }
+
+        @DisplayName("no-arg constructor formatter throws NullPointerException on McRPGPlayer custom digits overload")
+        @Test
+        void formatDisplayDecimal_playerCustomDigitsOverload_throwsWithoutManager() {
+            McRPGPlayer player = mock(McRPGPlayer.class);
+            assertThrows(
+                    NullPointerException.class,
+                    () -> formatter.formatDisplayDecimal(player, 1.0, 1, 2));
+        }
+
+        @DisplayName("no-arg constructor formatter throws NullPointerException on McRPGPlayer float overload")
+        @Test
+        void formatDisplayDecimal_playerFloatOverload_throwsWithoutManager() {
+            McRPGPlayer player = mock(McRPGPlayer.class);
+            assertThrows(
+                    NullPointerException.class,
+                    () -> formatter.formatDisplayDecimal(player, 1.0f));
+        }
+
+        @DisplayName("no-arg constructor formatter throws NullPointerException on McRPGPlayer float custom digits overload")
+        @Test
+        void formatDisplayDecimal_playerFloatCustomDigitsOverload_throwsWithoutManager() {
+            McRPGPlayer player = mock(McRPGPlayer.class);
+            assertThrows(
+                    NullPointerException.class,
+                    () -> formatter.formatDisplayDecimal(player, 1.0f, 1, 2));
+        }
+    }
+
+    @Nested
+    @DisplayName("McRPGPlayer overloads with manager")
+    class PlayerOverloadsWithManager {
+
+        private McRPGLocalizationManager mockManager;
+        private McRPGDisplayDecimalFormatter managedFormatter;
+        private McRPGPlayer mockPlayer;
+
+        @Test
+        @DisplayName("player double overload uses locale chain head")
+        void formatDisplayDecimal_playerDouble_usesLocaleChainHead() {
+            setupManagedFormatter(Locale.GERMANY);
+
+            String result = managedFormatter.formatDisplayDecimal(mockPlayer, 1234.56);
+
+            assertTrue(result.contains(","), "Expected German comma as decimal separator in: " + result);
+        }
+
+        @Test
+        @DisplayName("player double overload with custom digit bounds")
+        void formatDisplayDecimal_playerDouble_customDigitBounds() {
+            setupManagedFormatter(Locale.US);
+
+            String result = managedFormatter.formatDisplayDecimal(mockPlayer, 3.14159, 0, 4);
+
+            assertEquals("3.1416", result);
+        }
+
+        @Test
+        @DisplayName("player float overload uses locale chain head")
+        void formatDisplayDecimal_playerFloat_usesLocaleChainHead() {
+            setupManagedFormatter(Locale.US);
+
+            String result = managedFormatter.formatDisplayDecimal(mockPlayer, 2.5f);
+
+            assertEquals("2.5", result);
+        }
+
+        @Test
+        @DisplayName("player float overload with custom digit bounds")
+        void formatDisplayDecimal_playerFloat_customDigitBounds() {
+            setupManagedFormatter(Locale.US);
+
+            String result = managedFormatter.formatDisplayDecimal(mockPlayer, 2.567f, 1, 2);
+
+            assertEquals("2.57", result);
+        }
+
+        @Test
+        @DisplayName("player double default bounds formats whole number")
+        void formatDisplayDecimal_playerDouble_wholeNumber() {
+            setupManagedFormatter(Locale.US);
+
+            String result = managedFormatter.formatDisplayDecimal(mockPlayer, 42.0);
+
+            assertEquals("42.0", result);
+        }
+
+        @SuppressWarnings("unchecked")
+        private void setupManagedFormatter(Locale playerLocale) {
+            mockManager = mock(McRPGLocalizationManager.class);
+            managedFormatter = new McRPGDisplayDecimalFormatter(mockManager);
+            mockPlayer = mock(McRPGPlayer.class);
+            LinkedNode<Locale> chain = new LinkedNode<>(playerLocale);
+            when(mockManager.getLocaleChain(mockPlayer)).thenReturn(chain);
+        }
+    }
+
+    @Nested
+    @DisplayName("Audience overloads with manager")
+    class AudienceOverloadsWithManager {
+
+        @Test
+        @DisplayName("non-Player audience uses server default locale")
+        void formatDisplayDecimal_nonPlayerAudience_usesServerDefault() {
+            McRPGLocalizationManager mockManager = mock(McRPGLocalizationManager.class);
+            when(mockManager.getServerDefaultLocale()).thenReturn(Locale.US);
+            McRPGDisplayDecimalFormatter managedFormatter = new McRPGDisplayDecimalFormatter(mockManager);
+
+            Audience audience = mock(Audience.class);
+            String result = managedFormatter.formatDisplayDecimal(audience, 1234.56);
+
+            assertTrue(result.contains(","), "Expected US comma as grouping separator in: " + result);
+            assertTrue(result.contains("."), "Expected US period as decimal separator in: " + result);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        @DisplayName("Player audience with loaded McRPGPlayer uses player locale chain")
+        void formatDisplayDecimal_playerAudience_loaded_usesPlayerLocale() {
+            McRPGLocalizationManager mockManager = mock(McRPGLocalizationManager.class);
+            McRPGDisplayDecimalFormatter managedFormatter = new McRPGDisplayDecimalFormatter(mockManager);
+
+            Player mockBukkitPlayer = mock(Player.class);
+            UUID playerUuid = UUID.randomUUID();
+            when(mockBukkitPlayer.getUniqueId()).thenReturn(playerUuid);
+
+            McRPGPlayer mockMcRPGPlayer = mock(McRPGPlayer.class);
+            LinkedNode<Locale> chain = new LinkedNode<>(Locale.GERMANY);
+            when(mockManager.getLocaleChain(mockMcRPGPlayer)).thenReturn(chain);
+            when(mockManager.getServerDefaultLocale()).thenReturn(Locale.US);
+
+            McRPGPlayerManager mockPlayerManager = mock(McRPGPlayerManager.class);
+            when(mockPlayerManager.getPlayer(playerUuid)).thenReturn(Optional.of(mockMcRPGPlayer));
+
+            RegistryAccess mockRegistryAccess = mock(RegistryAccess.class);
+            com.diamonddagger590.mccore.registry.manager.ManagerRegistry mockManagerRegistry = mock(com.diamonddagger590.mccore.registry.manager.ManagerRegistry.class);
+            when(mockRegistryAccess.registry(RegistryKey.MANAGER)).thenReturn(mockManagerRegistry);
+            when(mockManagerRegistry.<McRPGPlayerManager>manager(McRPGManagerKey.PLAYER)).thenReturn(mockPlayerManager);
+            when(mockManager.plugin()).thenReturn(mock(us.eunoians.mcrpg.McRPG.class));
+            when(mockManager.plugin().registryAccess()).thenReturn(mockRegistryAccess);
+
+            String result = managedFormatter.formatDisplayDecimal((Audience) mockBukkitPlayer, 3.14);
+
+            assertTrue(result.contains(","), "Expected German comma as decimal separator in: " + result);
+        }
+
+        @SuppressWarnings("unchecked")
+        @Test
+        @DisplayName("Player audience with unloaded McRPGPlayer uses server default")
+        void formatDisplayDecimal_playerAudience_unloaded_usesServerDefault() {
+            McRPGLocalizationManager mockManager = mock(McRPGLocalizationManager.class);
+            McRPGDisplayDecimalFormatter managedFormatter = new McRPGDisplayDecimalFormatter(mockManager);
+
+            Player mockBukkitPlayer = mock(Player.class);
+            UUID playerUuid = UUID.randomUUID();
+            when(mockBukkitPlayer.getUniqueId()).thenReturn(playerUuid);
+
+            when(mockManager.getServerDefaultLocale()).thenReturn(Locale.US);
+
+            McRPGPlayerManager mockPlayerManager = mock(McRPGPlayerManager.class);
+            when(mockPlayerManager.getPlayer(playerUuid)).thenReturn(Optional.empty());
+
+            RegistryAccess mockRegistryAccess = mock(RegistryAccess.class);
+            com.diamonddagger590.mccore.registry.manager.ManagerRegistry mockManagerRegistry = mock(com.diamonddagger590.mccore.registry.manager.ManagerRegistry.class);
+            when(mockRegistryAccess.registry(RegistryKey.MANAGER)).thenReturn(mockManagerRegistry);
+            when(mockManagerRegistry.<McRPGPlayerManager>manager(McRPGManagerKey.PLAYER)).thenReturn(mockPlayerManager);
+            when(mockManager.plugin()).thenReturn(mock(us.eunoians.mcrpg.McRPG.class));
+            when(mockManager.plugin().registryAccess()).thenReturn(mockRegistryAccess);
+
+            String result = managedFormatter.formatDisplayDecimal((Audience) mockBukkitPlayer, 3.14);
+
+            assertTrue(result.contains("."), "Expected US period as decimal separator in: " + result);
+        }
+
+        @Test
+        @DisplayName("non-Player Audience float overload uses server default")
+        void formatDisplayDecimal_nonPlayerAudienceFloat_usesServerDefault() {
+            McRPGLocalizationManager mockManager = mock(McRPGLocalizationManager.class);
+            when(mockManager.getServerDefaultLocale()).thenReturn(Locale.US);
+            McRPGDisplayDecimalFormatter managedFormatter = new McRPGDisplayDecimalFormatter(mockManager);
+
+            Audience audience = mock(Audience.class);
+            String result = managedFormatter.formatDisplayDecimal(audience, 2.5f);
+
+            assertEquals("2.5", result);
+        }
+
+        @Test
+        @DisplayName("non-Player Audience with custom digit bounds uses server default")
+        void formatDisplayDecimal_nonPlayerAudienceCustomDigits_usesServerDefault() {
+            McRPGLocalizationManager mockManager = mock(McRPGLocalizationManager.class);
+            when(mockManager.getServerDefaultLocale()).thenReturn(Locale.US);
+            McRPGDisplayDecimalFormatter managedFormatter = new McRPGDisplayDecimalFormatter(mockManager);
+
+            Audience audience = mock(Audience.class);
+            String result = managedFormatter.formatDisplayDecimal(audience, 3.14159, 0, 4);
+
+            assertEquals("3.1416", result);
+        }
+
+        @Test
+        @DisplayName("non-Player Audience float with custom digit bounds uses server default")
+        void formatDisplayDecimal_nonPlayerAudienceFloatCustomDigits_usesServerDefault() {
+            McRPGLocalizationManager mockManager = mock(McRPGLocalizationManager.class);
+            when(mockManager.getServerDefaultLocale()).thenReturn(Locale.US);
+            McRPGDisplayDecimalFormatter managedFormatter = new McRPGDisplayDecimalFormatter(mockManager);
+
+            Audience audience = mock(Audience.class);
+            String result = managedFormatter.formatDisplayDecimal(audience, 2.567f, 1, 2);
+
+            assertEquals("2.57", result);
         }
     }
 }
