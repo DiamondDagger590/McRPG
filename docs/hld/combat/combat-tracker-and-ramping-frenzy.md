@@ -1,6 +1,6 @@
 # Combat Tracker & Ramping Frenzy
 
-> **Last Updated:** 2026-06-04
+> **Last Updated:** 2026-06-07
 > **Status:** HLD — not yet implemented
 > **Scope:** Per-entity combat session tracking, extensible combat state platform, combat log system, Ramping Frenzy ability
 
@@ -85,6 +85,8 @@ Player B dies:
 
 **Participant tracking** stores the entity's UUID, its classification (player or mob, with entity type for mobs), and a **per-participant last-interaction timestamp**. This timestamp is updated whenever the session owner and that specific participant interact (damage in either direction). If a participant's last-interaction time exceeds the session timeout without any new interaction, that participant is removed from the roster (fires `CombatParticipantRemoveEvent` with reason `TIMEOUT`) — even if the session itself is still active due to other participants.
 
+**Participant capacity:** Player participant slots are **unlimited** — every player interaction is tracked to ensure complete PvP attribution and combat log coverage. Mob participant slots use a configurable **FIFO queue** (default: 16). When the queue is full, the oldest mob participant is evicted to make room for the newest. If an evicted mob is still actively fighting, the next damage event re-adds it immediately — FIFO naturally prioritizes recent combatants. This prevents degenerate cases like mob farms from unbounded roster growth while keeping the mob roster fresh.
+
 ```
 Player A fights Player B and Mob 1:
   A's session: participants={B (3s ago), Mob1 (0.5s ago)}
@@ -121,6 +123,10 @@ stateDiagram-v2
 ```
 
 **Entry:** A session is created (or an existing one updated) when a combat trigger fires for an entity that either has no session or whose session should add a new participant. The primary trigger is `EntityDamageByEntityEvent`; custom `CombatCondition` implementations can provide additional triggers (see §5).
+
+**Projectile resolution:** When the damager is a `Projectile`, the combat tracker resolves the source entity via `Projectile.getShooter()`. McRPG sets a PDC timestamp on projectiles at fire time, enabling downstream consumers (combo abilities, timing-based scaling) to access flight time and launch ordering.
+
+**DOT and indirect damage attribution:** Damage-over-time effects (Bleed, future DOTs) and AoE splash damage carry the source player's UUID and count as ongoing combat activity — they reset the source's session timeout and maintain the participant relationship. The combat tracker doesn't distinguish direct from indirect damage; it only needs the source UUID.
 
 **Timeout:** Each combat event involving the entity resets a configurable inactivity timer (default: 8 seconds). When the timer expires with no new combat events, the session ends naturally.
 
@@ -169,17 +175,45 @@ This captures "healed an ally for X health in one combat" when the healer is als
 Abilities and third-party plugins can attach **typed, keyed state** to a combat session. This is the mechanism that replaces ad-hoc managers like `BleedManager` — instead of each ability maintaining its own `Map<UUID, State>`, state rides on the combat session and gets automatic lifecycle management.
 
 ```java
-// Keyed by NamespacedKey, typed via CombatStateType<T>
-CombatStateType<Integer> FRENZY_STACKS = CombatStateType.of(
-    new NamespacedKey("mcrpg", "ramping_frenzy_stacks"),
+// Simple state — no resolver, raw value returned directly
+CombatStateType<Integer> HIT_STREAK = CombatStateType.of(
+    new NamespacedKey("mcrpg", "hit_streak"),
     Integer.class, 0  // default value
 );
 
 // Read/write during combat
-session.getState(FRENZY_STACKS);              // → 0 (default)
-session.setState(FRENZY_STACKS, 5);           // → 5
-session.modifyState(FRENZY_STACKS, s -> s + 1); // → 6
+session.getState(HIT_STREAK);              // → 0 (default)
+session.setState(HIT_STREAK, 5);           // → 5
+session.modifyState(HIT_STREAK, s -> s + 1); // → 6
 ```
+
+**Resolved state types:** A `CombatStateType<T>` can optionally declare a `CombatStateResolver<T>` — a function that computes the **effective** value from the raw stored value plus external context (the session, the entity's current state). When a resolver is present:
+
+- `getState(type)` returns the **resolved** value — the resolver's output
+- `getRawState(type)` returns the **stored** value — what was last written via `setState`
+- `setState(type, value)` writes to raw storage only — the resolver is not involved in writes
+
+This follows the same pattern as `PlayerStatInstance.getEffectiveMax()`, which computes base + modifiers on read rather than storing the computed value.
+
+```java
+// Resolved state — effective value computed on every read
+CombatStateType<Integer> FRENZY_STACKS = CombatStateType.resolved(
+    new NamespacedKey("mcrpg", "ramping_frenzy_stacks"),
+    Integer.class, 0,
+    (session, rawStacks) -> {
+        int hasteFloor = computeFloorFromActiveHaste(session.getEntityUUID());
+        return Math.max(rawStacks, hasteFloor);
+    }
+);
+
+// Caller always gets the effective value — no manual floor checks needed
+session.getState(FRENZY_STACKS);     // → max(stored, haste floor)
+session.getRawState(FRENZY_STACKS);  // → just the stored value
+```
+
+**Design:** Resolvers are pure functions of (session, rawValue) → effectiveValue. They must be side-effect-free — reads should never mutate state. The resolver runs on every `getState()` call, so it should be lightweight (checking active potion effects is O(1) in Paper).
+
+Most state types don't need a resolver — `CombatStateType.of(...)` creates a simple type where `getState()` returns the raw value directly. Only types where external factors influence the effective value declare one via `CombatStateType.resolved(...)`.
 
 **Lifecycle scoping:** State types declare their lifecycle at registration time:
 
@@ -226,10 +260,18 @@ Third-party plugins listen to these at standard Bukkit event priorities.
 
 #### 5b. Custom Combat State Registration
 
-Plugins register `CombatStateType<T>` instances during their `onEnable` to attach arbitrary typed data to combat sessions. The combat tracker manages storage and lifecycle; the plugin reads/writes via the session API.
+`CombatStateType<T>` instances are registered via `CombatStateTypeContentPack` in a `ContentExpansion`, following the same pattern as `QuestObjectiveTypeContentPack`, `QuestRewardTypeContentPack`, etc. Standalone plugins that depend on McRPG but don't use the expansion system can register directly via the `CombatTrackerManager` API.
 
 ```java
-// Registration (plugin onEnable)
+// Via ContentExpansion (preferred for expansions)
+@Override
+public @NotNull CombatStateTypeContentPack getCombatStateTypeContent() {
+    CombatStateTypeContentPack pack = new CombatStateTypeContentPack(this);
+    pack.addContent(MY_STATE_TYPE);
+    return pack;
+}
+
+// Direct registration (standalone plugins)
 CombatStateType<MyData> MY_STATE = CombatStateType.of(myKey, MyData.class, defaultValue);
 combatTrackerManager.registerStateType(MY_STATE);
 
@@ -240,7 +282,17 @@ session.setState(MY_STATE, newValue);
 
 #### 5c. Custom Combat Conditions
 
-Plugins can register `CombatCondition` implementations that define additional triggers for entering or sustaining combat beyond the default damage-event trigger:
+`CombatCondition` implementations are registered via `CombatConditionContentPack` in a `ContentExpansion`. Standalone plugins can register directly via the `CombatTrackerManager` API.
+
+```java
+// Via ContentExpansion (preferred for expansions)
+@Override
+public @NotNull CombatConditionContentPack getCombatConditionContent() {
+    CombatConditionContentPack pack = new CombatConditionContentPack(this);
+    pack.addContent(new BossProximityCondition());
+    return pack;
+}
+```
 
 ```java
 public interface CombatCondition {
@@ -272,6 +324,7 @@ public interface CombatCondition {
 - Boss proximity: a plugin marks players as "in combat" when within 30 blocks of a boss mob
 - Arena plugins: combat state forced while inside an arena region
 - Aggro-based: mob has aggro on the player even without damage yet
+- Healing-as-combat: server owner wants healers to enter combat when healing combatants
 
 Custom conditions are evaluated by the timeout task alongside the standard inactivity check. A session won't timeout while any registered condition still returns `true` for the entity.
 
@@ -331,13 +384,28 @@ flowchart TD
 
 **Punishment extensibility:** Built-in punishments (kill, drop items, broadcast) cover common cases. Third-party plugins modify the punishment set in `CombatLogPunishmentEvent` or listen to `CombatSessionEndEvent` with reason `LOGOUT` for custom consequences (economy penalties, temporary bans, etc.).
 
+**Combat log audit trail:** All combat log punishments are persisted via `CombatLogDAO` for server owner review. Each record stores:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | LONG | Auto-increment primary key |
+| `player_uuid` | UUID | The player who combat logged |
+| `timestamp` | TIMESTAMP | When the logout occurred |
+| `world` | STRING | World name at time of logout |
+| `x`, `y`, `z` | DOUBLE | Location coordinates at time of logout |
+| `combat_type` | STRING | Derived session type (`PVE` or `PVP`) at time of logout |
+| `participant_uuids` | STRING | Comma-separated UUIDs of participants at time of logout |
+| `punishments_applied` | STRING | Comma-separated punishment types that were applied |
+
+**Admin command:** `/mcrpg combatlog <player> [page]` displays a paginated history of a player's combat log incidents. Each entry shows the timestamp, combat type, and a clickable location (MiniMessage `<click:run_command:'/tp ...'>`) that teleports staff to the spot. This gives server owners a concrete audit trail when players dispute combat log punishments.
+
 ### 7. Ramping Frenzy
 
 Ramping Frenzy is an **innate passive** Swords ability — always active, no unlock gate, no mana cost. It rewards sustained aggression by granting escalating Haste as the player lands consecutive attacks, with a gradual wind-down when they stop.
 
 #### Stack Mechanics
 
-**Gaining stacks:** Each melee hit with a sword adds one stack (global — any target, not per-target). The stack count is stored as session-scoped combat state via `CombatStateType<Integer>`.
+**Gaining stacks:** Each melee hit with a sword adds one stack (global — any target, not per-target). The stack count is stored as session-scoped combat state via a **resolved** `CombatStateType<Integer>` — the resolver computes the effective stack count as `max(storedStacks, floorFromActiveHaste)`, so external Haste sources automatically participate without callers needing to check (see §4 and External Haste Seeding below).
 
 **Stack shed model:** When the player stops attacking, stacks decay one at a time on a configurable interval (e.g., one stack lost every 1.5 seconds of inactivity). Each attack resets the shed timer. This creates a "maintain your tempo" dynamic — brief pauses are forgiven, but extended lulls erode your stacks.
 
@@ -390,13 +458,19 @@ At T1, the player caps at 6 stacks (Haste II) and stacks decay quickly — a tas
 
 #### Activation Flow
 
+The activation and shed flows use the resolver's `getState()` / `getRawState()` split to cleanly handle external Haste floors:
+
+- **On hit (increment):** reads `getState()` (resolved — includes external floor), increments, writes via `setState()`
+- **On shed (decrement):** reads `getRawState()` (stored only), decrements, writes via `setState()`. The resolved value may still be higher than the new raw value if an external Haste floor is active — that's correct, the floor holds
+- **On consume (read for scaling):** reads `getState()` (resolved). A player with 0 stored stacks but Haste III from Super Breaker gets 7 effective stacks. The consume ability scales off 7, wipes all Haste, and resets stored stacks to 0
+
 ```mermaid
 flowchart TD
     Attack[Player lands a sword hit]
     HasSession{Active combat session?}
-    GetStacks[Read FRENZY_STACKS from session state]
-    BelowMax{Stacks < max for tier?}
-    Increment[Increment stacks + reset shed timer]
+    GetStacks["getState(FRENZY_STACKS) — resolved value"]
+    BelowMax{Effective stacks < max for tier?}
+    Increment["setState(effective + 1) + reset shed timer"]
     MapLevel[Map new stack count to Haste level]
     ApplyHaste[Apply Haste at mapped level — duration = shed interval × 2]
     FireEvent[Fire RampingFrenzyStackGainEvent]
@@ -416,22 +490,113 @@ flowchart TD
 ```mermaid
 flowchart TD
     ShedTimer[Shed timer expires — no attacks]
-    ReadStacks[Read current stacks]
-    Decrement[Stacks = Stacks - 1]
-    HasStacks{Stacks > 0?}
-    MapLevel[Map new stack count to Haste level]
+    ReadRaw["getRawState(FRENZY_STACKS) — stored value only"]
+    Decrement["setState(raw - 1)"]
+    ReadEffective["getState(FRENZY_STACKS) — resolved value"]
+    HasStacks{Effective stacks > 0?}
+    MapLevel[Map effective stacks to Haste level]
     ApplyHaste[Apply Haste at mapped level — duration = shed interval × 2]
     ResetShed[Restart shed timer]
     Clear[Clear state — last Haste expires naturally]
 
-    ShedTimer --> ReadStacks
-    ReadStacks --> Decrement
-    Decrement --> HasStacks
+    ShedTimer --> ReadRaw
+    ReadRaw --> Decrement
+    Decrement --> ReadEffective
+    ReadEffective --> HasStacks
     HasStacks -->|"Yes"| MapLevel
     MapLevel --> ApplyHaste
     ApplyHaste --> ResetShed
     HasStacks -->|"No"| Clear
 ```
+
+#### External Haste Seeding via Resolver
+
+The Frenzy stack `CombatStateType` is declared with a resolver (see §4) that computes `max(storedStacks, floorFromActiveHaste)`. This means **any source of Haste** — McRPG abilities (Super Breaker), vanilla potions, beacons, third-party plugins — automatically participates in the Frenzy stack system without any explicit seeding logic.
+
+The resolver checks the player's highest active Haste potion effect level and maps it to a stack floor. Because this runs on every `getState()` call, it is always current — no event listeners needed, no sources missed.
+
+```java
+// Ramping Frenzy's state type declaration
+CombatStateType<Integer> FRENZY_STACKS = CombatStateType.resolved(
+    RAMPING_FRENZY_STACKS_KEY,
+    Integer.class, 0,
+    (session, rawStacks) -> {
+        Player player = Bukkit.getPlayer(session.getEntityUUID());
+        if (player == null) return rawStacks;
+        PotionEffect haste = player.getPotionEffect(PotionEffectType.HASTE);
+        if (haste == null) return rawStacks;
+        int hasteLevel = haste.getAmplifier() + 1;      // amplifier 0 = Haste I
+        int floor = hasteLevel * stacksPerHasteLevel;    // Haste III → 9
+        int tierMax = getMaxStacksForTier(session);
+        return Math.min(tierMax, Math.max(rawStacks, floor));
+    }
+);
+```
+
+**How the resolver interacts with each operation:**
+
+| Operation | Reads | Writes | Effect |
+|-----------|-------|--------|--------|
+| On hit (gain stack) | `getState()` → resolved | `setState(resolved + 1)` | Increments from effective value. If external floor is 7 and stored is 3, writes 8 |
+| On shed | `getRawState()` → stored | `setState(raw - 1)` | Decrements stored value. Effective may be higher if floor is active |
+| Consume ability | `getState()` → resolved | `setState(0)` + wipe Haste | Reads effective stacks for scaling. Then wipes everything — stored goes to 0, Haste effects removed, resolver returns 0 |
+| Query (any caller) | `getState()` → resolved | — | Always gets the effective value. No manual floor checks needed |
+
+```
+Example — Super Breaker grants Haste III for 10 seconds:
+
+  Player has Ramping Frenzy T3 (max 11 stacks)
+  Raw stored stacks: 0, Super Breaker Haste III active
+  getState() → resolver: max(0, 9) → returns 9
+  
+  Player hits with sword: setState(9 + 1) → stored = 10
+  Player hits again: setState(10 + 1) → stored = 11 (tier max)
+  Player stops, shed: raw 11 → 10 → 9 → 8... but getState() returns max(8, 9) → 9
+  Super Breaker expires: getState() returns max(8, 0) → 8. Normal shed resumes.
+```
+
+```
+Example — Consume ability with no prior sword hits:
+
+  Player activates Super Breaker (Haste III), no sword hits yet
+  Raw stored stacks: 0
+  Player activates "Frenzy Strike" consume active
+  → getState() → resolver: max(0, 9) → returns 9
+  → Consume: scale effect by 9, wipe all Haste, setState(0)
+  → getState() → resolver: max(0, 0) → returns 0. Clean reset.
+```
+
+```
+Example — Haste II potion + combat:
+
+  Player drinks Haste II potion (floor = 6), starts fighting
+  Builds to raw stored 10 through hits → getState() returns 10 (above floor)
+  Stops attacking, shed: 10 → 9 → 8 → 7 → 6 → 5... getState() returns max(5, 6) → 6
+  Potion expires: getState() returns max(5, 0) → 5. Shed continues.
+```
+
+**Why a resolver instead of explicit seeding:** A resolver is source-agnostic — any Haste effect, from any origin, participates automatically. No `EntityPotionEffectEvent` listener needed (which would miss beacons and conduits anyway). The cost is trivial — reading one potion effect on each `getState()` call. And any caller (consume abilities, component checks, quest objectives, third-party plugins) gets the correct effective value without knowing about the floor mechanic.
+
+#### Haste Consumption: "Cash In Your Momentum"
+
+Ramping Frenzy is designed as one half of a **build-and-spend** loop. Future Swords active abilities can **consume** the player's Haste — wiping ALL active Haste potion effects — and produce an effect scaled by the highest Haste level (i.e., Frenzy stack count) that was consumed.
+
+```
+Example — hypothetical "Frenzy Strike" active ability:
+
+  Player has 12 Ramping Frenzy stacks (Haste IV) + a Haste II potion running
+  Player activates Frenzy Strike via combo
+  → ALL Haste effects removed from the player (Frenzy's IV + potion's II)
+  → Frenzy stacks reset to 0
+  → Frenzy Strike deals bonus damage scaled by the consumed level (Haste IV → high damage)
+  → Player is now at 0 stacks, no Haste, must rebuild
+```
+
+**Potion anti-synergy:** This creates a deliberate tension with external Haste sources. Drinking a Haste potion before combat seeds your Frenzy stacks (good for sustained DPS), but activating a consume ability wipes the potion's Haste too (the potion becomes fuel for burst, not sustained speed). Players must choose: sustain (keep attacking, ride the Haste) or burst (cash in for a big hit and rebuild from zero).
+
+**Implementation:** The consume pattern reads `Frenzy stack count → Haste level` at activation time, calls `player.clearActivePotionEffects(PotionEffectType.HASTE)` (Paper API) to remove all Haste effects, resets Frenzy stacks to 0 via the combat state API, and passes the consumed level to the active ability's effect calculation. Specific consume abilities will be designed in their own HLDs; this section documents the architectural pattern they depend on.
+
+**Design constraint:** Consume abilities must gate on having Frenzy stacks > 0 (component check). Consuming zero stacks produces no effect — no free activation.
 
 #### Combat Session Integration
 
@@ -450,6 +615,7 @@ This replaces what would otherwise be a `RampingFrenzyManager` with a `Map<UUID,
 combat:
   session:
     timeout-seconds: 8              # Inactivity before session ends
+    max-mob-participants: 16        # FIFO queue size for mob participants (players are unlimited)
     condition-check-interval: 20    # Ticks between custom condition evaluations
   combat-log:
     mode: PLAYERS                   # DISABLED, PLAYERS, MOBS_AND_PLAYERS
@@ -457,6 +623,8 @@ combat:
       kill-on-logout: true
       drop-items: true
       broadcast-message: true
+  display:
+    show-combat-exit-message: true  # Only sends when combat-log mode would punish
   per-session-statistics:
     feed-to-cumulative: true        # Fold session stats into global stats on end
 ```
@@ -492,14 +660,16 @@ ability-configuration:
 
 | Extension | Mechanism | Use case |
 |-----------|-----------|----------|
-| Custom combat triggers | Register `CombatCondition` | Boss proximity, arena regions, healing-as-combat |
-| Custom session state | Register `CombatStateType<T>` with `SESSION` or `PERSISTENT` scope | Ability stacks, combo counters, buff tracking |
+| Custom combat triggers | `CombatConditionContentPack` or direct API | Boss proximity, arena regions, healing-as-combat |
+| Custom session state | `CombatStateTypeContentPack` or direct API, `SESSION` or `PERSISTENT` scope | Ability stacks, combo counters, buff tracking |
 | Persistent state storage | Declare serializer on `CombatStateType`; tracker handles DAO | Cross-combat tracking without custom tables |
 | Session lifecycle hooks | Listen to `CombatSession*Event` | Analytics, combat log plugins, UI overlays |
 | Combat log detection | Listen to `PlayerCombatLogEvent` | Staff exemption, vanish integration |
 | Combat log punishment | Listen to `CombatLogPunishmentEvent` | Modify/add/remove individual punishments |
+| Combat log audit | `CombatLogDAO` + `/mcrpg combatlog` command | Server owner dispute resolution |
 | Custom per-session statistics | Register stat keys via combat tracker API | Plugin-specific combat metrics |
 | Ramping Frenzy interaction | Listen to `RampingFrenzyStackGainEvent` | Synergy abilities, UI feedback |
+| Combat state display | PAPI placeholders (`%mcrpg_in_combat%`, `%mcrpg_combat_seconds_remaining%`) | Scoreboards, action bar plugins, BossBar countdown timers |
 
 ---
 
@@ -555,6 +725,24 @@ ability-configuration:
 
 **Why:** Different plugins need different hooks. A vanish plugin needs to exempt players from detection entirely — cancelling `PlayerCombatLogEvent`. An economy plugin needs to modify punishments — adding a gold penalty in `CombatLogPunishmentEvent` while keeping the built-in kill-on-logout. Combining these into one event forces plugins to inspect and manipulate both concerns simultaneously.
 
+### ContentPack Registration for State Types and Conditions
+
+**Decision:** `CombatStateType` and `CombatCondition` are registered via `CombatStateTypeContentPack` and `CombatConditionContentPack` in the `ContentExpansion` system, with a direct API fallback for standalone plugins.
+
+**Why:** Every other extensible type in McRPG (quest objective types, reward types, scope providers, template conditions) uses the ContentPack pattern. Combat state types and conditions are the same kind of extension — typed, keyed, registered at startup. Using ContentPacks keeps the registration path consistent and ensures combat extensions participate in the same lifecycle as all other content (ordered loading, expansion-scoped namespacing, clean shutdown).
+
+### Resolver-Based Haste Floor (Not Explicit Seeding)
+
+**Decision:** External Haste participation is implemented via a `CombatStateResolver` on the Frenzy stack state type, rather than via explicit seeding events or per-hit mutation logic.
+
+**Why:** A resolver computes the effective value on every read — any caller (`getState()`) automatically gets `max(stored, hasteFloor)` without knowing about external Haste sources. This is source-agnostic (works with potions, beacons, conduits, McRPG abilities, third-party plugins), requires no event listeners, and produces a clean interaction with consume abilities: the consume reads the resolved value for scaling, wipes Haste, resets stored stacks, and the next read correctly returns 0. The resolver is pure and side-effect-free — reads never mutate state. Follows the same pattern as `PlayerStatInstance.getEffectiveMax()` for modifier-based stat computation.
+
+### External Haste Seeds Frenzy (Not Walled Off)
+
+**Decision:** ALL sources of Haste (vanilla potions, beacons, McRPG abilities, third-party plugins) seed Ramping Frenzy stacks, rather than limiting seeding to McRPG abilities only.
+
+**Why:** Future Swords active abilities will consume ALL Haste effects (including external sources) to produce scaled burst effects. If external Haste didn't seed stacks, it would exist in a parallel system that consume abilities can't interact with. By making all Haste participate in the Frenzy stack system, consuming creates a real trade-off: the Haste potion you drank becomes fuel for a burst ability, not free sustained speed on top of your Frenzy. This anti-synergy is a deliberate design choice that makes Haste economy a meaningful player decision.
+
 ### Stack Shed Model (Not Hard Reset)
 
 **Decision:** Ramping Frenzy stacks decay one at a time on a timer, rather than all stacks expiring at once after a flat duration.
@@ -567,16 +755,50 @@ ability-configuration:
 
 **Why:** Rapid short Haste pulses (e.g., 0.75s each) are jarring and hard for players to read — the effect flickers and there's no intuitive way to tell how many stacks remain. Paper's potion system supports multiple concurrent effects, displaying only the highest level and longest remaining duration. By applying overlapping Haste effects with duration = `shed_interval × 2`, level transitions happen seamlessly: the old higher-level effect naturally expires and the lower one takes over. The player reads their current Haste level from the vanilla potion effect indicator — no custom HUD element needed.
 
----
+### Split Participant Capacity (Unlimited Players, Capped Mobs)
 
-## Open Questions
+**Decision:** Player participant slots are unlimited. Mob participant slots use a fixed-size FIFO queue — when the queue is full, the oldest mob participant is evicted to make room for the newest.
 
-1. **Participant capacity:** Should sessions have a max participant count to prevent degenerate cases (e.g., a mob farm with 50 entities)? A cap (or tiered tracking — full tracking for players, lightweight for mobs) might be needed for performance.
+**Why:** Players are the high-value participants: combat log punishment, PvP detection, and cross-session graph queries all rely on the player roster being complete. Capping players would silently drop PvP attribution. Mobs are high-volume and lower-stakes — a player in a mob farm could generate 50+ mob participants, but only the recent ones matter for timeout, DOT attribution, and derived combat type. FIFO eviction keeps the roster fresh: the oldest mob is the least likely to still be relevant, and if a mob is evicted but still fighting, the next damage event re-adds it immediately. The queue size is configurable (`combat.session.max-mob-participants`, default: 16).
 
-2. **Projectile attribution:** When a player shoots an arrow that hits a mob 3 seconds later, the `EntityDamageByEntityEvent` damager is the arrow (Projectile), not the player. The combat tracker needs to resolve the shooter via `Projectile.getShooter()`. This is straightforward but worth calling out — any custom `CombatCondition` that works with ranged attacks needs the same resolution.
+### PDC-Based Projectile Attribution
 
-3. **AoE and indirect damage:** If Player A's Bleed DOT is ticking on Mob 1, does that count as ongoing combat activity (resetting A's timeout), or only direct attacks? Leaning toward yes — the DOT is A's active effect — but this means Bleed (and future DOTs) need to carry attribution back to the source player.
+**Decision:** The combat tracker resolves projectile shooters via `Projectile.getShooter()`, and McRPG stores a launch timestamp on projectiles via a `PersistentDataContainer` (PDC) key at fire time.
 
-4. **Session persistence across server restarts:** Do active combat sessions survive a server restart/reload? Leaning toward no — sessions are transient in-memory state. A restart clears all sessions. Combat log punishment would need to handle the edge case of a crash during combat separately (probably outside scope).
+**Why:** `getShooter()` handles the basic "who shot this arrow?" question. The PDC timestamp enables richer mechanics beyond attribution: combo abilities can check whether sequential arrows were fired in order ("was this arrow launched before the last one that hit?"), and timing-based damage scaling can use flight time. The PDC is set once at launch (negligible cost) and read on hit alongside the existing `getShooter()` call. Any custom `CombatCondition` working with ranged attacks should use the same `getShooter()` resolution path; the timestamp PDC is available but optional for conditions that don't need timing data.
 
-5. **Display integration:** Should there be any visual indicator that a player is "in combat" (e.g., a subtitle message, sound cue on combat enter/exit)? This would help players know when it's safe to log out. Not blocking for the combat tracker itself, but a natural follow-up.
+### DOTs and Indirect Damage Count as Combat Activity
+
+**Decision:** Damage-over-time effects (Bleed, future DOTs) and AoE splash damage count as ongoing combat activity for the source player — they reset the source's session timeout and maintain the participant relationship.
+
+**Why:** A DOT is the source player's active effect — if Bleed is ticking on a mob, the player is still meaningfully in combat with that mob. Without attribution, a player could apply Bleed, walk away, and have their session timeout even though their damage is actively killing the target. This means all DOTs and indirect damage sources must carry attribution (source player UUID) back to the combat tracker. The combat tracker doesn't need to know *how* the damage was dealt — it just needs the source UUID to update the right session. Bleed already tracks the source player; future DOTs and AoE effects must follow the same pattern.
+
+### No Session Persistence Across Restarts
+
+**Decision:** Active combat sessions are transient in-memory state and are not persisted across server restarts or reloads. A restart clears all sessions.
+
+**Why:** Combat sessions are short-lived (seconds to minutes) and server restarts are disruptive events that already break combat flow — players are disconnected, mobs may despawn, the world state changes. Persisting sessions across restarts would add serialization complexity for minimal benefit. The edge case of a server crash during combat is outside scope — combat log punishment is designed for intentional disconnects, not infrastructure failures. `PERSISTENT`-scoped combat state data *is* saved (via the persistent state DAO) and survives restarts; only the session container itself and `SESSION`-scoped state are lost.
+
+### Combat Exit Display via PAPI and Conditional Messaging
+
+**Decision:** Combat state is exposed via PlaceholderAPI (PAPI) placeholders for server owners to integrate into custom HUD elements (scoreboards, action bar plugins, BossBar plugins). Additionally, when a player's combat session ends, a configurable "no longer in combat" message is sent — but **only** when the server's combat log settings would actually punish combat logging.
+
+**Why:** PAPI placeholders let server owners display combat state wherever they want — McRPG doesn't need to own the HUD. The conditional exit message solves the specific problem of "is it safe to log out?" without adding noise on servers where combat logging has no consequences. If `combat-log.mode` is `DISABLED`, no message is sent — there's nothing to warn about. If it's `PLAYERS` or `MOBS_AND_PLAYERS`, the player gets a brief message when their session ends so they know the punishment window has closed.
+
+**Supported placeholders:**
+
+| Placeholder | Type | Description |
+|-------------|------|-------------|
+| `%mcrpg_in_combat%` | BOOLEAN | `true` if the player has an active combat session, `false` otherwise |
+| `%mcrpg_combat_seconds_remaining%` | DOUBLE | Seconds until the session times out at current inactivity. Returns `0` if not in combat. Counts down from the timeout threshold based on time since last combat activity — resets to the full timeout on each new hit |
+
+These two placeholders cover the core server owner needs: conditional HUD elements ("show a combat icon when `in_combat` is true") and countdown timers ("display seconds remaining on a scoreboard or BossBar"). The seconds-remaining placeholder is computed live from the session's last-activity timestamp and the configured timeout — it's not a stored countdown.
+
+```yaml
+# config.yml
+combat:
+  display:
+    show-combat-exit-message: true    # Only sends when combat-log mode would punish
+```
+
+All open questions have been resolved — see Resolved Design Decisions above.
