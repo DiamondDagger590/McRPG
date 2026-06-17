@@ -34,7 +34,7 @@ class AbilityRegistryTest {
 
     @BeforeAll
     static void setupServer() {
-        server = MockBukkit.mock();
+        server = MockBukkit.getOrCreateMock();
     }
 
     @AfterAll

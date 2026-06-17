@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.listener.quest;
+package us.eunoians.mcrpg.listener.quest.chain;
 
 import com.diamonddagger590.mccore.event.player.PlayerLoadEvent;
 import com.diamonddagger590.mccore.player.CorePlayer;
@@ -113,7 +113,7 @@ public class QuestChainLoginListenerTest extends McRPGBaseTest {
 
         server.getPluginManager().callEvent(new PlayerLoadEvent(genericPlayer));
 
-        verify(mockChainManager, never()).reResolveOnLogin(eq(uuid));
+        verify(mockChainManager, never()).reResolveOnLogin(eq(uuid), any(Runnable.class));
     }
 
     @Test

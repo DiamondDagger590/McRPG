@@ -1,4 +1,4 @@
-package us.eunoians.mcrpg.event.quest;
+package us.eunoians.mcrpg.event.quest.chain;
 
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
-import us.eunoians.mcrpg.quest.chain.QuestChainRepeatMode;
 import us.eunoians.mcrpg.quest.chain.QuestChainStep;
 
 import java.util.List;
@@ -28,8 +27,8 @@ public class QuestChainStartEventTest extends McRPGBaseTest {
         return new QuestChainDefinition.Builder(chainKey, sourceKey, triggerKey, steps).build();
     }
 
-    @DisplayName("Given a chain start event, When getters are called, Then they return the values passed to the constructor")
     @Test
+    @DisplayName("Given a chain start event, When getters are called, Then they return the values passed to the constructor")
     void event_getters_returnConstructorValues() {
         QuestChainDefinition definition = buildDefinition();
         PlayerMock player = server.addPlayer();
@@ -42,8 +41,8 @@ public class QuestChainStartEventTest extends McRPGBaseTest {
         assertSame(firstStep, event.getFirstStep());
     }
 
-    @DisplayName("Given a chain start event, When getHandlers() is called, Then a HandlerList is returned")
     @Test
+    @DisplayName("Given a chain start event, When getHandlers() is called, Then a HandlerList is returned")
     void event_getHandlers_returnsHandlerList() {
         QuestChainDefinition definition = buildDefinition();
         PlayerMock player = server.addPlayer();

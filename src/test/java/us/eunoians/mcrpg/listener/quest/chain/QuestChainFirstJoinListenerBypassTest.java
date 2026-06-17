@@ -1,6 +1,7 @@
-package us.eunoians.mcrpg.listener.quest;
+package us.eunoians.mcrpg.listener.quest.chain;
 
 import com.diamonddagger590.mccore.event.player.PlayerLoadEvent;
+import org.bukkit.NamespacedKey;
 import org.bukkit.event.HandlerList;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -64,7 +65,7 @@ public class QuestChainFirstJoinListenerBypassTest extends McRPGBaseTest {
                 chainKey,
                 TutorialQuestSource.KEY,
                 FirstJoinChainAutoStartTrigger.KEY,
-                List.of(QuestChainStep.simple(new org.bukkit.NamespacedKey("test", "step1")))
+                List.of(QuestChainStep.simple(new NamespacedKey("test", "step1")))
         ).build();
         chainRegistry.register(tutorialChain);
 
@@ -82,13 +83,13 @@ public class QuestChainFirstJoinListenerBypassTest extends McRPGBaseTest {
     @Test
     @DisplayName("Given player has bypass permission and non-tutorial chain, when PlayerLoadEvent fires, then tryStartChain IS called")
     public void onPlayerLoad_bypassPermission_doesNotAffectNonTutorialChain() {
-        var chainKey = new org.bukkit.NamespacedKey("test", "non_tutorial_chain");
-        var nonTutorialSourceKey = new org.bukkit.NamespacedKey("mcrpg", "manual");
+        var chainKey = new NamespacedKey("test", "non_tutorial_chain");
+        var nonTutorialSourceKey = new NamespacedKey("mcrpg", "manual");
         QuestChainDefinition nonTutorialChain = new QuestChainDefinition.Builder(
                 chainKey,
                 nonTutorialSourceKey,
                 FirstJoinChainAutoStartTrigger.KEY,
-                List.of(QuestChainStep.simple(new org.bukkit.NamespacedKey("test", "step1")))
+                List.of(QuestChainStep.simple(new NamespacedKey("test", "step1")))
         ).build();
         chainRegistry.register(nonTutorialChain);
 
@@ -111,7 +112,7 @@ public class QuestChainFirstJoinListenerBypassTest extends McRPGBaseTest {
                 chainKey,
                 TutorialQuestSource.KEY,
                 FirstJoinChainAutoStartTrigger.KEY,
-                List.of(QuestChainStep.simple(new org.bukkit.NamespacedKey("test", "step1")))
+                List.of(QuestChainStep.simple(new NamespacedKey("test", "step1")))
         ).build();
         chainRegistry.register(tutorialChain);
 
