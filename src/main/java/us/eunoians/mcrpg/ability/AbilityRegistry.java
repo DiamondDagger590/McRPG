@@ -118,7 +118,8 @@ public class AbilityRegistry implements Registry<Ability> {
      * and will still allow the ability to be saved and exist in loadouts. This just prevents the ability from being loaded for future holders
      * and the ability will not be able to activate at all.
      * <p>
-     * This method will also result in the calling of an {@link AbilityUnregisterEvent} after the unregistration
+     * This method will also result in the calling of an {@link AbilityUnregisterEvent} with
+     * {@link AbilityUnregisterEvent.UnregisterReason#PERMANENT} after the unregistration
      * has finished ONLY if the ability was registered in the first place.
      *
      * @param ability The {@link Ability} to unregister
@@ -136,7 +137,8 @@ public class AbilityRegistry implements Registry<Ability> {
      * and will still allow the ability to be saved and exist in loadouts. This just prevents the ability from being loaded for future holders
      * and the ability will not be able to activate at all.
      * <p>
-     * This method will also result in the calling of an {@link AbilityUnregisterEvent} after the unregistration
+     * This method will also result in the calling of an {@link AbilityUnregisterEvent} with
+     * {@link AbilityUnregisterEvent.UnregisterReason#PERMANENT} after the unregistration
      * has finished ONLY if the ability was registered in the first place.
      *
      * @param abilityKey The {@link NamespacedKey} to unregister
@@ -160,13 +162,14 @@ public class AbilityRegistry implements Registry<Ability> {
             abilitiesWithoutSkills.remove(abilityKey);
         }
 
-        Bukkit.getPluginManager().callEvent(new AbilityUnregisterEvent(ability));
+        Bukkit.getPluginManager().callEvent(new AbilityUnregisterEvent(ability, AbilityUnregisterEvent.UnregisterReason.PERMANENT));
 
     }
 
     /**
      * Soft-disables an ability by removing it from the active registry and retaining it
-     * in a tracked set for re-registration on reload. Fires {@link AbilityUnregisterEvent}.
+     * in a tracked set for re-registration on reload. Fires {@link AbilityUnregisterEvent}
+     * with {@link AbilityUnregisterEvent.UnregisterReason#SOFT_DISABLE}.
      *
      * @param abilityKey the ability key to soft-disable
      */
@@ -190,7 +193,7 @@ public class AbilityRegistry implements Registry<Ability> {
         }
 
         softDisabledAbilities.put(abilityKey, ability);
-        Bukkit.getPluginManager().callEvent(new AbilityUnregisterEvent(ability));
+        Bukkit.getPluginManager().callEvent(new AbilityUnregisterEvent(ability, AbilityUnregisterEvent.UnregisterReason.SOFT_DISABLE));
     }
 
     /**
