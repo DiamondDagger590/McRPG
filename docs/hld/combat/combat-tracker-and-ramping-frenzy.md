@@ -1,6 +1,6 @@
 # Combat Tracker & Ramping Frenzy
 
-> **Last Updated:** 2026-06-07
+> **Last Updated:** 2026-06-16
 > **Status:** HLD — not yet implemented
 > **Scope:** Per-entity combat session tracking, extensible combat state platform, combat log system, Ramping Frenzy ability
 
@@ -670,6 +670,108 @@ ability-configuration:
 | Custom per-session statistics | Register stat keys via combat tracker API | Plugin-specific combat metrics |
 | Ramping Frenzy interaction | Listen to `RampingFrenzyStackGainEvent` | Synergy abilities, UI feedback |
 | Combat state display | PAPI placeholders (`%mcrpg_in_combat%`, `%mcrpg_combat_seconds_remaining%`) | Scoreboards, action bar plugins, BossBar countdown timers |
+
+---
+
+## Implementation Phases
+
+Each phase is scoped for a targeted LLD. Dependencies are listed — a phase can only begin implementation once its dependencies are complete.
+
+### Phase 1: Core Combat Session Engine
+
+> **Depends on:** nothing
+> **LLD scope:** `CombatSession`, `CombatTrackerManager`, participant model, session lifecycle, core events
+
+The foundation. Answers "is this entity in combat, and with whom?" without any consumer logic.
+
+| Deliverable | HLD section |
+|-------------|-------------|
+| `CombatSession` — per-entity session with participant roster (unlimited players, FIFO mob queue) | §1 |
+| `CombatTrackerManager` — session map, registered as `McRPGManagerKey.COMBAT_TRACKER` | Architecture Overview |
+| Participant tracking — UUID, classification, per-participant last-interaction timestamp | §1 |
+| Derived `CombatType` (PVE/PVP) — recomputed on roster changes | §1 |
+| Session lifecycle — entry via `EntityDamageByEntityEvent`, timeout task, per-participant timeout, death/despawn cleanup, logout session end | §2 |
+| Projectile resolution — `Projectile.getShooter()` + PDC launch timestamp | §2 |
+| DOT/indirect damage attribution — source UUID updates session timeout and participant relationship | §2 |
+| `CombatCondition` interface + `CombatConditionContentPack` + timeout task integration | §5c |
+| Core Bukkit events — `CombatSessionStartEvent`, `CombatParticipantAddEvent`, `CombatParticipantRemoveEvent`, `CombatSessionEndEvent` | §5a |
+| Configuration — `timeout-seconds`, `max-mob-participants`, `condition-check-interval` | Configuration |
+
+### Phase 2: Combat State & Statistics Platform
+
+> **Depends on:** Phase 1
+> **LLD scope:** `CombatStateType<T>`, `CombatStateResolver<T>`, persistent state DAO, per-session statistics, ContentPack registration
+
+The extensibility layer. After this phase, third-party plugins can attach typed state and statistics to combat sessions.
+
+| Deliverable | HLD section |
+|-------------|-------------|
+| `CombatStateType<T>` — `of()`, `resolved()`, `persistent()` factories | §4 |
+| `CombatStateResolver<T>` — pure function computing effective value from raw + external context | §4 |
+| State lifecycle scoping — `SESSION` (auto-cleared) vs `PERSISTENT` (survives session boundaries) | §4 |
+| Persistent state DAO — generic key-value table with serializer/deserializer, tracker-managed save/load | §4 |
+| `CombatStateChangeEvent` — fires on `setState`/`modifyState`, cancellable | §4 |
+| `CombatStateTypeContentPack` — ContentExpansion registration + direct API fallback | §5b |
+| Per-session statistics container — built-in stats (damage dealt/taken, healing, hits, kills, duration) | §3 |
+| Cumulative stat feed — fold session stats into McCore statistics on `CombatSessionEndEvent` | §3 |
+| Third-party per-session stat key registration | §3 |
+| Healing stat tracking — `healing_dealt`/`healing_received` on active sessions without triggering combat entry | §3 |
+| Configuration — `feed-to-cumulative` | Configuration |
+
+### Phase 3: Combat Log & Display
+
+> **Depends on:** Phase 1
+> **LLD scope:** Combat log detection/punishment, audit DAO, admin command, PAPI placeholders, exit messaging
+
+The first built-in policy consumer. Defines what happens when a player logs out during combat. Independent of Phase 2 — uses session lifecycle events only.
+
+| Deliverable | HLD section |
+|-------------|-------------|
+| Two-event model — `PlayerCombatLogEvent` (detection, cancellable) → `CombatLogPunishmentEvent` (policy, individually modifiable) | §6 |
+| Mode configuration — `DISABLED`, `PLAYERS`, `MOBS_AND_PLAYERS` | §6 |
+| Built-in punishments — kill-on-logout, drop-items, broadcast-message | §6 |
+| Punishment extensibility — third-party plugins modify/add/remove individual punishments | §6 |
+| `CombatLogDAO` — audit trail with player UUID, timestamp, location, combat type, participants, punishments applied | §6 |
+| `/mcrpg combatlog <player> [page]` — paginated history with clickable teleport locations | §6 |
+| PAPI placeholders — `%mcrpg_in_combat%`, `%mcrpg_combat_seconds_remaining%` | Resolved Decisions |
+| Conditional combat exit message — sent only when `combat-log.mode` would punish | Resolved Decisions |
+| Configuration — `combat-log.mode`, `punishment.*`, `display.show-combat-exit-message` | Configuration |
+
+### Phase 4: Ramping Frenzy Ability
+
+> **Depends on:** Phase 1 + Phase 2
+> **LLD scope:** Ramping Frenzy ability class, resolved frenzy stack state, shed task, Haste application, consume pattern contract
+
+The first ability consumer of the combat state platform. Implements the full build-and-spend Haste loop.
+
+| Deliverable | HLD section |
+|-------------|-------------|
+| `RampingFrenzy` ability class — innate passive, Swords skill, no unlock gate, no mana cost | §7 |
+| Resolved `CombatStateType<Integer>` for frenzy stacks — resolver computes `max(stored, hasteFloor)` from active Haste effects | §7 (External Haste Seeding) |
+| Stack gain — one stack per sword hit, `getState()` → increment → `setState()` | §7 (Activation Flow) |
+| Shed task — one-at-a-time decay on configurable interval, `getRawState()` → decrement → `setState()` | §7 (Activation Flow) |
+| Continuous Haste application — overlapping effects with `shed_interval × 2` duration via Paper potion stacking | §7 (Stack Mechanics) |
+| Haste tier mapping — configurable stack-to-Haste-level thresholds (groups of 3, up to Haste V) | §7 (Haste Tier Mapping) |
+| Ability tier progression — max stacks and shed interval per tier (T1–T5) | §7 (Tier Progression) |
+| `RampingFrenzyStackGainEvent` — cancellable, for synergy abilities and UI feedback | §7 (Activation Flow) |
+| Consume pattern contract — architectural documentation for future Swords actives that consume Haste for scaled burst effects | §7 (Haste Consumption) |
+| Swords configuration entries — `max-stacks`, `shed-interval`, `stacks-per-haste-level` with Parser formulas | Configuration |
+
+### Phase Dependency Graph
+
+```mermaid
+flowchart LR
+    P1[Phase 1: Core Session Engine]
+    P2[Phase 2: State & Stats Platform]
+    P3[Phase 3: Combat Log & Display]
+    P4[Phase 4: Ramping Frenzy]
+
+    P1 --> P2
+    P1 --> P3
+    P2 --> P4
+```
+
+Phases 2, 3, and 4 cannot begin until Phase 1 is complete. Phases 2 and 3 are independent and can be worked in parallel. Phase 4 requires Phase 2 (for `CombatStateType` with resolver support) but not Phase 3.
 
 ---
 
