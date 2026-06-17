@@ -31,7 +31,7 @@ import java.util.logging.Level;
 public class QuestChainStateDAO {
 
     public static final String TABLE_NAME = "mcrpg_quest_chain_state";
-    private static final int CURRENT_TABLE_VERSION = 2;
+    private static final int CURRENT_TABLE_VERSION = 1;
 
     /**
      * Attempts to create the chain state table if it does not already exist.
@@ -52,6 +52,7 @@ public class QuestChainStateDAO {
                         "`state` VARCHAR(32) NOT NULL, " +
                         "`completion_count` INTEGER NOT NULL DEFAULT 0, " +
                         "`last_completed_at` BIGINT, " +
+                        "`conditions_pending` BOOLEAN NOT NULL DEFAULT FALSE, " +
                         "PRIMARY KEY (`player_uuid`, `chain_key`)" +
                         ");")) {
             statement.executeUpdate();
@@ -75,16 +76,6 @@ public class QuestChainStateDAO {
         }
         if (lastStoredVersion == 0) {
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
-        }
-        if (lastStoredVersion < 2) {
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "ALTER TABLE " + TABLE_NAME + " ADD COLUMN conditions_pending BOOLEAN NOT NULL DEFAULT FALSE")) {
-                ps.executeUpdate();
-            } catch (SQLException e) {
-                McRPG.getInstance().getLogger().log(Level.SEVERE,
-                        "[QuestChainStateDAO] Failed to add conditions_pending column during migration", e);
-            }
-            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 2);
         }
     }
 

@@ -4,8 +4,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
 import us.eunoians.mcrpg.quest.chain.QuestChainStep;
+
+import java.util.UUID;
 
 /**
  * Fired when a chain step's quest is retried after expiration.
@@ -17,6 +20,7 @@ public class QuestChainStepRetryEvent extends Event {
 
     private final QuestChainDefinition chainDefinition;
     private final Player player;
+    private final UUID playerUUID;
     private final QuestChainStep step;
     private final int retryNumber;
     private final int maxRetries;
@@ -25,18 +29,21 @@ public class QuestChainStepRetryEvent extends Event {
      * Creates a new step-retry event.
      *
      * @param chainDefinition the chain definition
-     * @param player          the player whose step is being retried
+     * @param player          the player whose step is being retried, or {@code null} if offline
+     * @param playerUUID      the UUID of the player whose step is being retried
      * @param step            the step being retried
      * @param retryNumber     which retry attempt this is (1-based)
      * @param maxRetries      the maximum number of retries allowed, or -1 for unlimited
      */
     public QuestChainStepRetryEvent(@NotNull QuestChainDefinition chainDefinition,
-                                    @NotNull Player player,
+                                    @Nullable Player player,
+                                    @NotNull UUID playerUUID,
                                     @NotNull QuestChainStep step,
                                     int retryNumber,
                                     int maxRetries) {
         this.chainDefinition = chainDefinition;
         this.player = player;
+        this.playerUUID = playerUUID;
         this.step = step;
         this.retryNumber = retryNumber;
         this.maxRetries = maxRetries;
@@ -53,13 +60,24 @@ public class QuestChainStepRetryEvent extends Event {
     }
 
     /**
-     * Gets the player whose step is being retried.
+     * Gets the player whose step is being retried, or {@code null} if the player is offline.
+     * Use {@link #getPlayerUUID()} for identity checks that must be offline-safe.
      *
-     * @return the player
+     * @return the player, or {@code null} if offline
      */
-    @NotNull
+    @Nullable
     public Player getPlayer() {
         return player;
+    }
+
+    /**
+     * Gets the UUID of the player whose step is being retried.
+     *
+     * @return the player UUID
+     */
+    @NotNull
+    public UUID getPlayerUUID() {
+        return playerUUID;
     }
 
     /**

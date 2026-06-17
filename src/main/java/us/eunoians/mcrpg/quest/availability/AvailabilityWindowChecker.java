@@ -192,6 +192,10 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
      * Computes which chains are currently unavailable at server startup. Called on the
      * async thread during {@link #onDelayComplete()}. Only performs pure time-based
      * comparisons against immutable config — no side effects.
+     * <p>
+     * <b>Limitation:</b> Only online players are affected by startup reconciliation.
+     * Offline players with ACTIVE chains during a closed window retain their ACTIVE
+     * state until next login, when the chain login listener re-evaluates availability.
      *
      * @return transitions for chains that need close policy applied
      */

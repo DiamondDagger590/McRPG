@@ -32,6 +32,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,7 +57,7 @@ public class QuestChainManager extends Manager<McRPG> {
     private final ChainQuestStarter chainQuestStarter;
     private final CascadeOrchestrator cascadeOrchestrator;
     private final ChainRepeatEvaluator repeatEvaluator;
-    private final Map<RetryKey, Integer> retryCounters = new HashMap<>();
+    private final Map<RetryKey, Integer> retryCounters = new ConcurrentHashMap<>();
 
     /**
      * Composite key for tracking per-step retry counts. In-memory only — server
@@ -664,10 +665,8 @@ public class QuestChainManager extends Manager<McRPG> {
         }
 
         Player player = Bukkit.getPlayer(playerUUID);
-        if (player != null) {
-            Bukkit.getPluginManager().callEvent(
-                    new QuestChainStepRetryEvent(definition, player, step, used + 1, maxRetries));
-        }
+        Bukkit.getPluginManager().callEvent(
+                new QuestChainStepRetryEvent(definition, player, playerUUID, step, used + 1, maxRetries));
         plugin().getLogger().info("[QuestChainManager] Retrying step '"
                 + expiredQuestKey + "' for chain '" + chainKey
                 + "' (attempt " + (used + 2) + "/" + (maxRetries < 0 ? "unlimited" : maxRetries + 1) + ")");
@@ -701,10 +700,8 @@ public class QuestChainManager extends Manager<McRPG> {
         }
 
         Player player = Bukkit.getPlayer(playerUUID);
-        if (player != null) {
-            Bukkit.getPluginManager().callEvent(
-                    new QuestChainRestartEvent(definition, player, QuestChainRestartEvent.RestartReason.QUEST_EXPIRE_RESTART_CHAIN));
-        }
+        Bukkit.getPluginManager().callEvent(
+                new QuestChainRestartEvent(definition, player, playerUUID, QuestChainRestartEvent.RestartReason.QUEST_EXPIRE_RESTART_CHAIN));
         persistenceService.saveChainStateAsync(playerUUID, state);
         clearCompletionLogAsync(playerUUID, chainKey);
         plugin().getLogger().fine("[QuestChainManager] Restarted chain '" + chainKey
@@ -1050,6 +1047,7 @@ public class QuestChainManager extends Manager<McRPG> {
         persistenceService.prepareForFlush(playerUUID);
         persistenceService.flushChainStatesSync(connection, playerUUID, chainData);
         persistenceService.cleanupPlayer(playerUUID);
+        clearRetryCountersForPlayer(playerUUID);
     }
 
     /**

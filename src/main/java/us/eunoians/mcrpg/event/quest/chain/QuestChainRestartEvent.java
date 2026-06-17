@@ -4,7 +4,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
+
+import java.util.UUID;
 
 /**
  * Fired when a chain is re-started from step 1. Occurs either from repeat-mode
@@ -17,6 +20,7 @@ public class QuestChainRestartEvent extends Event {
 
     private final QuestChainDefinition chainDefinition;
     private final Player player;
+    private final UUID playerUUID;
     private final RestartReason reason;
 
     /**
@@ -33,14 +37,17 @@ public class QuestChainRestartEvent extends Event {
      * Creates a new chain-restart event.
      *
      * @param chainDefinition the chain definition
-     * @param player          the player whose chain was restarted
+     * @param player          the player whose chain was restarted, or {@code null} if offline
+     * @param playerUUID      the UUID of the player whose chain was restarted
      * @param reason          the reason for the restart
      */
     public QuestChainRestartEvent(@NotNull QuestChainDefinition chainDefinition,
-                                  @NotNull Player player,
+                                  @Nullable Player player,
+                                  @NotNull UUID playerUUID,
                                   @NotNull RestartReason reason) {
         this.chainDefinition = chainDefinition;
         this.player = player;
+        this.playerUUID = playerUUID;
         this.reason = reason;
     }
 
@@ -55,13 +62,24 @@ public class QuestChainRestartEvent extends Event {
     }
 
     /**
-     * Gets the player whose chain was restarted.
+     * Gets the player whose chain was restarted, or {@code null} if the player is offline.
+     * Use {@link #getPlayerUUID()} for identity checks that must be offline-safe.
      *
-     * @return the player
+     * @return the player, or {@code null} if offline
      */
-    @NotNull
+    @Nullable
     public Player getPlayer() {
         return player;
+    }
+
+    /**
+     * Gets the UUID of the player whose chain was restarted.
+     *
+     * @return the player UUID
+     */
+    @NotNull
+    public UUID getPlayerUUID() {
+        return playerUUID;
     }
 
     /**

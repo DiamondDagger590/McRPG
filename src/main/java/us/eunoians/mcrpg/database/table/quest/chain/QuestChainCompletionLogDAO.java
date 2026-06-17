@@ -36,7 +36,7 @@ import java.util.logging.Level;
 public class QuestChainCompletionLogDAO {
 
     public static final String TABLE_NAME = "mcrpg_quest_chain_completion_log";
-    private static final int CURRENT_TABLE_VERSION = 2;
+    private static final int CURRENT_TABLE_VERSION = 1;
 
     /**
      * Attempts to create the chain completion log table if it does not already exist.
@@ -56,15 +56,24 @@ public class QuestChainCompletionLogDAO {
                         "`quest_key` VARCHAR(255) NOT NULL, " +
                         "`completed_at` BIGINT NOT NULL, " +
                         "`completion_number` INTEGER NOT NULL, " +
+                        "`skipped` BOOLEAN NOT NULL DEFAULT FALSE, " +
                         "PRIMARY KEY (`player_uuid`, `chain_key`, `quest_key`, `completion_number`)" +
                         ");")) {
             statement.executeUpdate();
-            return true;
         } catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.SEVERE,
                     "[QuestChainCompletionLogDAO] Failed to create table " + TABLE_NAME, e);
             return false;
         }
+        try (PreparedStatement indexPs = connection.prepareStatement(
+                "CREATE INDEX IF NOT EXISTS idx_chain_log_player_chain ON " +
+                        TABLE_NAME + " (player_uuid, chain_key)")) {
+            indexPs.executeUpdate();
+        } catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.SEVERE,
+                    "[QuestChainCompletionLogDAO] Failed to create index on " + TABLE_NAME, e);
+        }
+        return true;
     }
 
     /**
@@ -78,25 +87,7 @@ public class QuestChainCompletionLogDAO {
             return;
         }
         if (lastStoredVersion == 0) {
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "CREATE INDEX IF NOT EXISTS idx_chain_log_player_chain ON " +
-                            TABLE_NAME + " (player_uuid, chain_key)")) {
-                ps.executeUpdate();
-            } catch (SQLException e) {
-                McRPG.getInstance().getLogger().log(Level.SEVERE,
-                        "[QuestChainCompletionLogDAO] Failed to create index during migration", e);
-            }
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
-        }
-        if (lastStoredVersion < 2) {
-            try (PreparedStatement ps = connection.prepareStatement(
-                    "ALTER TABLE " + TABLE_NAME + " ADD COLUMN skipped BOOLEAN NOT NULL DEFAULT FALSE")) {
-                ps.executeUpdate();
-            } catch (SQLException e) {
-                McRPG.getInstance().getLogger().log(Level.SEVERE,
-                        "[QuestChainCompletionLogDAO] Failed to add skipped column during migration", e);
-            }
-            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 2);
         }
     }
 

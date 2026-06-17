@@ -7,6 +7,7 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.AbilityType;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
@@ -116,6 +117,9 @@ public final class AbilityObjectiveFilter {
     public String resolveAbilityName(@NotNull NamespacedKey abilityKey) {
         AbilityRegistry abilityRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY);
         if (!abilityRegistry.registered(abilityKey)) {
+            McRPG.getInstance().getLogger().fine(
+                    "[AbilityObjectiveFilter] Ability not found in registry: " + abilityKey
+                            + " — using raw key as display name");
             return abilityKey.getKey();
         }
         return abilityRegistry.getRegisteredAbility(abilityKey).getName();

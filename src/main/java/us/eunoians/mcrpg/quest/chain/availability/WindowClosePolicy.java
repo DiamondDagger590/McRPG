@@ -1,7 +1,9 @@
 package us.eunoians.mcrpg.quest.chain.availability;
 
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 /**
@@ -28,6 +30,9 @@ public enum WindowClosePolicy {
         try {
             return Optional.of(valueOf(value.toUpperCase().replace('-', '_')));
         } catch (IllegalArgumentException e) {
+            McRPG.getInstance().getLogger().warning(
+                    "[WindowClosePolicy] Unrecognized close policy: '" + value
+                            + "'. Valid values: " + Arrays.toString(values()));
             return Optional.empty();
         }
     }
