@@ -231,9 +231,21 @@ public final class QuestTemplateConfigLoader {
 
         validateExpressions(variables, phases, rewards, key.toString());
 
-        return new QuestTemplate(key, displayNameRoute, boardEligible, scopeProviderKey,
-                supportedRarities, rarityOverrides, variables, phases, rewards, rewardDistribution,
-                prerequisite, null, inlineDisplay.isEmpty() ? null : inlineDisplay);
+        var builder = new QuestTemplate.Builder(key, displayNameRoute, scopeProviderKey,
+                supportedRarities, rarityOverrides, variables, phases, rewards);
+        if (!boardEligible) {
+            builder.boardEligible(false);
+        }
+        if (rewardDistribution != null) {
+            builder.rewardDistribution(rewardDistribution);
+        }
+        if (prerequisite != null) {
+            builder.prerequisite(prerequisite);
+        }
+        if (!inlineDisplay.isEmpty()) {
+            builder.inlineDisplay(inlineDisplay);
+        }
+        return builder.build();
     }
 
     /**

@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.quest.availability;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.CancelableCoreTask;
+import com.diamonddagger590.mccore.task.core.DelayableCoreTask;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -62,7 +63,7 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
     private final McRPG plugin;
     private volatile Map<NamespacedKey, Boolean> previousChainAvailability;
     private volatile Map<NamespacedKey, Boolean> previousQuestAvailability;
-    private final Map<NamespacedKey, Integer> activeGraceTasks;
+    private final Map<NamespacedKey, DelayableCoreTask> activeGraceTasks;
 
     /**
      * Constructs a new availability window checker.
@@ -182,8 +183,8 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
      */
     @Override
     protected void onCancel() {
-        for (Integer taskId : activeGraceTasks.values()) {
-            Bukkit.getScheduler().cancelTask(taskId);
+        for (DelayableCoreTask task : activeGraceTasks.values()) {
+            Bukkit.getScheduler().cancelTask(task.getBukkitTaskId());
         }
         activeGraceTasks.clear();
     }
@@ -481,15 +482,17 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
 
         cancelGraceTask(chainKey);
 
-        long graceTicks = config.gracePeriod().getSeconds() * 20L;
-        int taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            activeGraceTasks.remove(chainKey);
-            expireActiveChainInstances(chainKey);
-            plugin.getLogger().info("[AvailabilityWindowChecker] Grace period expired for chain '"
-                    + chainKey + "'. Active instances expired.");
-        }, graceTicks).getTaskId();
-
-        activeGraceTasks.put(chainKey, taskId);
+        DelayableCoreTask graceTask = new DelayableCoreTask(plugin, config.gracePeriod().getSeconds()) {
+            @Override
+            public void run() {
+                activeGraceTasks.remove(chainKey);
+                expireActiveChainInstances(chainKey);
+                plugin.getLogger().info("[AvailabilityWindowChecker] Grace period expired for chain '"
+                        + chainKey + "'. Active instances expired.");
+            }
+        };
+        graceTask.runTask();
+        activeGraceTasks.put(chainKey, graceTask);
         plugin.getLogger().info("[AvailabilityWindowChecker] Grace period started for chain '"
                 + chainKey + "' (" + config.gracePeriod().getSeconds() + "s).");
     }
@@ -515,15 +518,17 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
 
         cancelGraceTask(questKey);
 
-        long graceTicks = config.gracePeriod().getSeconds() * 20L;
-        int taskId = Bukkit.getScheduler().runTaskLater(plugin, () -> {
-            activeGraceTasks.remove(questKey);
-            cancelActiveQuestInstances(questKey);
-            plugin.getLogger().info("[AvailabilityWindowChecker] Grace period expired for quest '"
-                    + questKey + "'. Active instances cancelled.");
-        }, graceTicks).getTaskId();
-
-        activeGraceTasks.put(questKey, taskId);
+        DelayableCoreTask graceTask = new DelayableCoreTask(plugin, config.gracePeriod().getSeconds()) {
+            @Override
+            public void run() {
+                activeGraceTasks.remove(questKey);
+                cancelActiveQuestInstances(questKey);
+                plugin.getLogger().info("[AvailabilityWindowChecker] Grace period expired for quest '"
+                        + questKey + "'. Active instances cancelled.");
+            }
+        };
+        graceTask.runTask();
+        activeGraceTasks.put(questKey, graceTask);
         plugin.getLogger().info("[AvailabilityWindowChecker] Grace period started for quest '"
                 + questKey + "' (" + config.gracePeriod().getSeconds() + "s).");
     }
@@ -535,9 +540,9 @@ public final class AvailabilityWindowChecker extends CancelableCoreTask {
      * @param key the chain or quest definition key
      */
     private void cancelGraceTask(@NotNull NamespacedKey key) {
-        Integer existingTaskId = activeGraceTasks.remove(key);
-        if (existingTaskId != null) {
-            Bukkit.getScheduler().cancelTask(existingTaskId);
+        DelayableCoreTask existingTask = activeGraceTasks.remove(key);
+        if (existingTask != null) {
+            Bukkit.getScheduler().cancelTask(existingTask.getBukkitTaskId());
             plugin.getLogger().info("[AvailabilityWindowChecker] Cancelled grace period task for '"
                     + key + "' (window re-opened).");
         }

@@ -596,17 +596,16 @@ public class QuestPoolTest extends McRPGBaseTest {
         TemplateStageDefinition stage = new TemplateStageDefinition(List.of(obj));
         TemplatePhaseDefinition phase = new TemplatePhaseDefinition(PhaseCompletionMode.ALL, List.of(stage));
 
-        return new QuestTemplate(
+        return new QuestTemplate.Builder(
                 new NamespacedKey("mcrpg", key),
                 Route.fromString("quests.templates." + key + ".display-name"),
-                true,
                 scopeKey,
                 rarities,
                 Map.of(),
                 variables,
                 List.of(phase),
-                List.of()
-        );
+                List.of())
+                .build();
     }
 
     private QuestTemplate createTemplateWithPrerequisite(String key, Set<NamespacedKey> rarities, int minCompletions) {
@@ -621,20 +620,17 @@ public class QuestPoolTest extends McRPGBaseTest {
 
         CompletionPrerequisiteCondition prereq = new CompletionPrerequisiteCondition(minCompletions, null, null);
 
-        return new QuestTemplate(
+        return new QuestTemplate.Builder(
                 new NamespacedKey("mcrpg", key),
                 Route.fromString("quests.templates." + key + ".display-name"),
-                true,
                 new NamespacedKey("mcrpg", "single_player"),
                 rarities,
                 Map.of(),
                 variables,
                 List.of(phase),
-                List.of(),
-                null,
-                prereq,
-                null
-        );
+                List.of())
+                .prerequisite(prereq)
+                .build();
     }
 
     private QuestTemplate createTemplate(String key, Set<NamespacedKey> rarities) {
@@ -647,16 +643,15 @@ public class QuestPoolTest extends McRPGBaseTest {
         TemplateStageDefinition stage = new TemplateStageDefinition(List.of(obj));
         TemplatePhaseDefinition phase = new TemplatePhaseDefinition(PhaseCompletionMode.ALL, List.of(stage));
 
-        return new QuestTemplate(
+        return new QuestTemplate.Builder(
                 new NamespacedKey("mcrpg", key),
                 Route.fromString("quests.templates." + key + ".display-name"),
-                true,
                 new NamespacedKey("mcrpg", "single_player"),
                 rarities,
                 Map.of(),
                 variables,
                 List.of(phase),
-                List.of()
-        );
+                List.of())
+                .build();
     }
 }

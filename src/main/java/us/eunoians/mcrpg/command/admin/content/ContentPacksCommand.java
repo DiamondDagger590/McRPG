@@ -95,28 +95,13 @@ public class ContentPacksCommand extends AdminBaseCommand {
                 "<primary>Content Packs for <body>" + namespacedKey + " <primary>(" + packs.size() + "):"));
 
         packs.stream()
-                .sorted((a, b) -> getPackTypeName(a).compareTo(getPackTypeName(b)))
+                .sorted((a, b) -> stripContentPackSuffix(a.getClass().getSimpleName()).compareTo(stripContentPackSuffix(b.getClass().getSimpleName())))
                 .forEach(pack -> {
-                    String typeName = getPackTypeName(pack);
+                    String typeName = stripContentPackSuffix(pack.getClass().getSimpleName());
                     int contentCount = pack.getContent().size();
                     sender.sendMessage(mm.deserialize(
                             " <primary>- <body>" + typeName + " <primary>(" + contentCount + " entries)"));
                 });
     }
 
-    /**
-     * Derives a human-readable type name from a {@link McRPGContentPack} by stripping the
-     * "ContentPack" suffix from the simple class name.
-     *
-     * @param pack The content pack to get the type name for.
-     * @return The human-readable type name (e.g. "Ability", "Skill", "Statistic").
-     */
-    @NotNull
-    private static String getPackTypeName(@NotNull McRPGContentPack<?> pack) {
-        String simpleName = pack.getClass().getSimpleName();
-        if (simpleName.endsWith("ContentPack")) {
-            return simpleName.substring(0, simpleName.length() - "ContentPack".length());
-        }
-        return simpleName;
-    }
 }

@@ -201,18 +201,4 @@ public class ContentKeysCommand extends AdminBaseCommand {
         return content.getClass().getSimpleName();
     }
 
-    /**
-     * Strips the "ContentPack" suffix from a simple class name to produce a human-readable
-     * pack type label.
-     *
-     * @param simpleName The simple class name to strip.
-     * @return The stripped name, or the original if the suffix was not present.
-     */
-    @NotNull
-    private static String stripContentPackSuffix(@NotNull String simpleName) {
-        if (simpleName.endsWith("ContentPack")) {
-            return simpleName.substring(0, simpleName.length() - "ContentPack".length());
-        }
-        return simpleName;
-    }
 }

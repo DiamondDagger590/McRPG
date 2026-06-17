@@ -94,9 +94,10 @@ class QuestTemplateEngineConditionTest {
         Map<String, TemplateVariable> variables = new LinkedHashMap<>();
         List<TemplateRewardDefinition> rewards = List.of(
                 new TemplateRewardDefinition(REWARD_TYPE_KEY, "test_reward", Map.of("amount", 100)));
-        return new QuestTemplate(TEMPLATE_KEY, Route.fromString("test.display"),
-                true, SCOPE_KEY, Set.of(COMMON, RARE, LEGENDARY),
-                Map.of(), variables, phases, rewards, null, null);
+        return new QuestTemplate.Builder(TEMPLATE_KEY, Route.fromString("test.display"),
+                SCOPE_KEY, Set.of(COMMON, RARE, LEGENDARY),
+                Map.of(), variables, phases, rewards)
+                .build();
     }
 
     private TemplateObjectiveDefinition objective() {
