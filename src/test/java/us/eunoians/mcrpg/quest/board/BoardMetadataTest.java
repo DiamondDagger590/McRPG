@@ -6,10 +6,14 @@ import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -96,5 +100,102 @@ public class BoardMetadataTest extends McRPGBaseTest {
         BoardMetadata deserialized = BoardMetadata.deserialize(data);
 
         assertEquals(false, deserialized.boardEligible());
+    }
+
+    @DisplayName("serialize / deserialize round-trip with supported refresh types")
+    @Test
+    void serializeDeserialize_roundTrip_withRefreshTypes() {
+        Set<String> refreshTypes = Set.of("DAILY", "WEEKLY");
+        BoardMetadata original = new BoardMetadata(
+                true, Set.of(new NamespacedKey("mcrpg", "common")), refreshTypes, null, null);
+        Map<String, Object> serialized = original.serialize();
+        BoardMetadata deserialized = BoardMetadata.deserialize(serialized);
+
+        assertEquals(2, deserialized.supportedRefreshTypes().size());
+        assertTrue(deserialized.supportedRefreshTypes().contains("DAILY"));
+        assertTrue(deserialized.supportedRefreshTypes().contains("WEEKLY"));
+    }
+
+    @DisplayName("serialize omits refresh types when empty")
+    @Test
+    void serialize_omitsRefreshTypes_whenEmpty() {
+        BoardMetadata metadata = new BoardMetadata(true, Set.of(), Set.of(), null, null);
+        Map<String, Object> serialized = metadata.serialize();
+
+        assertFalse(serialized.containsKey("supported-refresh-types"));
+    }
+
+    @DisplayName("serialize omits cooldown when null")
+    @Test
+    void serialize_omitsCooldown_whenNull() {
+        BoardMetadata metadata = new BoardMetadata(true, Set.of(), Set.of(), null, null);
+        Map<String, Object> serialized = metadata.serialize();
+
+        assertFalse(serialized.containsKey("acceptance-cooldown-ms"));
+        assertFalse(serialized.containsKey("cooldown-scope"));
+    }
+
+    @DisplayName("deserialize ignores non-Number cooldown value")
+    @Test
+    void deserialize_ignoresNonNumberCooldown() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("board-eligible", true);
+        data.put("acceptance-cooldown-ms", "not-a-number");
+        BoardMetadata deserialized = BoardMetadata.deserialize(data);
+
+        assertNull(deserialized.acceptanceCooldown());
+    }
+
+    @DisplayName("deserialize ignores non-String cooldown scope")
+    @Test
+    void deserialize_ignoresNonStringScope() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("board-eligible", true);
+        data.put("cooldown-scope", 42);
+        BoardMetadata deserialized = BoardMetadata.deserialize(data);
+
+        assertNull(deserialized.cooldownScope());
+    }
+
+    @DisplayName("deserialize ignores non-List rarities value")
+    @Test
+    void deserialize_ignoresNonListRarities() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("board-eligible", true);
+        data.put("supported-rarities", "not-a-list");
+        BoardMetadata deserialized = BoardMetadata.deserialize(data);
+
+        assertTrue(deserialized.supportedRarities().isEmpty());
+    }
+
+    @DisplayName("deserialize normalizes refresh types to uppercase")
+    @Test
+    void deserialize_normalizesRefreshTypesToUppercase() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("supported-refresh-types", List.of("daily", "Weekly"));
+        BoardMetadata deserialized = BoardMetadata.deserialize(data);
+
+        assertTrue(deserialized.supportedRefreshTypes().contains("DAILY"));
+        assertTrue(deserialized.supportedRefreshTypes().contains("WEEKLY"));
+    }
+
+    @DisplayName("serialize includes cooldown-ms as long millis")
+    @Test
+    void serialize_includesCooldownAsMillis() {
+        Duration cooldown = Duration.ofMinutes(5);
+        BoardMetadata metadata = new BoardMetadata(true, Set.of(), Set.of(), cooldown, "GLOBAL");
+        Map<String, Object> serialized = metadata.serialize();
+
+        assertEquals(300000L, serialized.get("acceptance-cooldown-ms"));
+    }
+
+    @DisplayName("deserialize with integer cooldown millis")
+    @Test
+    void deserialize_integerCooldownMillis() {
+        Map<String, Object> data = new HashMap<>();
+        data.put("acceptance-cooldown-ms", 60000);
+        BoardMetadata deserialized = BoardMetadata.deserialize(data);
+
+        assertEquals(Duration.ofMinutes(1), deserialized.acceptanceCooldown());
     }
 }
