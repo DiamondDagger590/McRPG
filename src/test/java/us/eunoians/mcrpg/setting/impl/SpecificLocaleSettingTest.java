@@ -149,4 +149,45 @@ class SpecificLocaleSettingTest {
             assertEquals("mcrpg:locale-setting", setting.getSettingKey().toString());
         }
     }
+
+    @Nested
+    @DisplayName("fromString")
+    class FromString {
+
+        @DisplayName("fromString matches CLIENT_LOCALE case-insensitively")
+        @Test
+        void fromString_matchesClientLocale_caseInsensitive() {
+            SpecificLocaleSetting setting = new SpecificLocaleSetting("en");
+            var result = setting.fromString("client_locale");
+            assertTrue(result.isPresent());
+            assertEquals(LocaleSetting.CLIENT_LOCALE, result.get());
+        }
+
+        @DisplayName("fromString matches CLIENT_LOCALE in uppercase")
+        @Test
+        void fromString_matchesClientLocale_uppercase() {
+            SpecificLocaleSetting setting = new SpecificLocaleSetting("en");
+            var result = setting.fromString("CLIENT_LOCALE");
+            assertTrue(result.isPresent());
+            assertEquals(LocaleSetting.CLIENT_LOCALE, result.get());
+        }
+
+        @DisplayName("fromString matches SERVER_LOCALE case-insensitively")
+        @Test
+        void fromString_matchesServerLocale_caseInsensitive() {
+            SpecificLocaleSetting setting = new SpecificLocaleSetting("en");
+            var result = setting.fromString("server_locale");
+            assertTrue(result.isPresent());
+            assertEquals(LocaleSetting.SERVER_LOCALE, result.get());
+        }
+
+        @DisplayName("fromString matches SERVER_LOCALE in uppercase")
+        @Test
+        void fromString_matchesServerLocale_uppercase() {
+            SpecificLocaleSetting setting = new SpecificLocaleSetting("en");
+            var result = setting.fromString("SERVER_LOCALE");
+            assertTrue(result.isPresent());
+            assertEquals(LocaleSetting.SERVER_LOCALE, result.get());
+        }
+    }
 }
