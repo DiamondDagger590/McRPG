@@ -1,9 +1,16 @@
 package us.eunoians.mcrpg.ability.attribute;
 
+import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.World;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
+
+import java.util.Set;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -483,6 +490,448 @@ class AbilityAttributeTest extends McRPGBaseTest {
             String str = attr.toString();
             assertTrue(str.contains("3"));
             assertTrue(str.contains("tier"));
+        }
+    }
+
+    @Nested
+    @DisplayName("MassHarvestPullItemsAttribute")
+    class MassHarvestPullItems {
+
+        @DisplayName("getDefaultContent returns true")
+        @Test
+        void getDefaultContent_returnsTrue() {
+            var attr = new MassHarvestPullItemsAttribute();
+            assertTrue(attr.getDefaultContent());
+        }
+
+        @DisplayName("default constructor uses default content")
+        @Test
+        void defaultConstructor_usesDefaultContent() {
+            var attr = new MassHarvestPullItemsAttribute();
+            assertTrue(attr.getContent());
+        }
+
+        @DisplayName("value constructor stores provided value")
+        @Test
+        void valueConstructor_storesProvidedValue() {
+            var attr = new MassHarvestPullItemsAttribute(false);
+            assertFalse(attr.getContent());
+        }
+
+        @DisplayName("create returns new instance with given value")
+        @Test
+        void create_returnsNewInstance() {
+            var template = new MassHarvestPullItemsAttribute();
+            MassHarvestPullItemsAttribute created = template.create(false);
+            assertFalse(created.getContent());
+            assertNotSame(template, created);
+        }
+
+        @DisplayName("convertContent parses true string")
+        @Test
+        void convertContent_parsesTrue() {
+            var attr = new MassHarvestPullItemsAttribute();
+            assertTrue(attr.convertContent("true"));
+        }
+
+        @DisplayName("convertContent parses false string")
+        @Test
+        void convertContent_parsesFalse() {
+            var attr = new MassHarvestPullItemsAttribute();
+            assertFalse(attr.convertContent("false"));
+        }
+
+        @DisplayName("convertContent returns false for non-boolean string")
+        @Test
+        void convertContent_returnsFalse_forNonBooleanString() {
+            var attr = new MassHarvestPullItemsAttribute();
+            assertFalse(attr.convertContent("notaboolean"));
+        }
+
+        @DisplayName("shouldContentBeSaved returns false when enabled (true)")
+        @Test
+        void shouldContentBeSaved_returnsFalse_whenEnabled() {
+            var attr = new MassHarvestPullItemsAttribute(true);
+            assertFalse(attr.shouldContentBeSaved());
+        }
+
+        @DisplayName("shouldContentBeSaved returns true when disabled (false)")
+        @Test
+        void shouldContentBeSaved_returnsTrue_whenDisabled() {
+            var attr = new MassHarvestPullItemsAttribute(false);
+            assertTrue(attr.shouldContentBeSaved());
+        }
+
+        @DisplayName("getDatabaseKeyName returns mass_harvest_pull_items_toggled")
+        @Test
+        void getDatabaseKeyName_returnsExpectedKey() {
+            var attr = new MassHarvestPullItemsAttribute();
+            assertEquals("mass_harvest_pull_items_toggled", attr.getDatabaseKeyName());
+        }
+
+        @DisplayName("getNamespacedKey matches registry constant")
+        @Test
+        void getNamespacedKey_matchesRegistryConstant() {
+            var attr = new MassHarvestPullItemsAttribute();
+            assertEquals(AbilityAttributeRegistry.MASS_HARVEST_PULL_ITEMS_ATTRIBUTE, attr.getNamespacedKey());
+        }
+
+        @DisplayName("getDisplayPriority returns 40")
+        @Test
+        void getDisplayPriority_returnsForty() {
+            var attr = new MassHarvestPullItemsAttribute();
+            assertEquals(40, attr.getDisplayPriority());
+        }
+
+        @DisplayName("serializeContent returns string representation")
+        @Test
+        void serializeContent_returnsStringRepresentation() {
+            var attr = new MassHarvestPullItemsAttribute(false);
+            assertEquals("false", attr.serializeContent());
+        }
+    }
+
+    @Nested
+    @DisplayName("AbilityUpgradeQuestAttribute")
+    class UpgradeQuestAttribute {
+
+        private static final UUID SENTINEL_UUID = UUID.fromString("b94b32a4-09e8-4378-905b-0df7805916c1");
+
+        @DisplayName("defaultUUID returns the sentinel UUID")
+        @Test
+        void defaultUUID_returnsSentinel() {
+            assertEquals(SENTINEL_UUID, AbilityUpgradeQuestAttribute.defaultUUID());
+        }
+
+        @DisplayName("getDefaultContent returns sentinel UUID")
+        @Test
+        void getDefaultContent_returnsSentinel() {
+            var attr = new AbilityUpgradeQuestAttribute();
+            assertEquals(SENTINEL_UUID, attr.getDefaultContent());
+        }
+
+        @DisplayName("default constructor uses sentinel UUID")
+        @Test
+        void defaultConstructor_usesSentinelUUID() {
+            var attr = new AbilityUpgradeQuestAttribute();
+            assertEquals(SENTINEL_UUID, attr.getContent());
+        }
+
+        @DisplayName("value constructor stores provided UUID")
+        @Test
+        void valueConstructor_storesProvidedUUID() {
+            UUID questId = UUID.randomUUID();
+            var attr = new AbilityUpgradeQuestAttribute(questId);
+            assertEquals(questId, attr.getContent());
+        }
+
+        @DisplayName("create returns new instance with given UUID")
+        @Test
+        void create_returnsNewInstance() {
+            UUID questId = UUID.randomUUID();
+            var template = new AbilityUpgradeQuestAttribute();
+            AbilityAttribute<UUID> created = template.create(questId);
+            assertEquals(questId, created.getContent());
+            assertNotSame(template, created);
+        }
+
+        @DisplayName("create from string parses UUID")
+        @Test
+        void create_fromString_parsesUUID() {
+            UUID questId = UUID.randomUUID();
+            var template = new AbilityUpgradeQuestAttribute();
+            AbilityAttribute<UUID> created = template.create(questId.toString());
+            assertEquals(questId, created.getContent());
+        }
+
+        @DisplayName("convertContent parses valid UUID string")
+        @Test
+        void convertContent_parsesValidUUID() {
+            UUID expected = UUID.randomUUID();
+            var attr = new AbilityUpgradeQuestAttribute();
+            assertEquals(expected, attr.convertContent(expected.toString()));
+        }
+
+        @DisplayName("convertContent throws for invalid UUID string")
+        @Test
+        void convertContent_throwsForInvalidUUID() {
+            var attr = new AbilityUpgradeQuestAttribute();
+            assertThrows(IllegalArgumentException.class, () -> attr.convertContent("not-a-uuid"));
+        }
+
+        @DisplayName("shouldContentBeSaved returns false when sentinel UUID")
+        @Test
+        void shouldContentBeSaved_returnsFalse_whenSentinel() {
+            var attr = new AbilityUpgradeQuestAttribute(SENTINEL_UUID);
+            assertFalse(attr.shouldContentBeSaved());
+        }
+
+        @DisplayName("shouldContentBeSaved returns false for default constructor")
+        @Test
+        void shouldContentBeSaved_returnsFalse_forDefaultConstructor() {
+            var attr = new AbilityUpgradeQuestAttribute();
+            assertFalse(attr.shouldContentBeSaved());
+        }
+
+        @DisplayName("shouldContentBeSaved returns true when non-sentinel UUID")
+        @Test
+        void shouldContentBeSaved_returnsTrue_whenNonSentinel() {
+            var attr = new AbilityUpgradeQuestAttribute(UUID.randomUUID());
+            assertTrue(attr.shouldContentBeSaved());
+        }
+
+        @DisplayName("getDatabaseKeyName returns quest")
+        @Test
+        void getDatabaseKeyName_returnsQuest() {
+            var attr = new AbilityUpgradeQuestAttribute();
+            assertEquals("quest", attr.getDatabaseKeyName());
+        }
+
+        @DisplayName("getNamespacedKey matches registry constant")
+        @Test
+        void getNamespacedKey_matchesRegistryConstant() {
+            var attr = new AbilityUpgradeQuestAttribute();
+            assertEquals(AbilityAttributeRegistry.ABILITY_QUEST_ATTRIBUTE, attr.getNamespacedKey());
+        }
+
+        @DisplayName("getDisplayPriority returns 20")
+        @Test
+        void getDisplayPriority_returnsTwenty() {
+            var attr = new AbilityUpgradeQuestAttribute();
+            assertEquals(20, attr.getDisplayPriority());
+        }
+
+        @DisplayName("serializeContent returns UUID string")
+        @Test
+        void serializeContent_returnsUUIDString() {
+            UUID questId = UUID.randomUUID();
+            var attr = new AbilityUpgradeQuestAttribute(questId);
+            assertEquals(questId.toString(), attr.serializeContent());
+        }
+    }
+
+    @Nested
+    @DisplayName("AbilityLocationAttribute")
+    class LocationAttribute {
+
+        @DisplayName("getDefaultContent returns location with null world")
+        @Test
+        void getDefaultContent_returnsLocationWithNullWorld() {
+            var attr = new AbilityLocationAttribute();
+            Location defaultLoc = attr.getDefaultContent();
+            assertEquals(0, defaultLoc.getX());
+            assertEquals(0, defaultLoc.getY());
+            assertEquals(0, defaultLoc.getZ());
+            assertFalse(defaultLoc.isWorldLoaded());
+        }
+
+        @DisplayName("default constructor uses default content")
+        @Test
+        void defaultConstructor_usesDefaultContent() {
+            var attr = new AbilityLocationAttribute();
+            assertFalse(attr.getContent().isWorldLoaded());
+        }
+
+        @DisplayName("value constructor stores provided location")
+        @Test
+        void valueConstructor_storesProvidedLocation() {
+            World world = server.addSimpleWorld("test_world");
+            Location loc = new Location(world, 10, 64, -20);
+            var attr = new AbilityLocationAttribute(loc);
+            assertEquals(loc, attr.getContent());
+        }
+
+        @DisplayName("create returns new instance with given location")
+        @Test
+        void create_returnsNewInstance() {
+            World world = server.addSimpleWorld("location_test");
+            Location loc = new Location(world, 5, 100, 5);
+            var template = new AbilityLocationAttribute();
+            AbilityAttribute<Location> created = template.create(loc);
+            assertEquals(loc, created.getContent());
+            assertNotSame(template, created);
+        }
+
+        @DisplayName("shouldContentBeSaved returns false when world is null")
+        @Test
+        void shouldContentBeSaved_returnsFalse_whenWorldIsNull() {
+            var attr = new AbilityLocationAttribute();
+            assertFalse(attr.shouldContentBeSaved());
+        }
+
+        @DisplayName("shouldContentBeSaved returns true when world is present")
+        @Test
+        void shouldContentBeSaved_returnsTrue_whenWorldPresent() {
+            World world = server.addSimpleWorld("save_test_world");
+            var attr = new AbilityLocationAttribute(new Location(world, 1, 2, 3));
+            assertTrue(attr.shouldContentBeSaved());
+        }
+
+        @DisplayName("getDatabaseKeyName returns location")
+        @Test
+        void getDatabaseKeyName_returnsLocation() {
+            var attr = new AbilityLocationAttribute();
+            assertEquals("location", attr.getDatabaseKeyName());
+        }
+
+        @DisplayName("getNamespacedKey matches registry constant")
+        @Test
+        void getNamespacedKey_matchesRegistryConstant() {
+            var attr = new AbilityLocationAttribute();
+            assertEquals(AbilityAttributeRegistry.ABILITY_LOCATION_ATTRIBUTE, attr.getNamespacedKey());
+        }
+
+        @DisplayName("getDisplayPriority returns 30")
+        @Test
+        void getDisplayPriority_returnsThirty() {
+            var attr = new AbilityLocationAttribute();
+            assertEquals(30, attr.getDisplayPriority());
+        }
+
+        @DisplayName("serializeContent produces expected format")
+        @Test
+        void serializeContent_producesExpectedFormat() {
+            World world = server.addSimpleWorld("roundtrip_world");
+            Location original = new Location(world, 100, 64, -200);
+            var attr = new AbilityLocationAttribute(original);
+            String serialized = attr.serializeContent();
+            String[] parts = serialized.split(";");
+            assertEquals(4, parts.length);
+            assertEquals(world.getUID().toString(), parts[3]);
+        }
+
+        @DisplayName("convertContent throws for wrong number of segments")
+        @Test
+        void convertContent_throwsForWrongSegments() {
+            var attr = new AbilityLocationAttribute();
+            assertThrows(Exception.class, () -> attr.convertContent("not;a;valid;location;format"));
+        }
+
+        @DisplayName("convertContent throws for non-numeric coordinates")
+        @Test
+        void convertContent_throwsForNonNumericCoords() {
+            var attr = new AbilityLocationAttribute();
+            assertThrows(Exception.class, () -> attr.convertContent("abc;def;ghi;" + UUID.randomUUID()));
+        }
+    }
+
+    @Nested
+    @DisplayName("RemoteTransferItemSetAttribute")
+    class RemoteTransferItemSet {
+
+        @DisplayName("getDefaultContent returns empty set")
+        @Test
+        void getDefaultContent_returnsEmptySet() {
+            var attr = new RemoteTransferItemSetAttribute();
+            assertTrue(attr.getDefaultContent().isEmpty());
+        }
+
+        @DisplayName("default constructor uses empty set")
+        @Test
+        void defaultConstructor_usesEmptySet() {
+            var attr = new RemoteTransferItemSetAttribute();
+            assertTrue(attr.getContent().isEmpty());
+        }
+
+        @DisplayName("value constructor stores provided set")
+        @Test
+        void valueConstructor_storesProvidedSet() {
+            Set<CustomItemWrapper> items = Set.of(new CustomItemWrapper(Material.STONE));
+            var attr = new RemoteTransferItemSetAttribute(items);
+            assertEquals(1, attr.getContent().size());
+        }
+
+        @DisplayName("create returns new instance with given set")
+        @Test
+        void create_returnsNewInstance() {
+            Set<CustomItemWrapper> items = Set.of(new CustomItemWrapper(Material.IRON_ORE));
+            var template = new RemoteTransferItemSetAttribute();
+            AbilityAttribute<Set<CustomItemWrapper>> created = template.create(items);
+            assertEquals(1, created.getContent().size());
+            assertNotSame(template, created);
+        }
+
+        @DisplayName("shouldContentBeSaved returns false when empty")
+        @Test
+        void shouldContentBeSaved_returnsFalse_whenEmpty() {
+            var attr = new RemoteTransferItemSetAttribute();
+            assertFalse(attr.shouldContentBeSaved());
+        }
+
+        @DisplayName("shouldContentBeSaved returns true when non-empty")
+        @Test
+        void shouldContentBeSaved_returnsTrue_whenNonEmpty() {
+            Set<CustomItemWrapper> items = Set.of(new CustomItemWrapper(Material.DIAMOND_ORE));
+            var attr = new RemoteTransferItemSetAttribute(items);
+            assertTrue(attr.shouldContentBeSaved());
+        }
+
+        @DisplayName("convertContent parses CSV string into set")
+        @Test
+        void convertContent_parsesCSV() {
+            var attr = new RemoteTransferItemSetAttribute();
+            Set<CustomItemWrapper> result = attr.convertContent("STONE,IRON_ORE");
+            assertEquals(2, result.size());
+        }
+
+        @DisplayName("convertContent handles single item")
+        @Test
+        void convertContent_handlesSingleItem() {
+            var attr = new RemoteTransferItemSetAttribute();
+            Set<CustomItemWrapper> result = attr.convertContent("GOLD_ORE");
+            assertEquals(1, result.size());
+        }
+
+        @DisplayName("serializeContent produces CSV from materials")
+        @Test
+        void serializeContent_producesCSV() {
+            Set<CustomItemWrapper> items = Set.of(new CustomItemWrapper(Material.STONE));
+            var attr = new RemoteTransferItemSetAttribute(items);
+            String serialized = attr.serializeContent();
+            assertEquals("STONE", serialized);
+        }
+
+        @DisplayName("serializeContent returns empty string for empty set")
+        @Test
+        void serializeContent_returnsEmpty_forEmptySet() {
+            var attr = new RemoteTransferItemSetAttribute();
+            assertEquals("", attr.serializeContent());
+        }
+
+        @DisplayName("isCustomItemWrapperStored returns true for stored item")
+        @Test
+        void isCustomItemWrapperStored_returnsTrue_forStoredItem() {
+            CustomItemWrapper wrapper = new CustomItemWrapper(Material.COAL_ORE);
+            var attr = new RemoteTransferItemSetAttribute(Set.of(wrapper));
+            assertTrue(attr.isCustomItemWrapperStored(wrapper));
+        }
+
+        @DisplayName("isCustomItemWrapperStored returns false for unstored item")
+        @Test
+        void isCustomItemWrapperStored_returnsFalse_forUnstoredItem() {
+            var attr = new RemoteTransferItemSetAttribute();
+            assertFalse(attr.isCustomItemWrapperStored(new CustomItemWrapper(Material.STONE)));
+        }
+
+        @DisplayName("getDatabaseKeyName returns remote_transfer_material_set")
+        @Test
+        void getDatabaseKeyName_returnsExpectedKey() {
+            var attr = new RemoteTransferItemSetAttribute();
+            assertEquals("remote_transfer_material_set", attr.getDatabaseKeyName());
+        }
+
+        @DisplayName("getNamespacedKey matches registry constant")
+        @Test
+        void getNamespacedKey_matchesRegistryConstant() {
+            var attr = new RemoteTransferItemSetAttribute();
+            assertEquals(AbilityAttributeRegistry.REMOTE_TRANSFER_ITEM_SET_ATTRIBUTE, attr.getNamespacedKey());
+        }
+
+        @DisplayName("getDisplayPriority returns 40")
+        @Test
+        void getDisplayPriority_returnsForty() {
+            var attr = new RemoteTransferItemSetAttribute();
+            assertEquals(40, attr.getDisplayPriority());
         }
     }
 }
