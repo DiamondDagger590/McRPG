@@ -84,6 +84,12 @@ class McRPGMethodsTest extends McRPGBaseTest {
         void leftoverSecondsIgnored() {
             assertEquals("1h", McRPGMethods.formatDuration(3_600_000 + 30_000));
         }
+
+        @Test
+        @DisplayName("Negative input returns '<1m'")
+        void negativeInput_returnsLessThanOneMinute() {
+            assertEquals("<1m", McRPGMethods.formatDuration(-5000));
+        }
     }
 
     @Nested

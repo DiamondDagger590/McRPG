@@ -73,7 +73,7 @@ class ItemRewardTypeTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("Missing amount defaults to 1")
-        void missingAmount_defaultsToOne() {
+        void fromSerializedConfig_defaultsToOne_whenAmountMissing() {
             Map<String, Object> serialized = new LinkedHashMap<>();
             serialized.put("item", Map.of("material", "STONE"));
 
@@ -85,7 +85,7 @@ class ItemRewardTypeTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("Amount inside item section is used when no top-level amount")
-        void nestedAmount_used() {
+        void fromSerializedConfig_usesNestedAmount_whenNoTopLevel() {
             Map<String, Object> serialized = new LinkedHashMap<>();
             Map<String, Object> itemConfig = new LinkedHashMap<>();
             itemConfig.put("material", "IRON_INGOT");
@@ -100,7 +100,7 @@ class ItemRewardTypeTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("Top-level amount takes precedence over nested amount")
-        void topLevelAmount_takesPrecedence() {
+        void fromSerializedConfig_usesTopLevelAmount_whenBothPresent() {
             Map<String, Object> serialized = new LinkedHashMap<>();
             Map<String, Object> itemConfig = new LinkedHashMap<>();
             itemConfig.put("material", "GOLD_INGOT");
@@ -146,7 +146,7 @@ class ItemRewardTypeTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("Empty display label is not serialized")
-        void emptyDisplayLabel_notSerialized() {
+        void serializeConfig_omitsDisplay_whenLabelEmpty() {
             Map<String, Object> serialized = new LinkedHashMap<>();
             serialized.put("item", Map.of("material", "STONE"));
             serialized.put("amount", 1);
@@ -160,7 +160,7 @@ class ItemRewardTypeTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("Missing item config uses 'Item' as fallback material")
-        void missingItemConfig_fallbackToItem() {
+        void fromSerializedConfig_fallbackToItem_whenItemMissing() {
             Map<String, Object> serialized = new LinkedHashMap<>();
             serialized.put("amount", 1);
 
@@ -199,7 +199,7 @@ class ItemRewardTypeTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("Underscore-separated material is formatted with spaces")
-        void underscoreSeparated_formattedWithSpaces() {
+        void describeForDisplay_replacesUnderscoresWithSpaces() {
             Map<String, Object> serialized = new LinkedHashMap<>();
             serialized.put("item", Map.of("material", "IRON_PICKAXE"));
             serialized.put("amount", 2);
@@ -273,8 +273,8 @@ class ItemRewardTypeTest extends McRPGBaseTest {
     class WithLocalizationRoute {
 
         @Test
-        @DisplayName("Returns a new instance")
-        void returnsNewInstance() {
+        @DisplayName("Returns a new instance with route in serialized output")
+        void withLocalizationRoute_returnsNewInstanceWithRoute() {
             Map<String, Object> serialized = new LinkedHashMap<>();
             serialized.put("item", Map.of("material", "DIAMOND"));
             serialized.put("amount", 1);
@@ -284,6 +284,7 @@ class ItemRewardTypeTest extends McRPGBaseTest {
                     dev.dejvokep.boostedyaml.route.Route.fromString("test.route"));
 
             assertNotSame(configured, withRoute);
+            assertEquals("test.route", withRoute.serializeConfig().get("localization-route"));
         }
     }
 
