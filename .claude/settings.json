@@ -29,7 +29,15 @@
       "Bash(git remote *)",
       "Bash(git blame *)",
       "Bash(git fetch)",
-      "Bash(git fetch *)"
+      "Bash(git fetch *)",
+      "Bash(./gradlew verifiedShadowJar)",
+      "Bash(./gradlew verifiedShadowJar *)",
+      "Bash(./gradlew fastShadowJar)",
+      "Bash(./gradlew fastShadowJar *)",
+      "Bash(./gradlew shadowJar)",
+      "Bash(./gradlew shadowJar *)",
+      "Bash(./gradlew jacocoTestReport)",
+      "Bash(./gradlew jacocoTestReport *)"
     ]
   },
   "hooks": {

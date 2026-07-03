@@ -4,7 +4,9 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.statistic.StatisticRegistry;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestContentPack;
@@ -221,6 +223,20 @@ public enum ContentHandlerType {
                                 .manager(ManagerKey.RELOADABLE_CONTENT)
                                 .trackReloadableContent(reloadable));
             });
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link CombatConditionContentPack}s by registering
+     * each {@link us.eunoians.mcrpg.combat.condition.CombatCondition} into the
+     * {@link CombatConditionRegistry}.
+     */
+    COMBAT_CONDITION((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof CombatConditionContentPack combatConditionPack) {
+            CombatConditionRegistry conditionRegistry = mcRPG.registryAccess()
+                    .registry(McRPGRegistryKey.COMBAT_CONDITION);
+            combatConditionPack.getContent().forEach(conditionRegistry::register);
             return true;
         }
         return false;

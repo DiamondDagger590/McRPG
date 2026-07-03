@@ -28,6 +28,7 @@ import us.eunoians.mcrpg.ability.impl.woodcutting.NymphsVitality;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
@@ -142,7 +143,8 @@ public final class McRPGExpansion extends ContentExpansion {
                 getStatisticContent(skills, abilities), getPlayerSettingContent(), getLocalizationContent(),
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
-                getRewardDistributionTypeContent(), getTemplateConditionContent());
+                getRewardDistributionTypeContent(), getTemplateConditionContent(),
+                getCombatConditionContent());
     }
 
     @NotNull
@@ -470,5 +472,17 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new PermissionCondition());
         pack.addContent(new CompletionPrerequisiteCondition());
         return pack;
+    }
+
+    /**
+     * Gets the native {@link CombatConditionContentPack} for McRPG. This pack is empty because
+     * no built-in combat conditions exist — the extension point is available for third-party
+     * plugins and future McRPG features.
+     *
+     * @return The native {@link CombatConditionContentPack} for McRPG (empty).
+     */
+    @NotNull
+    private CombatConditionContentPack getCombatConditionContent() {
+        return new CombatConditionContentPack(this);
     }
 }

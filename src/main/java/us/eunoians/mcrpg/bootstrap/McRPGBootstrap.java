@@ -11,6 +11,8 @@ import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
+import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
@@ -93,6 +95,8 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new TemplateConditionRegistry());
         registryAccess.register(new PlayerStatRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
+        registryAccess.register(new CombatConditionRegistry());
+        registryAccess.registry(RegistryKey.MANAGER).register(new CombatTrackerManager(mcRPG));
         new McRPGExpansionRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadQuestDefinitions();
         registryAccess.registry(RegistryKey.MANAGER).register(new GlowingManager(mcRPG));
@@ -109,6 +113,11 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
 
         new McRPGListenerRegistrar().register(bootstrapContext);
         new McRPGHooksRegistrar().register(bootstrapContext);
+
+        CombatTrackerManager combatTrackerManager = registryAccess.registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.COMBAT_TRACKER);
+        combatTrackerManager.startConditionTasks();
+        combatTrackerManager.startTimeoutTask();
 
         if (startupProfile == StartupProfile.PROD) {
             new McRPGDriverRegistrar().register(bootstrapContext);
@@ -139,8 +148,12 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
 
     @Override
     public void stop(@NotNull StartupProfile startupProfile) {
+        RegistryAccess registryAccess = getPlugin().registryAccess();
+        if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.COMBAT_TRACKER)) {
+            registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_TRACKER).shutdown();
+        }
+
         if (startupProfile == StartupProfile.PROD) {
-            RegistryAccess registryAccess = getPlugin().registryAccess();
             if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.GLOWING)) {
                 registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GLOWING).shutdown();
             }

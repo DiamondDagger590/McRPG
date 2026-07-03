@@ -18,6 +18,7 @@ import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 import us.eunoians.mcrpg.quest.source.QuestSourceRegistry;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
+import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
 import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 
 import static com.diamonddagger590.mccore.registry.RegistryKeyImpl.create;
@@ -61,4 +62,5 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
      * retroactively create a {@link us.eunoians.mcrpg.stat.instance.PlayerStatInstance} for that player.
      */
     RegistryKey<PlayerStatRegistry> PLAYER_STAT = create(PlayerStatRegistry.class);
+    RegistryKey<CombatConditionRegistry> COMBAT_CONDITION = create(CombatConditionRegistry.class);
 }

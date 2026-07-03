@@ -1,0 +1,19 @@
+# Combat Tracker Configuration
+# Controls per-player combat session tracking, timeout behavior, and participant management.
+
+config-version: 1
+
+session:
+  # Seconds of inactivity before a combat session ends.
+  # Also used as the per-participant inactivity threshold — participants that haven't
+  # interacted with the session owner for this duration are individually removed.
+  timeout-seconds: 8
+
+  # Maximum number of mob participants tracked in a session's FIFO queue.
+  # When the queue is full, the oldest mob is evicted. Player participants are unlimited.
+  max-mob-participants: 16
+
+  # Seconds between global timeout scan passes.
+  # Lower values = more responsive timeouts, slightly higher tick cost.
+  # 0.5 seconds is sufficient — timing precision for an 8-second timeout doesn't need sub-second granularity.
+  timeout-scan-interval-seconds: 0.5
