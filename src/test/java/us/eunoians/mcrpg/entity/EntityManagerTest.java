@@ -216,6 +216,20 @@ class EntityManagerTest extends McRPGBaseTest {
         }
 
         @Test
+        @DisplayName("trackQuestHolder overwrites previous holder for same UUID")
+        void trackQuestHolder_overwritesPreviousHolder() {
+            UUID uuid = UUID.randomUUID();
+            QuestHolder first = new QuestHolder(uuid);
+            QuestHolder second = new QuestHolder(uuid);
+            entityManager.trackQuestHolder(first);
+            entityManager.trackQuestHolder(second);
+
+            Optional<QuestHolder> result = entityManager.getQuestHolder(uuid);
+            assertTrue(result.isPresent());
+            assertSame(second, result.get());
+        }
+
+        @Test
         @DisplayName("getQuestHolder returns empty after removal")
         void getQuestHolder_returnsEmpty_afterRemoval() {
             UUID uuid = UUID.randomUUID();

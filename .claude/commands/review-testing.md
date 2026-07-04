@@ -52,3 +52,19 @@ Adopt the Testing Auditor Persona. You are a test engineer reviewing whether thi
 
 4. List: **Production files changed:** [...] | **Test files present:** [...] | **Coverage gaps:** [...]
 5. If nothing to flag: "No testing concerns found."
+
+## Known Infrastructure Guarantees (do NOT flag these)
+
+The following patterns are correct by design. Flagging them produces false positives:
+
+1. **`RegistryAccess.registryAccess().register()` overwrites existing entries.** Tests that call `register()` in `@BeforeEach` do NOT need `@AfterEach` cleanup — re-registering in the next test overwrites the previous entry. Do not flag missing cleanup for registry re-registration.
+
+2. **`TestBootstrap` pre-wires mocked managers.** `McRPGLocalizationManager`, `TimeProvider`, `FileManager`, and others are already spy'd/mocked and wired into `RegistryAccess` by `TestBootstrap`. Tests that retrieve these managers from the registry and stub methods on them are correct — do not flag them as "constructing mocks instead of using the real implementation."
+
+3. **`server.getScheduler().cancelTasks(plugin)` cancels ALL tasks for that plugin.** This is the correct way to reset scheduler state between tests in a `@BeforeEach`. It works regardless of which holder or object created the task. Do not flag it as incomplete cleanup.
+
+4. **Simple domain classes instantiated fresh per test are fine.** Classes like `EntityManager`, `AbilityHolder`, `QuestHolder` are Map-based trackers that do not register Bukkit listeners or interact with global state. Creating a new instance per test provides complete isolation. Do not flag them as needing shared setup or MockBukkit integration.
+
+5. **`McRPGPlayerExtension` creates a new spy'd player per test method.** Each test gets an isolated `McRPGPlayer` instance with its own UUID. The extension handles `McRPGPlayerManager` registration and cleanup. Do not flag tests using this extension as needing manual player management.
+
+6. **`server.getPluginManager().clearEvents()` resets event history.** Tests that assert on fired events use `clearEvents()` in `@BeforeEach` to prevent cross-test pollution. This is the standard pattern — do not flag it as unnecessary.

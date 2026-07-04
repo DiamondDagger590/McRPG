@@ -182,6 +182,20 @@ class CooldownableAbilityTest extends McRPGBaseTest {
         }
 
         @Test
+        @DisplayName("zero-second duration stores current time as cooldown end")
+        void storesCurrentTime_whenDurationIsZero() {
+            AbilityData data = new AbilityData(ability.getAbilityKey());
+            holder.addAbilityData(data);
+
+            long appliedCooldown = ability.putHolderOnCooldown(holder, 0);
+
+            assertEquals(0, appliedCooldown);
+            long storedCooldown = ability.getCooldownForHolder(holder);
+            assertEquals(FIXED_NOW.toEpochMilli(), storedCooldown);
+            assertFalse(ability.isAbilityOnCooldown(holder));
+        }
+
+        @Test
         @DisplayName("uses getCooldown when called without duration")
         void useGetCooldown_whenCalledWithoutDuration() {
             ability.setCooldownDuration(15);

@@ -252,6 +252,34 @@ class DropMultiplierAbilityTest {
         }
 
         @Test
+        @DisplayName("identity multiplier leaves amounts unchanged")
+        void identityMultiplier_leavesAmountsUnchanged() {
+            Location location = new Location(world, 10, 20, 30);
+            multiplierMap.put(location, 1);
+
+            Block block = mock(Block.class);
+            when(block.getLocation()).thenReturn(location);
+
+            ItemStack itemStack1 = new ItemStack(Material.DIAMOND, 2);
+            ItemStack itemStack2 = new ItemStack(Material.COBBLESTONE, 7);
+
+            Item item1 = mock(Item.class);
+            Item item2 = mock(Item.class);
+            when(item1.getItemStack()).thenReturn(itemStack1);
+            when(item2.getItemStack()).thenReturn(itemStack2);
+
+            BlockDropItemEvent event = mock(BlockDropItemEvent.class);
+            when(event.getBlock()).thenReturn(block);
+            when(event.getItems()).thenReturn(List.of(item1, item2));
+
+            ability.processDropEvent(event);
+
+            assertEquals(2, itemStack1.getAmount());
+            assertEquals(7, itemStack2.getAmount());
+            assertFalse(multiplierMap.containsKey(location));
+        }
+
+        @Test
         @DisplayName("different locations tracked independently")
         void differentLocations_trackedIndependently() {
             Location loc1 = new Location(world, 10, 20, 30);
