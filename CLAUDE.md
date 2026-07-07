@@ -47,7 +47,8 @@ Output jar: `build/libs/McRPG-<version>-<git-hash>.jar`
 ## Testing
 
 - **Framework:** JUnit 6 (junit-bom), MockBukkit v1.21, Mockito 3
-- **Base class:** Extend `McRPGBaseTest` (found in `src/testFixtures/`)
+- **Base class:** Extend `McRPGBaseTest` (found in `src/test/java/`) — provides `server`, `mcRPG`, `addPlayerToServer(McRPGPlayer)`, and `spawnEntity(Class)`
+- **Player fixture:** `McRPGPlayerExtension` (found in `src/testFixtures/java/`) — JUnit extension that creates an `McRPGPlayer` per test and injects it as a method parameter. Use `@ExtendWith(McRPGPlayerExtension.class)` on the test class and add `McRPGPlayer mcRPGPlayer` to any test method signature. The extension registers the `McRPGPlayerManager` and cleans up after each test. Call `addPlayerToServer(mcRPGPlayer)` to make `getAsBukkitPlayer()` return a `PlayerMock`.
 - **Fixtures:** Shared test helpers live in `src/testFixtures/java/`
 - **Structure:** Test files mirror the main source package structure under `src/test/java/`
 - There are no integration tests — validation of gameplay behavior is done manually on a running Paper server
@@ -611,6 +612,27 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - Extend `McRPGBaseTest` for any test that requires Bukkit or MockBukkit setup
 - Shared test helpers and fixtures go in `src/testFixtures/java/`
 - **The entire test suite must pass before a task is considered complete** — run `./gradlew verifiedShadowJar` (or `./gradlew test`) and verify zero failures across all test classes, not just tests related to the current change. Regressions in unrelated tests still block completion.
+
+#### McRPGPlayer in Tests
+
+When a test needs an `McRPGPlayer` instance, use the `McRPGPlayerExtension` fixture instead of constructing one manually:
+
+```java
+@ExtendWith(McRPGPlayerExtension.class)
+class MyTest extends McRPGBaseTest {
+
+    @Test
+    void myTest(@NotNull McRPGPlayer mcRPGPlayer) {
+        // Player is created, spy'd, and registered in McRPGPlayerManager automatically.
+        // To make getAsBukkitPlayer() return a real PlayerMock:
+        PlayerMock playerMock = addPlayerToServer(mcRPGPlayer);
+        // Access the AbilityHolder via:
+        SkillHolder skillHolder = mcRPGPlayer.asSkillHolder();
+    }
+}
+```
+
+The extension handles `McRPGPlayerManager` registration and player cleanup after each test. The `McRPGPlayer` is created with `spy()` so you can stub methods on it. Without `addPlayerToServer()`, `getAsBukkitPlayer()` returns `Optional.empty()` — use this to test offline-player code paths.
 
 #### Test Naming Conventions
 

@@ -7,7 +7,7 @@ Adopt the Testing Auditor Persona. You are a test engineer reviewing whether thi
 **Coverage Completeness**
 - For every new public method with non-trivial logic (>3 lines), is there a corresponding test?
 - For every ability component change, does a test cover both the pass and fail branch of `shouldActivate()`?
-- Are edge cases covered: empty collections, zero values, null holders, already-on-cooldown, invalid input?
+- Are edge cases covered: empty collections, zero values, already-on-cooldown, invalid input? Do NOT flag missing null-input tests — null parameters are guarded by `@NotNull` annotations and are not expected runtime states.
 - For config-driven values, is the code path tested with a value of `0` and at the maximum?
 - If a bug was fixed, is there a regression test?
 - Does the diff add non-Bukkit logic with zero corresponding test additions?
@@ -26,6 +26,7 @@ Adopt the Testing Auditor Persona. You are a test engineer reviewing whether thi
 **Bukkit-Dependent vs. Pure-Java Separation**
 - Does any class mix pure logic with Bukkit API calls where only the pure logic is tested? Extract the pure logic.
 - Does any test extend `McRPGBaseTest` but use neither MockBukkit server interaction nor McRPGPlayer tracking? In that narrow case, a plain JUnit test would suffice.
+- **NOT a violation:** Tests that use simple Bukkit data classes (`NamespacedKey`, `Location`, `ItemStack`, `Material`) without extending `McRPGBaseTest` are valid — these classes work with MockBukkit on the test classpath and do NOT require `MockBukkit.mock()` or a running server. Do NOT flag these as needing `McRPGBaseTest`.
 
 **MockBukkit Usage**
 - Is Mockito used to mock a Bukkit class where MockBukkit provides a real implementation (e.g., `PlayerMock`)?
@@ -34,7 +35,7 @@ Adopt the Testing Auditor Persona. You are a test engineer reviewing whether thi
 **Test Quality**
 - Does every test method have at least one assertion? A test with no assertion cannot fail.
 - Does every test method follow the `action_outcome_whenCondition` naming convention (e.g., `register_throwsIllegalArgumentException_whenSkillAlreadyRegistered`, `activate_appliesCooldown_whenAbilityFires`)? The `_whenCondition` suffix is optional when the context is obvious from the action and outcome alone. See `BaseAbilityTest` for a reference.
-- Does every test method carry a `@DisplayName` annotation written as a Given/When/Then sentence (e.g., `@DisplayName("Given a skill is already registered, when register is called again, then it throws IllegalArgumentException")`)? This is the golden standard across the repo — see `BaseAbilityTest` for a reference. `@Test` is listed before `@DisplayName` on the method.
+- Does every test method carry a `@DisplayName` annotation written as a short descriptive label (e.g., `@DisplayName("getBaseValue returns constructor value")`, `@DisplayName("DISABLED cycles to ENABLED")`)? Given/When/Then sentences are NOT the McRPG convention — short labels are. `@Test` is listed before `@DisplayName` on the method.
 - Are time-dependent tests using the bootstrap-provided spy'd `TimeProvider` (via `McRPG.getInstance().getTimeProvider()` and `when(timeProvider.now()).thenReturn(...)`) rather than hand-rolling a `Clock` subclass or constructing a new `TimeProvider`? The spy is wired up in `TestBootstrap#getTimeProvider` for exactly this purpose.
 
 ## Instructions
@@ -51,3 +52,19 @@ Adopt the Testing Auditor Persona. You are a test engineer reviewing whether thi
 
 4. List: **Production files changed:** [...] | **Test files present:** [...] | **Coverage gaps:** [...]
 5. If nothing to flag: "No testing concerns found."
+
+## Known Infrastructure Guarantees (do NOT flag these)
+
+The following patterns are correct by design. Flagging them produces false positives:
+
+1. **`RegistryAccess.registryAccess().register()` overwrites existing entries.** Tests that call `register()` in `@BeforeEach` do NOT need `@AfterEach` cleanup — re-registering in the next test overwrites the previous entry. Do not flag missing cleanup for registry re-registration.
+
+2. **`TestBootstrap` pre-wires mocked managers.** `McRPGLocalizationManager`, `TimeProvider`, `FileManager`, and others are already spy'd/mocked and wired into `RegistryAccess` by `TestBootstrap`. Tests that retrieve these managers from the registry and stub methods on them are correct — do not flag them as "constructing mocks instead of using the real implementation."
+
+3. **`server.getScheduler().cancelTasks(plugin)` cancels ALL tasks for that plugin.** This is the correct way to reset scheduler state between tests in a `@BeforeEach`. It works regardless of which holder or object created the task. Do not flag it as incomplete cleanup.
+
+4. **Simple domain classes instantiated fresh per test are fine.** Classes like `EntityManager`, `AbilityHolder`, `QuestHolder` are Map-based trackers that do not register Bukkit listeners or interact with global state. Creating a new instance per test provides complete isolation. Do not flag them as needing shared setup or MockBukkit integration.
+
+5. **`McRPGPlayerExtension` creates a new spy'd player per test method.** Each test gets an isolated `McRPGPlayer` instance with its own UUID. The extension handles `McRPGPlayerManager` registration and cleanup. Do not flag tests using this extension as needing manual player management.
+
+6. **`server.getPluginManager().clearEvents()` resets event history.** Tests that assert on fired events use `clearEvents()` in `@BeforeEach` to prevent cross-test pollution. This is the standard pattern — do not flag it as unnecessary.
