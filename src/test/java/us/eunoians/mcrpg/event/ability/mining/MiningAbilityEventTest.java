@@ -37,6 +37,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -196,6 +197,7 @@ class MiningAbilityEventTest extends McRPGBaseTest {
 
             assertEquals(1, returned.size());
             assertTrue(returned.containsKey(blockType));
+            assertThrows(UnsupportedOperationException.class, () -> returned.put(mock(OreScannerBlockType.class), Set.of()));
         }
 
         @Test
@@ -211,6 +213,7 @@ class MiningAbilityEventTest extends McRPGBaseTest {
 
             assertEquals(1, locations.size());
             assertTrue(locations.contains(location));
+            assertThrows(UnsupportedOperationException.class, () -> locations.add(new Location(mock(World.class), 9, 9, 9)));
         }
 
         @Test
