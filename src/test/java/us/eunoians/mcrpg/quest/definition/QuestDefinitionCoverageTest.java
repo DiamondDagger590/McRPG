@@ -46,17 +46,11 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
         void getDescriptionRoute_includesCustomNamespace() {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("custom", "my_quest"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null
-            );
+                    List.of(phase))
+                    .build();
             Route expected = Route.fromString("quests.custom.my_quest.description");
             assertEquals(expected, def.getDescriptionRoute());
         }
@@ -70,20 +64,11 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
         private QuestDefinition defWithKey(String key) {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-            return new QuestDefinition(
+            return new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", key),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    null,
-                    null
-            );
+                    List.of(phase))
+                    .build();
         }
 
         private String getDisplayNameViaFallback(QuestDefinition def, McRPGPlayer player) {
@@ -133,20 +118,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
         void getDisplayName_prefersInlineName(McRPGPlayer player) {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "gen_ugly_key_abc123ff"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    null,
-                    Map.of("name", "Pretty Display Name")
-            );
+                    List.of(phase))
+                    .inlineDisplay(Map.of("name", "Pretty Display Name"))
+                    .build();
             assertEquals("Pretty Display Name", getDisplayNameViaFallback(def, player));
         }
 
@@ -155,20 +132,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
         void getDisplayName_emptyInlineFallsThrough(McRPGPlayer player) {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "daily_mining"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    null,
-                    Map.of("name", "")
-            );
+                    List.of(phase))
+                    .inlineDisplay(Map.of("name", ""))
+                    .build();
             assertEquals("Daily Mining", getDisplayNameViaFallback(def, player));
         }
     }
@@ -183,20 +152,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
         void getDescription_returnsInlineDescription(McRPGPlayer player) {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "desc_test"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    null,
-                    Map.of("description", "Mine some blocks")
-            );
+                    List.of(phase))
+                    .inlineDisplay(Map.of("description", "Mine some blocks"))
+                    .build();
             try (MockedStatic<RegistryAccess> mocked = mockStatic(RegistryAccess.class)) {
                 mocked.when(RegistryAccess::registryAccess).thenThrow(new RuntimeException("force fallback"));
                 var result = def.getDescription(player);
@@ -221,20 +182,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
         void getDescription_returnsEmpty_whenInlineIsEmpty(McRPGPlayer player) {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "empty_desc"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    null,
-                    Map.of("description", "")
-            );
+                    List.of(phase))
+                    .inlineDisplay(Map.of("description", ""))
+                    .build();
             try (MockedStatic<RegistryAccess> mocked = mockStatic(RegistryAccess.class)) {
                 mocked.when(RegistryAccess::registryAccess).thenThrow(new RuntimeException("force fallback"));
                 var result = def.getDescription(player);
@@ -260,19 +213,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
             BoardMetadata boardMeta = new BoardMetadata(true, Set.of(), Set.of(), null, null);
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "meta_test"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    Map.of(BoardMetadata.METADATA_KEY, boardMeta),
-                    null
-            );
+                    List.of(phase))
+                    .metadata(Map.of(BoardMetadata.METADATA_KEY, boardMeta))
+                    .build();
             assertTrue(def.hasBoardMetadata());
         }
     }
@@ -294,19 +240,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
             BoardMetadata boardMeta = new BoardMetadata(true, Set.of(), Set.of(), null, null);
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "meta_all_test"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    Map.of(BoardMetadata.METADATA_KEY, boardMeta),
-                    null
-            );
+                    List.of(phase))
+                    .metadata(Map.of(BoardMetadata.METADATA_KEY, boardMeta))
+                    .build();
             assertEquals(1, def.getAllMetadata().size());
             assertTrue(def.getAllMetadata().containsKey(BoardMetadata.METADATA_KEY));
         }
@@ -323,20 +262,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
             var rewardType = QuestTestHelper.mockRewardType("test_reward");
             var entry = new QuestRewardEntry(rewardType, null);
-            QuestDefinition def = QuestDefinition.withEntries(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "entries_test"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(entry),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    null,
-                    null
-            );
+                    List.of(phase))
+                    .rewardEntries(List.of(entry))
+                    .build();
             assertNotNull(def);
             assertEquals(1, def.getRewardEntries().size());
             assertEquals(rewardType, def.getRewardEntries().get(0).reward());
@@ -359,20 +290,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
         void getInlineDisplay_returnsPopulated() {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "inline_test"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    null,
-                    Map.of("name", "Test", "description", "A test")
-            );
+                    List.of(phase))
+                    .inlineDisplay(Map.of("name", "Test", "description", "A test"))
+                    .build();
             assertEquals(2, def.getInlineDisplay().size());
             assertEquals("Test", def.getInlineDisplay().get("name"));
         }
@@ -382,20 +305,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
         void getInlineDisplayValue_returnsPresent() {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "val_test"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    null,
-                    Map.of("name", "Hello")
-            );
+                    List.of(phase))
+                    .inlineDisplay(Map.of("name", "Hello"))
+                    .build();
             assertEquals("Hello", def.getInlineDisplayValue("name").orElseThrow());
         }
 
@@ -436,19 +351,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
             QuestStageDefinition stage = QuestTestHelper.singleStageDef("s", "o");
             QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
             BoardMetadata boardMeta = new BoardMetadata(true, Set.of(), Set.of(), Duration.ofMinutes(5), "PLAYER");
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "board_meta_test"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    Map.of(BoardMetadata.METADATA_KEY, boardMeta),
-                    null
-            );
+                    List.of(phase))
+                    .metadata(Map.of(BoardMetadata.METADATA_KEY, boardMeta))
+                    .build();
             assertTrue(def.getBoardMetadata().isPresent());
             assertTrue(def.getBoardMetadata().get().boardEligible());
         }
@@ -471,19 +379,12 @@ public class QuestDefinitionCoverageTest extends McRPGBaseTest {
                     return Map.of();
                 }
             };
-            QuestDefinition def = new QuestDefinition(
+            QuestDefinition def = new QuestDefinition.Builder(
                     new NamespacedKey("mcrpg", "wrong_meta_test"),
                     new NamespacedKey("mcrpg", "single_player"),
-                    null,
-                    List.of(phase),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    Map.of(BoardMetadata.METADATA_KEY, fakeMeta),
-                    null
-            );
+                    List.of(phase))
+                    .metadata(Map.of(BoardMetadata.METADATA_KEY, fakeMeta))
+                    .build();
             assertTrue(def.getBoardMetadata().isEmpty());
         }
     }

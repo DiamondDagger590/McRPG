@@ -94,9 +94,9 @@ class LoadoutActiveAbilitiesTest extends McRPGBaseTest {
             abilityRegistry.register(passive);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(combo1.getAbilityKey());
-            loadout.addAbility(passive.getAbilityKey());
-            loadout.addAbility(combo2.getAbilityKey());
+            loadout.equipAbility(combo1.getAbilityKey());
+            loadout.equipAbility(passive.getAbilityKey());
+            loadout.equipAbility(combo2.getAbilityKey());
 
             List<NamespacedKey> activeAbilities = loadout.getOrderedActiveAbilities();
 
@@ -112,7 +112,7 @@ class LoadoutActiveAbilitiesTest extends McRPGBaseTest {
             abilityRegistry.register(passive);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(passive.getAbilityKey());
+            loadout.equipAbility(passive.getAbilityKey());
 
             List<NamespacedKey> activeAbilities = loadout.getOrderedActiveAbilities();
 
@@ -142,8 +142,8 @@ class LoadoutActiveAbilitiesTest extends McRPGBaseTest {
             abilityRegistry.register(combo2);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(combo1.getAbilityKey());
-            loadout.addAbility(combo2.getAbilityKey());
+            loadout.equipAbility(combo1.getAbilityKey());
+            loadout.equipAbility(combo2.getAbilityKey());
 
             assertEquals(combo1.getAbilityKey(), loadout.getOrderedActiveAbilities().get(0));
             assertEquals(combo2.getAbilityKey(), loadout.getOrderedActiveAbilities().get(1));
@@ -161,7 +161,7 @@ class LoadoutActiveAbilitiesTest extends McRPGBaseTest {
             abilityRegistry.register(combo1);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(combo1.getAbilityKey());
+            loadout.equipAbility(combo1.getAbilityKey());
 
             loadout.swapActivePositions(1, 1);
 
@@ -175,7 +175,7 @@ class LoadoutActiveAbilitiesTest extends McRPGBaseTest {
             abilityRegistry.register(combo1);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(combo1.getAbilityKey());
+            loadout.equipAbility(combo1.getAbilityKey());
 
             loadout.swapActivePositions(5, 1);
 
@@ -189,7 +189,7 @@ class LoadoutActiveAbilitiesTest extends McRPGBaseTest {
             abilityRegistry.register(combo1);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(combo1.getAbilityKey());
+            loadout.equipAbility(combo1.getAbilityKey());
 
             loadout.swapActivePositions(1, 5);
 
@@ -205,8 +205,8 @@ class LoadoutActiveAbilitiesTest extends McRPGBaseTest {
             abilityRegistry.register(combo2);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(combo1.getAbilityKey());
-            loadout.addAbility(combo2.getAbilityKey());
+            loadout.equipAbility(combo1.getAbilityKey());
+            loadout.equipAbility(combo2.getAbilityKey());
 
             loadout.swapActivePositions(0, 1);
 
@@ -223,8 +223,8 @@ class LoadoutActiveAbilitiesTest extends McRPGBaseTest {
             abilityRegistry.register(combo2);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(combo1.getAbilityKey());
-            loadout.addAbility(combo2.getAbilityKey());
+            loadout.equipAbility(combo1.getAbilityKey());
+            loadout.equipAbility(combo2.getAbilityKey());
 
             loadout.swapActivePositions(-1, 1);
 
@@ -243,9 +243,9 @@ class LoadoutActiveAbilitiesTest extends McRPGBaseTest {
             abilityRegistry.register(combo2);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(combo1.getAbilityKey());
-            loadout.addAbility(passive.getAbilityKey());
-            loadout.addAbility(combo2.getAbilityKey());
+            loadout.equipAbility(combo1.getAbilityKey());
+            loadout.equipAbility(passive.getAbilityKey());
+            loadout.equipAbility(combo2.getAbilityKey());
 
             loadout.swapActivePositions(1, 2);
 

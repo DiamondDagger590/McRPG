@@ -287,11 +287,6 @@ class CooldownableAbilityTest extends McRPGBaseTest {
         }
 
         @Override
-        public boolean isPassive() {
-            return false;
-        }
-
-        @Override
         public @NotNull String getDatabaseName() {
             return "stub_cooldownable";
         }
