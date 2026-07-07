@@ -2,127 +2,197 @@ package us.eunoians.mcrpg.quest.board.category;
 
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.McRPGBaseTest;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.time.Duration;
-import java.util.Optional;
-import java.util.OptionalInt;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class BoardSlotCategoryTest extends McRPGBaseTest {
+@DisplayName("BoardSlotCategory")
+class BoardSlotCategoryTest {
 
-    @DisplayName("construction with all fields returns correct values from getters")
-    @Test
-    void construction_allFields_gettersReturnCorrectValues() {
-        NamespacedKey key = new NamespacedKey("mcrpg", "test");
-        NamespacedKey refreshTypeKey = new NamespacedKey("mcrpg", "daily");
-        NamespacedKey scopeProviderKey = new NamespacedKey("mcrpg", "single_player");
-        Duration refreshInterval = Duration.ofHours(24);
-        Duration completionTime = Duration.ofHours(48);
-        Duration appearanceCooldown = Duration.ofMinutes(30);
-        String requiredPermission = "mcrpg.quest.vip";
+    private static final NamespacedKey TEST_KEY = new NamespacedKey("mcrpg", "test_category");
+    private static final NamespacedKey REFRESH_KEY = new NamespacedKey("mcrpg", "daily");
+    private static final NamespacedKey SCOPE_KEY = new NamespacedKey("mcrpg", "single_player");
 
-        BoardSlotCategory cat = new BoardSlotCategory(key, BoardSlotCategory.Visibility.SHARED,
-                refreshTypeKey, refreshInterval, completionTime, scopeProviderKey,
-                1, 5, 0.5, 10, appearanceCooldown, requiredPermission, null);
-
-        assertEquals(key, cat.getKey());
-        assertEquals(BoardSlotCategory.Visibility.SHARED, cat.getVisibility());
-        assertEquals(refreshTypeKey, cat.getRefreshTypeKey());
-        assertEquals(refreshInterval, cat.getRefreshInterval());
-        assertEquals(completionTime, cat.getCompletionTime());
-        assertEquals(scopeProviderKey, cat.getScopeProviderKey());
-        assertEquals(1, cat.getMin());
-        assertEquals(5, cat.getMax());
-        assertEquals(0.5, cat.getChancePerSlot());
-        assertEquals(10, cat.getPriority());
-        assertEquals(Optional.of(appearanceCooldown), cat.getAppearanceCooldown());
-        assertEquals(Optional.of(requiredPermission), cat.getRequiredPermission());
-    }
-
-    @DisplayName("getAppearanceCooldown returns Optional.empty when null")
-    @Test
-    void getAppearanceCooldown_null_returnsEmpty() {
-        BoardSlotCategory cat = category("a", 1, BoardSlotCategory.Visibility.PERSONAL);
-        assertTrue(cat.getAppearanceCooldown().isEmpty());
-    }
-
-    @DisplayName("getAppearanceCooldown returns Optional with value when set")
-    @Test
-    void getAppearanceCooldown_set_returnsOptionalWithValue() {
-        Duration cooldown = Duration.ofHours(2);
-        BoardSlotCategory cat = new BoardSlotCategory(
-                new NamespacedKey("mcrpg", "x"), BoardSlotCategory.Visibility.SCOPED,
-                new NamespacedKey("mcrpg", "daily"), Duration.ofHours(24), Duration.ofHours(48),
-                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, 1, cooldown, null, null);
-        assertTrue(cat.getAppearanceCooldown().isPresent());
-        assertEquals(cooldown, cat.getAppearanceCooldown().orElseThrow());
-    }
-
-    @DisplayName("getRequiredPermission returns Optional.empty when null")
-    @Test
-    void getRequiredPermission_null_returnsEmpty() {
-        BoardSlotCategory cat = category("a", 1, BoardSlotCategory.Visibility.PERSONAL);
-        assertTrue(cat.getRequiredPermission().isEmpty());
-    }
-
-    @DisplayName("getRequiredPermission returns Optional with value when set")
-    @Test
-    void getRequiredPermission_set_returnsOptionalWithValue() {
-        String perm = "mcrpg.special";
-        BoardSlotCategory cat = new BoardSlotCategory(
-                new NamespacedKey("mcrpg", "x"), BoardSlotCategory.Visibility.SHARED,
-                new NamespacedKey("mcrpg", "daily"), Duration.ofHours(24), Duration.ofHours(48),
-                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, 1, null, perm, null);
-        assertTrue(cat.getRequiredPermission().isPresent());
-        assertEquals(perm, cat.getRequiredPermission().orElseThrow());
-    }
-
-    @DisplayName("getVisibility returns SHARED for SHARED visibility")
-    @Test
-    void getVisibility_shared_returnsShared() {
-        BoardSlotCategory cat = category("s", 1, BoardSlotCategory.Visibility.SHARED);
-        assertEquals(BoardSlotCategory.Visibility.SHARED, cat.getVisibility());
-    }
-
-    @DisplayName("getVisibility returns PERSONAL for PERSONAL visibility")
-    @Test
-    void getVisibility_personal_returnsPersonal() {
-        BoardSlotCategory cat = category("p", 1, BoardSlotCategory.Visibility.PERSONAL);
-        assertEquals(BoardSlotCategory.Visibility.PERSONAL, cat.getVisibility());
-    }
-
-    @DisplayName("getVisibility returns SCOPED for SCOPED visibility")
-    @Test
-    void getVisibility_scoped_returnsScoped() {
-        BoardSlotCategory cat = category("sc", 1, BoardSlotCategory.Visibility.SCOPED);
-        assertEquals(BoardSlotCategory.Visibility.SCOPED, cat.getVisibility());
-    }
-
-    @DisplayName("getMaxActivePerEntity returns empty when null")
-    @Test
-    void getMaxActivePerEntity_null_returnsEmpty() {
-        BoardSlotCategory cat = category("a", 1, BoardSlotCategory.Visibility.SCOPED);
-        assertEquals(OptionalInt.empty(), cat.getMaxActivePerEntity());
-    }
-
-    @DisplayName("getMaxActivePerEntity returns OptionalInt with value when set")
-    @Test
-    void getMaxActivePerEntity_set_returnsOptionalIntWithValue() {
-        BoardSlotCategory cat = new BoardSlotCategory(
-                new NamespacedKey("mcrpg", "x"), BoardSlotCategory.Visibility.SCOPED,
-                new NamespacedKey("mcrpg", "daily"), Duration.ofHours(24), Duration.ofHours(48),
-                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, 1, null, null, 3);
-        assertEquals(OptionalInt.of(3), cat.getMaxActivePerEntity());
-    }
-
-    private static BoardSlotCategory category(String name, int priority, BoardSlotCategory.Visibility vis) {
+    private BoardSlotCategory buildCategory(Duration appearanceCooldown,
+                                            String requiredPermission,
+                                            Integer maxActivePerEntity) {
         return new BoardSlotCategory(
-                new NamespacedKey("mcrpg", name), vis,
-                new NamespacedKey("mcrpg", "daily"), Duration.ofHours(24), Duration.ofHours(48),
-                new NamespacedKey("mcrpg", "single_player"), 1, 5, 0.5, priority, null, null, null);
+                TEST_KEY,
+                BoardSlotCategory.Visibility.SHARED,
+                REFRESH_KEY,
+                Duration.ofHours(24),
+                Duration.ofHours(48),
+                SCOPE_KEY,
+                1,
+                5,
+                0.75,
+                10,
+                appearanceCooldown,
+                requiredPermission,
+                maxActivePerEntity
+        );
+    }
+
+    private BoardSlotCategory buildDefaultCategory() {
+        return buildCategory(null, null, null);
+    }
+
+    @Nested
+    @DisplayName("constructor and getters")
+    class ConstructorAndGetters {
+
+        @Test
+        @DisplayName("getKey returns constructor value")
+        void getKey_returnsConstructorValue() {
+            BoardSlotCategory category = buildDefaultCategory();
+            assertEquals(TEST_KEY, category.getKey());
+        }
+
+        @Test
+        @DisplayName("getVisibility returns constructor value")
+        void getVisibility_returnsConstructorValue() {
+            BoardSlotCategory category = buildDefaultCategory();
+            assertEquals(BoardSlotCategory.Visibility.SHARED, category.getVisibility());
+        }
+
+        @Test
+        @DisplayName("getRefreshTypeKey returns constructor value")
+        void getRefreshTypeKey_returnsConstructorValue() {
+            BoardSlotCategory category = buildDefaultCategory();
+            assertEquals(REFRESH_KEY, category.getRefreshTypeKey());
+        }
+
+        @Test
+        @DisplayName("getRefreshInterval returns constructor value")
+        void getRefreshInterval_returnsConstructorValue() {
+            BoardSlotCategory category = buildDefaultCategory();
+            assertEquals(Duration.ofHours(24), category.getRefreshInterval());
+        }
+
+        @Test
+        @DisplayName("getCompletionTime returns constructor value")
+        void getCompletionTime_returnsConstructorValue() {
+            BoardSlotCategory category = buildDefaultCategory();
+            assertEquals(Duration.ofHours(48), category.getCompletionTime());
+        }
+
+        @Test
+        @DisplayName("getScopeProviderKey returns constructor value")
+        void getScopeProviderKey_returnsConstructorValue() {
+            BoardSlotCategory category = buildDefaultCategory();
+            assertEquals(SCOPE_KEY, category.getScopeProviderKey());
+        }
+
+        @Test
+        @DisplayName("getMin returns constructor value")
+        void getMin_returnsConstructorValue() {
+            BoardSlotCategory category = buildDefaultCategory();
+            assertEquals(1, category.getMin());
+        }
+
+        @Test
+        @DisplayName("getMax returns constructor value")
+        void getMax_returnsConstructorValue() {
+            BoardSlotCategory category = buildDefaultCategory();
+            assertEquals(5, category.getMax());
+        }
+
+        @Test
+        @DisplayName("getChancePerSlot returns constructor value")
+        void getChancePerSlot_returnsConstructorValue() {
+            BoardSlotCategory category = buildDefaultCategory();
+            assertEquals(0.75, category.getChancePerSlot());
+        }
+
+        @Test
+        @DisplayName("getPriority returns constructor value")
+        void getPriority_returnsConstructorValue() {
+            BoardSlotCategory category = buildDefaultCategory();
+            assertEquals(10, category.getPriority());
+        }
+    }
+
+    @Nested
+    @DisplayName("Visibility enum")
+    class VisibilityEnum {
+
+        @ParameterizedTest
+        @EnumSource(BoardSlotCategory.Visibility.class)
+        @DisplayName("all values are accessible")
+        void allValues_areAccessible(BoardSlotCategory.Visibility visibility) {
+            BoardSlotCategory category = new BoardSlotCategory(
+                    TEST_KEY, visibility, REFRESH_KEY, Duration.ofHours(24),
+                    Duration.ofHours(48), SCOPE_KEY, 1, 5, 0.75, 10, null, null, null
+            );
+            assertEquals(visibility, category.getVisibility());
+        }
+    }
+
+    @Nested
+    @DisplayName("getAppearanceCooldown")
+    class GetAppearanceCooldown {
+
+        @Test
+        @DisplayName("returns empty when null")
+        void getAppearanceCooldown_null_returnsEmpty() {
+            BoardSlotCategory category = buildCategory(null, null, null);
+            assertTrue(category.getAppearanceCooldown().isEmpty());
+        }
+
+        @Test
+        @DisplayName("returns present with value when set")
+        void getAppearanceCooldown_set_returnsValue() {
+            Duration cooldown = Duration.ofHours(6);
+            BoardSlotCategory category = buildCategory(cooldown, null, null);
+            assertTrue(category.getAppearanceCooldown().isPresent());
+            assertEquals(cooldown, category.getAppearanceCooldown().orElseThrow());
+        }
+    }
+
+    @Nested
+    @DisplayName("getRequiredPermission")
+    class GetRequiredPermission {
+
+        @Test
+        @DisplayName("returns empty when null")
+        void getRequiredPermission_null_returnsEmpty() {
+            BoardSlotCategory category = buildCategory(null, null, null);
+            assertTrue(category.getRequiredPermission().isEmpty());
+        }
+
+        @Test
+        @DisplayName("returns present with value when set")
+        void getRequiredPermission_set_returnsValue() {
+            BoardSlotCategory category = buildCategory(null, "mcrpg.board.premium", null);
+            assertTrue(category.getRequiredPermission().isPresent());
+            assertEquals("mcrpg.board.premium", category.getRequiredPermission().orElseThrow());
+        }
+    }
+
+    @Nested
+    @DisplayName("getMaxActivePerEntity")
+    class GetMaxActivePerEntity {
+
+        @Test
+        @DisplayName("returns empty when null")
+        void getMaxActivePerEntity_null_returnsEmpty() {
+            BoardSlotCategory category = buildCategory(null, null, null);
+            assertFalse(category.getMaxActivePerEntity().isPresent());
+        }
+
+        @Test
+        @DisplayName("returns present with value when set")
+        void getMaxActivePerEntity_set_returnsValue() {
+            BoardSlotCategory category = buildCategory(null, null, 3);
+            assertTrue(category.getMaxActivePerEntity().isPresent());
+            assertEquals(3, category.getMaxActivePerEntity().orElseThrow());
+        }
     }
 }
