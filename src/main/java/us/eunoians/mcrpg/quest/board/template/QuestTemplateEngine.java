@@ -236,20 +236,11 @@ public final class QuestTemplateEngine {
                 ? null
                 : remapInlineDisplayObjectiveKeys(template.getInlineDisplay(), filteredPhases, phases);
 
-        return new QuestDefinition(
-                questKey,
-                template.getScopeProviderKey(),
-                null,
-                phases,
-                rewards,
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null,
-                null,
-                template.getRewardDistribution().orElse(null),
-                inlineDisplay
-        );
+        return new QuestDefinition.Builder(questKey, template.getScopeProviderKey(), phases)
+                .rewards(rewards)
+                .rewardDistribution(template.getRewardDistribution().orElse(null))
+                .inlineDisplay(inlineDisplay)
+                .build();
     }
 
     /**
@@ -274,7 +265,7 @@ public final class QuestTemplateEngine {
             @NotNull Map<String, String> templateDisplay,
             @NotNull List<TemplatePhaseDefinition> filteredPhases,
             @NotNull List<QuestPhaseDefinition> phases) {
-        Map<String, String> remapped = new java.util.LinkedHashMap<>(templateDisplay);
+        Map<String, String> remapped = new LinkedHashMap<>(templateDisplay);
 
         for (int phaseIdx = 0; phaseIdx < filteredPhases.size() && phaseIdx < phases.size(); phaseIdx++) {
             TemplatePhaseDefinition templatePhase = filteredPhases.get(phaseIdx);

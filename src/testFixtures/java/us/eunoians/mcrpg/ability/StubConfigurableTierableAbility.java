@@ -149,11 +149,6 @@ public class StubConfigurableTierableAbility implements ConfigurableTierableAbil
         return true;
     }
 
-    @Override
-    public boolean isPassive() {
-        return true;
-    }
-
     @NotNull
     @Override
     public Optional<NamespacedKey> getExpansionKey() {

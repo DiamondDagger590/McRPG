@@ -29,7 +29,10 @@ import us.eunoians.mcrpg.util.filter.key.AbilityKeyInLoadoutFilter;
 import us.eunoians.mcrpg.util.filter.key.AbilityKeyUnlockedFilter;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * This gui is used when a player is trying to select an {@link Ability} to go into
@@ -44,7 +47,9 @@ import java.util.Set;
  * </ul>
  * Abilities already in the loadout (and not being replaced) are always excluded.
  */
-public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
+public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "loadout_ability_select");
 
     /**
      * Determines which kind of abilities this selection GUI presents.
@@ -63,6 +68,7 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
     }
 
     private static final int NAVIGATION_ROW_START_INDEX = 45;
+    private static final int PREVIOUS_GUI_SLOT_INDEX = NAVIGATION_ROW_START_INDEX;
     private static final int PREVIOUS_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 2;
     private static final int SORT_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 4;
     private static final int NEXT_PAGE_SLOT_INDEX = NAVIGATION_ROW_START_INDEX + 6;
@@ -147,6 +153,7 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
         if (page < getMaximumPage()) {
             setSlot(NEXT_PAGE_SLOT_INDEX, getNextPageSlot());
         }
+        setSlot(PREVIOUS_GUI_SLOT_INDEX, getPreviousGuiSlot());
     }
 
     @NotNull
@@ -222,5 +229,11 @@ public class LoadoutAbilitySelectGui extends PaginatedSortedAbilityGui {
                 new AbilityKeyComboActivatableFilter(mode == SelectionMode.ACTIVE),
                 new AbilityKeyInLoadoutFilter(loadout, oldAbilityKey)
         );
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

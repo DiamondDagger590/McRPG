@@ -128,10 +128,14 @@ public class QuestManagerRepeatModeTest extends McRPGBaseTest {
                                               Duration cooldown, int limit) {
         QuestStageDefinition stage = QuestTestHelper.singleStageDef(key + "_s", key + "_o");
         QuestPhaseDefinition phase = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stage);
-        return new QuestDefinition(
+        return new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", key),
                 new NamespacedKey("mcrpg", "single_player"),
-                null, List.of(phase), List.of(), mode, cooldown, limit, null);
+                List.of(phase)
+        ).repeatMode(mode)
+                .repeatCooldown(cooldown)
+                .repeatLimit(limit)
+                .build();
     }
 
     // ── ONCE ──

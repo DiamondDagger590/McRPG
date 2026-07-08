@@ -119,7 +119,7 @@ public class QuestConfigLoaderTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), yaml);
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             assertEquals(1, result.size());
             assertTrue(result.containsKey(NamespacedKey.fromString("mcrpg:test_quest")));
         } finally {
@@ -151,7 +151,7 @@ public class QuestConfigLoaderTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), yaml);
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             QuestDefinition def = result.get(NamespacedKey.fromString("mcrpg:test_expr"));
             assertNotNull(def);
 
@@ -187,7 +187,7 @@ public class QuestConfigLoaderTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), yaml);
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             assertTrue(result.isEmpty(), "Quest with blank required-progress should be skipped");
         } finally {
             deleteRecursively(tempDir.toFile());
@@ -218,7 +218,7 @@ public class QuestConfigLoaderTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), yaml);
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             QuestDefinition def = result.get(NamespacedKey.fromString("mcrpg:test_expr_nonpos"));
             assertNotNull(def);
 
@@ -234,7 +234,7 @@ public class QuestConfigLoaderTest extends McRPGBaseTest {
         Path tempDir = Files.createTempDirectory("quest_config_empty");
         tempDir.toFile().deleteOnExit();
         try {
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             assertTrue(result.isEmpty());
         } finally {
             deleteRecursively(tempDir.toFile());
@@ -245,7 +245,7 @@ public class QuestConfigLoaderTest extends McRPGBaseTest {
     @Test
     public void loadQuestsFromDirectory_nonExistentDirectory_returnsEmpty() {
         File nonExistent = new File("nonexistent_dir_" + System.currentTimeMillis());
-        Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(nonExistent);
+        Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(nonExistent).definitions();
         assertTrue(result.isEmpty());
     }
 
@@ -259,7 +259,7 @@ public class QuestConfigLoaderTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), "other:\n  key: value\n");
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             assertTrue(result.isEmpty());
         } finally {
             deleteRecursively(tempDir.toFile());

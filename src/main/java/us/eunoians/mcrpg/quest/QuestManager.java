@@ -16,6 +16,7 @@ import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Player;
 import org.checkerframework.checker.index.qual.NonNegative;
 import org.jetbrains.annotations.NotNull;
 import org.jspecify.annotations.NonNull;
@@ -34,7 +35,12 @@ import us.eunoians.mcrpg.database.table.quest.QuestInstanceDAO;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.QuestChainConfigLoader;
 import us.eunoians.mcrpg.configuration.QuestConfigLoader;
+import us.eunoians.mcrpg.configuration.QuestLoadResult;
+import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
 import us.eunoians.mcrpg.quest.board.BoardOffering;
@@ -48,6 +54,7 @@ import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.quest.impl.QuestState;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScope;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProvider;
+import us.eunoians.mcrpg.event.quest.PreQuestStartEvent;
 import us.eunoians.mcrpg.quest.source.QuestSource;
 import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProviderRegistry;
@@ -60,6 +67,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -121,6 +129,7 @@ public class QuestManager extends Manager<McRPG> {
     private final TemplateConditionRegistry conditionTypeRegistry;
     private final QuestScopeProviderRegistry scopeProviderRegistry;
     private final QuestConfigLoader configLoader;
+    private final QuestChainConfigLoader chainConfigLoader;
     private final QuestDefinitionRegistry questDefinitionRegistry;
     private final GeneratedQuestDefinitionCodec codec;
 
@@ -164,6 +173,7 @@ public class QuestManager extends Manager<McRPG> {
 
         this.codec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, rewardTypeRegistry, conditionTypeRegistry);
         this.configLoader = new QuestConfigLoader(new ConditionParser(this.conditionTypeRegistry));
+        this.chainConfigLoader = new QuestChainConfigLoader();
 
         YamlDocument mainConfig = registryAccess
                 .registry(RegistryKey.MANAGER)
@@ -341,18 +351,37 @@ public class QuestManager extends Manager<McRPG> {
      * Creates, scopes, starts, and tracks a new quest instance from the given definition,
      * supplying variables used for resolving expression-based configuration (e.g. objective
      * {@code required-progress}).
+     * <p>
+     * If the player identified by {@code initialPlayerUUID} is currently online, a
+     * {@link PreQuestStartEvent} is fired before the instance is created. Third-party plugins
+     * can cancel this event to prevent the quest from starting. When the player is offline
+     * (e.g. system-initiated or test environments) the event is skipped and the quest proceeds
+     * unconditionally through the normal scope and tracker pipeline.
      *
      * @param definition         the quest definition to instantiate
      * @param initialPlayerUUID  the UUID of the player who initiates or is assigned to the quest
      * @param variables          variables available when instantiating this quest (e.g. {@code tier})
      * @param questSource        the source that originated this quest
      * @return the started quest instance, or empty if the scope provider could not be resolved
+     *         or the {@link PreQuestStartEvent} was cancelled
      */
     @NotNull
     public Optional<QuestInstance> startQuest(@NotNull QuestDefinition definition,
                                               @NotNull UUID initialPlayerUUID,
                                               @NotNull Map<String, Object> variables,
                                               @NotNull QuestSource questSource) {
+        Player player = Bukkit.getPlayer(initialPlayerUUID);
+        if (player != null) {
+            PreQuestStartEvent preEvent = new PreQuestStartEvent(definition, player, questSource);
+            Bukkit.getPluginManager().callEvent(preEvent);
+            if (preEvent.isCancelled()) {
+                plugin().getLogger().info("PreQuestStartEvent cancelled for quest "
+                        + definition.getQuestKey() + " (player: " + player.getName()
+                        + ", source: " + questSource.getClass().getSimpleName() + ")");
+                return Optional.empty();
+            }
+        }
+
         NamespacedKey scopeKey = definition.getScopeType();
         Optional<QuestScopeProvider<?>> providerOpt = scopeProviderRegistry.get(scopeKey);
         if (providerOpt.isEmpty()) {
@@ -381,7 +410,7 @@ public class QuestManager extends Manager<McRPG> {
             singleScope.setPlayerInScope(initialPlayerUUID);
         }
         instance.setQuestScope(scope);
-        instance.start(definition);
+        instance.start(definition, initialPlayerUUID);
         trackActiveQuest(instance);
         return Optional.of(instance);
     }
@@ -1065,25 +1094,65 @@ public class QuestManager extends Manager<McRPG> {
      * definitions in the registry with the newly parsed ones.
      */
     public void loadQuestDefinitions() {
+        cachedFinishedQuests.invalidateAll();
+
         File questsDir = new File(plugin().getDataFolder(), QUESTS_DIRECTORY);
         if (!questsDir.exists()) {
             questsDir.mkdirs();
         }
-        Map<NamespacedKey, QuestDefinition> allDefinitions = new LinkedHashMap<>(
-                configLoader.loadQuestsFromDirectory(questsDir));
+
+        // Phase A: load quest definitions, collecting chain file paths as a by-product
+        QuestLoadResult mainResult = configLoader.loadQuestsFromDirectory(questsDir);
+        Map<NamespacedKey, QuestDefinition> allDefinitions = new LinkedHashMap<>(mainResult.definitions());
+        List<Path> allChainFiles = new ArrayList<>(mainResult.chainFiles());
 
         File boardQuestsDir = new File(plugin().getDataFolder(), "quest-board/quests");
         if (boardQuestsDir.exists() && boardQuestsDir.isDirectory()) {
-            allDefinitions.putAll(configLoader.loadQuestsFromDirectory(boardQuestsDir));
+            QuestLoadResult boardResult = configLoader.loadQuestsFromDirectory(boardQuestsDir);
+            allDefinitions.putAll(boardResult.definitions());
+            allChainFiles.addAll(boardResult.chainFiles());
         }
 
         questDefinitionRegistry.replaceConfigDefinitions(allDefinitions);
+        warnStaleDefinitions(allDefinitions);
         enforceTierableAbilityUpgradeQuestConfiguration();
+
+        // Phase B: load chain definitions (quest definitions are now in the registry)
+        QuestChainRegistry chainRegistry = plugin().registryAccess().registry(McRPGRegistryKey.QUEST_CHAIN);
+        chainRegistry.clear();
+        chainConfigLoader.loadChainsFromPaths(allChainFiles).values().forEach(chainRegistry::register);
+
+        // Re-resolve all online players' ACTIVE chain states against the updated definitions
+        QuestChainManager chainManager = plugin().registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
+        chainManager.reResolveOnReload();
+    }
+
+    /**
+     * Logs a console warning for each active quest instance whose definition key is no
+     * longer present in the registry after a reload. Active instances are NOT cancelled —
+     * they continue running with their creation-time definition snapshot.
+     *
+     * @param newDefinitions the post-reload definition map
+     */
+    private void warnStaleDefinitions(@NotNull Map<NamespacedKey, QuestDefinition> newDefinitions) {
+        for (Map.Entry<UUID, QuestInstance> entry : activeQuests.entrySet()) {
+            QuestInstance instance = entry.getValue();
+            NamespacedKey questKey = instance.getQuestKey();
+            if (!newDefinitions.containsKey(questKey)) {
+                plugin().getLogger().warning("[QuestManager] Active quest instance '"
+                        + questKey + "' (UUID " + instance.getQuestUUID()
+                        + ") references a definition that was removed during reload. "
+                        + "The instance will continue running with its original definition.");
+            }
+        }
     }
 
     /**
      * Validates that all tierable abilities can resolve a usable upgrade quest definition.
-     * If not, the ability is unregistered to prevent broken upgrade flows at runtime.
+     * If not, the ability is soft-disabled to prevent broken upgrade flows at runtime.
+     * On reload, previously soft-disabled abilities are re-evaluated first and restored
+     * if their quest definition reappears.
      * <p>
      * This runs after quest definitions are (re)loaded, so both configured quest keys and
      * inferred defaults can be checked against the registry.
@@ -1092,7 +1161,20 @@ public class QuestManager extends Manager<McRPG> {
         AbilityRegistry abilityRegistry = RegistryAccess.registryAccess()
                 .registry(McRPGRegistryKey.ABILITY);
 
-        for (NamespacedKey abilityKey : abilityRegistry.getAllAbilities()) {
+        for (NamespacedKey abilityKey : new ArrayList<>(abilityRegistry.getSoftDisabledAbilities().keySet())) {
+            Ability ability = abilityRegistry.getSoftDisabledAbilities().get(abilityKey);
+            if (!(ability instanceof TierableAbility tierableAbility)) {
+                continue;
+            }
+            Optional<QuestDefinition> defOpt = resolveUpgradeQuestDefinition(tierableAbility, 2);
+            if (defOpt.isPresent()) {
+                abilityRegistry.reEnableAbility(abilityKey);
+                plugin().getLogger().info("[QuestManager] Re-enabled ability '"
+                        + abilityKey + "' — upgrade quest definition restored");
+            }
+        }
+
+        for (NamespacedKey abilityKey : new ArrayList<>(abilityRegistry.getAllAbilities())) {
             Ability ability = abilityRegistry.getRegisteredAbility(abilityKey);
             if (!(ability instanceof TierableAbility tierableAbility)) {
                 continue;
@@ -1104,12 +1186,10 @@ public class QuestManager extends Manager<McRPG> {
 
             Optional<QuestDefinition> defOpt = resolveUpgradeQuestDefinition(tierableAbility, 2);
             if (defOpt.isEmpty()) {
-                Optional<NamespacedKey> questKeyOpt = tierableAbility.getUpgradeQuestKey(2);
-                NamespacedKey resolvedKey = questKeyOpt.orElse(null);
-                plugin().getLogger().severe("[TierableAbility] " + abilityKey
-                        + " resolves upgrade quest key '" + resolvedKey + "' for tier 2, but no usable quest definition exists."
-                        + " Unregistering ability.");
-                abilityRegistry.unregisterAbility(abilityKey);
+                abilityRegistry.softDisableAbility(abilityKey);
+                plugin().getLogger().warning("[QuestManager] Soft-disabled ability '"
+                        + abilityKey + "' — upgrade quest definition not found. "
+                        + "Fix the quest YAML and run /mcrpg admin reload to restore.");
             }
         }
     }
@@ -1145,7 +1225,7 @@ public class QuestManager extends Manager<McRPG> {
             }
         }
 
-        List<String> defaultResources = new java.util.ArrayList<>(List.of(
+        List<String> defaultResources = new ArrayList<>(List.of(
                 DEFAULT_QUEST_RESOURCE,
                 DEFAULT_SWORDS_UPGRADE_QUEST_RESOURCE,
                 DEFAULT_MINING_UPGRADE_QUEST_RESOURCE,

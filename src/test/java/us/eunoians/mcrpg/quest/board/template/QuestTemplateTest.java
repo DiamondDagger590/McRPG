@@ -176,15 +176,16 @@ class QuestTemplateTest {
 
         Map<String, TemplateVariable> variables = Map.of("block_count", new RangeVariable("block_count", 10.0, 50.0));
 
-        return new QuestTemplate(
+        return new QuestTemplate.Builder(
                 TEMPLATE_KEY,
                 Route.fromString("quests.templates.test.display-name"),
-                boardEligible,
                 EXPANSION_KEY,
                 supportedRarities,
                 rarityOverrides,
                 variables,
                 List.of(phase),
-                List.of(reward));
+                List.of(reward))
+                .boardEligible(boardEligible)
+                .build();
     }
 }

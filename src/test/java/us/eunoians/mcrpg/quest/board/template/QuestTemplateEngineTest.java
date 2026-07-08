@@ -306,9 +306,10 @@ class QuestTemplateEngineTest {
         TemplatePhaseDefinition phase = new TemplatePhaseDefinition(
                 PhaseCompletionMode.ALL, List.of(stage));
 
-        return new QuestTemplate(TEMPLATE_KEY,
-                Route.fromString("quests.templates.test.display-name"), true, SCOPE_KEY,
-                Set.of(COMMON, RARE), Map.of(), variables, List.of(phase), List.of());
+        return new QuestTemplate.Builder(TEMPLATE_KEY,
+                Route.fromString("quests.templates.test.display-name"), SCOPE_KEY,
+                Set.of(COMMON, RARE), Map.of(), variables, List.of(phase), List.of())
+                .build();
     }
 
     private QuestTemplate createTemplateWithRewardType(NamespacedKey rewardTypeKey) {
@@ -324,9 +325,10 @@ class QuestTemplateEngineTest {
         TemplateRewardDefinition reward = new TemplateRewardDefinition(
                 rewardTypeKey, "test_reward", Map.of("amount", "block_count"));
 
-        return new QuestTemplate(TEMPLATE_KEY,
-                Route.fromString("quests.templates.test.display-name"), true, SCOPE_KEY,
-                Set.of(COMMON, RARE), Map.of(), variables, List.of(phase), List.of(reward));
+        return new QuestTemplate.Builder(TEMPLATE_KEY,
+                Route.fromString("quests.templates.test.display-name"), SCOPE_KEY,
+                Set.of(COMMON, RARE), Map.of(), variables, List.of(phase), List.of(reward))
+                .build();
     }
 
     @Test
@@ -361,11 +363,12 @@ class QuestTemplateEngineTest {
                         "base-amount", 5,
                         "display-label", "Diamonds"));
 
-        QuestTemplate template = new QuestTemplate(
+        QuestTemplate template = new QuestTemplate.Builder(
                 NamespacedKey.fromString("mcrpg:base_amount_test"),
                 Route.fromString("quests.templates.base_amount_test.display-name"),
-                true, SCOPE_KEY, Set.of(RARE), Map.of(), variables,
-                List.of(phase), List.of(reward));
+                SCOPE_KEY, Set.of(RARE), Map.of(), variables,
+                List.of(phase), List.of(reward))
+                .build();
 
         GeneratedQuestResult result = engine.generate(template, RARE, new Random(42L));
         QuestRewardType generatedReward = result.definition().getRewards().get(0);
@@ -406,15 +409,15 @@ class QuestTemplateEngineTest {
                 "mining_xp",
                 Map.of("skill", "MINING", "amount", "block_count * 5 * difficulty"));
 
-        return new QuestTemplate(
+        return new QuestTemplate.Builder(
                 TEMPLATE_KEY,
                 Route.fromString("quests.templates.daily_mining.display-name"),
-                true,
                 SCOPE_KEY,
                 Set.of(COMMON, RARE),
                 overrides,
                 variables,
                 List.of(phase),
-                List.of(reward));
+                List.of(reward))
+                .build();
     }
 }

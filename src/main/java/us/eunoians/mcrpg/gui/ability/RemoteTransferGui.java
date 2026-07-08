@@ -39,11 +39,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * This gui is used to let players toggle the allow state for a given material for their {@link RemoteTransfer} ability.
  */
-public class RemoteTransferGui extends McRPGPaginatedGui {
+public class RemoteTransferGui extends McRPGPaginatedGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "remote_transfer");
 
     private final Comparator<RemoteTransferToggleSlot> ALPHABETICAL_CATEGORY = Comparator.comparing(slot ->
             slot.getRemoteTransferCategory().getName(getCreatingPlayer()));
@@ -239,6 +244,12 @@ public class RemoteTransferGui extends McRPGPaginatedGui {
     @NotNull
     LinkedNode<RemoteTransferSortOption> getSortOption() {
         return sortOption;
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 
     /**

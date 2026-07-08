@@ -12,6 +12,7 @@ import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.quest.impl.QuestState;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -103,7 +104,7 @@ public class QuestObjectiveInstanceTest extends McRPGBaseTest {
     @DisplayName("Given an objective on an expired quest, when progressing, then the quest expires")
     @Test
     public void progress_expiresQuest_whenQuestExpired() {
-        quest.setExpirationTime(1L);
+        quest.setExpirationTime(Instant.ofEpochMilli(1L));
         objective.progress(1, UUID.randomUUID());
         assertEquals(QuestState.CANCELLED, quest.getQuestState());
     }

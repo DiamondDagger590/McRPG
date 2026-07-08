@@ -96,8 +96,10 @@ class QuestTemplateContentPackTest {
         TemplateStageDefinition stage = new TemplateStageDefinition(List.of(obj));
         TemplatePhaseDefinition phase = new TemplatePhaseDefinition(PhaseCompletionMode.ALL, List.of(stage));
         Map<String, TemplateVariable> vars = Map.of("count", new RangeVariable("count", 1, 10));
-        return new QuestTemplate(key, Route.fromString("test.display"), true,
+        return new QuestTemplate.Builder(key, Route.fromString("test.display"),
                 NamespacedKey.fromString("mcrpg:single_player"), Set.of(COMMON), Map.of(),
-                vars, List.of(phase), List.of(), null, EXPANSION_KEY);
+                vars, List.of(phase), List.of())
+                .expansionKey(EXPANSION_KEY)
+                .build();
     }
 }

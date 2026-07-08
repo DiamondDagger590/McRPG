@@ -11,6 +11,10 @@ import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
 import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
+import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
+import us.eunoians.mcrpg.quest.chain.availability.WindowBoundaryTypeRegistry;
+import us.eunoians.mcrpg.quest.chain.condition.QuestChainStartConditionTypeRegistry;
+import us.eunoians.mcrpg.quest.chain.trigger.ChainAutoStartTriggerRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProviderRegistry;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
@@ -48,6 +52,28 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
     RegistryKey<ScopedBoardAdapterRegistry> SCOPED_BOARD_ADAPTER = create(ScopedBoardAdapterRegistry.class);
     RegistryKey<TemplateConditionRegistry> TEMPLATE_CONDITION = create(TemplateConditionRegistry.class);
     /**
+     * Retrieves the {@link QuestChainRegistry} containing all registered
+     * {@link us.eunoians.mcrpg.quest.chain.QuestChainDefinition} blueprints.
+     * <p>
+     * Chain definitions are loaded from YAML via {@code QuestChainConfigLoader} and registered
+     * during startup. Third-party chains can be registered via
+     * {@link us.eunoians.mcrpg.expansion.content.QuestChainContentPack} in a
+     * {@link us.eunoians.mcrpg.expansion.ContentExpansion}.
+     */
+    RegistryKey<QuestChainRegistry> QUEST_CHAIN = create(QuestChainRegistry.class);
+
+    /**
+     * Retrieves the {@link ChainAutoStartTriggerRegistry} containing all registered
+     * {@link us.eunoians.mcrpg.quest.chain.trigger.ChainAutoStartTrigger} types.
+     * <p>
+     * Built-in triggers: {@code mcrpg:manual}, {@code mcrpg:first_join}, {@code mcrpg:login}.
+     * Third-party triggers can be registered via
+     * {@link us.eunoians.mcrpg.expansion.content.ChainAutoStartTriggerContentPack} in a
+     * {@link us.eunoians.mcrpg.expansion.ContentExpansion}.
+     */
+    RegistryKey<ChainAutoStartTriggerRegistry> CHAIN_AUTO_START_TRIGGER = create(ChainAutoStartTriggerRegistry.class);
+
+    /**
      * Retrieves the {@link PlayerStatRegistry} containing all registered
      * {@link us.eunoians.mcrpg.stat.PlayerStat} definitions.
      * <p>
@@ -61,4 +87,26 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
      * retroactively create a {@link us.eunoians.mcrpg.stat.instance.PlayerStatInstance} for that player.
      */
     RegistryKey<PlayerStatRegistry> PLAYER_STAT = create(PlayerStatRegistry.class);
+
+    /**
+     * Retrieves the {@link WindowBoundaryTypeRegistry} containing all registered
+     * {@link us.eunoians.mcrpg.quest.chain.availability.WindowBoundaryType} factories.
+     * <p>
+     * Built-in types: {@code mcrpg:fixed}, {@code mcrpg:recurring}.
+     * Third-party boundary types can be registered via
+     * {@link us.eunoians.mcrpg.expansion.content.WindowBoundaryTypeContentPack} in a
+     * {@link us.eunoians.mcrpg.expansion.ContentExpansion}.
+     */
+    RegistryKey<WindowBoundaryTypeRegistry> WINDOW_BOUNDARY_TYPE = create(WindowBoundaryTypeRegistry.class);
+
+    /**
+     * Retrieves the {@link QuestChainStartConditionTypeRegistry} containing all registered
+     * {@link us.eunoians.mcrpg.quest.chain.condition.QuestChainStartConditionType} factories.
+     * <p>
+     * Built-in types: {@code mcrpg:time_gate}.
+     * Third-party condition types can be registered via
+     * {@link us.eunoians.mcrpg.expansion.content.QuestChainStartConditionContentPack} in a
+     * {@link us.eunoians.mcrpg.expansion.ContentExpansion}.
+     */
+    RegistryKey<QuestChainStartConditionTypeRegistry> QUEST_CHAIN_CONDITION_TYPE = create(QuestChainStartConditionTypeRegistry.class);
 }

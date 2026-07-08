@@ -148,6 +148,37 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_ADMIN_SETPROGRESS_OBJECTIVE_NOT_FOUND = Route.fromString(toRoutePath(QUEST_ADMIN_SETPROGRESS_HEADER, "objective-not-found"));
     public static final Route QUEST_ADMIN_SETPROGRESS_SUCCESS = Route.fromString(toRoutePath(QUEST_ADMIN_SETPROGRESS_HEADER, "success"));
 
+    // Quest chain — player-facing event messages (en_quest.yml, top-level quest-chain:)
+    private static final String QUEST_CHAIN_HEADER = "quest-chain";
+    private static final String QUEST_CHAIN_EVENTS_HEADER = toRoutePath(QUEST_CHAIN_HEADER, "events");
+    public static final Route QUEST_CHAIN_EVENT_START = Route.fromString(toRoutePath(QUEST_CHAIN_EVENTS_HEADER, "chain-start"));
+    public static final Route QUEST_CHAIN_EVENT_ADVANCE = Route.fromString(toRoutePath(QUEST_CHAIN_EVENTS_HEADER, "chain-advance"));
+    public static final Route QUEST_CHAIN_EVENT_COMPLETE = Route.fromString(toRoutePath(QUEST_CHAIN_EVENTS_HEADER, "chain-complete"));
+
+    // Quest chain — admin command messages (en_quest.yml)
+    private static final String QUEST_CHAIN_ADMIN_HEADER = toRoutePath(QUEST_CHAIN_HEADER, "admin");
+    private static final String QUEST_CHAIN_ADMIN_STATUS_HEADER = toRoutePath(QUEST_CHAIN_ADMIN_HEADER, "status");
+    public static final Route QUEST_CHAIN_ADMIN_STATUS_HEADER_LINE = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_STATUS_HEADER, "header"));
+    public static final Route QUEST_CHAIN_ADMIN_STATUS_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_STATUS_HEADER, "state"));
+    public static final Route QUEST_CHAIN_ADMIN_STATUS_CURRENT_STEP = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_STATUS_HEADER, "current-step"));
+    public static final Route QUEST_CHAIN_ADMIN_STATUS_COMPLETIONS = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_STATUS_HEADER, "completions"));
+    public static final Route QUEST_CHAIN_ADMIN_STATUS_LAST_COMPLETED = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_STATUS_HEADER, "last-completed"));
+    public static final Route QUEST_CHAIN_ADMIN_STATUS_NO_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_STATUS_HEADER, "no-state"));
+    private static final String QUEST_CHAIN_ADMIN_ADVANCE_HEADER = toRoutePath(QUEST_CHAIN_ADMIN_HEADER, "advance");
+    public static final Route QUEST_CHAIN_ADMIN_ADVANCE_SUCCESS = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_ADVANCE_HEADER, "success"));
+    public static final Route QUEST_CHAIN_ADMIN_ADVANCE_COMPLETE = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_ADVANCE_HEADER, "complete"));
+    public static final Route QUEST_CHAIN_ADMIN_ADVANCE_ERROR_NO_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_ADVANCE_HEADER, "error-no-state"));
+    public static final Route QUEST_CHAIN_ADMIN_ADVANCE_ERROR_TERMINAL = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_ADVANCE_HEADER, "error-terminal"));
+    public static final Route QUEST_CHAIN_ADMIN_ADVANCE_ERROR_NO_CHAIN = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_ADVANCE_HEADER, "error-no-chain"));
+    public static final Route QUEST_CHAIN_ADMIN_ADVANCE_ERROR_OFFLINE = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_ADVANCE_HEADER, "error-offline"));
+    private static final String QUEST_CHAIN_ADMIN_RESTART_HEADER = toRoutePath(QUEST_CHAIN_ADMIN_HEADER, "restart");
+    public static final Route QUEST_CHAIN_ADMIN_RESTART_SUCCESS = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_RESTART_HEADER, "success"));
+    public static final Route QUEST_CHAIN_ADMIN_RESTART_ALL_COMPLETED = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_RESTART_HEADER, "all-completed"));
+    public static final Route QUEST_CHAIN_ADMIN_RESTART_FORCED = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_RESTART_HEADER, "forced"));
+    private static final String QUEST_CHAIN_ADMIN_RESET_HEADER = toRoutePath(QUEST_CHAIN_ADMIN_HEADER, "reset");
+    public static final Route QUEST_CHAIN_ADMIN_RESET_SUCCESS = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_RESET_HEADER, "success"));
+    public static final Route QUEST_CHAIN_ADMIN_RESET_NO_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_RESET_HEADER, "no-state"));
+
     private static final String RESET_COMMAND_HEADER = toRoutePath(ADMIN_COMMAND_HEADER, "reset");
     private static final String RESET_PLAYER_COMMAND_HEADER = toRoutePath(RESET_COMMAND_HEADER, "player");
     public static final Route RESET_PLAYER_COMMAND_RECIPIENT_MESSAGE = Route.fromString(toRoutePath(RESET_PLAYER_COMMAND_HEADER, "recipient-message"));
@@ -394,6 +425,16 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route ACTIVE_QUEST_GUI_CLICK_TO_VIEW_DETAILS = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.click-to-view-details"));
     public static final Route ACTIVE_QUEST_GUI_RIGHT_CLICK_TO_ABANDON = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.right-click-to-abandon"));
 
+    // Quest Chain History GUI (en_gui.yml)
+    private static final String QUEST_CHAIN_HISTORY_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-chain-history-gui");
+    public static final Route QUEST_CHAIN_HISTORY_GUI_TITLE = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "title"));
+    public static final Route QUEST_CHAIN_HISTORY_GUI_EMPTY_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "empty-state"));
+    public static final Route QUEST_CHAIN_HISTORY_GUI_LOADING_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "loading-state"));
+    public static final Route QUEST_CHAIN_HISTORY_GUI_CHAIN_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "chain-slot.display-item"));
+    public static final Route QUEST_CHAIN_HISTORY_GUI_STEP_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "step-slot.display-item"));
+    public static final Route QUEST_CHAIN_HISTORY_GUI_UNKNOWN_STEP_MESSAGE = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "unknown-step-message"));
+    public static final Route QUEST_CHAIN_HISTORY_GUI_PREVIOUS_GUI_BUTTON_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_CHAIN_HISTORY_GUI_HEADER, "previous-gui-button.display-item"));
+
     // Quest History GUI
     private static final String QUEST_HISTORY_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-history-gui");
     public static final Route QUEST_HISTORY_GUI_TITLE = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "title"));
@@ -402,6 +443,8 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_HISTORY_GUI_SORT_DATE_ASC_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "sort-date-asc.display-item"));
     public static final Route QUEST_HISTORY_GUI_COMPLETED_QUEST_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "completed-quest-slot.display-item"));
     public static final Route QUEST_HISTORY_GUI_UNKNOWN_QUEST_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "unknown-quest-slot.display-item"));
+    public static final Route QUEST_HISTORY_GUI_EMPTY_STATE = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "empty-state"));
+    public static final Route QUEST_HISTORY_GUI_LOADING_STATE = Route.fromString(toRoutePath(QUEST_HISTORY_GUI_HEADER, "loading-state"));
     // Quest Detail GUI
     private static final String QUEST_DETAIL_GUI_HEADER = toRoutePath(GUI_HEADER, "quest-detail-gui");
     public static final Route QUEST_DETAIL_GUI_TITLE = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "title"));
@@ -413,6 +456,8 @@ public final class LocalizationKey extends ConfigFile {
             Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "previous-gui-button.from-active.display-item"));
     public static final Route QUEST_DETAIL_GUI_PREVIOUS_FROM_ABILITY_EDIT_BUTTON_DISPLAY_ITEM =
             Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "previous-gui-button.from-ability-edit.display-item"));
+    public static final Route QUEST_DETAIL_GUI_PREVIOUS_FROM_CHAIN_DETAIL_BUTTON_DISPLAY_ITEM =
+            Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "previous-gui-button.from-chain-detail.display-item"));
     public static final Route QUEST_DETAIL_GUI_OVERVIEW_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "overview-slot.display-item"));
     public static final Route QUEST_DETAIL_GUI_PHASE_HEADER_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "phase-header.display-item"));
     public static final Route QUEST_DETAIL_GUI_STAGE_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(QUEST_DETAIL_GUI_HEADER, "stage-slot.display-item"));
@@ -873,6 +918,40 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route QUEST_REWARD_ITEM_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "item.format"));
     public static final Route QUEST_REWARD_ABILITY_UPGRADE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "ability-upgrade.format"));
     public static final Route QUEST_REWARD_ABILITY_UPGRADE_NEXT_TIER_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "ability-upgrade-next-tier.format"));
+    public static final Route QUEST_REWARD_BOOSTED_EXPERIENCE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "boosted-experience.format"));
+    public static final Route QUEST_REWARD_REDEEMABLE_EXPERIENCE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "redeemable-experience.format"));
+    public static final Route QUEST_REWARD_REDEEMABLE_LEVELS_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "redeemable-levels.format"));
+    public static final Route QUEST_REWARD_MESSAGE_FORMAT = Route.fromString(toRoutePath(QUEST_REWARD_TYPE_HEADER, "message.format"));
+
+    // New objective type description keys
+    private static final String QUEST_OBJECTIVE_SKILL_LEVEL_UP_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "skill-level-up");
+    public static final Route QUEST_OBJECTIVE_SKILL_LEVEL_UP_ANY = Route.fromString(toRoutePath(QUEST_OBJECTIVE_SKILL_LEVEL_UP_HEADER, "any"));
+    public static final Route QUEST_OBJECTIVE_SKILL_LEVEL_UP_SPECIFIC = Route.fromString(toRoutePath(QUEST_OBJECTIVE_SKILL_LEVEL_UP_HEADER, "specific"));
+    private static final String QUEST_OBJECTIVE_SKILL_TARGET_LEVEL_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "skill-target-level");
+    public static final Route QUEST_OBJECTIVE_SKILL_TARGET_LEVEL_ANY = Route.fromString(toRoutePath(QUEST_OBJECTIVE_SKILL_TARGET_LEVEL_HEADER, "any"));
+    public static final Route QUEST_OBJECTIVE_SKILL_TARGET_LEVEL_SPECIFIC = Route.fromString(toRoutePath(QUEST_OBJECTIVE_SKILL_TARGET_LEVEL_HEADER, "specific"));
+    private static final String QUEST_OBJECTIVE_GUI_OPEN_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "gui-open");
+    public static final Route QUEST_OBJECTIVE_GUI_OPEN_FORMAT = Route.fromString(toRoutePath(QUEST_OBJECTIVE_GUI_OPEN_HEADER, "format"));
+    private static final String QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "ability-unlock");
+    public static final Route QUEST_OBJECTIVE_ABILITY_UNLOCK_ANY = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER, "any"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_UNLOCK_PASSIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER, "passive"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_UNLOCK_ACTIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER, "active"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_UNLOCK_INNATE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER, "innate"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_UNLOCK_SPECIFIC = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_UNLOCK_HEADER, "specific"));
+    private static final String QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "ability-activate");
+    public static final Route QUEST_OBJECTIVE_ABILITY_ACTIVATE_ANY = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER, "any"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_ACTIVATE_PASSIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER, "passive"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_ACTIVATE_ACTIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER, "active"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_ACTIVATE_INNATE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER, "innate"));
+    public static final Route QUEST_OBJECTIVE_ABILITY_ACTIVATE_SPECIFIC = Route.fromString(toRoutePath(QUEST_OBJECTIVE_ABILITY_ACTIVATE_HEADER, "specific"));
+    private static final String QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "loadout-equip");
+    public static final Route QUEST_OBJECTIVE_LOADOUT_EQUIP_ANY = Route.fromString(toRoutePath(QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER, "any"));
+    public static final Route QUEST_OBJECTIVE_LOADOUT_EQUIP_PASSIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER, "passive"));
+    public static final Route QUEST_OBJECTIVE_LOADOUT_EQUIP_ACTIVE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER, "active"));
+    public static final Route QUEST_OBJECTIVE_LOADOUT_EQUIP_INNATE = Route.fromString(toRoutePath(QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER, "innate"));
+    public static final Route QUEST_OBJECTIVE_LOADOUT_EQUIP_SPECIFIC = Route.fromString(toRoutePath(QUEST_OBJECTIVE_LOADOUT_EQUIP_HEADER, "specific"));
+    private static final String QUEST_OBJECTIVE_QUEST_BOARD_ACCEPT_HEADER = toRoutePath(QUEST_OBJECTIVE_TYPE_HEADER, "quest-board-accept");
+    public static final Route QUEST_OBJECTIVE_QUEST_BOARD_ACCEPT_FORMAT = Route.fromString(toRoutePath(QUEST_OBJECTIVE_QUEST_BOARD_ACCEPT_HEADER, "format"));
 
     // Mana feedback — under the existing ability section
     private static final String MANA_FEEDBACK_HEADER = toRoutePath(ABILITY_HEADER, "mana-feedback");
@@ -894,6 +973,23 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route STAT_MANA_DISPLAY_NAME = Route.fromString(toRoutePath(STAT_MANA_HEADER, "display-name"));
     public static final Route STAT_MANA_DISPLAY_SYMBOL = Route.fromString(toRoutePath(STAT_MANA_HEADER, "display-symbol"));
 
+    // Chain admin commands
+    private static final String CHAIN_ADMIN_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "chain-admin");
+    public static final Route CHAIN_ADMIN_NO_STATE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "no-state"));
+    public static final Route CHAIN_ADMIN_STATUS_HEADER = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-header"));
+    public static final Route CHAIN_ADMIN_STATUS_STATE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-state"));
+    public static final Route CHAIN_ADMIN_STATUS_CURRENT_STEP = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-current-step"));
+    public static final Route CHAIN_ADMIN_STATUS_COMPLETIONS = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-completions"));
+    public static final Route CHAIN_ADMIN_STATUS_LAST_COMPLETED = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-last-completed"));
+    public static final Route CHAIN_ADMIN_STATUS_TOTAL_STEPS = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "status-total-steps"));
+    public static final Route CHAIN_ADMIN_ADVANCE_SUCCESS = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "advance-success"));
+    public static final Route CHAIN_ADMIN_ADVANCE_FAILURE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "advance-failure"));
+    public static final Route CHAIN_ADMIN_RESTART_SUCCESS = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "restart-success"));
+    public static final Route CHAIN_ADMIN_RESTART_SUCCESS_FORCE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "restart-success-force"));
+    public static final Route CHAIN_ADMIN_RESTART_FAILURE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "restart-failure"));
+    public static final Route CHAIN_ADMIN_RESET_SUCCESS = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "reset-success"));
+    public static final Route CHAIN_ADMIN_RESET_FAILURE = Route.fromString(toRoutePath(CHAIN_ADMIN_COMMAND_HEADER, "reset-failure"));
+
     // Statistic commands
     private static final String STATISTIC_COMMAND_HEADER = toRoutePath(COMMAND_HEADER, "statistic");
     public static final Route STATISTIC_VIEW_MESSAGE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "view-message"));
@@ -905,6 +1001,68 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route STATISTIC_LOADING_MESSAGE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "loading-message"));
     public static final Route STATISTIC_LOOKUP_ERROR_MESSAGE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "lookup-error-message"));
     public static final Route STATISTIC_INVALID_VALUE = Route.fromString(toRoutePath(STATISTIC_COMMAND_HEADER, "invalid-value"));
+
+    // Tutorial — quest messages (en_quest.yml, top-level "tutorial:" section)
+    private static final String TUTORIAL_HEADER = "tutorial";
+    private static final String TUTORIAL_CHAIN_HEADER = toRoutePath(TUTORIAL_HEADER, "chain");
+    public static final Route TUTORIAL_CHAIN_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_CHAIN_HEADER, "display-name"));
+    private static final String TUTORIAL_QUESTS_HEADER = toRoutePath(TUTORIAL_HEADER, "quests");
+    private static final String TUTORIAL_FIRST_STEPS_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "first-steps");
+    public static final Route TUTORIAL_FIRST_STEPS_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_FIRST_STEPS_HEADER, "display-name"));
+    public static final Route TUTORIAL_FIRST_STEPS_ON_START = Route.fromString(toRoutePath(TUTORIAL_FIRST_STEPS_HEADER, "on-start"));
+    private static final String TUTORIAL_MCRPG_MENU_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "mcrpg-menu");
+    public static final Route TUTORIAL_MCRPG_MENU_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_MCRPG_MENU_HEADER, "display-name"));
+    public static final Route TUTORIAL_MCRPG_MENU_ON_START = Route.fromString(toRoutePath(TUTORIAL_MCRPG_MENU_HEADER, "on-start"));
+    private static final String TUTORIAL_NATURAL_TALENT_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "natural-talent");
+    public static final Route TUTORIAL_NATURAL_TALENT_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_NATURAL_TALENT_HEADER, "display-name"));
+    public static final Route TUTORIAL_NATURAL_TALENT_ON_START = Route.fromString(toRoutePath(TUTORIAL_NATURAL_TALENT_HEADER, "on-start"));
+    private static final String TUTORIAL_YOUR_ARSENAL_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "your-arsenal");
+    public static final Route TUTORIAL_YOUR_ARSENAL_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_YOUR_ARSENAL_HEADER, "display-name"));
+    public static final Route TUTORIAL_YOUR_ARSENAL_ON_START = Route.fromString(toRoutePath(TUTORIAL_YOUR_ARSENAL_HEADER, "on-start"));
+    private static final String TUTORIAL_UNLEASHED_POWER_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "unleashed-power");
+    public static final Route TUTORIAL_UNLEASHED_POWER_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_UNLEASHED_POWER_HEADER, "display-name"));
+    public static final Route TUTORIAL_UNLEASHED_POWER_ON_START = Route.fromString(toRoutePath(TUTORIAL_UNLEASHED_POWER_HEADER, "on-start"));
+    private static final String TUTORIAL_COMBO_STRIKE_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "combo-strike");
+    public static final Route TUTORIAL_COMBO_STRIKE_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_COMBO_STRIKE_HEADER, "display-name"));
+    public static final Route TUTORIAL_COMBO_STRIKE_ON_START = Route.fromString(toRoutePath(TUTORIAL_COMBO_STRIKE_HEADER, "on-start"));
+    private static final String TUTORIAL_QUEST_BOARD_HEADER = toRoutePath(TUTORIAL_QUESTS_HEADER, "quest-board");
+    public static final Route TUTORIAL_QUEST_BOARD_DISPLAY_NAME = Route.fromString(toRoutePath(TUTORIAL_QUEST_BOARD_HEADER, "display-name"));
+    public static final Route TUTORIAL_QUEST_BOARD_ON_START = Route.fromString(toRoutePath(TUTORIAL_QUEST_BOARD_HEADER, "on-start"));
+
+    // Generic cascade batch summary (en_quest.yml, under quest-chain.cascade)
+    private static final String QUEST_CHAIN_CASCADE_HEADER = toRoutePath(QUEST_CHAIN_HEADER, "cascade");
+    public static final Route QUEST_CHAIN_CASCADE_BATCH_HEADER = Route.fromString(toRoutePath(QUEST_CHAIN_CASCADE_HEADER, "batch-header"));
+    public static final Route QUEST_CHAIN_CASCADE_BATCH_STEP_ENTRY = Route.fromString(toRoutePath(QUEST_CHAIN_CASCADE_HEADER, "batch-step-entry"));
+
+    // Chain admin skip command (en_quest.yml, under quest-chain.admin.skip)
+    private static final String QUEST_CHAIN_ADMIN_SKIP_HEADER = toRoutePath(QUEST_CHAIN_ADMIN_HEADER, "skip");
+    public static final Route QUEST_CHAIN_ADMIN_SKIP_SUCCESS = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_SKIP_HEADER, "success"));
+    public static final Route QUEST_CHAIN_ADMIN_SKIP_ERROR_NO_STATE = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_SKIP_HEADER, "error-no-state"));
+    public static final Route QUEST_CHAIN_ADMIN_SKIP_ERROR_TERMINAL = Route.fromString(toRoutePath(QUEST_CHAIN_ADMIN_SKIP_HEADER, "error-terminal"));
+
+    // Chain preview — gated step slot (en_quest.yml, under quest-chain.preview)
+    private static final String QUEST_CHAIN_PREVIEW_HEADER = toRoutePath(QUEST_CHAIN_HEADER, "preview");
+    public static final Route CHAIN_PREVIEW_LOCKED_TITLE = Route.fromString(toRoutePath(QUEST_CHAIN_PREVIEW_HEADER, "locked-title"));
+    public static final Route CHAIN_PREVIEW_LOCKED_DESCRIPTION = Route.fromString(toRoutePath(QUEST_CHAIN_PREVIEW_HEADER, "locked-description"));
+    public static final Route CHAIN_PREVIEW_STEP_TITLE = Route.fromString(toRoutePath(QUEST_CHAIN_PREVIEW_HEADER, "step-title"));
+    public static final Route CHAIN_PREVIEW_OBJECTIVES_HIDDEN = Route.fromString(toRoutePath(QUEST_CHAIN_PREVIEW_HEADER, "objectives-hidden"));
+    public static final Route CHAIN_PREVIEW_REWARDS_HIDDEN = Route.fromString(toRoutePath(QUEST_CHAIN_PREVIEW_HEADER, "rewards-hidden"));
+
+    // Disable tutorial confirm GUI (en_gui.yml, under gui.disable-tutorial-confirm-gui)
+    private static final String DISABLE_TUTORIAL_CONFIRM_GUI_HEADER = toRoutePath(GUI_HEADER, "disable-tutorial-confirm-gui");
+    public static final Route DISABLE_TUTORIAL_CONFIRM_GUI_TITLE = Route.fromString(toRoutePath(DISABLE_TUTORIAL_CONFIRM_GUI_HEADER, "title"));
+    public static final Route DISABLE_TUTORIAL_CONFIRM_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(DISABLE_TUTORIAL_CONFIRM_GUI_HEADER, "confirm-slot.display-item"));
+    public static final Route DISABLE_TUTORIAL_INFO_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(DISABLE_TUTORIAL_CONFIRM_GUI_HEADER, "info-slot.display-item"));
+    public static final Route DISABLE_TUTORIAL_CANCEL_SLOT_DISPLAY_ITEM = Route.fromString(toRoutePath(DISABLE_TUTORIAL_CONFIRM_GUI_HEADER, "cancel-slot.display-item"));
+
+    // Tutorial setting slot (en_gui.yml, under gui.player-setting-gui.tutorial-setting)
+    private static final String TUTORIAL_SETTING_HEADER = toRoutePath(PLAYER_SETTINGS_GUI_HEADER, "tutorial-setting");
+    public static final Route TUTORIAL_SETTING_SLOT_ENABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(TUTORIAL_SETTING_HEADER, "enabled.display-item"));
+    public static final Route TUTORIAL_SETTING_SLOT_DISABLED_DISPLAY_ITEM = Route.fromString(toRoutePath(TUTORIAL_SETTING_HEADER, "disabled.display-item"));
+    public static final Route TUTORIAL_SETTING_DISABLED_DENY_MESSAGE = Route.fromString(toRoutePath(TUTORIAL_SETTING_HEADER, "disabled.deny-message"));
+
+    // Active quest GUI — non-abandonable lore line (en_gui.yml)
+    public static final Route ACTIVE_QUEST_GUI_NON_ABANDONABLE = Route.fromString(toRoutePath(ACTIVE_QUEST_GUI_HEADER, "quest-slot.non-abandonable"));
 
     // Statistic command descriptions
     public static final Route COMMAND_DESCRIPTION_STATISTIC = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic"));

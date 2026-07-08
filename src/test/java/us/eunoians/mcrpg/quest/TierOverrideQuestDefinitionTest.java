@@ -73,7 +73,7 @@ public class TierOverrideQuestDefinitionTest extends McRPGBaseTest {
                 yamlFile.deleteOnExit();
                 Files.writeString(yamlFile.toPath(), yaml, StandardCharsets.UTF_8);
 
-                Map<NamespacedKey, QuestDefinition> defs = loader.loadQuestsFromDirectory(tempDir.toFile());
+                Map<NamespacedKey, QuestDefinition> defs = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
 
                 QuestDefinition def = defs.get(NamespacedKey.fromString("mcrpg:enhanced_bleed_tier3"));
                 assertNotNull(def);
@@ -107,7 +107,7 @@ public class TierOverrideQuestDefinitionTest extends McRPGBaseTest {
                 yamlFile.deleteOnExit();
                 Files.writeString(yamlFile.toPath(), yaml, StandardCharsets.UTF_8);
 
-                Map<NamespacedKey, QuestDefinition> defs = loader.loadQuestsFromDirectory(tempDir.toFile());
+                Map<NamespacedKey, QuestDefinition> defs = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
 
                 QuestDefinition def = defs.get(NamespacedKey.fromString("mcrpg:enhanced_bleed_tier4"));
                 assertNotNull(def);

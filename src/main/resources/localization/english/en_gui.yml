@@ -289,6 +289,7 @@ gui:
       expires-none: '<body>None'
       click-to-view-details: '<hint>Click <body>to view details'
       right-click-to-abandon: '<negative>Right-click <body>to abandon'
+      non-abandonable: '<body>This quest cannot be abandoned.'
     view-history-button:
       display-item:
         material: BOOKSHELF
@@ -345,6 +346,11 @@ gui:
         lore:
           - '<body>Completed: <primary><completed_date>'
           - '<negative>Quest definition no longer exists.'
+    # Shown when the player has no completed quests or chain runs to display.
+    empty-state:
+      name: '<body>No completed quests yet.'
+    # Shown while the async history query is still in progress.
+    loading-state: "<body>Loading..."
   # This GUI shows the detailed breakdown of a quest's phases, stages and objectives.
   quest-detail-gui:
     title: '<gui-title>Quest Details'
@@ -374,6 +380,12 @@ gui:
           material: BARRIER
           lore:
             - '<hint>Click <body>to return to ability settings.'
+      from-chain-detail:
+        display-item:
+          name: "<primary>Back to Chain Steps"
+          material: BARRIER
+          lore:
+            - '<hint>Click <body>to return to the chain step history.'
     # Overview header slot. Placeholders: <quest_name>, <quest_state>, <start_time>,
     # <end_time>, <expiration_time>, <completed_date>, <phase_total>
     overview-slot:
@@ -1254,6 +1266,31 @@ gui:
             - '<body>quest objective progress milestones.'
             - ''
             - '<hint>Click <body>to enable these notifications.'
+    # Configure the slot representing the tutorial setting.
+    # ENABLED = tutorial is active; click opens the disable-tutorial-confirm-gui.
+    # DISABLED = tutorial was permanently disabled; click plays a deny sound/message.
+    tutorial-setting:
+      enabled:
+        display-item:
+          material: KNOWLEDGE_BOOK
+          name: "<primary>Tutorial"
+          lore:
+            - "<body>Status: <positive>Enabled"
+            - ""
+            - "<body>The tutorial guides you through McRPG's"
+            - "<body>skills, abilities, and quest systems."
+            - ""
+            - "<negative>Click <body>to disable."
+      disabled:
+        display-item:
+          material: BARRIER
+          name: "<primary>Tutorial"
+          lore:
+            - "<body>Status: <negative>Disabled"
+            - ""
+            - "<body>The tutorial has been permanently disabled."
+            - "<body>Contact an admin to reset if needed."
+        deny-message: "<negative>Tutorial is permanently disabled. Ask an admin to reset it."
   # This GUI allows players to configure the allowlist of blocks for Remote Transfer.
   remote-transfer-gui:
     title: "<gui-title>Toggling Remote Transfer Items"
@@ -1539,3 +1576,87 @@ gui:
           - '<body>redeemable levels you want to redeem into <primary><skill></primary>.'
       prompt: '<body>Please type in chat how many redeemable levels you would like to redeem. You have <primary><redeemable-levels></primary> redeemable levels to spend.'
       invalid-input: '<negative>The input provided not a valid number. Please try redeeming again.'
+  quest-chain-history-gui:
+    # Placeholders: <chain> = chain display name
+    title: "<gui-title><chain> Details"
+    # Shown when the chain has no completed steps to display
+    empty-state: "<body>No steps completed yet."
+    # Shown while the async step-record query is still in progress
+    loading-state: "<body>Loading..."
+    chain-slot:
+      display-item:
+        material: BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        # Placeholders: <chain_name> = chain display name, <completion_number> = 1-based run index
+        name: "<primary><chain_name> <body>(Run #<primary><completion_number>)"
+        lore:
+          # Placeholders: <completed_date> = formatted date
+          - "<body>Completed: <primary><completed_date>"
+          # Placeholders: <step_count> = recorded steps, <total_steps> = steps in chain definition
+          - "<body>Steps: <primary><step_count>/<total_steps>"
+          - ""
+          - "<hint>Click <body>to view details."
+    step-slot:
+      display-item:
+        material: MAP
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        # Placeholders: <quest_name> = quest display name, <step_number> = 1-based step index
+        name: "<primary><quest_name> <body>(Step <primary><step_number>)"
+        lore:
+          # Placeholders: <completed_date> = formatted date
+          - "<body>Completed: <primary><completed_date>"
+          - ""
+          - "<hint>Click <body>to view quest details."
+    # Shown when a step's quest definition is no longer registered
+    unknown-step-message: "<warning>This quest is no longer available."
+    previous-gui-button:
+      display-item:
+        material: BARRIER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<primary>Back to History"
+        lore:
+          - "<hint>Click <body>to return to quest history."
+  # Confirmation GUI shown before permanently disabling the tutorial quest chain.
+  disable-tutorial-confirm-gui:
+    title: "<gui-title>Disable Tutorial?"
+    confirm-slot:
+      display-item:
+        material: LIME_WOOL
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<negative>Disable Tutorial"
+        lore:
+          - "<body>This will cancel your active tutorial quest"
+          - "<body>and prevent future tutorial steps from starting."
+          - ""
+          - "<body>You will <negative>not<body> receive unclaimed rewards."
+          - "<body>This action <negative>cannot<body> be undone."
+          - ""
+          - "<negative>Click <body>to confirm."
+    info-slot:
+      display-item:
+        material: PAPER
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<warning>Warning"
+        lore:
+          - "<body>Disabling the tutorial will:"
+          - "<body>  \u2022 Cancel your current tutorial quest"
+          - "<body>  \u2022 Skip all remaining tutorial steps"
+          - "<body>  \u2022 Forfeit unclaimed tutorial rewards"
+          - ""
+          - "<body>You can still access all features normally."
+          - "<body>The tutorial just provides guided learning."
+    cancel-slot:
+      display-item:
+        material: RED_WOOL
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<primary>Cancel"
+        lore:
+          - "<body>Return to settings without changes."
+          - ""
+          - "<hint>Click <body>to go back."

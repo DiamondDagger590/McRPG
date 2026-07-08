@@ -83,7 +83,7 @@ public class QuestCompleteListener implements Listener {
             }
             String definitionKey = questInstance.getQuestKey().toString();
             UUID questUUID = questInstance.getQuestUUID();
-            long completedAt = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+            var completedAt = McRPG.getInstance().getTimeProvider().now();
 
             Database database = dbManager.getDatabase();
             database.getDatabaseExecutorService().submit(() -> {

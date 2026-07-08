@@ -50,6 +50,8 @@ import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
 import us.eunoians.mcrpg.database.table.board.PlayerBoardStateDAO;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainPlayerState;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -105,6 +107,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             updatePlayerDataSyncFunctions.add(loadPlayerStats(connection));
             updatePlayerDataSyncFunctions.add(awardRestedExperience(connection));
             updatePlayerDataSyncFunctions.add(loadBoardQuestCount(connection));
+            updatePlayerDataSyncFunctions.add(loadChainStates(connection));
             updatePlayerLoginTimes(connection, loginTime);
             // Jump to main thread to save the data
             new CoreTask(getPlugin()) {
@@ -154,11 +157,11 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
      */
     private void sendLoginNearExpiryReminder() {
         McRPGPlayer mcRPGPlayer = getCorePlayer();
-        Optional<org.bukkit.entity.Player> playerOpt = mcRPGPlayer.getAsBukkitPlayer();
+        Optional<Player> playerOpt = mcRPGPlayer.getAsBukkitPlayer();
         if (playerOpt.isEmpty()) {
             return;
         }
-        org.bukkit.entity.Player player = playerOpt.get();
+        Player player = playerOpt.get();
 
         long thresholdMs = loadNearExpiryThresholdMs();
         long lookaheadMs = (long) (thresholdMs * 1.5);
@@ -171,11 +174,11 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         UUID playerUUID = mcRPGPlayer.getUUID();
         List<QuestInstance> nearExpiry = new ArrayList<>();
         for (QuestInstance quest : questManager.getActiveQuestsForPlayer(playerUUID)) {
-            Optional<Long> expOpt = quest.getExpirationTime();
+            var expOpt = quest.getExpirationTime();
             if (expOpt.isEmpty()) {
                 continue;
             }
-            long timeUntilExpiry = expOpt.get() - now;
+            long timeUntilExpiry = expOpt.get().toEpochMilli() - now;
             if (timeUntilExpiry > 0 && timeUntilExpiry <= lookaheadMs) {
                 nearExpiry.add(quest);
             }
@@ -196,7 +199,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             String questName = definitionRegistry.get(quest.getQuestKey())
                     .map(def -> def.getDisplayName(mcRPGPlayer))
                     .orElse(quest.getQuestKey().getKey());
-            String timeRemaining = formatTimeRemaining(quest.getExpirationTime().orElse(now) - now);
+            String timeRemaining = formatTimeRemaining(quest.getExpirationTime().map(Instant::toEpochMilli).orElse(now) - now);
 
             player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
                     mcRPGPlayer, LocalizationKey.QUEST_NEAR_EXPIRY_SINGLE_NOTIFICATION,
@@ -210,7 +213,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
                 String questName = definitionRegistry.get(quest.getQuestKey())
                         .map(def -> def.getDisplayName(mcRPGPlayer))
                         .orElse(quest.getQuestKey().getKey());
-                String timeRemaining = formatTimeRemaining(quest.getExpirationTime().orElse(now) - now);
+                String timeRemaining = formatTimeRemaining(quest.getExpirationTime().map(Instant::toEpochMilli).orElse(now) - now);
                 player.sendMessage(localizationManager.getLocalizedMessageAsComponent(
                         mcRPGPlayer, LocalizationKey.QUEST_NEAR_EXPIRY_BATCH_ENTRY,
                         Map.of("quest_name", questName, "time_remaining", timeRemaining)));
@@ -482,6 +485,22 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         NamespacedKey boardKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "default_board");
         int count = PlayerBoardStateDAO.countActiveQuestsFromBoard(connection, getCorePlayer().getUUID(), boardKey);
         return () -> getCorePlayer().asQuestHolder().setActiveBoardQuestCount(count);
+    }
+
+    /**
+     * Loads all chain states for the player from the database and returns a deferred function
+     * that applies them on the main thread via {@link McRPGPlayer#getChainData()}.
+     *
+     * @param connection the database connection (DB executor thread)
+     * @return a function that applies the loaded states on the main thread
+     * @throws SQLException if a database error occurs reading chain state rows
+     */
+    @NotNull
+    private UpdatePlayerDataSyncFunction loadChainStates(@NotNull Connection connection) throws SQLException {
+        QuestChainManager chainManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.QUEST_CHAIN);
+        List<QuestChainPlayerState> states = chainManager.loadChainStates(connection, getCorePlayer().getUUID());
+        return () -> getCorePlayer().getChainData().putChainStateBatch(states);
     }
 
     /**

@@ -1,0 +1,42 @@
+quests:
+  mcrpg:tutorial_quest_board:
+    scope: mcrpg:single_player
+    repeat-mode: once
+    display:
+      name: "<tutorial>The Quest Board"
+    on-start-messages:
+      explain:
+        key: tutorial.quests.quest-board.on-start
+    phases:
+      phase_1:
+        completion-mode: ALL
+        stages:
+          stage_1:
+            key: mcrpg:tutorial_quest_board_stage_1
+            objectives:
+              accept_board_quest:
+                key: mcrpg:tutorial_quest_board_obj
+                type: mcrpg:quest_board_accept
+                required-progress: 1
+    rewards:
+      boosted_xp:
+        type: mcrpg:boosted_experience
+        amount: 2500
+      redeemable_xp:
+        type: mcrpg:redeemable_experience
+        amount: 2500
+      redeemable_level:
+        type: mcrpg:redeemable_levels
+        amount: 1
+      celebration_sound:
+        type: mcrpg:sound
+        sound: UI_TOAST_CHALLENGE_COMPLETE
+        volume: 1.0
+        pitch: 1.0
+      graduation_title:
+        type: mcrpg:title_message
+        title: "<primary>Tutorial Complete!"
+        subtitle: "<body>You're ready to explore McRPG."
+        fade-in: 10
+        stay: 70
+        fade-out: 20

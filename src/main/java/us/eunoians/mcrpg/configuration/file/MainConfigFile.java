@@ -120,6 +120,16 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route MOB_HEALTH_BAR_DISPLAY_DURATION = Route.fromString(toRoutePath(GAMEPLAY_CONFIGURATION_HEADER, "health-bar-display-duration"));
     public static final Route MCMMO_CONVERSION_EQUATION = Route.fromString(toRoutePath(MCMMO_CONFIGURATION_HEADER, "conversion-equation"));
 
+    // Tutorial
+    private static final String TUTORIAL_HEADER = "tutorial";
+
+    /**
+     * Whether the tutorial quest chain auto-starts for new players. When {@code false}, no new
+     * tutorial chains will start. Existing active tutorial quests are not cancelled — only new
+     * starts are suppressed.
+     */
+    public static final Route TUTORIAL_ENABLED = Route.fromString(toRoutePath(TUTORIAL_HEADER, "enabled"));
+
     // Palette (color theming)
     private static final String PALETTE_HEADER = "palette";
     /**
@@ -159,6 +169,15 @@ public final class MainConfigFile extends ConfigFile {
     public static final Route COMBO_FAILURE_SOUND_VOLUME = Route.fromString(toRoutePath(COMBO_FAILURE_HEADER, "volume"));
     /** Pitch of the failure sound. */
     public static final Route COMBO_FAILURE_SOUND_PITCH = Route.fromString(toRoutePath(COMBO_FAILURE_HEADER, "pitch"));
+
+    // Chain availability
+    private static final String CHAIN_AVAILABILITY_HEADER = toRoutePath(CONFIGURATION_HEADER, "chain-availability");
+    /**
+     * Interval in seconds between availability window checks for quest chains.
+     * Lower values detect window transitions faster but increase tick overhead.
+     */
+    public static final Route CHAIN_AVAILABILITY_CHECK_INTERVAL_SECONDS = Route.fromString(
+            toRoutePath(CHAIN_AVAILABILITY_HEADER, "check-interval-seconds"));
 
     // Statistics
     private static final String STATISTICS_HEADER = toRoutePath(CONFIGURATION_HEADER, "statistics");

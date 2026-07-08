@@ -51,9 +51,9 @@ public class LoadoutSelectAbilitySlot implements McRPGSlot {
     public boolean onClick(@NotNull McRPGPlayer corePlayer, @NotNull ClickType clickType) {
         mcRPGPlayer.getAsBukkitPlayer().ifPresent(player -> {
             if (oldAbilityKey != null) {
-                loadout.replaceAbility(oldAbilityKey, ability.getAbilityKey());
+                loadout.swapAbility(oldAbilityKey, ability.getAbilityKey());
             } else if (loadout.getRemainingLoadoutSize() > 0) {
-                loadout.addAbility(ability.getAbilityKey());
+                loadout.equipAbility(ability.getAbilityKey());
             }
             LoadoutGui loadoutGui = new LoadoutGui(mcRPGPlayer, loadout);
             McRPG.getInstance().registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.GUI).trackPlayerGui(mcRPGPlayer, loadoutGui);

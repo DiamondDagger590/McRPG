@@ -22,7 +22,10 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * Paginated GUI that lists all scope entities the player can manage across
@@ -33,7 +36,9 @@ import java.util.UUID;
  * If the player only has one manageable entity, callers should skip this GUI
  * and open the board directly (single-entity fast path in {@link us.eunoians.mcrpg.gui.board.slot.ScopedTabSlot}).
  */
-public class ScopedEntitySelectorGui extends McRPGPaginatedGui {
+public class ScopedEntitySelectorGui extends McRPGPaginatedGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "board_entity_selector");
 
     private static final int ROWS = 6;
     private static final int SLOTS_PER_PAGE = 45;
@@ -120,6 +125,12 @@ public class ScopedEntitySelectorGui extends McRPGPaginatedGui {
             }
         }
         return List.copyOf(entries);
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 
     /**

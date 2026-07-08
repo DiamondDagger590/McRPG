@@ -141,7 +141,7 @@ public class QuestInfoCommand extends QuestCommandBase {
         };
     }
 
-    private static String formatTimestamp(long epochMillis) {
-        return TIMESTAMP_FORMAT.format(Instant.ofEpochMilli(epochMillis));
+    private static String formatTimestamp(Instant instant) {
+        return TIMESTAMP_FORMAT.format(instant);
     }
 }

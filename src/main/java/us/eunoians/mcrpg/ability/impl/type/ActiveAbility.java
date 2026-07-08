@@ -17,11 +17,6 @@ import java.util.stream.Collectors;
  */
 public interface ActiveAbility extends Ability {
 
-    @Override
-    default boolean isPassive() {
-        return false;
-    }
-
     /**
      * Gets the {@link NamespacedKey} for the activation count {@link Statistic} tracked for this ability.
      * <p>

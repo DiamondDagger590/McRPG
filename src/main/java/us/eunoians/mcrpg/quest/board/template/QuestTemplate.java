@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.quest.board.template.condition.TemplateCondition;
 import us.eunoians.mcrpg.quest.board.template.variable.TemplateVariable;
 
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
+import us.eunoians.mcrpg.quest.chain.availability.AvailabilityConfig;
 
 import java.util.Collections;
 import java.util.List;
@@ -44,129 +45,22 @@ public final class QuestTemplate implements McRPGContent {
     private final TemplateCondition prerequisite;
     private final NamespacedKey expansionKey;
     private final Map<String, String> inlineDisplay;
+    private final AvailabilityConfig availabilityConfig;
 
-    /**
-     * Convenience constructor for templates without a reward distribution config,
-     * prerequisite condition, expansion key, or inline display overrides.
-     *
-     * @param key               the unique key identifying this template
-     * @param displayNameRoute  the localization route for the template's display name
-     * @param boardEligible     whether the template may appear on quest boards
-     * @param scopeProviderKey  the key of the quest scope provider (e.g. single-player)
-     * @param supportedRarities the set of rarity keys this template supports
-     * @param rarityOverrides   per-rarity overrides for reward scaling
-     * @param variables         the template variables available for expression substitution
-     * @param phases            the phase definitions that make up the quest structure
-     * @param rewards           the reward definitions granted on completion
-     */
-    public QuestTemplate(@NotNull NamespacedKey key,
-                         @NotNull Route displayNameRoute,
-                         boolean boardEligible,
-                         @NotNull NamespacedKey scopeProviderKey,
-                         @NotNull Set<NamespacedKey> supportedRarities,
-                         @NotNull Map<NamespacedKey, RarityOverride> rarityOverrides,
-                         @NotNull Map<String, TemplateVariable> variables,
-                         @NotNull List<TemplatePhaseDefinition> phases,
-                         @NotNull List<TemplateRewardDefinition> rewards) {
-        this(key, displayNameRoute, boardEligible, scopeProviderKey, supportedRarities,
-                rarityOverrides, variables, phases, rewards, null, null, null);
-    }
-
-    /**
-     * Convenience constructor for templates with a reward distribution config and
-     * expansion key, but without a prerequisite condition or inline display overrides.
-     *
-     * @param key                  the unique key identifying this template
-     * @param displayNameRoute     the localization route for the template's display name
-     * @param boardEligible        whether the template may appear on quest boards
-     * @param scopeProviderKey     the key of the quest scope provider
-     * @param supportedRarities    the set of rarity keys this template supports
-     * @param rarityOverrides      per-rarity overrides for reward scaling
-     * @param variables            the template variables available for expression substitution
-     * @param phases               the phase definitions that make up the quest structure
-     * @param rewards              the reward definitions granted on completion
-     * @param rewardDistribution   optional group reward distribution config; {@code null} for solo distribution
-     * @param expansionKey         the key of the {@link us.eunoians.mcrpg.expansion.ContentExpansion} that owns this template, or {@code null}
-     */
-    public QuestTemplate(@NotNull NamespacedKey key,
-                         @NotNull Route displayNameRoute,
-                         boolean boardEligible,
-                         @NotNull NamespacedKey scopeProviderKey,
-                         @NotNull Set<NamespacedKey> supportedRarities,
-                         @NotNull Map<NamespacedKey, RarityOverride> rarityOverrides,
-                         @NotNull Map<String, TemplateVariable> variables,
-                         @NotNull List<TemplatePhaseDefinition> phases,
-                         @NotNull List<TemplateRewardDefinition> rewards,
-                         @Nullable RewardDistributionConfig rewardDistribution,
-                         @Nullable NamespacedKey expansionKey) {
-        this(key, displayNameRoute, boardEligible, scopeProviderKey, supportedRarities,
-                rarityOverrides, variables, phases, rewards, rewardDistribution, null, expansionKey);
-    }
-
-    /**
-     * Convenience constructor for templates with a reward distribution config,
-     * prerequisite condition, and expansion key, but without inline display overrides.
-     *
-     * @param key                  the unique key identifying this template
-     * @param displayNameRoute     the localization route for the template's display name
-     * @param boardEligible        whether the template may appear on quest boards
-     * @param scopeProviderKey     the key of the quest scope provider
-     * @param supportedRarities    the set of rarity keys this template supports
-     * @param rarityOverrides      per-rarity overrides for reward scaling
-     * @param variables            the template variables available for expression substitution
-     * @param phases               the phase definitions that make up the quest structure
-     * @param rewards              the reward definitions granted on completion
-     * @param rewardDistribution   optional group reward distribution config; {@code null} for solo distribution
-     * @param prerequisite         optional condition evaluated before offering this template to a player
-     * @param expansionKey         the key of the {@link us.eunoians.mcrpg.expansion.ContentExpansion} that owns this template, or {@code null}
-     */
-    public QuestTemplate(@NotNull NamespacedKey key,
-                         @NotNull Route displayNameRoute,
-                         boolean boardEligible,
-                         @NotNull NamespacedKey scopeProviderKey,
-                         @NotNull Set<NamespacedKey> supportedRarities,
-                         @NotNull Map<NamespacedKey, RarityOverride> rarityOverrides,
-                         @NotNull Map<String, TemplateVariable> variables,
-                         @NotNull List<TemplatePhaseDefinition> phases,
-                         @NotNull List<TemplateRewardDefinition> rewards,
-                         @Nullable RewardDistributionConfig rewardDistribution,
-                         @Nullable TemplateCondition prerequisite,
-                         @Nullable NamespacedKey expansionKey) {
-        this(key, displayNameRoute, boardEligible, scopeProviderKey, supportedRarities,
-                rarityOverrides, variables, phases, rewards, rewardDistribution, prerequisite, expansionKey, null);
-    }
-
-    /**
-     * Full constructor. Defensively copies all mutable collections; a {@code null}
-     * {@code inlineDisplay} is stored as an empty map.
-     *
-     * @param key                  the unique key identifying this template
-     * @param displayNameRoute     the localization route for the template's display name
-     * @param boardEligible        whether the template may appear on quest boards
-     * @param scopeProviderKey     the key of the quest scope provider
-     * @param supportedRarities    the set of rarity keys this template supports
-     * @param rarityOverrides      per-rarity overrides for reward scaling
-     * @param variables            the template variables available for expression substitution
-     * @param phases               the phase definitions that make up the quest structure
-     * @param rewards              the reward definitions granted on completion
-     * @param rewardDistribution   optional group reward distribution config; {@code null} for solo distribution
-     * @param prerequisite         optional condition evaluated before offering this template to a player
-     * @param expansionKey         the key of the {@link us.eunoians.mcrpg.expansion.ContentExpansion} that owns this template, or {@code null}
-     * @param inlineDisplay        optional map of locale code to inline display name override; {@code null} treated as empty
-     */
-    public QuestTemplate(@NotNull NamespacedKey key,
-                         @NotNull Route displayNameRoute,
-                         boolean boardEligible,
-                         @NotNull NamespacedKey scopeProviderKey,
-                         @NotNull Set<NamespacedKey> supportedRarities,
-                         @NotNull Map<NamespacedKey, RarityOverride> rarityOverrides,
-                         @NotNull Map<String, TemplateVariable> variables,
-                         @NotNull List<TemplatePhaseDefinition> phases,
-                         @NotNull List<TemplateRewardDefinition> rewards,
-                         @Nullable RewardDistributionConfig rewardDistribution,
-                         @Nullable TemplateCondition prerequisite,
-                         @Nullable NamespacedKey expansionKey,
-                         @Nullable Map<String, String> inlineDisplay) {
+    private QuestTemplate(@NotNull NamespacedKey key,
+                          @NotNull Route displayNameRoute,
+                          boolean boardEligible,
+                          @NotNull NamespacedKey scopeProviderKey,
+                          @NotNull Set<NamespacedKey> supportedRarities,
+                          @NotNull Map<NamespacedKey, RarityOverride> rarityOverrides,
+                          @NotNull Map<String, TemplateVariable> variables,
+                          @NotNull List<TemplatePhaseDefinition> phases,
+                          @NotNull List<TemplateRewardDefinition> rewards,
+                          @Nullable RewardDistributionConfig rewardDistribution,
+                          @Nullable TemplateCondition prerequisite,
+                          @Nullable NamespacedKey expansionKey,
+                          @Nullable Map<String, String> inlineDisplay,
+                          @Nullable AvailabilityConfig availabilityConfig) {
         this.key = key;
         this.displayNameRoute = displayNameRoute;
         this.boardEligible = boardEligible;
@@ -180,6 +74,145 @@ public final class QuestTemplate implements McRPGContent {
         this.prerequisite = prerequisite;
         this.expansionKey = expansionKey;
         this.inlineDisplay = inlineDisplay != null ? Map.copyOf(inlineDisplay) : Collections.emptyMap();
+        this.availabilityConfig = availabilityConfig;
+    }
+
+    /**
+     * Builder for constructing {@link QuestTemplate} instances. Required fields are
+     * provided in the constructor; optional fields have sensible defaults and are
+     * set via fluent setters.
+     */
+    public static final class Builder {
+
+        private final NamespacedKey key;
+        private final Route displayNameRoute;
+        private final NamespacedKey scopeProviderKey;
+        private final Set<NamespacedKey> supportedRarities;
+        private final Map<NamespacedKey, RarityOverride> rarityOverrides;
+        private final Map<String, TemplateVariable> variables;
+        private final List<TemplatePhaseDefinition> phases;
+        private final List<TemplateRewardDefinition> rewards;
+
+        private boolean boardEligible = true;
+        private RewardDistributionConfig rewardDistribution;
+        private TemplateCondition prerequisite;
+        private NamespacedKey expansionKey;
+        private Map<String, String> inlineDisplay;
+        private AvailabilityConfig availabilityConfig;
+
+        /**
+         * Creates a new builder with all required fields.
+         *
+         * @param key               the unique key identifying this template
+         * @param displayNameRoute  the localization route for the template's display name
+         * @param scopeProviderKey  the key of the quest scope provider
+         * @param supportedRarities the set of rarity keys this template supports
+         * @param rarityOverrides   per-rarity overrides for reward scaling
+         * @param variables         the template variables available for expression substitution
+         * @param phases            the phase definitions that make up the quest structure
+         * @param rewards           the reward definitions granted on completion
+         */
+        public Builder(@NotNull NamespacedKey key,
+                       @NotNull Route displayNameRoute,
+                       @NotNull NamespacedKey scopeProviderKey,
+                       @NotNull Set<NamespacedKey> supportedRarities,
+                       @NotNull Map<NamespacedKey, RarityOverride> rarityOverrides,
+                       @NotNull Map<String, TemplateVariable> variables,
+                       @NotNull List<TemplatePhaseDefinition> phases,
+                       @NotNull List<TemplateRewardDefinition> rewards) {
+            this.key = key;
+            this.displayNameRoute = displayNameRoute;
+            this.scopeProviderKey = scopeProviderKey;
+            this.supportedRarities = supportedRarities;
+            this.rarityOverrides = rarityOverrides;
+            this.variables = variables;
+            this.phases = phases;
+            this.rewards = rewards;
+        }
+
+        /**
+         * Sets whether this template may appear on quest boards. Defaults to {@code true}.
+         *
+         * @param boardEligible whether the template is board-eligible
+         * @return this builder
+         */
+        @NotNull
+        public Builder boardEligible(boolean boardEligible) {
+            this.boardEligible = boardEligible;
+            return this;
+        }
+
+        /**
+         * Sets the optional group reward distribution config.
+         *
+         * @param rewardDistribution the distribution config, or {@code null} for solo distribution
+         * @return this builder
+         */
+        @NotNull
+        public Builder rewardDistribution(@Nullable RewardDistributionConfig rewardDistribution) {
+            this.rewardDistribution = rewardDistribution;
+            return this;
+        }
+
+        /**
+         * Sets the optional prerequisite condition evaluated before offering this template.
+         *
+         * @param prerequisite the prerequisite condition, or {@code null} for none
+         * @return this builder
+         */
+        @NotNull
+        public Builder prerequisite(@Nullable TemplateCondition prerequisite) {
+            this.prerequisite = prerequisite;
+            return this;
+        }
+
+        /**
+         * Sets the optional expansion key identifying the content expansion that owns this template.
+         *
+         * @param expansionKey the expansion key, or {@code null} if config-loaded
+         * @return this builder
+         */
+        @NotNull
+        public Builder expansionKey(@Nullable NamespacedKey expansionKey) {
+            this.expansionKey = expansionKey;
+            return this;
+        }
+
+        /**
+         * Sets the optional inline display string overrides.
+         *
+         * @param inlineDisplay map of display key to display string, or {@code null} for none
+         * @return this builder
+         */
+        @NotNull
+        public Builder inlineDisplay(@Nullable Map<String, String> inlineDisplay) {
+            this.inlineDisplay = inlineDisplay;
+            return this;
+        }
+
+        /**
+         * Sets the optional time-based availability window configuration.
+         *
+         * @param availabilityConfig the availability config, or {@code null} if always available
+         * @return this builder
+         */
+        @NotNull
+        public Builder availabilityConfig(@Nullable AvailabilityConfig availabilityConfig) {
+            this.availabilityConfig = availabilityConfig;
+            return this;
+        }
+
+        /**
+         * Builds a new {@link QuestTemplate} from this builder's state.
+         *
+         * @return the constructed template
+         */
+        @NotNull
+        public QuestTemplate build() {
+            return new QuestTemplate(key, displayNameRoute, boardEligible, scopeProviderKey,
+                    supportedRarities, rarityOverrides, variables, phases, rewards,
+                    rewardDistribution, prerequisite, expansionKey, inlineDisplay, availabilityConfig);
+        }
     }
 
     /**
@@ -361,6 +394,21 @@ public final class QuestTemplate implements McRPGContent {
     @NotNull
     public Map<String, String> getInlineDisplay() {
         return inlineDisplay;
+    }
+
+    /**
+     * Returns the optional time-based availability window configuration for this template.
+     * When present, the template is only eligible for board generation while at least one
+     * window is active. Templates without an availability config are always eligible.
+     * <p>
+     * Board templates do not need an on-window-close policy — they simply stop appearing
+     * in new rotations. Existing accepted quest instances follow normal quest expiration rules.
+     *
+     * @return the availability config, or empty if the template has no time-based restriction
+     */
+    @NotNull
+    public Optional<AvailabilityConfig> getAvailabilityConfig() {
+        return Optional.ofNullable(availabilityConfig);
     }
 
     /**

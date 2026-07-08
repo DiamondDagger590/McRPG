@@ -245,19 +245,13 @@ public class TemplateGenerationIntegrationTest extends McRPGBaseTest {
                     List.of(),
                     QuestRepeatMode.ONCE);
 
-            // Wrap with distribution config using the full constructor
-            QuestDefinition defWithDist = new QuestDefinition(
+            // Wrap with distribution config using the builder
+            QuestDefinition defWithDist = new QuestDefinition.Builder(
                     def.getQuestKey(),
                     def.getScopeType(),
-                    null,
-                    def.getPhases(),
-                    List.of(),
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    distConfig);
+                    def.getPhases()
+            ).rewardDistribution(distConfig)
+                    .build();
 
             QuestInstance quest = QuestTestHelper.startedQuestWithPlayer(defWithDist, playerUUID);
 
@@ -319,9 +313,10 @@ public class TemplateGenerationIntegrationTest extends McRPGBaseTest {
         List<TemplateRewardDefinition> rewards = List.of(
                 new TemplateRewardDefinition(REWARD_TYPE_KEY, "test_reward", Map.of("amount", 100)));
         NamespacedKey templateKey = NamespacedKey.fromString("mcrpg:phase4_integration_template");
-        return new QuestTemplate(templateKey, Route.fromString("test.display"),
-                true, SCOPE_KEY, Set.of(COMMON, RARE, LEGENDARY),
-                Map.of(), variables, phases, rewards, null, null);
+        return new QuestTemplate.Builder(templateKey, Route.fromString("test.display"),
+                SCOPE_KEY, Set.of(COMMON, RARE, LEGENDARY),
+                Map.of(), variables, phases, rewards)
+                .build();
     }
 
     private TemplateObjectiveDefinition objective() {

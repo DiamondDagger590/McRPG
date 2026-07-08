@@ -146,8 +146,8 @@ public class LoadoutActiveAbilityTest extends McRPGBaseTest {
         @Test
         public void swapActivePositions_swapsTwoActiveAbilities(@NotNull McRPGPlayer mcRPGPlayer) {
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(massHarvest.getAbilityKey());
-            loadout.addAbility(verdantSurge.getAbilityKey());
+            loadout.equipAbility(massHarvest.getAbilityKey());
+            loadout.equipAbility(verdantSurge.getAbilityKey());
 
             assertEquals(List.of(massHarvest.getAbilityKey(), verdantSurge.getAbilityKey()), loadout.getOrderedActiveAbilities());
 
@@ -160,8 +160,8 @@ public class LoadoutActiveAbilityTest extends McRPGBaseTest {
         @Test
         public void swapActivePositions_noOp_whenSameSlot(@NotNull McRPGPlayer mcRPGPlayer) {
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(massHarvest.getAbilityKey());
-            loadout.addAbility(verdantSurge.getAbilityKey());
+            loadout.equipAbility(massHarvest.getAbilityKey());
+            loadout.equipAbility(verdantSurge.getAbilityKey());
 
             loadout.swapActivePositions(1, 1);
 
@@ -172,8 +172,8 @@ public class LoadoutActiveAbilityTest extends McRPGBaseTest {
         @Test
         public void swapActivePositions_noOp_whenFromSlotOutOfRange(@NotNull McRPGPlayer mcRPGPlayer) {
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(massHarvest.getAbilityKey());
-            loadout.addAbility(verdantSurge.getAbilityKey());
+            loadout.equipAbility(massHarvest.getAbilityKey());
+            loadout.equipAbility(verdantSurge.getAbilityKey());
 
             loadout.swapActivePositions(3, 1);
 
@@ -184,8 +184,8 @@ public class LoadoutActiveAbilityTest extends McRPGBaseTest {
         @Test
         public void swapActivePositions_noOp_whenToSlotOutOfRange(@NotNull McRPGPlayer mcRPGPlayer) {
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(massHarvest.getAbilityKey());
-            loadout.addAbility(verdantSurge.getAbilityKey());
+            loadout.equipAbility(massHarvest.getAbilityKey());
+            loadout.equipAbility(verdantSurge.getAbilityKey());
 
             loadout.swapActivePositions(1, 3);
 
@@ -196,8 +196,8 @@ public class LoadoutActiveAbilityTest extends McRPGBaseTest {
         @Test
         public void swapActivePositions_noOp_whenFromSlotZero(@NotNull McRPGPlayer mcRPGPlayer) {
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(massHarvest.getAbilityKey());
-            loadout.addAbility(verdantSurge.getAbilityKey());
+            loadout.equipAbility(massHarvest.getAbilityKey());
+            loadout.equipAbility(verdantSurge.getAbilityKey());
 
             loadout.swapActivePositions(0, 1);
 
@@ -208,8 +208,8 @@ public class LoadoutActiveAbilityTest extends McRPGBaseTest {
         @Test
         public void swapActivePositions_noOp_whenToSlotNegative(@NotNull McRPGPlayer mcRPGPlayer) {
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(massHarvest.getAbilityKey());
-            loadout.addAbility(verdantSurge.getAbilityKey());
+            loadout.equipAbility(massHarvest.getAbilityKey());
+            loadout.equipAbility(verdantSurge.getAbilityKey());
 
             loadout.swapActivePositions(1, -1);
 

@@ -36,6 +36,11 @@ import us.eunoians.mcrpg.quest.board.scope.ScopedBoardAdapterRegistry;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
 import us.eunoians.mcrpg.quest.board.refresh.RefreshTypeRegistry;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplateRegistry;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainRegistry;
+import us.eunoians.mcrpg.quest.chain.availability.WindowBoundaryTypeRegistry;
+import us.eunoians.mcrpg.quest.chain.condition.QuestChainStartConditionTypeRegistry;
+import us.eunoians.mcrpg.quest.chain.trigger.ChainAutoStartTriggerRegistry;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionRegistry;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScopeProviderRegistry;
@@ -54,6 +59,7 @@ import us.eunoians.mcrpg.world.WorldManager;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
 
 /**
  * This bootstrap is the main bootstrap used to initialize McRPG
@@ -91,8 +97,13 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new RewardDistributionTypeRegistry());
         registryAccess.register(new ScopedBoardAdapterRegistry());
         registryAccess.register(new TemplateConditionRegistry());
+        registryAccess.register(new QuestChainRegistry());
+        registryAccess.register(new ChainAutoStartTriggerRegistry());
+        registryAccess.register(new WindowBoundaryTypeRegistry());
+        registryAccess.register(new QuestChainStartConditionTypeRegistry());
         registryAccess.register(new PlayerStatRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(new QuestManager(mcRPG));
+        registryAccess.registry(RegistryKey.MANAGER).register(new QuestChainManager(mcRPG));
         new McRPGExpansionRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadQuestDefinitions();
         registryAccess.registry(RegistryKey.MANAGER).register(new GlowingManager(mcRPG));
@@ -154,7 +165,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
                         lunarClientHook.ifPresent(pluginHook -> pluginHook.clearCooldowns(mcRPGPlayer.getUUID()));
                     }
                 } catch (SQLException e) {
-                    getPlugin().getLogger().log(java.util.logging.Level.SEVERE, "Failed to save player data during shutdown", e);
+                    getPlugin().getLogger().log(Level.SEVERE, "Failed to save player data during shutdown", e);
                 }
                 if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.QUEST)) {
                     try (Connection connection = database.getConnection()) {
@@ -164,7 +175,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
                         }
                         questBatch.executeTransaction();
                     } catch (SQLException e) {
-                        getPlugin().getLogger().log(java.util.logging.Level.SEVERE, "Failed to save quest data during shutdown", e);
+                        getPlugin().getLogger().log(Level.SEVERE, "Failed to save quest data during shutdown", e);
                     }
                 }
                 database.shutdown();

@@ -12,6 +12,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,7 +40,7 @@ public class QuestInstanceDAOTest extends McRPGBaseTest {
                 new NamespacedKey("mcrpg", "single_player"),
                 QuestState.IN_PROGRESS,
                 null,
-                System.currentTimeMillis(),
+                Instant.now(),
                 null,
                 null,
                 new ManualQuestSource(),
@@ -64,8 +65,8 @@ public class QuestInstanceDAOTest extends McRPGBaseTest {
                 new NamespacedKey("mcrpg", "single_player"),
                 QuestState.COMPLETED,
                 null,
-                1000L,
-                2000L,
+                Instant.ofEpochMilli(1000L),
+                Instant.ofEpochMilli(2000L),
                 null,
                 new ManualQuestSource(),
                 null

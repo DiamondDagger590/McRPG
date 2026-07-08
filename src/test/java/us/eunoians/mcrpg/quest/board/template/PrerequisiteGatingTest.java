@@ -38,15 +38,20 @@ class PrerequisiteGatingTest {
     private static final NamespacedKey RARITY_KEY = NamespacedKey.fromString("mcrpg:common");
 
     private QuestTemplate templateWithPrerequisite(TemplateCondition prerequisite) {
-        return new QuestTemplate(TEMPLATE_KEY, Route.fromString("test.display"),
-                true, SCOPE_KEY, Set.of(RARITY_KEY),
-                Map.of(), Map.of(), List.of(), List.of(), null, prerequisite, EXPANSION_KEY);
+        return new QuestTemplate.Builder(TEMPLATE_KEY, Route.fromString("test.display"),
+                SCOPE_KEY, Set.of(RARITY_KEY), Map.of(),
+                Map.of(), List.of(), List.of())
+                .prerequisite(prerequisite)
+                .expansionKey(EXPANSION_KEY)
+                .build();
     }
 
     private QuestTemplate templateWithoutPrerequisite() {
-        return new QuestTemplate(TEMPLATE_KEY, Route.fromString("test.display"),
-                true, SCOPE_KEY, Set.of(RARITY_KEY),
-                Map.of(), Map.of(), List.of(), List.of(), null, null, EXPANSION_KEY);
+        return new QuestTemplate.Builder(TEMPLATE_KEY, Route.fromString("test.display"),
+                SCOPE_KEY, Set.of(RARITY_KEY), Map.of(),
+                Map.of(), List.of(), List.of())
+                .expansionKey(EXPANSION_KEY)
+                .build();
     }
 
     @Nested

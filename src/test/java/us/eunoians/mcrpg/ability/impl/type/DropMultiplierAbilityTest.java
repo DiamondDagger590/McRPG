@@ -343,11 +343,6 @@ class DropMultiplierAbilityTest {
         }
 
         @Override
-        public boolean isPassive() {
-            return true;
-        }
-
-        @Override
         public @NotNull String getDatabaseName() {
             return "test_drop_multiplier";
         }

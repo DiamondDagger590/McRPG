@@ -204,7 +204,7 @@ class AbilityKeyFilterTest extends McRPGBaseTest {
             abilityRegistry.register(active2);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(active1.getAbilityKey());
+            loadout.equipAbility(active1.getAbilityKey());
 
             AbilityKeyInLoadoutFilter filter = new AbilityKeyInLoadoutFilter(loadout, active1.getAbilityKey());
             Collection<NamespacedKey> result = filter.filter(mcRPGPlayer, List.of(active2.getAbilityKey()));
@@ -220,7 +220,7 @@ class AbilityKeyFilterTest extends McRPGBaseTest {
             abilityRegistry.register(active1);
 
             Loadout loadout = mcRPGPlayer.asSkillHolder().getLoadout(1);
-            loadout.addAbility(active1.getAbilityKey());
+            loadout.equipAbility(active1.getAbilityKey());
 
             AbilityKeyInLoadoutFilter filter = new AbilityKeyInLoadoutFilter(loadout, null);
             Collection<NamespacedKey> result = filter.filter(mcRPGPlayer, List.of(active1.getAbilityKey()));

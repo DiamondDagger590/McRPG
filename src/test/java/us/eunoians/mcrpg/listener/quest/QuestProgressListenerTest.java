@@ -76,10 +76,11 @@ public class QuestProgressListenerTest extends McRPGBaseTest {
                 key + "_obj", objectiveType, 10, List.of());
         QuestStageDefinition stageDef = QuestTestHelper.stageDef(key + "_stage", List.of(objDef), List.of());
         QuestPhaseDefinition phaseDef = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stageDef);
-        QuestDefinition def = new QuestDefinition(
+        QuestDefinition def = new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", key),
                 new NamespacedKey("mcrpg", "single_player"),
-                null, List.of(phaseDef), List.of(), QuestRepeatMode.ONCE, null, -1, null);
+                List.of(phaseDef)
+        ).build();
 
         registeredDefs.add(def);
 
@@ -141,10 +142,11 @@ public class QuestProgressListenerTest extends McRPGBaseTest {
         QuestObjectiveDefinition objDef = QuestTestHelper.objectiveDef("orphan_obj", type, 10, List.of());
         QuestStageDefinition stageDef = QuestTestHelper.stageDef("orphan_stage", List.of(objDef), List.of());
         QuestPhaseDefinition phaseDef = QuestTestHelper.singlePhaseDef(PhaseCompletionMode.ALL, stageDef);
-        QuestDefinition def = new QuestDefinition(
+        QuestDefinition def = new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", "orphan_quest"),
                 new NamespacedKey("mcrpg", "single_player"),
-                null, List.of(phaseDef), List.of(), QuestRepeatMode.ONCE, null, -1, null);
+                List.of(phaseDef)
+        ).build();
 
         QuestInstance instance = QuestTestHelper.startedQuestWithPlayer(def, playerUUID);
         trackedQuests.add(instance);

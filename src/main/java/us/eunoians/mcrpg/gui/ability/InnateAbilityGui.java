@@ -19,6 +19,10 @@ import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
+import java.util.Optional;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * A specialised view of {@link AbilityGui} that opens pre-filtered to innate abilities and returns
@@ -27,7 +31,9 @@ import java.util.List;
  * Innate abilities are always active regardless of loadout. This GUI lets players inspect and configure
  * them from within the loadout editing flow, without having to navigate back to the home menu.
  */
-public class InnateAbilityGui extends AbilityGui {
+public class InnateAbilityGui extends AbilityGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "innate_abilities");
 
     private final Loadout loadout;
 
@@ -99,6 +105,12 @@ public class InnateAbilityGui extends AbilityGui {
                 removeSlot(i);
             }
         }
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 
 }

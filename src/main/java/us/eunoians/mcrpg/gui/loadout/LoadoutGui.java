@@ -33,7 +33,10 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * The primary edit-loadout GUI for a single {@link Loadout}.
@@ -60,7 +63,9 @@ import java.util.Set;
  *       {@link LoadoutAbilitySelectGui.SelectionMode#PASSIVE} mode.</li>
  * </ul>
  */
-public class LoadoutGui extends PaginatedSortedAbilityGui {
+public class LoadoutGui extends PaginatedSortedAbilityGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "loadout");
 
     /** Number of passive ability slots per page (rows 2-3). */
     private static final int PASSIVE_GRID_SIZE = 18;
@@ -315,5 +320,11 @@ public class LoadoutGui extends PaginatedSortedAbilityGui {
         if (inventorySlot == COMBO_ACTIVE_SLOT_2) return 2;
         if (inventorySlot == COMBO_ACTIVE_SLOT_3) return 3;
         return -1;
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

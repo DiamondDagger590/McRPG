@@ -1,0 +1,29 @@
+quests:
+  mcrpg:tutorial_open_loadout:
+    scope: mcrpg:single_player
+    repeat-mode: once
+    display:
+      name: "<tutorial>Your Arsenal"
+    on-start-messages:
+      explain:
+        key: tutorial.quests.your-arsenal.on-start
+    phases:
+      phase_1:
+        completion-mode: ALL
+        stages:
+          stage_1:
+            key: mcrpg:tutorial_open_loadout_stage_1
+            objectives:
+              open_loadout:
+                key: mcrpg:tutorial_open_loadout_obj
+                type: mcrpg:gui_open
+                required-progress: 1
+                config:
+                  gui-type: mcrpg:loadout_selection
+    rewards:
+      boosted_xp:
+        type: mcrpg:boosted_experience
+        amount: 1000
+      redeemable_xp:
+        type: mcrpg:redeemable_experience
+        amount: 1500

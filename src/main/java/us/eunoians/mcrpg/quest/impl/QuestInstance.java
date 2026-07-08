@@ -7,12 +7,14 @@ import com.diamonddagger590.mccore.util.Methods;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.event.quest.QuestCancelEvent;
 import us.eunoians.mcrpg.event.quest.QuestCompleteEvent;
 import us.eunoians.mcrpg.event.quest.QuestExpireEvent;
+import us.eunoians.mcrpg.event.quest.PreQuestStartEvent;
 import us.eunoians.mcrpg.event.quest.QuestStartEvent;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
@@ -29,11 +31,14 @@ import us.eunoians.mcrpg.quest.impl.scope.QuestScope;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageState;
 import us.eunoians.mcrpg.quest.source.QuestSource;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,9 +59,9 @@ public class QuestInstance {
     private final NamespacedKey scopeType;
     private QuestState questState;
     private QuestScope questScope;
-    private Long startTime;
-    private Long endTime;
-    private Long expirationTime;
+    private Instant startTime;
+    private Instant endTime;
+    private Instant expirationTime;
 
     private final List<QuestStageInstance> questStageInstances;
     private volatile boolean dirty;
@@ -92,8 +97,8 @@ public class QuestInstance {
         }
 
         definition.getExpiration().ifPresent(expiration -> {
-            long now = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
-            this.expirationTime = now + expiration.toMillis();
+            Instant now = McRPG.getInstance().getTimeProvider().now();
+            this.expirationTime = now.plus(expiration);
         });
 
         for (QuestPhaseDefinition phaseDef : definition.getPhases()) {
@@ -126,15 +131,15 @@ public class QuestInstance {
      * @param scopeType        the scope type key
      * @param questState       the persisted state
      * @param questScope       the scope, or {@code null} if not yet loaded
-     * @param startTime        the start timestamp in epoch millis, or {@code null}
-     * @param endTime          the end timestamp in epoch millis, or {@code null}
-     * @param expirationTime   the expiration timestamp in epoch millis, or {@code null}
+     * @param startTime        the start timestamp, or {@code null}
+     * @param endTime          the end timestamp, or {@code null}
+     * @param expirationTime   the expiration timestamp, or {@code null}
      * @param questSource      the source that originated this quest
      * @param scopeDisplayName the display name for the scope context, or {@code null}
      */
     public QuestInstance(@NotNull NamespacedKey questKey, @NotNull UUID questUUID, @NotNull NamespacedKey scopeType,
                          @NotNull QuestState questState, @Nullable QuestScope questScope,
-                         @Nullable Long startTime, @Nullable Long endTime, @Nullable Long expirationTime,
+                         @Nullable Instant startTime, @Nullable Instant endTime, @Nullable Instant expirationTime,
                          @NotNull QuestSource questSource, @Nullable String scopeDisplayName) {
         this.questKey = questKey;
         this.questUUID = questUUID;
@@ -321,33 +326,32 @@ public class QuestInstance {
     }
 
     /**
-     * Gets the timestamp (epoch millis) when this quest was activated, if it has been started.
+     * Gets the timestamp when this quest was activated, if it has been started.
      *
      * @return an {@link Optional} containing the start time, or empty if not yet started
      */
     @NotNull
-    public Optional<Long> getStartTime() {
+    public Optional<Instant> getStartTime() {
         return Optional.ofNullable(startTime);
     }
 
     /**
-     * Gets the timestamp (epoch millis) when this quest ended (completed or cancelled),
-     * if it has ended.
+     * Gets the timestamp when this quest ended (completed or cancelled), if it has ended.
      *
      * @return an {@link Optional} containing the end time, or empty if still active
      */
     @NotNull
-    public Optional<Long> getEndTime() {
+    public Optional<Instant> getEndTime() {
         return Optional.ofNullable(endTime);
     }
 
     /**
-     * Gets the timestamp (epoch millis) at which this quest expires, if it has an expiration.
+     * Gets the timestamp at which this quest expires, if it has an expiration.
      *
      * @return an {@link Optional} containing the expiration time, or empty if the quest does not expire
      */
     @NotNull
-    public Optional<Long> getExpirationTime() {
+    public Optional<Instant> getExpirationTime() {
         return Optional.ofNullable(expirationTime);
     }
 
@@ -420,9 +424,9 @@ public class QuestInstance {
     /**
      * Sets the expiration timestamp for this quest instance.
      *
-     * @param expirationTime the expiration time in epoch millis, or {@code null} to remove expiration
+     * @param expirationTime the expiration time, or {@code null} to remove expiration
      */
-    public void setExpirationTime(@Nullable Long expirationTime) {
+    public void setExpirationTime(@Nullable Instant expirationTime) {
         this.expirationTime = expirationTime;
     }
 
@@ -435,7 +439,7 @@ public class QuestInstance {
         if (expirationTime == null) {
             return false;
         }
-        return McRPG.getInstance().getTimeProvider().now().toEpochMilli() >= expirationTime;
+        return !McRPG.getInstance().getTimeProvider().now().isBefore(expirationTime);
     }
 
     /**
@@ -460,17 +464,33 @@ public class QuestInstance {
     }
 
     /**
-     * Starts this quest by activating it, activating all stages in phase 0, and firing
-     * a {@link QuestStartEvent}.
+     * Transitions this instance to {@link QuestState#IN_PROGRESS}, activates phase-0 stages,
+     * and fires {@link QuestStartEvent}.
+     * <p>
+     * Marked internal because all quest starts must route through {@link QuestManager#startQuest}
+     * so {@link PreQuestStartEvent} can gate the operation — direct external calls would bypass
+     * that gate.
      *
-     * @param definition the quest definition this instance was created from
+     * @param definition  the quest definition driving this instance
+     * @param starterUUID the UUID of the player who initiated the quest start, or {@code null} if system-initiated
      */
-    public void start(@NotNull QuestDefinition definition) {
+    @ApiStatus.Internal
+    public void start(@NotNull QuestDefinition definition, @Nullable UUID starterUUID) {
         activate();
         for (QuestStageInstance stage : getStagesForPhase(0)) {
             stage.activate();
         }
-        Bukkit.getPluginManager().callEvent(new QuestStartEvent(this, definition));
+        Bukkit.getPluginManager().callEvent(new QuestStartEvent(this, definition, questSource, starterUUID));
+    }
+
+    /**
+     * Overload for backward compatibility (system-initiated or test-driven starts without a specific starter).
+     *
+     * @param definition the quest definition driving this instance
+     */
+    @ApiStatus.Internal
+    public void start(@NotNull QuestDefinition definition) {
+        start(definition, null);
     }
 
     /**
@@ -498,20 +518,43 @@ public class QuestInstance {
             return;
         }
         Bukkit.getPluginManager().callEvent(new QuestExpireEvent(this));
-        cancel();
+        cancelAsExpiration();
     }
 
     /**
      * Cancels this quest and all of its in-progress stages, then fires a {@link QuestCancelEvent}.
      */
     public void cancel() {
+        cancelInternal(false);
+    }
+
+    /**
+     * Cancels this quest as the result of expiration and fires a {@link QuestCancelEvent}
+     * with {@link QuestCancelEvent#isExpiration()} returning {@code true}.
+     */
+    public void cancelAsExpiration() {
+        cancelInternal(true);
+    }
+
+    /**
+     * Internal cancel implementation shared by {@link #cancel()} and {@link #cancelAsExpiration()}.
+     *
+     * @param isExpiration {@code true} if the cancellation was caused by expiry, {@code false} for manual abandon
+     */
+    private void cancelInternal(boolean isExpiration) {
         if (questState == QuestState.IN_PROGRESS || questState == QuestState.NOT_STARTED) {
             questState = QuestState.CANCELLED;
-            endTime = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+            endTime = McRPG.getInstance().getTimeProvider().now();
             for (QuestStageInstance stage : questStageInstances) {
                 stage.cancel();
             }
-            Bukkit.getPluginManager().callEvent(new QuestCancelEvent(this));
+            var definitionOpt = McRPG.getInstance().registryAccess()
+                    .registry(McRPGRegistryKey.QUEST_DEFINITION).get(questKey);
+            if (definitionOpt.isPresent()) {
+                Bukkit.getPluginManager().callEvent(new QuestCancelEvent(this, definitionOpt.get(), isExpiration));
+            } else {
+                Bukkit.getPluginManager().callEvent(new QuestCancelEvent(this));
+            }
             saveAsync();
         }
     }
@@ -554,8 +597,9 @@ public class QuestInstance {
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.MAIN_CONFIG)
                 .getInt(MainConfigFile.QUEST_PENDING_REWARDS_EXPIRY_DAYS, 30);
-        long now = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
-        long expiresAt = now + TimeUnit.DAYS.toMillis(expiryDays);
+        Instant now = McRPG.getInstance().getTimeProvider().now();
+        long nowMillis = now.toEpochMilli();
+        long expiresAt = nowMillis + TimeUnit.DAYS.toMillis(expiryDays);
 
         Database database = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
@@ -568,7 +612,7 @@ public class QuestInstance {
                             reward.getKey(),
                             reward.serializeConfig(),
                             questKey,
-                            now,
+                            nowMillis,
                             expiresAt
                     );
                     for (PreparedStatement stmt : PendingRewardDAO.savePendingReward(connection, pending)) {
@@ -597,7 +641,7 @@ public class QuestInstance {
     private void activate() {
         if (questState == QuestState.NOT_STARTED) {
             questState = QuestState.IN_PROGRESS;
-            startTime = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+            startTime = McRPG.getInstance().getTimeProvider().now();
         }
     }
 
@@ -608,7 +652,7 @@ public class QuestInstance {
     private void markAsCompleted() {
         if (questState == QuestState.IN_PROGRESS && endTime == null) {
             questState = QuestState.COMPLETED;
-            endTime = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+            endTime = McRPG.getInstance().getTimeProvider().now();
         }
     }
 }

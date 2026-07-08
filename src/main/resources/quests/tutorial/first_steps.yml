@@ -1,0 +1,24 @@
+quests:
+  mcrpg:tutorial_first_steps:
+    scope: mcrpg:single_player
+    repeat-mode: once
+    display:
+      name: "<tutorial>First Steps"
+    on-start-messages:
+      welcome:
+        key: tutorial.quests.first-steps.on-start
+    phases:
+      phase_1:
+        completion-mode: ALL
+        stages:
+          stage_1:
+            key: mcrpg:tutorial_first_steps_stage_1
+            objectives:
+              gain_a_level:
+                key: mcrpg:tutorial_first_steps_gain_level
+                type: mcrpg:skill_level_up
+                required-progress: 1
+    rewards:
+      boosted_xp:
+        type: mcrpg:boosted_experience
+        amount: 1000

@@ -1,0 +1,86 @@
+package us.eunoians.mcrpg.command.admin.chain;
+
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import io.papermc.paper.command.brigadier.CommandSourceStack;
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.entity.Player;
+import org.incendo.cloud.CommandManager;
+import org.incendo.cloud.bukkit.parser.PlayerParser;
+import org.incendo.cloud.key.CloudKey;
+import org.incendo.cloud.minecraft.extras.RichDescription;
+import org.incendo.cloud.permission.Permission;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainDefinition;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+
+import us.eunoians.mcrpg.command.CommandPlaceholders;
+
+import java.util.Map;
+
+/**
+ * Command: {@code /mcrpg quest chain advance <player> <chain>}
+ * <p>
+ * Force-completes the player's current chain step and starts the next one. If the player
+ * is on the last step the chain is completed. Delegates to
+ * {@link us.eunoians.mcrpg.quest.chain.CascadeOrchestrator#forceAdvanceChain(java.util.UUID, org.bukkit.NamespacedKey)}
+ * so on-start messages and auto-completion are handled within the cascade lifecycle.
+ */
+public class ChainAdvanceCommand extends ChainAdminCommandBase {
+
+    private static final Permission CHAIN_ADVANCE_PERMISSION = Permission.of("mcrpg.quest.admin.chain.advance");
+
+    private static final CloudKey<Player> PLAYER_KEY = CloudKey.of("player", Player.class);
+    private static final CloudKey<QuestChainDefinition> CHAIN_KEY =
+            CloudKey.of("chain", QuestChainDefinition.class);
+
+    /**
+     * Registers the {@code /mcrpg quest admin chain advance} command.
+     */
+    public static void registerCommand() {
+        McRPG plugin = McRPG.getInstance();
+        CommandManager<CommandSourceStack> commandManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMMAND).getCommandManager();
+        MiniMessage mm = plugin.getMiniMessage();
+
+        commandManager.command(commandManager.commandBuilder("mcrpg")
+                .literal("quest")
+                .literal("chain")
+                .literal("advance")
+                .required(PLAYER_KEY, PlayerParser.playerParser(),
+                        RichDescription.richDescription(mm.deserialize("<gray>Target player")))
+                .required(CHAIN_KEY, ChainKeyParser.chainKeyParser(),
+                        RichDescription.richDescription(mm.deserialize("<gray>Chain key")))
+                .permission(Permission.anyOf(ROOT_PERMISSION, ADMIN_BASE_PERMISSION,
+                        CHAIN_ADMIN_BASE_PERMISSION, CHAIN_ADVANCE_PERMISSION))
+                .handler(ctx -> {
+                    Audience sender = ctx.sender().getSender();
+                    Player target = ctx.get(PLAYER_KEY);
+                    QuestChainDefinition chain = ctx.get(CHAIN_KEY);
+                    McRPGLocalizationManager lm = RegistryAccess.registryAccess()
+                            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+
+                    QuestChainManager chainManager = RegistryAccess.registryAccess()
+                            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
+
+                    Map<String, String> placeholders = Map.of(
+                            CommandPlaceholders.TARGET.getPlaceholder(), target.getName(),
+                            CommandPlaceholders.CHAIN_DISPLAY_NAME.getPlaceholder(), chain.getDisplayName(),
+                            CommandPlaceholders.CHAIN_KEY.getPlaceholder(), chain.getChainKey().toString());
+
+                    boolean success = chainManager.getCascadeOrchestrator()
+                            .forceAdvanceChain(target.getUniqueId(), chain.getChainKey());
+                    if (success) {
+                        sender.sendMessage(lm.getLocalizedMessageAsComponent(sender,
+                                LocalizationKey.CHAIN_ADMIN_ADVANCE_SUCCESS, placeholders));
+                    } else {
+                        sender.sendMessage(lm.getLocalizedMessageAsComponent(sender,
+                                LocalizationKey.CHAIN_ADMIN_ADVANCE_FAILURE, placeholders));
+                    }
+                }));
+    }
+}

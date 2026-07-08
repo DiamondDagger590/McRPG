@@ -115,10 +115,30 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 
 - 4-space indentation, K&R brace style (standard Java)
 - Prefer `var` for local variables when the declared type is long/nested and would be more distracting than helpful; otherwise prefer explicit types
-- Javadoc on all methods (public and private) with `@param` and `@return` semantics
+- Javadoc on all methods (public and private) with `@param` and `@return` semantics — this applies to every method regardless of visibility
 - Prefer object collaborators with instance methods for domain behavior; avoid introducing static helper classes when behavior naturally belongs to a service/slot/manager object. Demote private helpers to instance scope when they logically operate on or near the enclosing class's instance state — declaring them `static` misrepresents their relationship to that state and makes future dependency additions harder. If a helper is genuinely shared cross-class plumbing (e.g. template placeholder substitution), push it onto the appropriate manager or service rather than duplicating it.
 - No section-divider comments (`// --- Section name ---` or `// ===== Section =====`) — if a class needs labeled sections, it is too large or has too many concerns. Extract a collaborator or use natural method ordering instead
 - **Third-party developer mindset:** McRPG is extensible by external plugins. Changes to public APIs, events, and registries should be made as if you were a third-party plugin hooking in — prefer additive non-breaking changes, fire Bukkit events where external plugins would want to intercept, document extension points.
+
+## Builder Pattern
+
+Use a builder when a class meets **any** of these criteria:
+- Constructor has **6+ total parameters**
+- Constructor has **3+ optional/nullable parameters** that lead to overloaded constructors or disambiguator hacks (e.g. `boolean ignored`)
+- The class is immutable and constructed in multiple callsites with varying subsets of optional fields
+
+**Required structure:**
+- `public static final class Builder` as an inner class on the target type
+- Required fields are parameters of the Builder constructor — no zero-arg builder constructors
+- Optional fields have sensible defaults and are set via fluent setters returning `this`
+- `build()` validates invariants and returns the constructed object
+- The target class's constructor is `private` — the builder is the only public construction path (deprecated constructors may remain temporarily during migration)
+
+**Do not use a builder when:**
+- Class has ≤5 parameters that are all required — a constructor is clear enough
+- Class is mutable with setters
+- Only one or two callsites construct the object — the ceremony isn't justified
+- Records with simple field lists — the canonical constructor is already self-documenting
 
 ## Anti-Patterns
 
@@ -142,6 +162,7 @@ Ability `NamespacedKey` constants are `static final` on the ability class: `new 
 - **No `putHolderOnCooldown()` inside `comboActivate()`** — the combo listener (`OnComboCompleteListener`) manages cooldown application for combo-activated abilities. Calling it inside the ability causes double-cooldown
 - **No void-return `comboActivate()` or `activateAbility()`** — both return `boolean` (`true` = executed, `false` = internally cancelled). The boolean enables mana refund and conditional cooldown in callers
 - **No `ConfigurableTierableAbility` without `@ParserConfigKeys`** — every concrete implementation must declare its Parser-backed YAML keys via the annotation. The `ParserConfigKeysPresenceTest` enforces this at CI time
+- **No raw `Bukkit.getScheduler()` for repeating or delayed tasks** — use McCore's `CoreTask` hierarchy (`RepeatableCoreTask`, `DelayableCoreTask`, `ExpireableCoreTask`, etc.) which provides state tracking, pause/resume, and consistent second-based timing. Direct scheduler calls are acceptable only for one-shot main-thread rescheduling from async code
 - **No roadmap/LLD phase references in Javadoc or comments** — labels like "Phase 1", "Phase 2 LLD", or "Future phases" rot immediately: they are meaningless to engineers who weren't present when the work was planned. Describe the *what* and *why* of the code instead. For extension points, name the type or mechanism (e.g. `ContentExpansion`, `QuestTemplate`). For deprecated code, explain what changed architecturally, not when in a delivery roadmap it changed. The only acceptable "phase" language is within inline comments describing the sequential steps of a single async operation (e.g. `// Phase 1 (DB executor): load`, `// Phase 2 (main thread): generate`).
 
 ## GUI Color Palette

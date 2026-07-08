@@ -83,10 +83,10 @@ config-version: 1
 # Placeholders: <count> = required progress amount, <block>/<entity> = the target name.
 quest-objective-types:
   block-break:
-    any: "Break <count> blocks"
-    single: "Break <count> <block>"
-    multi-header: "Break <count> blocks"
-    multi-item: "  - <block>"
+    any: "<body>Break <primary><count></primary> blocks"
+    single: "<body>Break <primary><count></primary> <primary><block>"
+    multi-header: "<body>Break <primary><count></primary> blocks"
+    multi-item: "<body>  - <primary><block>"
   mob-kill:
     any: "Kill <count> mobs"
     single: "Kill <count> <entity>"
@@ -214,6 +214,34 @@ quest-objective-types:
     single: "Travel <count> blocks by <mode>"
     multi-header: "Travel <count> blocks by"
     multi-item: "  - <mode>"
+  skill-level-up:
+    any: "<body>Level up <primary><count></primary> time(s)"
+    specific: "<body>Level up <primary><skill></primary> <primary><count></primary> time(s)"
+  skill-target-level:
+    any: "<body>Reach level <primary><level></primary> in any skill"
+    specific: "<body>Reach level <primary><level></primary> in <primary><skill>"
+  gui-open:
+    format: "<body>Open the <primary><gui>"
+  ability-unlock:
+    any: "<body>Unlock any ability"
+    passive: "<body>Unlock a <ability-passive>passive</ability-passive> ability"
+    active: "<body>Unlock an <ability-active>active</ability-active> ability"
+    innate: "<body>Unlock an <ability-innate>innate</ability-innate> ability"
+    specific: "<body>Unlock <primary><ability>"
+  ability-activate:
+    any: "<body>Activate any ability"
+    passive: "<body>Activate a <ability-passive>passive</ability-passive> ability"
+    active: "<body>Activate an <ability-active>active</ability-active> ability"
+    innate: "<body>Activate an <ability-innate>innate</ability-innate> ability"
+    specific: "<body>Activate <primary><ability>"
+  loadout-equip:
+    any: "<body>Equip an ability to your loadout"
+    passive: "<body>Equip a <ability-passive>passive</ability-passive> ability"
+    active: "<body>Equip an <ability-active>active</ability-active> ability"
+    innate: "<body>Equip an <ability-innate>innate</ability-innate> ability"
+    specific: "<body>Equip <primary><ability>"
+  quest-board-accept:
+    format: "<body>Accept a quest from the quest board"
 
 # -----------------------------------------------------------------------
 # REWARD TYPE FORMAT TEMPLATES
@@ -293,6 +321,30 @@ quest-reward-types:
   ability-upgrade-next-tier:
     format: "<body>Upgrade: <ability> <body>(Next Tier)"
 
+  # mcrpg:message — sends a message to the player.
+  # No placeholders — used as a fallback description label in GUI when no
+  # locale key or inline messages are configured.
+  message:
+    format: "<body>Message"
+
+  # mcrpg:boosted_experience — grants boosted XP pool points.
+  # Placeholders:
+  #   <amount> — the amount of boosted experience granted
+  boosted-experience:
+    format: "<body><amount> <primary>Boosted XP"
+
+  # mcrpg:redeemable_experience — grants redeemable XP pool points.
+  # Placeholders:
+  #   <amount> — the amount of redeemable experience granted
+  redeemable-experience:
+    format: "<body><amount> <primary>Redeemable XP"
+
+  # mcrpg:redeemable_levels — grants redeemable level points.
+  # Placeholders:
+  #   <amount> — the number of redeemable levels granted
+  redeemable-levels:
+    format: "<body><amount> <primary>Redeemable Level(s)"
+
 # Display names for quest templates.
 # These are resolved via the 'display-name-route' field on each template definition.
 quest-templates:
@@ -359,7 +411,7 @@ quest-templates:
 quest-notifications:
   # Sent to all in-scope players when any quest starts.
   # Placeholder: <quest_name>
-  quest-started: '<primary>Quest Started: <skill><quest_name>'
+  quest-started: '<primary>Quest Started: <body><quest_name>'
   # Sent to all in-scope players when a quest is completed.
   # Placeholder: <quest_name>
   quest-completed: '<positive>Quest Completed: <primary><quest_name><positive>! Rewards have been granted.'
@@ -390,6 +442,53 @@ quest-notifications:
 
 quests:
   mcrpg:
+
+    # ================================================================
+    #  TUTORIAL QUESTS
+    # ================================================================
+
+    tutorial_first_steps:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_explore_menu:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_passive_unlock:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_open_loadout:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_active_unlock:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_combo_strike:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
+    tutorial_quest_board:
+      display-item:
+        material: KNOWLEDGE_BOOK
+        item-flags:
+          - 'HIDE_ATTRIBUTES'
+        name: "<tutorial><quest_name>"
 
     # ================================================================
     #  EXAMPLE QUESTS
@@ -1280,3 +1379,87 @@ quests:
           description: "Chop mixed logs"
         land_weekly_break_crops:
           description: "Harvest mixed crops"
+
+tutorial:
+  chain:
+    display-name: "McRPG Tutorial"
+
+  quests:
+    first-steps:
+      display-name: "First Steps"
+      on-start:
+        - "<primary>Welcome to McRPG! <body>As you play, your skills will level up automatically."
+        - "<body>Try breaking blocks, chopping trees, or harvesting crops to see your skills grow."
+      objective-description: "Gain a skill level"
+
+    mcrpg-menu:
+      display-name: "The McRPG Menu"
+      on-start:
+        - "<primary>Your skills are growing! <body>Open the McRPG menu to see your progress."
+        - "<body>Type <hint>/mcrpg<body> or use the configured keybind to open your menu."
+      objective-description: "Open the McRPG menu"
+
+    natural-talent:
+      display-name: "Natural Talent"
+      on-start:
+        - "<primary>Passive abilities <body>trigger automatically as you play."
+        - "<body>Keep leveling your skills \u2014 passives unlock at certain level thresholds."
+      objective-description: "Unlock a passive ability"
+
+    your-arsenal:
+      display-name: "Your Arsenal"
+      on-start:
+        - "<primary>Your loadout <body>determines which abilities are active at any time."
+        - "<body>Open the loadout menu to see your available slots and equipped abilities."
+      objective-description: "Open the loadout menu"
+
+    unleashed-power:
+      display-name: "Unleashed Power"
+      on-start:
+        - "<primary>Active abilities <body>are powerful skills you trigger with click combos."
+        - "<body>Keep leveling \u2014 active abilities unlock at higher skill levels than passives."
+      objective-description: "Unlock an active ability"
+
+    combo-strike:
+      display-name: "Combo Strike"
+      on-start:
+        - "<primary>Time to unleash! <body>Active abilities activate via click combos."
+        - "<body>Hold an allowed weapon and perform <hint>RRR<body>, <hint>RRL<body>, or <hint>RLR<body> (right/left clicks)."
+        - "<body>Each combo costs <mana>mana<body> \u2014 watch your mana bar and plan your casts."
+      objective-description: "Cast an active ability using a combo"
+
+    quest-board:
+      display-name: "The Quest Board"
+      on-start:
+        - "<primary>Congratulations! <body>You've mastered the basics of McRPG."
+        - "<body>The <hint>Quest Board<body> offers rotating challenges with bonus rewards."
+        - "<body>Type <hint>/mcrpg board<body> to browse available quests and accept one."
+      objective-description: "Accept a quest from the quest board"
+
+quest-chain:
+  events:
+    # Placeholders: <chain> = chain display name
+    chain-start: "<primary><chain> <body>quest chain started!"
+    # Placeholders: <chain> = chain display name, <step> = 1-based step number, <total> = total step count
+    chain-advance: "<body>Quest chain <primary><chain> <body>advanced to step <primary><step>/<total>"
+    # Placeholders: <chain> = chain display name
+    chain-complete: "<positive>Congratulations! <body>You've completed the <primary><chain> <body>quest chain!"
+  cascade:
+    # Placeholders: <chain> = chain display name
+    batch-header: "<primary><chain>: <body>You've already completed these steps!"
+    # Placeholders: <quest> = quest display name
+    batch-step-entry: "<body>  \u2713 <primary><quest>"
+  admin:
+    skip:
+      # Placeholders: <player> = player name, <chain_name> = chain display name, <chain_key> = chain key, <count> = steps skipped
+      success: "<positive>Skipped <primary><player><body>'s chain <primary><chain_name><body> \u2014 <primary><count><body> remaining steps completed with rewards."
+      error-no-state: "<negative>Player has no active state for chain '<primary><chain_key><body>'."
+      error-terminal: "<negative>Player's chain '<primary><chain_key><body>' is in state <primary><chain_state><body>. Use reset first."
+  preview:
+    # Placeholders: <step_number> = 1-based step index
+    locked-title: "<negative>Step <step_number> — Locked"
+    locked-description: "<body>This step is not yet available."
+    # Placeholders: <step_number> = 1-based step index, <quest_name> = display name
+    step-title: "<primary>Step <step_number>: <body><quest_name>"
+    objectives-hidden: "<body>??? Objectives"
+    rewards-hidden: "<body>??? Rewards"

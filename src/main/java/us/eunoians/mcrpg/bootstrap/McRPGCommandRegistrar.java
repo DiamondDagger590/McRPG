@@ -27,6 +27,11 @@ import us.eunoians.mcrpg.command.admin.board.BoardAdminRewardsCommand;
 import us.eunoians.mcrpg.command.admin.board.BoardAdminRotateCommand;
 import us.eunoians.mcrpg.command.admin.board.BoardAdminScopedCommand;
 import us.eunoians.mcrpg.command.ability.AbilityGuiCommand;
+import us.eunoians.mcrpg.command.admin.chain.ChainAdvanceCommand;
+import us.eunoians.mcrpg.command.admin.chain.ChainResetCommand;
+import us.eunoians.mcrpg.command.admin.chain.ChainRestartCommand;
+import us.eunoians.mcrpg.command.admin.chain.ChainSkipCommand;
+import us.eunoians.mcrpg.command.admin.chain.ChainStatusCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutCopyCommand;
@@ -44,6 +49,7 @@ import us.eunoians.mcrpg.command.loadout.LoadoutCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutEditCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutSetCommand;
 import us.eunoians.mcrpg.command.quest.QuestCancelCommand;
+import us.eunoians.mcrpg.command.quest.QuestHistoryCommand;
 import us.eunoians.mcrpg.command.quest.QuestInfoCommand;
 import us.eunoians.mcrpg.command.quest.QuestListCommand;
 import us.eunoians.mcrpg.command.quest.QuestStartCommand;
@@ -57,6 +63,9 @@ import us.eunoians.mcrpg.command.skill.SkillGuiCommand;
 import us.eunoians.mcrpg.command.statistic.StatisticListCommand;
 import us.eunoians.mcrpg.command.statistic.StatisticResetCommand;
 import us.eunoians.mcrpg.command.statistic.StatisticSetCommand;
+import us.eunoians.mcrpg.command.admin.content.ContentExpansionsCommand;
+import us.eunoians.mcrpg.command.admin.content.ContentKeysCommand;
+import us.eunoians.mcrpg.command.admin.content.ContentPacksCommand;
 import us.eunoians.mcrpg.command.statistic.StatisticViewCommand;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -100,13 +109,26 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
         QuestCancelCommand.registerCommand();
         QuestListCommand.registerCommand();
         QuestInfoCommand.registerCommand();
+        QuestHistoryCommand.registerCommand();
         QuestAdminCompleteCommand.registerCommand();
         QuestAdminSetProgressCommand.registerCommand();
         QuestAdminRegistryCommand.registerCommand();
 
+        // Chain Admin Commands
+        ChainStatusCommand.registerCommand();
+        ChainAdvanceCommand.registerCommand();
+        ChainRestartCommand.registerCommand();
+        ChainResetCommand.registerCommand();
+        ChainSkipCommand.registerCommand();
+
         // Board Commands
         BoardCommand.registerCommand();
         ScopedBoardCommand.registerCommand();
+
+        // Content Introspection Commands
+        ContentExpansionsCommand.registerCommand();
+        ContentPacksCommand.registerCommand();
+        ContentKeysCommand.registerCommand();
 
         // Board Admin Commands
         BoardAdminRotateCommand.registerCommand();

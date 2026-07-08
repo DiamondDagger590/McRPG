@@ -6,6 +6,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.Ability;
+import us.eunoians.mcrpg.ability.AbilityType;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
@@ -154,7 +155,7 @@ public class LoadoutHolder extends AbilityHolder {
      * that have some sort of active action component to their activation.
      */
     public Set<NamespacedKey> getAvailableActiveAbilities() {
-        return getAvailableAbilities().stream().filter(namespacedKey -> !McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(namespacedKey).isPassive()).collect(Collectors.toSet());
+        return getAvailableAbilities().stream().filter(namespacedKey -> McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(namespacedKey).getAbilityType() == AbilityType.ACTIVE).collect(Collectors.toSet());
     }
 
     /**
@@ -165,7 +166,12 @@ public class LoadoutHolder extends AbilityHolder {
      * that are 'default abilities', or ones that don't require unlocking to use.
      */
     private Set<NamespacedKey> getAvailableDefaultAbilities() {
-        return getAvailableAbilities().stream().filter(namespacedKey -> !(McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(namespacedKey) instanceof UnlockableAbility)).collect(Collectors.toSet());
+        return getAvailableAbilities().stream()
+                .filter(key -> McRPG.getInstance().registryAccess()
+                        .registry(McRPGRegistryKey.ABILITY)
+                        .getRegisteredAbility(key)
+                        .isAlwaysAvailable())
+                .collect(Collectors.toSet());
     }
 
     /**

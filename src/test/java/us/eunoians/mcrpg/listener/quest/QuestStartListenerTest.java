@@ -35,7 +35,7 @@ public class QuestStartListenerTest extends McRPGBaseTest {
         QuestDefinition def = QuestTestHelper.singlePhaseQuest("start_listener_test");
         QuestInstance quest = QuestTestHelper.newQuestInstance(def);
 
-        server.getPluginManager().callEvent(new QuestStartEvent(quest, def));
+        server.getPluginManager().callEvent(new QuestStartEvent(quest, def, new us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource()));
 
         verify(mockQuestManager).trackActiveQuest(quest);
     }

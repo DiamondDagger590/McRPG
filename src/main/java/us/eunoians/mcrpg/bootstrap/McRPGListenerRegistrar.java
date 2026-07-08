@@ -37,6 +37,8 @@ import us.eunoians.mcrpg.listener.entity.player.PlayerSafeZoneStateChangeListene
 import us.eunoians.mcrpg.listener.entity.player.PlayerSettingChangeListener;
 import us.eunoians.mcrpg.listener.board.BoardRotationNotificationListener;
 import us.eunoians.mcrpg.listener.quest.AbilityUpgradeQuestListener;
+import us.eunoians.mcrpg.listener.quest.AbilityActivateQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.AbilityUnlockQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.AdvancementCompleteQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.AnvilRepairQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.BlockBreakQuestProgressListener;
@@ -54,17 +56,26 @@ import us.eunoians.mcrpg.listener.quest.EnterBedQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.FertilizeBlockQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.FishCatchQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.GainExperienceQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.GuiOpenQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.HarvestCropQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.ItemPickupQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.LaunchProjectileQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.LoadoutEquipQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.MobKillQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.ProjectileHitQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.QuestBoardAcceptQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.QuestStartAutoCompleteListener;
+import us.eunoians.mcrpg.listener.quest.QuestStartMessageListener;
 import us.eunoians.mcrpg.listener.quest.ShearEntityQuestProgressListener;
+import us.eunoians.mcrpg.listener.quest.SkillLevelQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.SmeltItemQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.SmithingQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.TameAnimalQuestProgressListener;
 import us.eunoians.mcrpg.listener.quest.VillagerTradeQuestProgressListener;
+import us.eunoians.mcrpg.entity.McRPGPlayerManager;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.quest.board.distribution.DistributionCompletionService;
 import us.eunoians.mcrpg.quest.board.distribution.QuestContributionAggregator;
 import us.eunoians.mcrpg.quest.board.distribution.QuestRewardDistributionResolver;
@@ -72,6 +83,12 @@ import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionGranter;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.listener.quest.QuestCancelListener;
+import us.eunoians.mcrpg.listener.quest.chain.QuestChainCancelListener;
+import us.eunoians.mcrpg.listener.quest.chain.QuestChainFirstJoinListener;
+import us.eunoians.mcrpg.listener.quest.TutorialPreQuestStartListener;
+import us.eunoians.mcrpg.listener.quest.chain.QuestChainFeedbackListener;
+import us.eunoians.mcrpg.listener.quest.chain.QuestChainLoginListener;
+import us.eunoians.mcrpg.listener.quest.chain.QuestChainProgressListener;
 import us.eunoians.mcrpg.listener.quest.QuestCompleteListener;
 import us.eunoians.mcrpg.quest.board.QuestBoardTerminator;
 import us.eunoians.mcrpg.listener.quest.QuestFeedbackListener;
@@ -142,6 +159,16 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         QuestManager questManager = plugin.registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST);
+        QuestChainManager chainManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.QUEST_CHAIN);
+        var cascadeOrchestrator = chainManager.getCascadeOrchestrator();
+        Bukkit.getPluginManager().registerEvents(new QuestChainProgressListener(cascadeOrchestrator), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestChainCancelListener(chainManager), plugin);
+        if (context.startupProfile() == StartupProfile.PROD) {
+            Bukkit.getPluginManager().registerEvents(new QuestChainLoginListener(chainManager, cascadeOrchestrator), plugin);
+            Bukkit.getPluginManager().registerEvents(new QuestChainFirstJoinListener(cascadeOrchestrator), plugin);
+        }
         QuestBoardTerminator questBoardTerminator = new QuestBoardTerminator(plugin);
         var rarityRegistry = plugin.registryAccess().registry(McRPGRegistryKey.QUEST_RARITY);
         var distTypeRegistry = plugin.registryAccess().registry(McRPGRegistryKey.REWARD_DISTRIBUTION_TYPE);
@@ -183,9 +210,24 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new EnterBedQuestProgressListener(questManager), plugin);
         Bukkit.getPluginManager().registerEvents(new AdvancementCompleteQuestProgressListener(questManager), plugin);
         Bukkit.getPluginManager().registerEvents(new DistanceTraveledQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new SkillLevelQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new GuiOpenQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new AbilityUnlockQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new AbilityActivateQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new LoadoutEquipQuestProgressListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestBoardAcceptQuestProgressListener(questManager), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestFeedbackListener(), plugin);
+        McRPGPlayerManager mcRPGPlayerManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
+        McRPGLocalizationManager mcRPGLocalizationManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
+        Bukkit.getPluginManager().registerEvents(
+                new QuestChainFeedbackListener(mcRPGPlayerManager, mcRPGLocalizationManager), plugin);
         Bukkit.getPluginManager().registerEvents(new QuestProgressNotificationListener(plugin), plugin);
         Bukkit.getPluginManager().registerEvents(new BoardRotationNotificationListener(), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestStartMessageListener(plugin), plugin);
+        Bukkit.getPluginManager().registerEvents(new QuestStartAutoCompleteListener(questManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new TutorialPreQuestStartListener(plugin), plugin);
 
         // World listener
         Bukkit.getPluginManager().registerEvents(new FakeBlockBreakListener(), plugin);

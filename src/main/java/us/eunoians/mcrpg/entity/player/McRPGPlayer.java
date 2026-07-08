@@ -8,10 +8,12 @@ import com.diamonddagger590.mccore.player.CorePlayer;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.display.impl.PlayerDisplay;
+import us.eunoians.mcrpg.quest.chain.QuestChainPlayerData;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityTierAttribute;
 import us.eunoians.mcrpg.ability.attribute.AbilityUpgradeQuestAttribute;
@@ -69,6 +71,7 @@ public class McRPGPlayer extends CorePlayer {
     private final PlayerStatData playerStatData;
     private final PlayerComboState comboState = new PlayerComboState();
     private final Map<Class<? extends PlayerDisplay>, PlayerDisplay> displays = new HashMap<>();
+    private final QuestChainPlayerData questChainPlayerData = new QuestChainPlayerData();
     private boolean standingInSafeZone;
 
     public McRPGPlayer(@NotNull Player player, @NotNull McRPG mcRPG) {
@@ -131,6 +134,17 @@ public class McRPGPlayer extends CorePlayer {
     @NotNull
     public QuestHolder asQuestHolder() {
         return questHolder;
+    }
+
+    /**
+     * Returns this player's {@link QuestChainPlayerData}, which tracks per-chain state and
+     * provides a reverse index from the current quest key to the owning chain key.
+     *
+     * @return the player's quest chain data container
+     */
+    @NotNull
+    public QuestChainPlayerData getChainData() {
+        return questChainPlayerData;
     }
 
     /**
@@ -391,7 +405,7 @@ public class McRPGPlayer extends CorePlayer {
         // Save resource pool stats (mana, etc.) — only persist pools that have a regen component
         // since flat stats don't have a meaningful current/persisted value.
         PlayerStatRegistry statRegistry = getPlugin().registryAccess().registry(McRPGRegistryKey.PLAYER_STAT);
-        Map<org.bukkit.NamespacedKey, Double> statsToSave = new LinkedHashMap<>();
+        Map<NamespacedKey, Double> statsToSave = new LinkedHashMap<>();
         for (PlayerStat stat : statRegistry.allStats()) {
             if (stat.isResourcePool()) {
                 playerStatData.getInstance(stat.getKey())

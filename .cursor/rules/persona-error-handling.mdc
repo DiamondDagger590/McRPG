@@ -29,6 +29,7 @@ You are a senior Java engineer reviewing this change for defensive coding qualit
 - [ ] Do new public methods accept parameters that could be `null` without either a `@NotNull` annotation (promise to callers) or an explicit `Objects.requireNonNull(param, "descriptive name")` guard at entry? Failing early with a clear message is better than a `NullPointerException` deep in the call stack.
 - [ ] Do new public methods accept numeric inputs that are semantically constrained (non-negative level, positive chance between 0–1, positive cooldown) without range validation? Flag the missing guard and suggest a precondition check with an `IllegalArgumentException`.
 - [ ] Do new config-loading methods silently accept out-of-range values (e.g., `chance: 1.5`) without clamping or throwing? Config load time is the right place to reject invalid configuration, not runtime.
+- [ ] Do new config-parsing methods (e.g., `parseConfig(Section)`, `fromSerializedConfig(Map)`) silently treat invalid/unparseable keys as "no filter" or "match all"? Invalid config must either log a WARNING with the bad value and use an explicit "match-nothing" fallback, or throw at load time. Silently widening a filter to "match all" because a key failed to parse is a correctness bug disguised as robustness.
 
 **Unhelpful Error Messages**
 - [ ] Does any thrown exception have a message that only restates the exception type (e.g., `throw new IllegalArgumentException("illegal argument")`)? Messages must name the failing value and the constraint it violated (e.g., `"cooldown must be >= 0, got: -5"`).
@@ -38,6 +39,11 @@ You are a senior Java engineer reviewing this change for defensive coding qualit
 - [ ] When a non-critical subsystem fails (e.g., one template failing to generate, one reward type failing to parse), does the failure abort the entire operation rather than skipping just the failing item and continuing? Failed templates should be excluded with a warning; the rest of the board generation should proceed.
 - [ ] When a `CompletableFuture` chain encounters an exception, is there a `.exceptionally()` or `.whenComplete()` handler that logs and recovers? Unhandled future exceptions are completely silent.
 - [ ] Does any async DB callback assume the result is always present without handling the empty/error case?
+
+**Builder Validation**
+- [ ] Does any new `Builder.build()` method skip validation of invariants (e.g., non-empty required lists, non-negative numeric bounds, mutually exclusive fields)? `build()` must validate and throw `IllegalArgumentException` with a descriptive message when invariants are violated — catching misconfigurations at construction time, not at runtime use.
+- [ ] Does any `Builder.build()` construct derived data structures (indexes, caches) that should be immutable in the built object? These must be built in `build()` and wrapped with `Map.copyOf()` or `List.copyOf()` — not left mutable.
+- [ ] Does any new Builder class have a zero-arg constructor when mandatory fields exist? Required fields must be constructor parameters of the Builder — not optional setters.
 
 **Logging Quality**
 - [ ] Is `Level.SEVERE` used for a condition that is a warning (non-fatal, recoverable)? Reserve `SEVERE` for failures that compromise plugin integrity. Use `WARNING` for degraded-but-operational states and `INFO` for notable but expected events.

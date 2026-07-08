@@ -219,11 +219,6 @@ class OnComboCompleteListenerCooldownTest extends McRPGBaseTest {
             return true;
         }
 
-        @Override
-        public boolean isPassive() {
-            return false;
-        }
-
         @NotNull
         @Override
         public String getDatabaseName() {

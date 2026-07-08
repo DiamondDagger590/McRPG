@@ -30,7 +30,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
+import com.diamonddagger590.mccore.gui.KeyedGui;
 
 /**
  * Main quest board GUI. Supports two modes:
@@ -39,7 +41,9 @@ import java.util.UUID;
  *   <li>{@link BoardGuiMode#SCOPED} – displays group (scoped) offerings across all member entities</li>
  * </ul>
  */
-public class QuestBoardGui extends McRPGPaginatedGui {
+public class QuestBoardGui extends McRPGPaginatedGui implements KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "board");
 
     private static final NamespacedKey DEFAULT_BOARD_KEY =
             new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "default_board");
@@ -245,6 +249,12 @@ public class QuestBoardGui extends McRPGPaginatedGui {
             }
         }
         return List.copyOf(entries);
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 
     /**

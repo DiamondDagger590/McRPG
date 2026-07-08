@@ -158,8 +158,10 @@ class QuestTemplateRegistryTest {
 
         Map<String, TemplateVariable> vars = Map.of("count", new RangeVariable("count", 1, 10));
 
-        return new QuestTemplate(key, Route.fromString("test.display"), boardEligible,
+        return new QuestTemplate.Builder(key, Route.fromString("test.display"),
                 NamespacedKey.fromString("mcrpg:single_player"), rarities, Map.of(),
-                vars, List.of(phase), List.of());
+                vars, List.of(phase), List.of())
+                .boardEligible(boardEligible)
+                .build();
     }
 }

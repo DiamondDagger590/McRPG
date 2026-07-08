@@ -140,16 +140,16 @@ class QuestTemplateEngineContextBranchTest {
         Map<String, TemplateVariable> variables = new LinkedHashMap<>();
         variables.put("count", new RangeVariable("count", 10, 50));
 
-        return new QuestTemplate(
+        return new QuestTemplate.Builder(
                 NamespacedKey.fromString("mcrpg:ctx_branch_tmpl"),
                 Route.fromString("test.display"),
-                true,
                 SCOPE_KEY,
                 Set.of(COMMON),
                 Map.of(),
                 variables,
                 List.of(basePhase, gatedPhase),
-                List.of());
+                List.of())
+                .build();
     }
 
     private TemplateObjectiveDefinition objective() {

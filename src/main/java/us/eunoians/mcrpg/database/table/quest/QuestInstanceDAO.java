@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.quest.impl.QuestInstance;
@@ -19,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -123,9 +125,9 @@ public class QuestInstanceDAO {
             ps.setString(2, quest.getQuestKey().toString());
             ps.setString(3, quest.getQuestState().name());
             ps.setString(4, quest.getScopeType().toString());
-            setNullableLong(ps, 5, quest.getStartTime().orElse(null));
-            setNullableLong(ps, 6, quest.getEndTime().orElse(null));
-            setNullableLong(ps, 7, quest.getExpirationTime().orElse(null));
+            setNullableInstant(ps, 5, quest.getStartTime().orElse(null));
+            setNullableInstant(ps, 6, quest.getEndTime().orElse(null));
+            setNullableInstant(ps, 7, quest.getExpirationTime().orElse(null));
             ps.setString(8, quest.getQuestSource().getKey().toString());
             String boardRarityKey = quest.getBoardRarityKey().map(NamespacedKey::toString).orElse(null);
             if (boardRarityKey != null) {
@@ -309,9 +311,9 @@ public class QuestInstanceDAO {
         }
 
         QuestState state = QuestState.valueOf(rs.getString("state"));
-        Long startTime = getNullableLong(rs, "start_time");
-        Long endTime = getNullableLong(rs, "end_time");
-        Long expirationTime = getNullableLong(rs, "expiration_time");
+        Instant startTime = getNullableInstant(rs, "start_time");
+        Instant endTime = getNullableInstant(rs, "end_time");
+        Instant expirationTime = getNullableInstant(rs, "expiration_time");
 
         String rawSourceKey = rs.getString("quest_source");
         NamespacedKey sourceKey = NamespacedKey.fromString(rawSourceKey);
@@ -415,5 +417,33 @@ public class QuestInstanceDAO {
     private static Long getNullableLong(@NotNull ResultSet rs, @NotNull String column) throws SQLException {
         long value = rs.getLong(column);
         return rs.wasNull() ? null : value;
+    }
+
+    /**
+     * Reads a BIGINT column and converts to {@link Instant}, or {@code null} if the column is SQL NULL.
+     *
+     * @param rs     the result set
+     * @param column the column name
+     * @return the instant, or {@code null}
+     */
+    @Nullable
+    private static Instant getNullableInstant(@NotNull ResultSet rs, @NotNull String column) throws SQLException {
+        long value = rs.getLong(column);
+        return rs.wasNull() ? null : Instant.ofEpochMilli(value);
+    }
+
+    /**
+     * Writes an {@link Instant} as a BIGINT epoch millis, or SQL NULL if the value is {@code null}.
+     *
+     * @param ps    the prepared statement
+     * @param index the parameter index
+     * @param value the instant, or {@code null}
+     */
+    private static void setNullableInstant(@NotNull PreparedStatement ps, int index, @Nullable Instant value) throws SQLException {
+        if (value != null) {
+            ps.setLong(index, value.toEpochMilli());
+        } else {
+            ps.setNull(index, Types.BIGINT);
+        }
     }
 }

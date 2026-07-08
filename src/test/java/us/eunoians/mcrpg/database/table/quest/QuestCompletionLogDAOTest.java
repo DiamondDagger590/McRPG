@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -34,7 +35,7 @@ public class QuestCompletionLogDAOTest extends McRPGBaseTest {
                 UUID.randomUUID(),
                 "mcrpg:test_quest",
                 UUID.randomUUID(),
-                System.currentTimeMillis()
+                Instant.now()
         );
 
         verify(mockStatement).executeUpdate();
@@ -109,9 +110,9 @@ public class QuestCompletionLogDAOTest extends McRPGBaseTest {
         assertEquals(2, records.size());
         assertEquals("mcrpg:quest_a", records.get(0).definitionKey());
         assertEquals(questUUID1, records.get(0).questUUID());
-        assertEquals(1000L, records.get(0).completedAt());
+        assertEquals(Instant.ofEpochMilli(1000L), records.get(0).completedAt());
         assertEquals("mcrpg:quest_b", records.get(1).definitionKey());
-        assertEquals(2000L, records.get(1).completedAt());
+        assertEquals(Instant.ofEpochMilli(2000L), records.get(1).completedAt());
     }
 
     @DisplayName("Given no rows, when getting completion history, then it returns empty list")

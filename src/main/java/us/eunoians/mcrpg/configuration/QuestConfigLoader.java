@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.board.BoardMetadata;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
+import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionMetadata;
 import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
@@ -84,20 +85,27 @@ public class QuestConfigLoader {
     }
 
     /**
-     * Recursively scans the given directory for {@code .yml}/{@code .yaml} files and parses
-     * all quest definitions found within them.
+     * Recursively scans the given directory for {@code .yml}/{@code .yaml} files, parses
+     * all quest definitions found within them, and collects paths of any files that are
+     * flagged as chain files via {@code quest-chain-file: true}.
+     * <p>
+     * Chain files are silently skipped by this loader — their paths are returned in
+     * {@link QuestLoadResult#chainFiles()} so the caller can pass them to
+     * {@link QuestChainConfigLoader} in a second phase, after all quest definitions are
+     * registered.
      *
      * @param questsDirectory the root directory to scan (e.g. {@code plugins/McRPG/quests/})
-     * @return an ordered map of quest key to parsed definition; iteration order matches load order
+     * @return the parsed quest definitions and the paths of any flagged chain files
      */
     @NotNull
-    public Map<NamespacedKey, QuestDefinition> loadQuestsFromDirectory(@NotNull File questsDirectory) {
+    public QuestLoadResult loadQuestsFromDirectory(@NotNull File questsDirectory) {
         Logger logger = McRPG.getInstance().getLogger();
         Map<NamespacedKey, QuestDefinition> definitions = new LinkedHashMap<>();
+        List<Path> chainFiles = new ArrayList<>();
 
         if (!questsDirectory.exists() || !questsDirectory.isDirectory()) {
             logger.warning("Quests directory does not exist: " + questsDirectory.getAbsolutePath());
-            return definitions;
+            return new QuestLoadResult(definitions, chainFiles);
         }
 
         try (Stream<Path> paths = Files.walk(questsDirectory.toPath())) {
@@ -107,28 +115,38 @@ public class QuestConfigLoader {
                         return name.endsWith(".yml") || name.endsWith(".yaml");
                     })
                     .sorted()
-                    .forEach(path -> loadQuestsFromFile(path.toFile(), definitions));
+                    .forEach(path -> loadQuestsFromFile(path.toFile(), definitions, chainFiles));
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Failed to walk quests directory: " + questsDirectory.getAbsolutePath(), e);
         }
 
         logger.info("Loaded " + definitions.size() + " quest definition(s) from " + questsDirectory.getName() + "/");
-        return definitions;
+        return new QuestLoadResult(definitions, chainFiles);
     }
 
     /**
      * Parses all quest definitions from a single YAML file and adds them to the provided map.
+     * If the file carries the {@code quest-chain-file: true} marker it is added to
+     * {@code chainFilePaths} and skipped — chain files are handled by {@link QuestChainConfigLoader}.
      *
-     * @param file        the YAML file to parse
-     * @param definitions the accumulator map; duplicate keys are skipped with a warning
+     * @param file           the YAML file to parse
+     * @param definitions    the accumulator map; duplicate keys are skipped with a warning
+     * @param chainFilePaths the accumulator list for chain file paths
      */
-    private void loadQuestsFromFile(@NotNull File file, @NotNull Map<NamespacedKey, QuestDefinition> definitions) {
+    private void loadQuestsFromFile(@NotNull File file,
+                                    @NotNull Map<NamespacedKey, QuestDefinition> definitions,
+                                    @NotNull List<Path> chainFilePaths) {
         Logger logger = McRPG.getInstance().getLogger();
         YamlDocument yaml;
         try {
             yaml = YamlDocument.create(file);
         } catch (IOException e) {
             logger.log(Level.WARNING, "Failed to load YAML file " + file.getName(), e);
+            return;
+        }
+
+        if (yaml.getBoolean("quest-chain-file", false)) {
+            chainFilePaths.add(file.toPath());
             return;
         }
 
@@ -163,8 +181,7 @@ public class QuestConfigLoader {
                 QuestDefinition definition = parseQuestDefinition(questKey, questSection, file.getName());
                 definitions.put(questKey, definition);
             } catch (Exception e) {
-                logger.warning("Failed to parse quest '" + questKeyString + "' in " + file.getName()
-                        + ": " + e.getMessage());
+                logger.log(Level.WARNING, "Failed to parse quest '" + questKeyString + "' in " + file.getName(), e);
             }
         }
     }
@@ -254,12 +271,20 @@ public class QuestConfigLoader {
         }
 
         Map<NamespacedKey, QuestDefinitionMetadata> metadata = parseBoardMetadata(section);
+        List<OnStartMessage> onStartMessages = parseOnStartMessages(section);
 
-        return new QuestDefinition(questKey, scopeType, expiration, phases, rewards,
-                repeatMode, repeatCooldown, repeatLimit, expansionKey,
-                metadata.isEmpty() ? null : metadata,
-                parseRewardDistribution(section, fileName, questKey.toString(), conditionParser).orElse(null),
-                inlineDisplay.isEmpty() ? null : inlineDisplay);
+        return new QuestDefinition.Builder(questKey, scopeType, phases)
+                .rewards(rewards)
+                .expiration(expiration)
+                .repeatMode(repeatMode)
+                .repeatCooldown(repeatCooldown)
+                .repeatLimit(repeatLimit)
+                .expansionKey(expansionKey)
+                .metadata(metadata.isEmpty() ? null : metadata)
+                .rewardDistribution(parseRewardDistribution(section, fileName, questKey.toString(), conditionParser).orElse(null))
+                .inlineDisplay(inlineDisplay.isEmpty() ? null : inlineDisplay)
+                .onStartMessages(onStartMessages)
+                .build();
     }
 
     /**
@@ -362,6 +387,52 @@ public class QuestConfigLoader {
             }
         }
         return display;
+    }
+
+    /**
+     * Parses the optional {@code on-start-messages} section from a quest definition.
+     * Each child entry is either locale-backed ({@code key:}) or inline ({@code messages:}).
+     *
+     * @param section the quest definition section
+     * @return the parsed on-start messages, empty if the section is absent
+     */
+    @NotNull
+    private List<OnStartMessage> parseOnStartMessages(@NotNull Section section) {
+        if (!section.contains("on-start-messages")) {
+            return List.of();
+        }
+        Section messagesSection = section.getSection("on-start-messages");
+        if (messagesSection == null) {
+            return List.of();
+        }
+        List<OnStartMessage> messages = new ArrayList<>();
+        for (String entryLabel : messagesSection.getRoutesAsStrings(false)) {
+            Section entrySection = messagesSection.getSection(entryLabel);
+            if (entrySection == null) {
+                continue;
+            }
+            if (entrySection.contains("key")) {
+                String keyValue = entrySection.getString("key");
+                if (keyValue == null || keyValue.isBlank()) {
+                    McRPG.getInstance().getLogger().warning(
+                            "on-start-messages entry '" + entryLabel + "' has a blank 'key' — skipping");
+                    continue;
+                }
+                messages.add(OnStartMessage.fromLocaleKey(keyValue));
+            } else if (entrySection.contains("messages")) {
+                List<String> inlineMessages = entrySection.getStringList("messages");
+                if (inlineMessages.isEmpty()) {
+                    McRPG.getInstance().getLogger().warning(
+                            "on-start-messages entry '" + entryLabel + "' has an empty 'messages' list — skipping");
+                    continue;
+                }
+                messages.add(OnStartMessage.fromInline(inlineMessages));
+            } else {
+                McRPG.getInstance().getLogger().warning(
+                        "on-start-messages entry '" + entryLabel + "' has no 'key' or 'messages' — skipping");
+            }
+        }
+        return messages;
     }
 
     /**
@@ -638,8 +709,8 @@ public class QuestConfigLoader {
                 }
                 rewards.add(configuredReward);
             } catch (Exception e) {
-                logger.warning("Failed to parse reward of type '" + typeKey + "' in " + contextKey
-                        + " (" + fileName + "): " + e.getMessage());
+                logger.log(Level.WARNING, "Failed to parse reward of type '" + typeKey + "' in " + contextKey
+                        + " (" + fileName + ")", e);
             }
         }
 

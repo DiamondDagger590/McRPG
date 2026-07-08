@@ -2,6 +2,7 @@ package us.eunoians.mcrpg.quest.board.generation;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.quest.board.BoardOffering;
 import us.eunoians.mcrpg.quest.board.BoardRotation;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategory;
@@ -84,7 +85,7 @@ public final class PersonalOfferingGenerator {
             @NotNull QuestTemplateEngine templateEngine,
             int hcWeight,
             int templateWeight,
-            @org.jetbrains.annotations.Nullable QuestCompletionHistory completionHistory) {
+            @Nullable QuestCompletionHistory completionHistory) {
 
         List<BoardOffering> offerings = new ArrayList<>();
         int slotIndex = 0;

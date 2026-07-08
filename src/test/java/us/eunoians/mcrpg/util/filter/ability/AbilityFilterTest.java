@@ -24,6 +24,7 @@ import us.eunoians.mcrpg.ability.impl.type.TierableAbility;
 import us.eunoians.mcrpg.ability.impl.type.UnlockableAbility;
 import us.eunoians.mcrpg.ability.stub.StubAbilityBase;
 import us.eunoians.mcrpg.ability.stub.StubActiveUnlockableAbility;
+import us.eunoians.mcrpg.ability.stub.StubComboActivatableAbility;
 import us.eunoians.mcrpg.ability.stub.StubInnateAbility;
 import us.eunoians.mcrpg.ability.stub.StubPassiveUnlockableAbility;
 import us.eunoians.mcrpg.configuration.FileManager;
@@ -107,10 +108,10 @@ class AbilityFilterTest extends McRPGBaseTest {
             filter = new ActiveAbilityFilter();
         }
 
-        @DisplayName("retains unlockable non-passive abilities")
+        @DisplayName("retains combo-activatable abilities")
         @Test
         void filter_retainsActiveAbilities(@NotNull McRPGPlayer mcRPGPlayer) {
-            Ability active = createStubActiveUnlockable("active_one");
+            Ability active = createStubComboActivatable("active_one");
             Ability passive = createStubPassiveUnlockable("passive_one");
             Ability innate = createStubInnate("innate_one");
 
@@ -375,6 +376,13 @@ class AbilityFilterTest extends McRPGBaseTest {
 
     private StubActiveUnlockableAbility createStubActiveUnlockable(@NotNull String name) {
         StubActiveUnlockableAbility ability = new StubActiveUnlockableAbility(mcRPG, name);
+        AbilityRegistry abilityRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY);
+        abilityRegistry.register(ability);
+        return ability;
+    }
+
+    private StubComboActivatableAbility createStubComboActivatable(@NotNull String name) {
+        StubComboActivatableAbility ability = new StubComboActivatableAbility(mcRPG, name);
         AbilityRegistry abilityRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY);
         abilityRegistry.register(ability);
         return ability;

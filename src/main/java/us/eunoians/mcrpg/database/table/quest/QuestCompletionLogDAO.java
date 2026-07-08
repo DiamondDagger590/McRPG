@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalLong;
@@ -86,13 +87,13 @@ public class QuestCompletionLogDAO {
      * @param playerUUID    the player who completed the quest
      * @param definitionKey the quest definition key (e.g. {@code "mcrpg:daily_mining"})
      * @param questUUID     the specific quest instance UUID
-     * @param completedAt   the completion timestamp in epoch millis
+     * @param completedAt   the completion timestamp
      */
     public static void logCompletion(@NotNull Connection connection,
                                      @NotNull UUID playerUUID,
                                      @NotNull String definitionKey,
                                      @NotNull UUID questUUID,
-                                     long completedAt) {
+                                     @NotNull Instant completedAt) {
         try (PreparedStatement statement = connection.prepareStatement(
                 "INSERT INTO " + TABLE_NAME +
                         " (id, player_uuid, definition_key, quest_uuid, completed_at) " +
@@ -101,7 +102,7 @@ public class QuestCompletionLogDAO {
             statement.setString(2, playerUUID.toString());
             statement.setString(3, definitionKey);
             statement.setString(4, questUUID.toString());
-            statement.setLong(5, completedAt);
+            statement.setLong(5, completedAt.toEpochMilli());
             statement.executeUpdate();
         } catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING, "[QuestCompletionLogDAO] Failed to log completion for player " + playerUUID + ", quest " + questUUID, e);
@@ -222,7 +223,7 @@ public class QuestCompletionLogDAO {
                     records.add(new CompletionRecord(
                             rs.getString("definition_key"),
                             UUID.fromString(rs.getString("quest_uuid")),
-                            rs.getLong("completed_at")
+                            Instant.ofEpochMilli(rs.getLong("completed_at"))
                     ));
                 }
             }

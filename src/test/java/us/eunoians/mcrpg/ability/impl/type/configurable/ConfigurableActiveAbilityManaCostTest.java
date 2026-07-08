@@ -178,11 +178,6 @@ class ConfigurableActiveAbilityManaCostTest extends McRPGBaseTest {
         }
 
         @Override
-        public boolean isPassive() {
-            return false;
-        }
-
-        @Override
         @NotNull
         public String getDatabaseName() {
             return "stub_configurable_ability";

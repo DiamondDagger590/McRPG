@@ -1,0 +1,26 @@
+quests:
+  mcrpg:tutorial_explore_menu:
+    scope: mcrpg:single_player
+    repeat-mode: once
+    display:
+      name: "<tutorial>The McRPG Menu"
+    on-start-messages:
+      hint:
+        key: tutorial.quests.mcrpg-menu.on-start
+    phases:
+      phase_1:
+        completion-mode: ALL
+        stages:
+          stage_1:
+            key: mcrpg:tutorial_explore_menu_stage_1
+            objectives:
+              open_home:
+                key: mcrpg:tutorial_explore_menu_open_home
+                type: mcrpg:gui_open
+                required-progress: 1
+                config:
+                  gui-type: mcrpg:home
+    rewards:
+      boosted_xp:
+        type: mcrpg:boosted_experience
+        amount: 1000

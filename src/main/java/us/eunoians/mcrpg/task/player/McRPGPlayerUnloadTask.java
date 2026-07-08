@@ -7,10 +7,12 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.quest.chain.QuestChainManager;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
 
 /**
  * A task used to save and unload the player data
@@ -51,9 +53,13 @@ public final class McRPGPlayerUnloadTask extends PlayerUnloadTask {
                  */
                 mcRPGPlayer.savePlayerLogoutTime(connection);
 
+                QuestChainManager chainManager = getPlugin().registryAccess()
+                        .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST_CHAIN);
+                chainManager.unloadPlayer(mcRPGPlayer.getUUID(), connection, mcRPGPlayer.getChainData());
+
                 return true;
             } catch (SQLException e) {
-                getPlugin().getLogger().log(java.util.logging.Level.SEVERE, "Failed to save and unload player " + getCorePlayer().getUUID(), e);
+                getPlugin().getLogger().log(Level.SEVERE, "Failed to save and unload player " + getCorePlayer().getUUID(), e);
                 return false;
             }
         }

@@ -56,7 +56,7 @@ class PersonalOfferingGeneratorTest extends McRPGBaseTest {
         QuestTemplateRegistry templateRegistry = RegistryAccess.registryAccess()
                 .registry(McRPGRegistryKey.QUEST_TEMPLATE);
         templateEngine = mock(QuestTemplateEngine.class);
-        questPool = new QuestPool(defRegistry, templateRegistry, mcRPG.getLogger());
+        questPool = new QuestPool(defRegistry, templateRegistry, mcRPG.getLogger(), mcRPG.getTimeProvider());
 
         rotation = new BoardRotation(UUID.randomUUID(), BOARD_KEY, REFRESH_KEY, 12345L, 0L, 86400000L);
         generator = new PersonalOfferingGenerator(new SlotGenerationLogic());

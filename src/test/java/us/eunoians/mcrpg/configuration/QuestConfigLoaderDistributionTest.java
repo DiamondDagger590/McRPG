@@ -74,7 +74,7 @@ public class QuestConfigLoaderDistributionTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), yaml);
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             QuestDefinition def = result.get(NamespacedKey.fromString("mcrpg:dist_quest"));
             assertNotNull(def);
 
@@ -122,7 +122,7 @@ public class QuestConfigLoaderDistributionTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), yaml);
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             QuestDefinition def = result.get(NamespacedKey.fromString("mcrpg:split_quest"));
             assertNotNull(def);
 
@@ -166,7 +166,7 @@ public class QuestConfigLoaderDistributionTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), yaml);
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             QuestDefinition def = result.get(NamespacedKey.fromString("mcrpg:rarity_quest"));
             assertNotNull(def);
 
@@ -201,7 +201,7 @@ public class QuestConfigLoaderDistributionTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), yaml);
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             QuestDefinition def = result.get(NamespacedKey.fromString("mcrpg:no_dist_quest"));
             assertNotNull(def);
             assertFalse(def.getRewardDistribution().isPresent());
@@ -238,7 +238,7 @@ public class QuestConfigLoaderDistributionTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), yaml);
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             QuestDefinition def = result.get(NamespacedKey.fromString("mcrpg:stage_dist_quest"));
             assertNotNull(def);
             assertFalse(def.getRewardDistribution().isPresent());
@@ -284,7 +284,7 @@ public class QuestConfigLoaderDistributionTest extends McRPGBaseTest {
             yamlFile.deleteOnExit();
             Files.writeString(yamlFile.toPath(), yaml);
 
-            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile());
+            Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             QuestDefinition def = result.get(NamespacedKey.fromString("mcrpg:custom_params_quest"));
             assertNotNull(def);
 

@@ -2,10 +2,14 @@ package us.eunoians.mcrpg.quest.objective.type;
 
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveInstance;
+
+import java.util.OptionalLong;
+import java.util.UUID;
 
 /**
  * Defines a type of quest objective that can be used in quest definitions.
@@ -89,8 +93,28 @@ public interface QuestObjectiveType extends McRPGContent {
      * @param player the player starting the quest
      * @return the initial progress to grant (0 if none)
      */
-    default long checkInitialProgress(@NotNull org.bukkit.entity.Player player) {
+    default long checkInitialProgress(@NotNull Player player) {
         return 0;
+    }
+
+    /**
+     * Checks whether the given player's current state already satisfies this configured objective.
+     * State-based objective types override this to query player data (skill levels, unlocked abilities,
+     * loadout contents, etc.).
+     * <p>
+     * Returns the progress value to apply if the state check passes, or empty if this objective type
+     * does not support auto-complete or the player's state does not satisfy the condition.
+     * <p>
+     * This is called from {@link us.eunoians.mcrpg.listener.quest.QuestStartAutoCompleteListener}
+     * immediately after a quest starts, so objectives satisfied before the quest began can be
+     * completed without waiting for an event.
+     *
+     * @param playerUUID the UUID of the player to check
+     * @return the progress to apply, or empty if auto-complete does not apply
+     */
+    @NotNull
+    default OptionalLong checkAutoComplete(@NotNull UUID playerUUID) {
+        return OptionalLong.empty();
     }
 
 }

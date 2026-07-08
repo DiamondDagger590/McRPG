@@ -27,11 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import com.diamonddagger590.mccore.gui.KeyedGui;
+import org.bukkit.NamespacedKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
 
 /**
  * This gui is used for whenever an {@link Ability} is having its attributes modified.
  */
-public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements FillerItemGui {
+public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements FillerItemGui, KeyedGui {
+
+    public static final NamespacedKey GUI_KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "ability_edit");
 
     private final Player player;
     private final Ability ability;
@@ -163,5 +168,11 @@ public class AbilityAttributeEditGui extends BaseGui<McRPGPlayer> implements Fil
         }
         modifiableAttributes.sort(Comparator.comparingInt(GuiModifiableAttribute::getDisplayPriority));
         return modifiableAttributes;
+    }
+
+    @Override
+    @NotNull
+    public Optional<NamespacedKey> getGuiKey() {
+        return Optional.of(GUI_KEY);
     }
 }

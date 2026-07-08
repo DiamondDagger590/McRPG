@@ -54,4 +54,19 @@ public abstract class McRPGCommandBase {
         placeholders.put(TARGET.getPlaceholder(), receiverAudience instanceof Player player ? player.getName() : getConsoleName(audience));
         return placeholders;
     }
+
+    /**
+     * Strips the {@code "ContentPack"} suffix from a simple class name to produce a
+     * human-readable pack type label (e.g. {@code "AbilityContentPack"} &rarr; {@code "Ability"}).
+     *
+     * @param simpleName the simple class name to strip
+     * @return the stripped name, or the original if the suffix was not present
+     */
+    @NotNull
+    protected static String stripContentPackSuffix(@NotNull String simpleName) {
+        if (simpleName.endsWith("ContentPack")) {
+            return simpleName.substring(0, simpleName.length() - "ContentPack".length());
+        }
+        return simpleName;
+    }
 }

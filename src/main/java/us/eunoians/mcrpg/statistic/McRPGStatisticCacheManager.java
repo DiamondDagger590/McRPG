@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.logging.Level;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -93,7 +94,7 @@ public class McRPGStatisticCacheManager extends Manager<McRPG> {
                 Optional<StatisticEntry> fromDb = PlayerStatisticDAO.getPlayerStatistic(connection, uuid, key);
                 fromDb.ifPresent(entry -> cache.put(uuid, key, entry));
             } catch (SQLException e) {
-                plugin().getLogger().log(java.util.logging.Level.WARNING, "Failed to populate statistic cache for player " + uuid, e);
+                plugin().getLogger().log(Level.WARNING, "Failed to populate statistic cache for player " + uuid, e);
             }
         });
     }

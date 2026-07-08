@@ -21,6 +21,10 @@ import us.eunoians.mcrpg.setting.impl.SpecificLocaleSetting;
 
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -166,6 +170,27 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
     }
 
     /**
+     * Formats an {@link java.time.Instant} as a locale-aware date string using the player's
+     * locale chain head. Uses {@link java.time.format.FormatStyle#MEDIUM} (e.g. "Jan 15, 2025"
+     * in en_US). Dates are displayed in UTC.
+     * <p>
+     * Centralised here alongside {@link #getDisplayDecimalFormatter()} because both require
+     * locale resolution via {@link #getLocaleChain(McRPGPlayer)}.
+     *
+     * @param mcRPGPlayer the player whose locale chain head determines the date format
+     * @param instant     the timestamp to format
+     * @return the formatted date string
+     */
+    @NotNull
+    public String formatDisplayDate(@NotNull McRPGPlayer mcRPGPlayer, @NotNull Instant instant) {
+        Locale locale = getLocaleChain(mcRPGPlayer).getNodeValue();
+        return DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+                .withLocale(locale)
+                .withZone(ZoneOffset.UTC)
+                .format(instant);
+    }
+
+    /**
      * Returns the server's configured default {@link Locale} (the head of the server default locale chain).
      * Package-private so {@link McRPGDisplayDecimalFormatter} can use it as the fallback when formatting for
      * non-player audiences.
@@ -249,7 +274,7 @@ public final class McRPGLocalizationManager extends LocalizationManager<McRPG, M
                         LinkedNode<Locale> serverFirstChain = new LinkedNode<>(localeChain.getContent().getNodeValue());
 
                         // Add client locale next if available
-                        var clientLocaleOptional = corePlayer.getAsBukkitPlayer().map(org.bukkit.entity.Player::locale);
+                        var clientLocaleOptional = corePlayer.getAsBukkitPlayer().map(Player::locale);
                         if (clientLocaleOptional.isPresent()) {
                             LinkedNode<Locale> clientLocaleNode = new LinkedNode<>(clientLocaleOptional.get());
                             clientLocaleNode.setNext(new LinkedNode<>(Locale.ENGLISH));

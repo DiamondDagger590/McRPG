@@ -28,10 +28,14 @@ import us.eunoians.mcrpg.ability.impl.woodcutting.NymphsVitality;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
+import us.eunoians.mcrpg.expansion.content.ChainAutoStartTriggerContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestChainStartConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.WindowBoundaryTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
+import us.eunoians.mcrpg.expansion.content.QuestChainContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestObjectiveTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestRarityContentPack;
@@ -46,6 +50,12 @@ import us.eunoians.mcrpg.quest.board.distribution.builtin.QuestAcceptorDistribut
 import us.eunoians.mcrpg.quest.board.distribution.builtin.TopPlayersDistributionType;
 import us.eunoians.mcrpg.quest.board.template.condition.ChanceCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.CompletionPrerequisiteCondition;
+import us.eunoians.mcrpg.quest.chain.availability.builtin.FixedWindowBoundaryType;
+import us.eunoians.mcrpg.quest.chain.availability.builtin.RecurringWindowBoundaryType;
+import us.eunoians.mcrpg.quest.chain.condition.builtin.TimeGateChainConditionType;
+import us.eunoians.mcrpg.quest.chain.trigger.builtin.FirstJoinChainAutoStartTrigger;
+import us.eunoians.mcrpg.quest.chain.trigger.builtin.LoginChainAutoStartTrigger;
+import us.eunoians.mcrpg.quest.chain.trigger.builtin.ManualChainAutoStartTrigger;
 import us.eunoians.mcrpg.quest.board.template.condition.CompoundCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.PermissionCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.RarityCondition;
@@ -56,6 +66,8 @@ import us.eunoians.mcrpg.expansion.content.SkillContentPack;
 import us.eunoians.mcrpg.expansion.content.StatisticContent;
 import us.eunoians.mcrpg.expansion.content.StatisticContentPack;
 import us.eunoians.mcrpg.localization.DynamicLocale;
+import us.eunoians.mcrpg.quest.objective.type.builtin.AbilityActivateObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.AbilityUnlockObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.AdvancementCompleteObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.AnvilRepairObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.BlockBreakObjectiveType;
@@ -73,17 +85,28 @@ import us.eunoians.mcrpg.quest.objective.type.builtin.EnterBedObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.FertilizeBlockObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.FishCatchObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.GainExperienceObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.GuiOpenObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.HarvestCropObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.ItemPickupObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.LaunchProjectileObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.LoadoutEquipObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.MobKillObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.ProjectileHitObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.QuestBoardAcceptObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.ShearEntityObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.SkillLevelUpObjectiveType;
+import us.eunoians.mcrpg.quest.objective.type.builtin.SkillTargetLevelObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.SmeltItemObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.SmithingObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.TameAnimalObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.builtin.VillagerTradeObjectiveType;
 import us.eunoians.mcrpg.quest.reward.builtin.AbilityUpgradeNextTierRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.BoostedExperienceRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.MessageRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.RedeemableExperienceRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.RedeemableLevelsRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.SoundRewardType;
+import us.eunoians.mcrpg.quest.reward.builtin.TitleRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.ScalableCommandRewardType;
 import us.eunoians.mcrpg.quest.source.builtin.AbilityUpgradeQuestSource;
 import us.eunoians.mcrpg.quest.source.builtin.BoardLandQuestSource;
@@ -91,6 +114,7 @@ import us.eunoians.mcrpg.quest.source.builtin.BoardPersonalQuestSource;
 import us.eunoians.mcrpg.quest.impl.scope.impl.PermissionQuestScopeProvider;
 import us.eunoians.mcrpg.quest.impl.scope.impl.SinglePlayerQuestScopeProvider;
 import us.eunoians.mcrpg.quest.source.builtin.ManualQuestSource;
+import us.eunoians.mcrpg.quest.source.builtin.TutorialQuestSource;
 import us.eunoians.mcrpg.quest.reward.builtin.AbilityUpgradeRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.CommandRewardType;
 import us.eunoians.mcrpg.quest.reward.builtin.ExperienceRewardType;
@@ -101,6 +125,7 @@ import us.eunoians.mcrpg.setting.impl.ExperienceDisplaySetting;
 import us.eunoians.mcrpg.setting.impl.KeepHandEmptySetting;
 import us.eunoians.mcrpg.setting.impl.KeepHotbarSlotEmptySetting;
 import us.eunoians.mcrpg.setting.impl.LocaleSetting;
+import us.eunoians.mcrpg.setting.impl.DisableTutorialSetting;
 import us.eunoians.mcrpg.setting.impl.QuestProgressNotificationSetting;
 import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
@@ -142,7 +167,9 @@ public final class McRPGExpansion extends ContentExpansion {
                 getStatisticContent(skills, abilities), getPlayerSettingContent(), getLocalizationContent(),
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
-                getRewardDistributionTypeContent(), getTemplateConditionContent());
+                getRewardDistributionTypeContent(), getTemplateConditionContent(),
+                getChainAutoStartTriggerContent(), getQuestChainContent(),
+                getChainStartConditionTypeContent(), getWindowBoundaryTypeContent());
     }
 
     @NotNull
@@ -307,6 +334,7 @@ public final class McRPGExpansion extends ContentExpansion {
         playerSettingContent.addContent(DisableBonusExperienceConsumptionSetting.values()[0]);
         playerSettingContent.addContent(LocaleSetting.values()[0]);
         playerSettingContent.addContent(QuestProgressNotificationSetting.values()[0]);
+        playerSettingContent.addContent(DisableTutorialSetting.values()[0]);
         return playerSettingContent;
     }
 
@@ -361,6 +389,13 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new EnterBedObjectiveType());
         pack.addContent(new AdvancementCompleteObjectiveType());
         pack.addContent(new DistanceTraveledObjectiveType());
+        pack.addContent(new SkillLevelUpObjectiveType());
+        pack.addContent(new SkillTargetLevelObjectiveType());
+        pack.addContent(new GuiOpenObjectiveType());
+        pack.addContent(new AbilityUnlockObjectiveType());
+        pack.addContent(new AbilityActivateObjectiveType());
+        pack.addContent(new LoadoutEquipObjectiveType());
+        pack.addContent(new QuestBoardAcceptObjectiveType());
         return pack;
     }
 
@@ -379,6 +414,12 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new AbilityUpgradeNextTierRewardType());
         pack.addContent(new ScalableCommandRewardType());
         pack.addContent(new ItemRewardType());
+        pack.addContent(new MessageRewardType());
+        pack.addContent(new BoostedExperienceRewardType());
+        pack.addContent(new RedeemableExperienceRewardType());
+        pack.addContent(new RedeemableLevelsRewardType());
+        pack.addContent(new SoundRewardType());
+        pack.addContent(new TitleRewardType());
         return pack;
     }
 
@@ -408,6 +449,7 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new BoardLandQuestSource());
         pack.addContent(new AbilityUpgradeQuestSource());
         pack.addContent(new ManualQuestSource());
+        pack.addContent(new TutorialQuestSource());
         return pack;
     }
 
@@ -469,6 +511,61 @@ public final class McRPGExpansion extends ContentExpansion {
         pack.addContent(new CompoundCondition());
         pack.addContent(new PermissionCondition());
         pack.addContent(new CompletionPrerequisiteCondition());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link ChainAutoStartTriggerContentPack} for McRPG, populated with the
+     * built-in trigger types ({@code manual} and {@code first_join}).
+     *
+     * @return The native {@link ChainAutoStartTriggerContentPack} for McRPG.
+     */
+    @NotNull
+    private ChainAutoStartTriggerContentPack getChainAutoStartTriggerContent() {
+        ChainAutoStartTriggerContentPack pack = new ChainAutoStartTriggerContentPack(this);
+        pack.addContent(new ManualChainAutoStartTrigger());
+        pack.addContent(new FirstJoinChainAutoStartTrigger());
+        pack.addContent(new LoginChainAutoStartTrigger());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link QuestChainContentPack} for McRPG. This pack is empty because native
+     * chain definitions are loaded from YAML via {@code QuestChainConfigLoader}, not through the
+     * expansion system. The pack signals that third-party plugins can contribute chain definitions
+     * programmatically.
+     *
+     * @return The native {@link QuestChainContentPack} for McRPG (empty).
+     */
+    @NotNull
+    private QuestChainContentPack getQuestChainContent() {
+        return new QuestChainContentPack(this);
+    }
+
+    /**
+     * Gets the native {@link QuestChainStartConditionContentPack} for McRPG, populated with the
+     * built-in condition type ({@code mcrpg:time_gate}).
+     *
+     * @return The native {@link QuestChainStartConditionContentPack} for McRPG.
+     */
+    @NotNull
+    private QuestChainStartConditionContentPack getChainStartConditionTypeContent() {
+        QuestChainStartConditionContentPack pack = new QuestChainStartConditionContentPack(this);
+        pack.addContent(new TimeGateChainConditionType());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link WindowBoundaryTypeContentPack} for McRPG, populated with the
+     * built-in boundary types ({@code mcrpg:fixed} and {@code mcrpg:recurring}).
+     *
+     * @return The native {@link WindowBoundaryTypeContentPack} for McRPG.
+     */
+    @NotNull
+    private WindowBoundaryTypeContentPack getWindowBoundaryTypeContent() {
+        WindowBoundaryTypeContentPack pack = new WindowBoundaryTypeContentPack(this);
+        pack.addContent(new FixedWindowBoundaryType());
+        pack.addContent(new RecurringWindowBoundaryType());
         return pack;
     }
 }

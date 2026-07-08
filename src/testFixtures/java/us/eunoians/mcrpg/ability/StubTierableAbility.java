@@ -155,11 +155,6 @@ public class StubTierableAbility implements TierableAbility {
         return true;
     }
 
-    @Override
-    public boolean isPassive() {
-        return true;
-    }
-
     @NotNull
     @Override
     public Optional<NamespacedKey> getExpansionKey() {

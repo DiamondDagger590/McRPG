@@ -17,6 +17,7 @@ import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
 import us.eunoians.mcrpg.task.board.QuestBoardRotationTask;
 import us.eunoians.mcrpg.task.quest.ExpiredQuestScanTask;
 import us.eunoians.mcrpg.task.quest.QuestSaveTask;
+import us.eunoians.mcrpg.quest.availability.AvailabilityWindowChecker;
 
 import java.util.Set;
 
@@ -65,7 +66,15 @@ final class McRPGBackgroundTaskRegistrar implements Registrar<McRPG> {
                     String tz = yamlDocument.getString(BoardConfigFile.ROTATION_TIMEZONE);
                     return new QuestBoardRotationTask(plugin, frequency, frequency, time, tz);
                 }, true);
+        ReloadableTask<AvailabilityWindowChecker> availabilityCheckerTask = new ReloadableTask<>(
+                fileManager.getFile(FileType.MAIN_CONFIG),
+                MainConfigFile.CHAIN_AVAILABILITY_CHECK_INTERVAL_SECONDS,
+                (yamlDocument, route) -> {
+                    double frequency = yamlDocument.getDouble(route);
+                    return new AvailabilityWindowChecker(plugin, frequency);
+                }, true);
         plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT)
-                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask, questSaveTask, expiredQuestScanTask, rotationTask));
+                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask,
+                        questSaveTask, expiredQuestScanTask, rotationTask, availabilityCheckerTask));
     }
 }

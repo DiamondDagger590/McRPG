@@ -152,7 +152,10 @@ src/main/java/us/eunoians/mcrpg/
 │       ├── QuestDetailGui.java
 │       ├── QuestHistoryGui.java
 │       ├── QuestAbandonConfirmGui.java
-│       └── slot/                       # Detail, overview, reward, phase, abandon, history slots
+│       ├── slot/                       # Detail, overview, reward, phase, abandon, history slots
+│       └── chain/                      # Quest chain history GUI
+│           ├── QuestChainHistoryDetailGui.java
+│           └── slot/                   # Chain-specific slots (history, step, gated)
 ├── listener/
 │   ├── ability/                        # Per-skill ability Bukkit event listeners
 │   │   ├── AbilityListener.java        # Interface with activateAbilities() default and passive mana checks
@@ -168,10 +171,17 @@ src/main/java/us/eunoians/mcrpg/
 │       ├── QuestCompleteListener.java
 │       ├── QuestCancelListener.java
 │       ├── QuestFeedbackListener.java
-│       └── AbilityUpgradeQuestListener.java
+│       ├── AbilityUpgradeQuestListener.java
+│       └── chain/                      # Quest chain lifecycle listeners
+│           ├── QuestChainCancelListener.java
+│           ├── QuestChainFeedbackListener.java
+│           ├── QuestChainFirstJoinListener.java
+│           ├── QuestChainLoginListener.java
+│           └── QuestChainProgressListener.java
 ├── event/
 │   ├── ability/                        # Custom Bukkit events per ability activation
 │   └── quest/                          # QuestStartEvent, QuestCompleteEvent, QuestCancelEvent, etc.
+│       └── chain/                      # Quest chain events and cascade events
 ├── database/table/
 │   ├── SkillDAO.java                   # Skill data persistence
 │   ├── LoadoutAbilityDAO.java          # Loadout slot persistence
@@ -182,7 +192,8 @@ src/main/java/us/eunoians/mcrpg/
 │   │   ├── QuestObjectiveContributionDAO.java
 │   │   ├── QuestCompletionLogDAO.java
 │   │   ├── PendingRewardDAO.java
-│   │   └── scope/                      # Per-scope-type DAOs (SinglePlayer, Permission, Land)
+│   │   ├── scope/                      # Per-scope-type DAOs (SinglePlayer, Permission, Land)
+│   │   └── chain/                      # Quest chain state and completion log DAOs
 │   └── board/                          # Board rotation, offering, cooldown, personal tracking DAOs
 │       ├── BoardRotationDAO.java
 │       ├── BoardOfferingDAO.java
@@ -245,6 +256,27 @@ src/main/java/us/eunoians/mcrpg/
 | **QuestObjectiveType** | Extensible interface defining the behavior and progress-tracking logic for a category of objectives (e.g., `BlockBreakObjectiveType`, `MobKillObjectiveType`). Registered in `QuestObjectiveTypeRegistry`. Extensible via `QuestObjectiveTypeContentPack`. |
 | **QuestRewardType** | Extensible interface defining how a specific reward is granted (e.g., `CommandRewardType`, `ExperienceRewardType`, `AbilityUpgradeRewardType`). Registered in `QuestRewardTypeRegistry`. Extensible via `QuestRewardTypeContentPack`. |
 | **PendingReward** | A serialized reward queued for a player who was offline at the time of grant. Stored in the DB and granted at next login; expires after a configurable duration. |
+
+### Quest Chain System
+
+| Term | Meaning |
+|------|---------|
+| **QuestChainDefinition** | Immutable blueprint for an ordered sequence of quests. Holds steps, auto-start trigger, repeat mode, optional expiration, and display metadata. Registered in `QuestChainRegistry`. |
+| **QuestChainStep** | A single step in a chain — pairs a `questKey` with an `on-quest-expire` behavior string. Constructed via `QuestChainStep.simple(key)` or the YAML config loader. |
+| **QuestChainPlayerState** | Mutable per-player runtime state for a single chain: current quest key, `QuestChainState`, completion count, and last-completed-at timestamp. Carries a dirty flag for async flush. |
+| **QuestChainPlayerData** | Container on `McRPGPlayer` holding all `QuestChainPlayerState` instances. Maintains a reverse index (`questKey → chainKey`) for O(1) chain lookup on quest completion. |
+| **QuestChainState** | Enum: `ACTIVE`, `COMPLETED`, `ABANDONED`, `FAILED`, `EXPIRED`. Terminal states (`isTerminal()`) and repeat-eligible states (`isRepeatEligible()`) are disjoint groups. |
+| **QuestChainRepeatMode** | Enum: `ONCE`, `UNLIMITED`, `LIMITED`, `COOLDOWN`, `COOLDOWN_LIMITED`. Only `ONCE` is currently enforced — see `chain-system-backlog.md` for the others. |
+| **QuestChainManager** | Central manager: starts, advances, force-advances, restarts, and resets chains. Delegates persistence to `ChainPersistenceService` and quest starts to `ChainQuestStarter`. Accessed via `McRPGManagerKey.QUEST_CHAIN`. |
+| **ChainPersistenceService** | Collaborator owned by `QuestChainManager` that serializes async DB writes per player using a `CompletableFuture` chain. Prevents concurrent mutations to the same player's chain rows. |
+| **ChainQuestStarter** | Collaborator owned by `QuestChainManager` that resolves a `QuestDefinition` from the registry and delegates to `QuestManager` to start the step's quest instance. |
+| **ChainAutoStartTrigger** | Extensible interface defining when a chain should auto-start for a player. Registered in `ChainAutoStartTriggerRegistry`. Built-in: `LoginChainAutoStartTrigger`. |
+| **QuestChainStartCondition** | `@ApiStatus.Experimental` interface for gating chain start. Not yet wired into `QuestChainManager` — see backlog. |
+| **QuestChainAbandonEvent** | Fired when a chain is abandoned (player cancelled the current step quest). Non-cancellable; `player` may be null if offline. |
+| **QuestChainFailEvent** | Fired when a chain fails (current step expired with `fail-chain` behavior). Non-cancellable; `player` may be null if offline. |
+| **QuestChainCompleteEvent** | Fired when all chain steps complete. Includes `completionCount` for repeat tracking. |
+| **QuestChainStartEvent** | Fired when a chain starts for a player and the first step quest is launched. |
+| **QuestChainStepAdvanceEvent** | Fired when a chain advances from one step to the next (intermediate completion). |
 
 ---
 
@@ -554,6 +586,28 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 
 ---
 
+## Builder Pattern
+
+Use a builder when a class meets **any** of these criteria:
+- Constructor has **6+ total parameters**
+- Constructor has **3+ optional/nullable parameters** that lead to overloaded constructors or disambiguator hacks (e.g. `boolean ignored`)
+- The class is immutable and constructed in multiple callsites with varying subsets of optional fields
+
+**Required structure:**
+- `public static final class Builder` as an inner class on the target type
+- Required fields are parameters of the Builder constructor — no zero-arg builder constructors
+- Optional fields have sensible defaults and are set via fluent setters returning `this`
+- `build()` validates invariants and returns the constructed object
+- The target class's constructor is `private` — the builder is the only public construction path (deprecated constructors may remain temporarily during migration)
+
+**Do not use a builder when:**
+- Class has ≤5 parameters that are all required — a constructor is clear enough
+- Class is mutable with setters
+- Only one or two callsites construct the object — the ceremony isn't justified
+- Records with simple field lists — the canonical constructor is already self-documenting
+
+---
+
 ## Anti-Patterns to Avoid
 
 - **No reflection** — use attribute factory pattern (`attribute.create(value)`) instead of `Class.forName()` or `getDeclaredField()`
@@ -574,6 +628,7 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - **No unbounded `Map` or `Set` fields without a documented eviction strategy** — insert-only caches are memory leaks; document the cleanup lifecycle event in Javadoc
 - **No `putHolderOnCooldown()` inside `comboActivate()`** — the combo listener (`OnComboCompleteListener`) manages cooldown application for combo-activated abilities. Calling it inside the ability causes double-cooldown
 - **No void-return `comboActivate()` or `activateAbility()`** — both return `boolean` (`true` = executed, `false` = internally cancelled). The boolean enables mana refund and conditional cooldown in callers
+- **No raw `Bukkit.getScheduler()` for repeating or delayed tasks** — use McCore's `CoreTask` hierarchy (`RepeatableCoreTask`, `DelayableCoreTask`, `ExpireableCoreTask`, etc.) which provides state tracking, pause/resume, and consistent second-based timing. Direct scheduler calls are acceptable only for one-shot main-thread rescheduling from async code (e.g., `Bukkit.getScheduler().runTask(plugin, () -> { ... })`)
 - **No roadmap or LLD phase references in Javadoc or comments** — labels like "Phase 1", "Phase 2 LLD", or "Future phases" rot immediately: they are meaningless to engineers who weren't present during planning. Describe the *what* and *why* of the code instead. For extension points, name the type or mechanism (e.g. `ContentExpansion`, `QuestTemplate`). For deprecated code, explain what changed architecturally rather than which delivery phase removed it. The only acceptable "phase" language is inside inline comments that label the sequential steps of a single async operation (e.g. `// Phase 1 (DB executor): load`, `// Phase 2 (main thread): generate`).
 
 ---
@@ -588,7 +643,7 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - Keep methods focused and short — split logic into private helpers rather than long method bodies
 - Prefer instance collaborators over static helpers when encoding domain behavior
 - No section-divider comments (`// --- Section name ---` or `// ===== Section =====`) — if a class needs labeled sections, it is too large or has too many concerns. Extract a collaborator or use natural method ordering instead
-- Javadoc on all methods (public and private) with `@param` and `@return` semantics
+- Javadoc on all methods (public and private) with `@param` and `@return` semantics — this applies to every method regardless of visibility
 
 **Third-party developer mindset:** McRPG is designed to be extensible by external plugins. Any change to a public API, event, or registry should be made as if you were a third-party developer hooking in. Prefer additive, non-breaking changes; fire Bukkit events wherever an external plugin would reasonably want to intercept; document extension points clearly.
 
@@ -611,6 +666,9 @@ public static final NamespacedKey BLEED_KEY = new NamespacedKey(McRPGMethods.get
 - New utility classes and non-Bukkit logic belong in `src/test/java/` (mirrors main package structure)
 - Extend `McRPGBaseTest` for any test that requires Bukkit or MockBukkit setup
 - Shared test helpers and fixtures go in `src/testFixtures/java/`
+- **Annotation ordering:** always place `@Test` before `@DisplayName` on test methods — not the reverse
+- **Filesystem helpers:** use `TestFileUtils.writeFile(Path, String, String)` and `TestFileUtils.deleteRecursively(File)` (in `src/testFixtures/`) instead of duplicating these helpers in individual test classes
+- **DAO tests:** mock the JDBC `Connection`, `PreparedStatement`, and `ResultSet` via Mockito — do not embed real database connections in unit tests
 - **The entire test suite must pass before a task is considered complete** — run `./gradlew verifiedShadowJar` (or `./gradlew test`) and verify zero failures across all test classes, not just tests related to the current change. Regressions in unrelated tests still block completion.
 
 #### McRPGPlayer in Tests
@@ -855,6 +913,7 @@ After any commit or PR that introduces one of the following, **update `CLAUDE.md
 | New concurrency anti-pattern found (thread boundary, race, future handling) | `persona-concurrency.mdc` + `.claude/commands/review-concurrency.md` + `core.mdc` |
 | CI review file-pattern for a new domain | `.github/workflows/pr-review.yml` detect-changes step |
 | Quest board system changed (new condition, distribution type, template feature) | `CLAUDE.md` Quest Board System section + `quest-board-system.mdc` |
+| Quest chain system changed (new trigger type, repeat mode enforced, chain event added) | `CLAUDE.md` Quest Chain System terminology + `chain-system-backlog.md` |
 | Mana balance parameters changed (pool size, regen rate, bucket ranges) | `CLAUDE.md` Mana Balance Philosophy section + `mana-balance-philosophy.mdc` + `core.mdc` |
 | GUI color palette changed (new role, hex value, usage rule) | `PALETTE.md` + `core.mdc` GUI Color Palette section + `docs/hld/gui-ux-system.md` |
 

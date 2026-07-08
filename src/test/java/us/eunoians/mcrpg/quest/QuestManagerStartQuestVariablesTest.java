@@ -141,20 +141,38 @@ public class QuestManagerStartQuestVariablesTest extends McRPGBaseTest {
 
         QuestDefinition def = questWithSingleObjectiveExpression("scope_with_suffix", "10");
         // same quest as helper but with explicit _scope suffix
-        QuestDefinition withScopeSuffix = new QuestDefinition(
+        QuestDefinition withScopeSuffix = new QuestDefinition.Builder(
                 def.getQuestKey(),
                 new NamespacedKey("mcrpg", "single_player_scope"),
-                null,
-                def.getPhases(),
-                def.getRewards(),
-                def.getRepeatMode(),
-                def.getRepeatCooldown().orElse(null),
-                def.getRepeatLimit().orElse(-1),
-                def.getExpansionKey().orElse(null)
-        );
+                def.getPhases()
+        ).rewards(def.getRewards())
+                .repeatMode(def.getRepeatMode())
+                .repeatCooldown(def.getRepeatCooldown().orElse(null))
+                .repeatLimit(def.getRepeatLimit().orElse(-1))
+                .expansionKey(def.getExpansionKey().orElse(null))
+                .build();
 
         Optional<?> started = questManager.startQuest(withScopeSuffix, UUID.randomUUID(), Map.of(), new ManualQuestSource());
         assertFalse(started.isEmpty());
+    }
+
+    @DisplayName("Given online player with PreQuestStartEvent listener that cancels, when startQuest is called, then it returns empty")
+    @Test
+    public void startQuest_returnsEmpty_whenPreQuestStartEventCancelled() {
+        QuestManager questManager = new QuestManager(mcRPG);
+        var playerMock = server.addPlayer();
+
+        server.getPluginManager().registerEvents(new org.bukkit.event.Listener() {
+            @org.bukkit.event.EventHandler
+            public void onPreStart(us.eunoians.mcrpg.event.quest.PreQuestStartEvent event) {
+                event.setCancelled(true);
+            }
+        }, mcRPG);
+
+        QuestDefinition def = questWithSingleObjectiveExpression("pre_start_cancel", "10");
+        Optional<?> started = questManager.startQuest(def, playerMock.getUniqueId(), Map.of(), new ManualQuestSource());
+
+        assertTrue(started.isEmpty());
     }
 
     private static QuestDefinition questWithSingleObjectiveExpression(String questKey, String requiredProgressExpr) {
@@ -170,17 +188,11 @@ public class QuestManagerStartQuestVariablesTest extends McRPGBaseTest {
         );
         QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage), List.of(), null);
 
-        return new QuestDefinition(
+        return new QuestDefinition.Builder(
                 new NamespacedKey("mcrpg", questKey),
                 new NamespacedKey("mcrpg", "single_player"),
-                null,
-                List.of(phase),
-                List.of(),
-                QuestRepeatMode.ONCE,
-                null,
-                -1,
-                null
-        );
+                List.of(phase)
+        ).build();
     }
 }
 

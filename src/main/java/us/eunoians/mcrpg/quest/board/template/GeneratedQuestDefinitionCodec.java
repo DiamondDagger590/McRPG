@@ -10,7 +10,9 @@ import com.google.gson.JsonPrimitive;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
+import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestPhaseDefinition;
@@ -136,6 +138,23 @@ public class GeneratedQuestDefinitionCodec {
             root.add("inline_display", displayObj);
         }
 
+        if (!definition.getOnStartMessages().isEmpty()) {
+            JsonArray onStartArray = new JsonArray();
+            for (OnStartMessage message : definition.getOnStartMessages()) {
+                JsonObject messageObj = new JsonObject();
+                message.localeKey().ifPresent(key -> messageObj.addProperty("locale_key", key));
+                if (!message.inlineMessages().isEmpty()) {
+                    JsonArray inlineArray = new JsonArray();
+                    for (String line : message.inlineMessages()) {
+                        inlineArray.add(line);
+                    }
+                    messageObj.add("inline_messages", inlineArray);
+                }
+                onStartArray.add(messageObj);
+            }
+            root.add("on_start_messages", onStartArray);
+        }
+
         return GSON.toJson(root);
     }
 
@@ -156,7 +175,18 @@ public class GeneratedQuestDefinitionCodec {
 
             questKeyString = root.get("quest_key").getAsString();
             NamespacedKey questKey = NamespacedKey.fromString(questKeyString);
-            NamespacedKey scopeKey = NamespacedKey.fromString(root.get("scope").getAsString());
+            if (questKey == null) {
+                throw new QuestDeserializationException(
+                        "Invalid quest key: '" + questKeyString + "'",
+                        questKeyString, "quest_key");
+            }
+            String scopeKeyString = root.get("scope").getAsString();
+            NamespacedKey scopeKey = NamespacedKey.fromString(scopeKeyString);
+            if (scopeKey == null) {
+                throw new QuestDeserializationException(
+                        "Invalid scope key: '" + scopeKeyString + "'",
+                        questKeyString, "scope");
+            }
 
             List<QuestPhaseDefinition> phases = deserializePhases(
                     root.getAsJsonArray("phases"), questKeyString);
@@ -176,20 +206,17 @@ public class GeneratedQuestDefinitionCodec {
                 }
             }
 
-            return QuestDefinition.withEntries(
-                    questKey,
-                    scopeKey,
-                    null,
-                    phases,
-                    rewardEntries,
-                    QuestRepeatMode.ONCE,
-                    null,
-                    -1,
-                    null,
-                    null,
-                    rewardDistribution,
-                    inlineDisplay
-            );
+            List<OnStartMessage> onStartMessages = List.of();
+            if (root.has("on_start_messages")) {
+                onStartMessages = deserializeOnStartMessages(root.getAsJsonArray("on_start_messages"));
+            }
+
+            return new QuestDefinition.Builder(questKey, scopeKey, phases)
+                    .rewardEntries(rewardEntries)
+                    .rewardDistribution(rewardDistribution)
+                    .inlineDisplay(inlineDisplay)
+                    .onStartMessages(onStartMessages)
+                    .build();
         } catch (QuestDeserializationException e) {
             throw e;
         } catch (Exception e) {
@@ -197,6 +224,34 @@ public class GeneratedQuestDefinitionCodec {
                     "Failed to deserialize generated quest definition: " + e.getMessage(),
                     e, questKeyString, "JSON root");
         }
+    }
+
+    /**
+     * Deserializes the {@code on_start_messages} JSON array into {@link OnStartMessage} entries.
+     *
+     * @param messagesArray the JSON array of on-start message objects
+     * @return the deserialized on-start messages
+     */
+    @NotNull
+    private List<OnStartMessage> deserializeOnStartMessages(@NotNull JsonArray messagesArray) {
+        List<OnStartMessage> messages = new ArrayList<>();
+        for (int i = 0; i < messagesArray.size(); i++) {
+            JsonObject messageObj = messagesArray.get(i).getAsJsonObject();
+            if (messageObj.has("locale_key")) {
+                messages.add(OnStartMessage.fromLocaleKey(messageObj.get("locale_key").getAsString()));
+            } else if (messageObj.has("inline_messages")) {
+                List<String> lines = new ArrayList<>();
+                for (JsonElement lineElement : messageObj.getAsJsonArray("inline_messages")) {
+                    lines.add(lineElement.getAsString());
+                }
+                messages.add(OnStartMessage.fromInline(lines));
+            } else {
+                McRPG.getInstance().getLogger().warning(
+                        "Malformed on_start_messages entry at index " + i
+                                + " — missing both 'locale_key' and 'inline_messages', skipping");
+            }
+        }
+        return messages;
     }
 
     /**
