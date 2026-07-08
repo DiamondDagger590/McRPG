@@ -8,8 +8,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
+import us.eunoians.mcrpg.quest.board.distribution.builtin.MembershipDistributionType;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.ParticipatedDistributionType;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarity;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("QuestRewardDistributionResolver — PotBehavior and remainder strategies")
-class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
+class QuestRewardDistributionResolverPotBehaviorTest {
 
     private RewardDistributionTypeRegistry typeRegistry;
     private QuestRarityRegistry rarityRegistry;
@@ -39,13 +39,11 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
     void setUp() {
         typeRegistry = new RewardDistributionTypeRegistry();
         typeRegistry.register(new ParticipatedDistributionType());
+        typeRegistry.register(new MembershipDistributionType());
         rarityRegistry = new QuestRarityRegistry();
         resolver = new QuestRewardDistributionResolver(java.util.logging.Logger.getLogger("test"));
     }
 
-    /**
-     * Scalable test reward that tracks its amount and supports withAmountMultiplier.
-     */
     static final class ScalableReward implements QuestRewardType {
 
         static final NamespacedKey KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "scalable_test");
@@ -99,9 +97,6 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
         }
     }
 
-    /**
-     * Non-scalable test reward that returns itself from withAmountMultiplier.
-     */
     static final class NonScalableReward implements QuestRewardType {
 
         static final NamespacedKey KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "non_scalable_test");
@@ -160,7 +155,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("ALL gives unscaled reward to every qualifying player")
-        void allBehavior_givesFullRewardToEachPlayer() {
+        void resolve_givesFullRewardToAll_whenAllBehavior() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var entry = new DistributionRewardEntry(reward, PotBehavior.ALL, RemainderStrategy.DISCARD, 1, 1, null);
@@ -181,7 +176,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("TOP_N with topCount=1 gives reward only to top contributor")
-        void topN_singleTopContributor() {
+        void resolve_givesToTopOnly_whenTopNSingleContributor() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var entry = new DistributionRewardEntry(reward, PotBehavior.TOP_N, RemainderStrategy.DISCARD, 1, 1, null);
@@ -197,7 +192,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("TOP_N with topCount=2 gives reward to top two contributors")
-        void topN_topTwoContributors() {
+        void resolve_givesToTopTwo_whenTopNCountIsTwo() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID();
             var reward = new ScalableReward(500);
             var entry = new DistributionRewardEntry(reward, PotBehavior.TOP_N, RemainderStrategy.DISCARD, 1, 2, null);
@@ -218,7 +213,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("SCALE divides reward evenly among players")
-        void scale_dividesEvenly() {
+        void resolve_dividesEvenly_whenScaleBehavior() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.DISCARD, 1, 1, null);
@@ -234,7 +229,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("SCALE with non-scalable reward warns and gives unscaled to all")
-        void scale_nonScalableReward_fallsBackToAll() {
+        void resolve_fallsBackToAll_whenScaleWithNonScalableReward() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new NonScalableReward();
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.DISCARD, 1, 1, null);
@@ -250,7 +245,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("SCALE skips when scaled amount falls below minScaledAmount")
-        void scale_belowMinScaledAmount_skipsReward() {
+        void resolve_skipsReward_whenScaledBelowMinAmount() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new ScalableReward(10);
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.DISCARD, 100, 1, null);
@@ -269,7 +264,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("TOP_CONTRIBUTOR remainder goes to highest contributor")
-        void topContributorRemainder_goesToHighestContributor() {
+        void resolve_givesRemainderToTop_whenTopContributorStrategy() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID();
             var reward = new ScalableReward(10);
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.TOP_CONTRIBUTOR, 1, 1, null);
@@ -287,7 +282,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("RANDOM remainder is distributed deterministically with seeded Random")
-        void randomRemainder_deterministicWithSeed() {
+        void resolve_producesSameResult_whenRandomRemainderWithSameSeed() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID();
             var reward = new ScalableReward(10);
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.RANDOM, 1, 1, null);
@@ -297,12 +292,22 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
             var result1 = resolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(123));
             var result2 = resolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry, new Random(123));
 
-            assertEquals(result1.size(), result2.size());
+            assertEquals(result1.keySet(), result2.keySet());
+            for (UUID player : result1.keySet()) {
+                var rewards1 = result1.get(player);
+                var rewards2 = result2.get(player);
+                assertEquals(rewards1.size(), rewards2.size(), "Reward count mismatch for player " + player);
+                for (int i = 0; i < rewards1.size(); i++) {
+                    long amount1 = ((ScalableReward) rewards1.get(i)).getAmount();
+                    long amount2 = ((ScalableReward) rewards2.get(i)).getAmount();
+                    assertEquals(amount1, amount2, "Reward amount mismatch for player " + player + " at index " + i);
+                }
+            }
         }
 
         @Test
         @DisplayName("DISCARD remainder does not add extra rewards")
-        void discardRemainder_noExtraRewards() {
+        void resolve_noExtraRewards_whenDiscardRemainder() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID();
             var reward = new ScalableReward(10);
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.DISCARD, 1, 1, null);
@@ -323,7 +328,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("ALL gives unscaled reward to every qualifying player regardless of contribution")
-        void proportionalAll_fullRewardToAll() {
+        void resolve_givesFullRewardToAll_whenProportionalAllBehavior() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var entry = new DistributionRewardEntry(reward, PotBehavior.ALL, RemainderStrategy.DISCARD, 1, 1, null);
@@ -344,7 +349,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("TOP_N gives unscaled reward to top contributor only")
-        void proportionalTopN_topOnly() {
+        void resolve_givesToTopOnly_whenProportionalTopN() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var entry = new DistributionRewardEntry(reward, PotBehavior.TOP_N, RemainderStrategy.DISCARD, 1, 1, null);
@@ -365,7 +370,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("SCALE distributes proportionally by contribution")
-        void proportionalScale_distributedByContribution() {
+        void resolve_distributesProportionally_whenScaleBehavior() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.DISCARD, 1, 1, null);
@@ -381,7 +386,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("SCALE with non-scalable reward in proportional gives unscaled to all")
-        void proportionalScale_nonScalable_fallsBackToAll() {
+        void resolve_fallsBackToAll_whenProportionalScaleNonScalable() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new NonScalableReward();
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.DISCARD, 1, 1, null);
@@ -397,7 +402,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("SCALE with proportional skips player when below minScaledAmount")
-        void proportionalScale_belowMin_skipsPlayer() {
+        void resolve_skipsLowContributor_whenProportionalScaleBelowMin() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var reward = new ScalableReward(100);
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.DISCARD, 50, 1, null);
@@ -408,6 +413,24 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
             assertTrue(result.containsKey(p1));
             assertFalse(result.containsKey(p2), "Player with 10% contribution (10 reward) should be below minScaledAmount=50");
+        }
+
+        @Test
+        @DisplayName("zero total contribution falls back to even split")
+        void resolve_fallsBackToEvenSplit_whenProportionalZeroTotalContribution() {
+            UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
+            var reward = new ScalableReward(1000);
+            var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.DISCARD, 1, 1, null);
+            var tier = new DistributionTierConfig("t1", MembershipDistributionType.KEY,
+                    RewardSplitMode.SPLIT_PROPORTIONAL, List.of(entry), Map.of(), null, null);
+            var config = new RewardDistributionConfig(List.of(tier));
+            var snapshot = new ContributionSnapshot(Map.of(p1, 0L, p2, 0L), 0, Set.of(p1, p2), null);
+
+            var result = resolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+
+            assertEquals(2, result.size());
+            assertEquals(500, ((ScalableReward) result.get(p1).get(0)).getAmount());
+            assertEquals(500, ((ScalableReward) result.get(p2).get(0)).getAmount());
         }
     }
 
@@ -429,7 +452,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("tier with min-rarity RARE skips COMMON quest")
-        void minRarityGate_skipsTierForLowerRarity() {
+        void resolve_skipsTier_whenMinRarityGateNotMet() {
             UUID p1 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
@@ -444,7 +467,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("tier with min-rarity RARE passes for RARE quest")
-        void minRarityGate_passesTierForMatchingRarity() {
+        void resolve_passesTier_whenMinRarityGateMet() {
             UUID p1 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
@@ -460,7 +483,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("tier with required-rarity RARE rejects non-matching quest")
-        void requiredRarityGate_rejectsNonMatching() {
+        void resolve_rejectsTier_whenRequiredRarityNotMatched() {
             UUID p1 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
@@ -480,7 +503,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("tier with multiple entries applies different pot behaviors per entry")
-        void mixedPotBehaviors_inSameTier() {
+        void resolve_appliesDifferentBehaviors_whenMixedPotBehaviorsInTier() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
             var scalableReward = new ScalableReward(1000);
             var participationReward = new ScalableReward(50);
@@ -509,7 +532,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("single player with SPLIT_EVEN SCALE receives full reward")
-        void singlePlayer_splitEvenScale_fullReward() {
+        void resolve_givesFullReward_whenSinglePlayerEvenScale() {
             UUID p1 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.DISCARD, 1, 1, null);
@@ -524,7 +547,7 @@ class QuestRewardDistributionResolverPotBehaviorTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("no qualifying players returns empty result")
-        void noQualifyingPlayers_emptyResult() {
+        void resolve_returnsEmpty_whenNoQualifyingPlayers() {
             UUID p1 = UUID.randomUUID();
             var reward = new ScalableReward(1000);
             var entry = new DistributionRewardEntry(reward, PotBehavior.SCALE, RemainderStrategy.DISCARD, 1, 1, null);
