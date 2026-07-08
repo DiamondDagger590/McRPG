@@ -28,6 +28,7 @@ class BleedManagerTest extends McRPGBaseTest {
 
     @BeforeEach
     void setUp() {
+        server.getScheduler().cancelTasks(mcRPG);
         swordsConfig = mock(YamlDocument.class);
         FileManager fileManager = RegistryAccess.registryAccess()
                 .registry(RegistryKey.MANAGER)

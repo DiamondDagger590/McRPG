@@ -13,7 +13,7 @@ import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
-import us.eunoians.mcrpg.ability.stub.StubActiveUnlockableAbility;
+import us.eunoians.mcrpg.ability.stub.StubComboActivatableAbility;
 import us.eunoians.mcrpg.ability.stub.StubInnateAbility;
 import us.eunoians.mcrpg.ability.stub.StubPassiveUnlockableAbility;
 import us.eunoians.mcrpg.configuration.FileManager;
@@ -82,7 +82,7 @@ class McRPGChainPlayerContextFilterTest extends McRPGBaseTest {
     @DisplayName("chains multiple filters in sequence")
     @Test
     void filter_chainsFiltersSequentially(@NotNull McRPGPlayer mcRPGPlayer) {
-        Ability activeUnlockable = new StubActiveUnlockableAbility(mcRPG, "active_chain");
+        Ability activeUnlockable = new StubComboActivatableAbility(mcRPG, "active_chain");
         Ability passiveUnlockable = new StubPassiveUnlockableAbility(mcRPG, "passive_chain");
         Ability innate = new StubInnateAbility(mcRPG, "innate_chain");
 
@@ -105,7 +105,7 @@ class McRPGChainPlayerContextFilterTest extends McRPGBaseTest {
     @DisplayName("single filter in chain behaves like standalone filter")
     @Test
     void filter_singleFilterBehavesLikeStandalone(@NotNull McRPGPlayer mcRPGPlayer) {
-        Ability activeUnlockable = new StubActiveUnlockableAbility(mcRPG, "single_active");
+        Ability activeUnlockable = new StubComboActivatableAbility(mcRPG, "single_active");
         Ability innate = new StubInnateAbility(mcRPG, "single_innate");
 
         AbilityRegistry abilityRegistry = RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY);

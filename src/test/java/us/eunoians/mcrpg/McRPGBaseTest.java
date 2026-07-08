@@ -32,6 +32,9 @@ public class McRPGBaseTest {
     public McRPGBaseTest() {
         StartupProfile.TEST.setSystemProperty();
         server = MockBukkit.getOrCreateMock();
+        if (server.getWorld("world") == null) {
+            server.addSimpleWorld("world");
+        }
         resetRegistry();
         setupRegistry();
         try (MockedStatic<BootstrapFactory> staticBootstrapFactory = mockStatic(BootstrapFactory.class)) {
