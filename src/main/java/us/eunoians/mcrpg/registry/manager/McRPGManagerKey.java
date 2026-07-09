@@ -16,6 +16,7 @@ import us.eunoians.mcrpg.gui.McRPGGuiManager;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.board.QuestBoardManager;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
 import us.eunoians.mcrpg.statistic.McRPGStatisticCacheManager;
 import us.eunoians.mcrpg.world.WorldManager;
@@ -48,5 +49,11 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
     ManagerKey<ComboManager> COMBO = create(ComboManager.class);
     /** Retrieves the {@link McRPGStatisticCacheManager} used to cache offline player statistic lookups. */
     ManagerKey<McRPGStatisticCacheManager> STATISTIC_CACHE = create(McRPGStatisticCacheManager.class);
+    /**
+     * Retrieves the {@link CombatTrackerManager}, which owns active combat sessions and the public
+     * combat API. All of its mutating methods must be called from the main server thread. To register
+     * a combat condition at runtime, register it in the {@link McRPGRegistryKey#COMBAT_CONDITION}
+     * registry and then call {@link CombatTrackerManager#startConditionTask} so it is polled.
+     */
     ManagerKey<CombatTrackerManager> COMBAT_TRACKER = create(CombatTrackerManager.class);
 }

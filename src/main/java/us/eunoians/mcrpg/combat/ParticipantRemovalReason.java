@@ -33,5 +33,11 @@ public enum ParticipantRemovalReason {
     /**
      * The participant was removed because the session itself is ending.
      */
-    SESSION_END
+    SESSION_END,
+
+    /**
+     * The participant was removed programmatically by McRPG or a third-party plugin (for example an
+     * arena, duel, or AFK plugin removing a specific participant from a session).
+     */
+    PLUGIN
 }

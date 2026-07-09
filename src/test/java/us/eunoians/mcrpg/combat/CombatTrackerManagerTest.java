@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -570,6 +571,75 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
             when(config.getInt(CombatConfigFile.MAX_MOB_PARTICIPANTS)).thenReturn(0);
 
             assertEquals(1, manager.getMaxMobParticipants());
+        }
+    }
+
+    @Nested
+    @DisplayName("removeParticipantFromSession")
+    class RemoveParticipantFromSession {
+
+        @Test
+        @DisplayName("removes a single participant and fires a remove event with the given reason")
+        void removesParticipant_firesEvent_whenPresent() {
+            PlayerMock player = server.addPlayer();
+            UUID mob1 = UUID.randomUUID();
+            UUID mob2 = UUID.randomUUID();
+            manager.handleCombatInteraction(player.getUniqueId(), mob1,
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            manager.handleCombatInteraction(player.getUniqueId(), mob2,
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("SKELETON"));
+
+            List<CombatParticipantRemoveEvent> captured = new ArrayList<>();
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onRemove(CombatParticipantRemoveEvent event) {
+                    captured.add(event);
+                }
+            }, mcRPG);
+
+            Optional<CombatParticipant> removed = manager.removeParticipantFromSession(
+                    player.getUniqueId(), mob1, ParticipantRemovalReason.PLUGIN);
+
+            assertTrue(removed.isPresent());
+            assertEquals(mob1, removed.get().getUUID());
+            assertEquals(1, captured.size());
+            assertEquals(ParticipantRemovalReason.PLUGIN, captured.get(0).getReason());
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+            assertFalse(session.hasParticipant(mob1));
+            assertTrue(session.hasParticipant(mob2));
+        }
+
+        @Test
+        @DisplayName("returns empty when the owner has no session")
+        void returnsEmpty_whenNoSession() {
+            Optional<CombatParticipant> removed = manager.removeParticipantFromSession(
+                    UUID.randomUUID(), UUID.randomUUID(), ParticipantRemovalReason.PLUGIN);
+
+            assertTrue(removed.isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("Main-thread enforcement")
+    class MainThreadEnforcement {
+
+        @Test
+        @DisplayName("a mutating call from a non-main thread throws IllegalStateException")
+        void mutatingCall_throws_whenOffMainThread() throws InterruptedException {
+            AtomicReference<Throwable> thrown = new AtomicReference<>();
+            Thread offThread = new Thread(() -> {
+                try {
+                    manager.endSession(UUID.randomUUID(), CombatSessionEndReason.PLUGIN);
+                } catch (Throwable t) {
+                    thrown.set(t);
+                }
+            });
+
+            offThread.start();
+            offThread.join();
+
+            assertNotNull(thrown.get());
+            assertTrue(thrown.get() instanceof IllegalStateException);
         }
     }
 }

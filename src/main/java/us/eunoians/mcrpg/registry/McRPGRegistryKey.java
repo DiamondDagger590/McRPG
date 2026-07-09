@@ -62,5 +62,22 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
      * retroactively create a {@link us.eunoians.mcrpg.stat.instance.PlayerStatInstance} for that player.
      */
     RegistryKey<PlayerStatRegistry> PLAYER_STAT = create(PlayerStatRegistry.class);
+    /**
+     * Retrieves the {@link CombatConditionRegistry}, holding every registered
+     * {@link us.eunoians.mcrpg.combat.condition.CombatCondition}.
+     * <p>
+     * Safe operations: {@link CombatConditionRegistry#register(us.eunoians.mcrpg.combat.condition.CombatCondition)},
+     * {@link CombatConditionRegistry#unregister(org.bukkit.NamespacedKey)},
+     * {@link CombatConditionRegistry#get(org.bukkit.NamespacedKey)}, {@link CombatConditionRegistry#getAll()}.
+     * <p>
+     * Registering a condition here only adds it to the registry — it does not begin evaluating it.
+     * Third-party expansions that register conditions via a
+     * {@link us.eunoians.mcrpg.expansion.content.CombatConditionContentPack} have the periodic
+     * evaluation task started automatically by the content processor. Code that registers a condition
+     * directly at runtime must also call
+     * {@link us.eunoians.mcrpg.combat.CombatTrackerManager#startConditionTask(us.eunoians.mcrpg.combat.condition.CombatCondition)}
+     * (and {@link us.eunoians.mcrpg.combat.CombatTrackerManager#stopConditionTask(org.bukkit.NamespacedKey)}
+     * before unregistering) so the condition is actually polled.
+     */
     RegistryKey<CombatConditionRegistry> COMBAT_CONDITION = create(CombatConditionRegistry.class);
 }

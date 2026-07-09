@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.event.combat;
 
-import org.bukkit.NamespacedKey;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -10,12 +9,11 @@ import us.eunoians.mcrpg.combat.CombatType;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Map;
 import java.util.UUID;
 
 /**
- * Fired when a combat session ends. Not cancellable — informational only.
- * Includes placeholder methods for Phase 2 statistics and combat state data.
+ * Fired when a combat session ends. Not cancellable — informational only. Carries the final
+ * participant roster, the derived combat type, the end reason, and the total session duration.
  */
 public class CombatSessionEndEvent extends Event {
 
@@ -95,32 +93,6 @@ public class CombatSessionEndEvent extends Event {
      */
     public long getDurationMillis() {
         return durationMillis;
-    }
-
-    // TODO: Phase 2 — replace with real per-session statistics container
-    /**
-     * Gets the per-session statistics accumulated during this combat session.
-     * <p>
-     * Placeholder for Phase 2 — returns an empty map until the statistics platform is implemented.
-     *
-     * @return An empty {@link Map} (placeholder).
-     */
-    @NotNull
-    public Map<NamespacedKey, Number> getSessionStatistics() {
-        return Collections.emptyMap();
-    }
-
-    // TODO: Phase 2 — replace with real combat state data snapshot
-    /**
-     * Gets the combat state data attached to this session at the time it ended.
-     * <p>
-     * Placeholder for Phase 2 — returns an empty map until the combat state platform is implemented.
-     *
-     * @return An empty {@link Map} (placeholder).
-     */
-    @NotNull
-    public Map<NamespacedKey, Object> getCombatStateData() {
-        return Collections.emptyMap();
     }
 
     @NotNull

@@ -25,7 +25,6 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +45,12 @@ import java.util.logging.Level;
  * signatures are entity-type-agnostic — the player-only restriction is enforced solely in
  * {@link #handleCombatInteraction(UUID, UUID, CustomEntityWrapper, CustomEntityWrapper)} and
  * {@link #reportCombatActivity(UUID, UUID)}.
+ * <p>
+ * <b>Threading:</b> this manager is not thread-safe. Its session map, per-session collections, and
+ * timestamp fields are plain (non-concurrent) structures and it dispatches Bukkit events, so every
+ * public mutating method must be invoked on the main server thread. The mutating entry points guard
+ * this with a {@link org.bukkit.Bukkit#isPrimaryThread()} check and throw
+ * {@link IllegalStateException} if called from another thread.
  */
 public class CombatTrackerManager extends Manager<McRPG> {
 
@@ -116,6 +121,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
     public void handleCombatInteraction(@NotNull UUID sourceUUID, @NotNull UUID targetUUID,
                                         @NotNull CustomEntityWrapper sourceEntityWrapper,
                                         @NotNull CustomEntityWrapper targetEntityWrapper) {
+        requireMainThread();
         ParticipantType sourceType = resolveParticipantType(sourceUUID);
         ParticipantType targetType = resolveParticipantType(targetUUID);
 
@@ -144,6 +150,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * @param targetUUID The UUID of the target entity.
      */
     public void reportCombatActivity(@NotNull UUID sourceUUID, @NotNull UUID targetUUID) {
+        requireMainThread();
         Entity sourceEntity = Bukkit.getEntity(sourceUUID);
         Entity targetEntity = Bukkit.getEntity(targetUUID);
 
@@ -178,13 +185,16 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * Used by {@link CombatConditionTask} when a condition returns {@code true} for an entity
      * but provides no implied participants (proximity-based conditions).
      * <p>
-     * When creating a new session, {@link CombatSessionStartEvent} is fired with the entity's
-     * own UUID as both the entity and trigger participant (since there is no specific opponent).
+     * When creating a new session, {@link CombatSessionStartEvent} is fired with the entity's own
+     * UUID as both the entity and trigger participant (since there is no specific opponent) and with
+     * {@code conditionKey} as the triggering condition, so listeners can distinguish condition-driven
+     * starts from damage-driven ones via {@link CombatSessionStartEvent#getTriggeringConditionKey()}.
      *
      * @param entityUUID   The UUID of the entity held in combat.
      * @param conditionKey The {@link NamespacedKey} of the condition holding the entity.
      */
     public void reportConditionActivity(@NotNull UUID entityUUID, @NotNull NamespacedKey conditionKey) {
+        requireMainThread();
         CombatSession existingSession = activeSessions.get(entityUUID);
         if (existingSession != null) {
             existingSession.recordActivity();
@@ -199,7 +209,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
 
         CustomEntityWrapper entityWrapper = new CustomEntityWrapper(player);
         CombatSessionStartEvent startEvent = new CombatSessionStartEvent(
-                entityUUID, entityUUID, ParticipantType.PLAYER, entityWrapper);
+                entityUUID, entityUUID, ParticipantType.PLAYER, entityWrapper, conditionKey);
         Bukkit.getPluginManager().callEvent(startEvent);
 
         if (startEvent.isCancelled()) {
@@ -218,6 +228,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * @param reason     The {@link CombatSessionEndReason} for ending the session.
      */
     public void endSession(@NotNull UUID entityUUID, @NotNull CombatSessionEndReason reason) {
+        requireMainThread();
         CombatSession session = activeSessions.remove(entityUUID);
         if (session == null) {
             return;
@@ -243,6 +254,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
      */
     public void removeParticipantFromAllSessions(@NotNull UUID participantUUID,
                                                   @NotNull ParticipantRemovalReason reason) {
+        requireMainThread();
         // Snapshot to avoid ConcurrentModificationException (removeParticipant may end sessions, mutating activeSessions)
         List<Map.Entry<UUID, CombatSession>> snapshot = new ArrayList<>(activeSessions.entrySet());
 
@@ -255,13 +267,39 @@ public class CombatTrackerManager extends Manager<McRPG> {
     }
 
     /**
+     * Removes a specific participant from a specific entity's session, the supported entry point for
+     * third-party plugins (arena, duel, AFK, etc.) that need to drop a single participant. Fires
+     * {@link CombatParticipantRemoveEvent} and ends the session with
+     * {@link CombatSessionEndReason#ALL_PARTICIPANTS_GONE} if its roster empties (unless a condition
+     * holds it open). Must be called from the main server thread.
+     *
+     * @param ownerUUID       The UUID of the session owner to remove the participant from.
+     * @param participantUUID The UUID of the participant to remove.
+     * @param reason          The {@link ParticipantRemovalReason} for the removal.
+     * @return An {@link Optional} containing the removed {@link CombatParticipant}, or empty if the
+     *         owner has no session or the session did not contain the participant.
+     */
+    @NotNull
+    public Optional<CombatParticipant> removeParticipantFromSession(@NotNull UUID ownerUUID,
+                                                                    @NotNull UUID participantUUID,
+                                                                    @NotNull ParticipantRemovalReason reason) {
+        requireMainThread();
+        CombatSession session = activeSessions.get(ownerUUID);
+        if (session == null || !session.hasParticipant(participantUUID)) {
+            return Optional.empty();
+        }
+        return removeParticipant(session, participantUUID, reason);
+    }
+
+    /**
      * Removes a participant from a single session, firing {@link CombatParticipantRemoveEvent} with
      * the session's combat-type transition and ending the session with
      * {@link CombatSessionEndReason#ALL_PARTICIPANTS_GONE} if its roster empties as a result.
      * <p>
      * This is the sole owner of participant-removal lifecycle. Every removal path — the death /
-     * quit / despawn sweep and the per-participant timeout scan — routes through it so event firing
-     * and empty-session handling stay consistent in one place.
+     * quit / despawn sweep, the per-participant timeout scan, and
+     * {@link #removeParticipantFromSession(UUID, UUID, ParticipantRemovalReason)} — routes through it
+     * so event firing and empty-session handling stay consistent in one place.
      *
      * @param session         The session to remove the participant from.
      * @param participantUUID The UUID of the participant to remove.
@@ -449,14 +487,16 @@ public class CombatTrackerManager extends Manager<McRPG> {
     }
 
     /**
-     * Gets a read-only view of all active sessions. The returned map is an unmodifiable
-     * snapshot — callers should not cache it across ticks.
+     * Gets an immutable snapshot of all active sessions, keyed by session-owner UUID. The returned
+     * map is a copy taken at call time, so it is safe to iterate while mutating combat state (for
+     * example calling {@link #endSession(UUID, CombatSessionEndReason)} during the iteration). It
+     * does not reflect sessions started or ended after the call.
      *
-     * @return An unmodifiable {@link Map} of entity UUID to {@link CombatSession}.
+     * @return An immutable snapshot {@link Map} of entity UUID to {@link CombatSession}.
      */
     @NotNull
     public Map<UUID, CombatSession> getActiveSessions() {
-        return Collections.unmodifiableMap(activeSessions);
+        return Map.copyOf(activeSessions);
     }
 
     /**
@@ -507,6 +547,20 @@ public class CombatTrackerManager extends Manager<McRPG> {
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.COMBAT_CONFIG);
         return config.getDouble(CombatConfigFile.TIMEOUT_SCAN_INTERVAL_SECONDS);
+    }
+
+    /**
+     * Guards a public entry point against being called off the main server thread. The session map,
+     * per-session collections, and timestamp fields are not thread-safe and this manager fires Bukkit
+     * events, so all mutating calls must run on the main thread.
+     *
+     * @throws IllegalStateException if called from any thread other than the main server thread.
+     */
+    private void requireMainThread() {
+        if (!Bukkit.isPrimaryThread()) {
+            throw new IllegalStateException("CombatTrackerManager must be called from the main server thread, "
+                    + "but was called from thread: " + Thread.currentThread().getName());
+        }
     }
 
     /**

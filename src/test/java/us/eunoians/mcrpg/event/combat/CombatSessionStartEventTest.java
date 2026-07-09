@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.event.combat;
 
 import com.diamonddagger590.mccore.util.item.CustomEntityWrapper;
+import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
@@ -66,6 +67,29 @@ class CombatSessionStartEventTest extends McRPGBaseTest {
                 entityUUID, triggerUUID, ParticipantType.MOB, wrapper);
 
         assertEquals(wrapper, event.getTriggerEntityWrapper());
+    }
+
+    @DisplayName("Damage-triggered start has no triggering condition key")
+    @Test
+    void getTriggeringConditionKey_isEmpty_forDamageTriggeredStart() {
+        CombatSessionStartEvent event = new CombatSessionStartEvent(
+                UUID.randomUUID(), UUID.randomUUID(), ParticipantType.MOB,
+                new CustomEntityWrapper("ZOMBIE"));
+
+        assertTrue(event.getTriggeringConditionKey().isEmpty());
+    }
+
+    @DisplayName("Condition-triggered start carries the triggering condition key")
+    @Test
+    void getTriggeringConditionKey_isPresent_forConditionTriggeredStart() {
+        UUID entityUUID = UUID.randomUUID();
+        NamespacedKey conditionKey = new NamespacedKey("mcrpg", "proximity");
+
+        CombatSessionStartEvent event = new CombatSessionStartEvent(
+                entityUUID, entityUUID, ParticipantType.PLAYER,
+                new CustomEntityWrapper("PLAYER"), conditionKey);
+
+        assertEquals(conditionKey, event.getTriggeringConditionKey().orElse(null));
     }
 
     @DisplayName("Default cancelled state is false")

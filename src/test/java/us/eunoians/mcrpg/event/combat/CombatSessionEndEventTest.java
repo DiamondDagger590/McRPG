@@ -60,28 +60,6 @@ class CombatSessionEndEventTest extends McRPGBaseTest {
         assertThrows(UnsupportedOperationException.class, () -> finalParticipants.clear());
     }
 
-    @DisplayName("getSessionStatistics() returns an empty map (placeholder)")
-    @Test
-    void getSessionStatistics_returnsEmptyMap() {
-        CombatSessionEndEvent event = new CombatSessionEndEvent(
-                UUID.randomUUID(), CombatSessionEndReason.DEATH,
-                List.of(), CombatType.PVE, 1000L);
-
-        assertNotNull(event.getSessionStatistics());
-        assertTrue(event.getSessionStatistics().isEmpty());
-    }
-
-    @DisplayName("getCombatStateData() returns an empty map (placeholder)")
-    @Test
-    void getCombatStateData_returnsEmptyMap() {
-        CombatSessionEndEvent event = new CombatSessionEndEvent(
-                UUID.randomUUID(), CombatSessionEndReason.DEATH,
-                List.of(), CombatType.PVE, 1000L);
-
-        assertNotNull(event.getCombatStateData());
-        assertTrue(event.getCombatStateData().isEmpty());
-    }
-
     @DisplayName("Event is not cancellable")
     @Test
     void event_isNotCancellable() {
