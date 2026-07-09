@@ -119,9 +119,9 @@ public class PlayerJoinListener implements Listener {
      * @return the IDs of the rewards that were successfully granted and may now be deleted
      */
     @NotNull
-    private Set<UUID> grantRewards(@NotNull McRPG mcRPG, @NotNull Player player,
-                                   @NotNull List<PendingReward> pendingRewards,
-                                   @NotNull QuestRewardTypeRegistry rewardTypeRegistry) {
+    Set<UUID> grantRewards(@NotNull McRPG mcRPG, @NotNull Player player,
+                           @NotNull List<PendingReward> pendingRewards,
+                           @NotNull QuestRewardTypeRegistry rewardTypeRegistry) {
         Set<UUID> grantedRewardIds = new HashSet<>();
         for (PendingReward pending : pendingRewards) {
             Optional<QuestRewardType> baseType = rewardTypeRegistry.get(pending.getRewardTypeKey());
