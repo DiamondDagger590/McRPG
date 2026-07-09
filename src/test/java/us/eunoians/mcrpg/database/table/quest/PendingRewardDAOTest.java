@@ -105,6 +105,45 @@ public class PendingRewardDAOTest extends McRPGBaseTest {
     }
 
     @Test
+    @DisplayName("loadAndCleanPendingRewards skips a row with corrupt serialized_config JSON")
+    public void loadAndCleanPendingRewards_skipsRow_whenJsonCorrupt() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement deleteStatement = mock(PreparedStatement.class);
+        PreparedStatement selectStatement = mock(PreparedStatement.class);
+        ResultSet resultSet = mock(ResultSet.class);
+        when(mockConnection.prepareStatement(contains("DELETE"))).thenReturn(deleteStatement);
+        when(mockConnection.prepareStatement(contains("SELECT"))).thenReturn(selectStatement);
+        when(selectStatement.executeQuery()).thenReturn(resultSet);
+        when(resultSet.next()).thenReturn(true, false);
+        when(resultSet.getString("id")).thenReturn(UUID.randomUUID().toString());
+        when(resultSet.getString("reward_type_key")).thenReturn("mcrpg:test_reward");
+        when(resultSet.getString("quest_key")).thenReturn("mcrpg:test_quest");
+        when(resultSet.getString("serialized_config")).thenReturn("this is not json");
+
+        List<PendingReward> rewards = PendingRewardDAO.loadAndCleanPendingRewards(mockConnection, UUID.randomUUID());
+
+        // The GSON parse failure is caught per-row: the corrupt row is skipped, not propagated.
+        assertTrue(rewards.isEmpty());
+    }
+
+    @Test
+    @DisplayName("deletePendingRewards skips an id whose statement fails to prepare and keeps the rest")
+    public void deletePendingRewards_skipsFailedId_whenPrepareThrows() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement okStatement = mock(PreparedStatement.class);
+        // First id's prepare throws; the second succeeds.
+        when(mockConnection.prepareStatement(anyString()))
+                .thenThrow(new SQLException("boom"))
+                .thenReturn(okStatement);
+
+        List<PreparedStatement> statements = PendingRewardDAO.deletePendingRewards(
+                mockConnection, new java.util.LinkedHashSet<>(List.of(UUID.randomUUID(), UUID.randomUUID())));
+
+        // One prepare failed and was isolated; the other id still produced a statement.
+        assertEquals(1, statements.size());
+    }
+
+    @Test
     @DisplayName("deletePendingRewards prepares one statement per id")
     public void deletePendingRewards_returnsStatementPerId() throws SQLException {
         Connection mockConnection = mock(Connection.class);
