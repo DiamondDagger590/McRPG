@@ -188,11 +188,22 @@ public class ItemRewardType implements QuestRewardType {
         return OptionalLong.of(amount);
     }
 
+    @Override
+    public boolean isScalable() {
+        return true;
+    }
+
     @NotNull
     @Override
     public QuestRewardType withAmountMultiplier(double multiplier) {
         int scaled = Math.max(1, (int) Math.round(amount * multiplier));
         return new ItemRewardType(itemConfig, scaled, localizationRoute, displayLabel);
+    }
+
+    @NotNull
+    @Override
+    public QuestRewardType withExactAmount(long exactAmount) {
+        return new ItemRewardType(itemConfig, (int) exactAmount, localizationRoute, displayLabel);
     }
 
     @NotNull

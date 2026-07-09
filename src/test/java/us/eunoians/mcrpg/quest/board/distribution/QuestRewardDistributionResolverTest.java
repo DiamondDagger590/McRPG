@@ -7,6 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.ParticipatedDistributionType;
 import us.eunoians.mcrpg.quest.board.distribution.builtin.TopPlayersDistributionType;
@@ -84,8 +85,23 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
         }
 
         @Override
+        public boolean isScalable() {
+            return true;
+        }
+
+        @Override
         public @org.jetbrains.annotations.NotNull QuestRewardType withAmountMultiplier(double multiplier) {
             return new TestRewardType(Math.max(1, (long) (amount * multiplier)));
+        }
+
+        @Override
+        public @org.jetbrains.annotations.NotNull QuestRewardType withExactAmount(long exactAmount) {
+            return new TestRewardType(exactAmount);
+        }
+
+        @Override
+        public @org.jetbrains.annotations.NotNull java.util.OptionalLong getNumericAmount() {
+            return java.util.OptionalLong.of(amount);
         }
     }
 
@@ -240,5 +256,68 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
 
         var result = resolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
         assertTrue(result.isEmpty());
+    }
+
+    @Nested
+    @DisplayName("Remainder distribution")
+    class RemainderDistribution {
+
+        private RewardDistributionConfig configWith(@NotNull RemainderStrategy strategy) {
+            var entry = new DistributionRewardEntry(new TestRewardType(10), PotBehavior.SCALE, strategy, 1, 1, null);
+            var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
+                    RewardSplitMode.SPLIT_EVEN, List.of(entry), Map.of(), null, null);
+            return new RewardDistributionConfig(List.of(tier));
+        }
+
+        private long grantedTotal(@NotNull Map<UUID, List<QuestRewardType>> result) {
+            return result.values().stream()
+                    .flatMap(List::stream)
+                    .mapToLong(reward -> ((TestRewardType) reward).getAmount())
+                    .sum();
+        }
+
+        @Test
+        @DisplayName("TOP_CONTRIBUTOR routes the truncation remainder so granted total equals the pot")
+        void topContributor_grantsFullPot_whenSplitTruncates() {
+            UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID(), p4 = UUID.randomUUID();
+            var config = configWith(RemainderStrategy.TOP_CONTRIBUTOR);
+            var snapshot = new ContributionSnapshot(
+                    Map.of(p1, 40L, p2, 30L, p3, 20L, p4, 10L), 100, Set.of(p1, p2, p3, p4), null);
+
+            var result = resolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+
+            // 10 XP / 4 players truncates to 2 each (8 granted); the leftover 2 goes to the top contributor.
+            assertEquals(10, grantedTotal(result));
+            assertEquals(2, result.get(p1).size());
+            assertEquals(1, result.get(p2).size());
+        }
+
+        @Test
+        @DisplayName("DISCARD drops the truncation remainder")
+        void discard_dropsRemainder() {
+            UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID(), p4 = UUID.randomUUID();
+            var config = configWith(RemainderStrategy.DISCARD);
+            var snapshot = new ContributionSnapshot(
+                    Map.of(p1, 40L, p2, 30L, p3, 20L, p4, 10L), 100, Set.of(p1, p2, p3, p4), null);
+
+            var result = resolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+
+            // 2 each, remainder 2 discarded.
+            assertEquals(8, grantedTotal(result));
+        }
+
+        @Test
+        @DisplayName("RANDOM distributes the whole pot as single-unit remainder shares")
+        void random_grantsFullPot() {
+            UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID(), p4 = UUID.randomUUID();
+            var config = configWith(RemainderStrategy.RANDOM);
+            var snapshot = new ContributionSnapshot(
+                    Map.of(p1, 40L, p2, 30L, p3, 20L, p4, 10L), 100, Set.of(p1, p2, p3, p4), null);
+
+            var result = resolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry, new java.util.Random(0));
+
+            // 2 each (8) plus two 1-unit remainder shares == 10.
+            assertEquals(10, grantedTotal(result));
+        }
     }
 }

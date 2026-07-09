@@ -140,11 +140,22 @@ public final class ScalableCommandRewardType implements QuestRewardType {
         }
     }
 
+    @Override
+    public boolean isScalable() {
+        return true;
+    }
+
     @NotNull
     @Override
     public QuestRewardType withAmountMultiplier(double multiplier) {
         long scaled = Math.max(1, Math.round(baseAmount * multiplier));
         return new ScalableCommandRewardType(commandTemplate, scaled, displayLabel, localizationRoute);
+    }
+
+    @NotNull
+    @Override
+    public QuestRewardType withExactAmount(long exactAmount) {
+        return new ScalableCommandRewardType(commandTemplate, exactAmount, displayLabel, localizationRoute);
     }
 
     @NotNull

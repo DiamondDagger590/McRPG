@@ -57,7 +57,13 @@ public final class RewardDistributionGranter {
             Player player = Bukkit.getPlayer(playerUUID);
             if (player != null && player.isOnline()) {
                 for (QuestRewardType reward : rewards) {
-                    reward.grant(player);
+                    try {
+                        reward.grant(player);
+                    } catch (RuntimeException e) {
+                        plugin.getLogger().log(Level.SEVERE, "Failed to grant distribution reward '" + reward.getKey()
+                                + "' for quest " + questKey + " to player " + playerUUID
+                                + "; other rewards are unaffected.", e);
+                    }
                 }
             } else {
                 queueForOffline(playerUUID, rewards, questKey);

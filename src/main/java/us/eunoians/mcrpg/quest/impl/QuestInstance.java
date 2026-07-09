@@ -578,7 +578,13 @@ public class QuestInstance {
                 Player player = Bukkit.getPlayer(playerUUID);
                 if (player != null && player.isOnline()) {
                     for (QuestRewardType reward : rewards) {
-                        reward.grant(player);
+                        try {
+                            reward.grant(player);
+                        } catch (RuntimeException e) {
+                            McRPG.getInstance().getLogger().log(Level.SEVERE, "Failed to grant reward '" + reward.getKey()
+                                    + "' for quest " + questKey + " to player " + playerUUID
+                                    + "; other rewards are unaffected.", e);
+                        }
                     }
                 } else {
                     queueRewardsForOfflinePlayer(playerUUID, rewards);

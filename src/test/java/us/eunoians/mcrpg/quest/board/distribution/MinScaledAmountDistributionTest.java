@@ -69,8 +69,18 @@ public class MinScaledAmountDistributionTest extends McRPGBaseTest {
         public @org.jetbrains.annotations.NotNull Optional<NamespacedKey> getExpansionKey() { return Optional.empty(); }
 
         @Override
+        public boolean isScalable() {
+            return true;
+        }
+
+        @Override
         public @org.jetbrains.annotations.NotNull QuestRewardType withAmountMultiplier(double multiplier) {
             return new ScalableReward(Math.round(amount * multiplier));
+        }
+
+        @Override
+        public @org.jetbrains.annotations.NotNull QuestRewardType withExactAmount(long exactAmount) {
+            return new ScalableReward(exactAmount);
         }
 
         @Override

@@ -98,6 +98,38 @@ public interface QuestRewardType extends McRPGContent {
     }
 
     /**
+     * Indicates whether this reward type carries a numeric amount that the distribution
+     * resolver can scale via {@link #withAmountMultiplier} / {@link #withExactAmount}.
+     * <p>
+     * The default is {@code false}. Reward types with numeric amounts (experience, items,
+     * currency) must override this to return {@code true}. The resolver uses this explicit
+     * signal — rather than probing object identity — to decide whether a {@code SCALE}
+     * pot-behavior tier can split the reward.
+     *
+     * @return {@code true} if the reward can be scaled to a specific amount
+     */
+    default boolean isScalable() {
+        return false;
+    }
+
+    /**
+     * Returns a new reward instance with its numeric amount set to exactly {@code amount}.
+     * Used by the distribution resolver to grant computed remainder shares without the
+     * rounding drift that a multiplier round-trip would introduce.
+     * <p>
+     * The default returns {@code this} unchanged. Scalable reward types (those returning
+     * {@code true} from {@link #isScalable()}) must override this to build a copy carrying
+     * the exact amount.
+     *
+     * @param amount the exact numeric amount the returned reward should grant
+     * @return a copy carrying the exact amount, or {@code this} if the type is not scalable
+     */
+    @NotNull
+    default QuestRewardType withExactAmount(long amount) {
+        return this;
+    }
+
+    /**
      * Returns the numeric amount of this reward, if applicable. Used by the
      * distribution resolver for remainder calculations in split-mode tiers.
      * Reward types without a numeric amount (e.g., ability upgrades) return empty.
