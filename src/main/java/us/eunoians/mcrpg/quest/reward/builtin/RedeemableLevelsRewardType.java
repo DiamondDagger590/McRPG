@@ -116,10 +116,21 @@ public class RedeemableLevelsRewardType implements QuestRewardType {
         return new RedeemableLevelsRewardType(amt, route, label);
     }
 
+    @Override
+    public boolean isScalable() {
+        return true;
+    }
+
     @NotNull
     @Override
     public RedeemableLevelsRewardType withAmountMultiplier(double multiplier) {
         return new RedeemableLevelsRewardType(Math.max(1, (int) (amount * multiplier)), localizationRoute, displayLabel);
+    }
+
+    @NotNull
+    @Override
+    public RedeemableLevelsRewardType withExactAmount(long exactAmount) {
+        return new RedeemableLevelsRewardType((int) exactAmount, localizationRoute, displayLabel);
     }
 
     @NotNull

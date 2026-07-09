@@ -184,10 +184,7 @@ public final class QuestRewardDistributionResolver {
                 }
             }
             case SCALE -> {
-                QuestRewardType scaled = entry.reward().withAmountMultiplier(baseMultiplier);
-                boolean isScalable = scaled != entry.reward();
-
-                if (!isScalable) {
+                if (!entry.reward().isScalable()) {
                     logger.warning("Non-scalable reward '" + entry.reward().getKey()
                             + "' used with SCALE pot-behavior; granting unscaled to all qualifying players");
                     for (UUID playerUUID : qualifyingPlayers) {
@@ -197,6 +194,7 @@ public final class QuestRewardDistributionResolver {
                     return;
                 }
 
+                QuestRewardType scaled = entry.reward().withAmountMultiplier(baseMultiplier);
                 OptionalLong scaledAmount = scaled.getNumericAmount();
                 if (scaledAmount.isPresent() && scaledAmount.getAsLong() < entry.minScaledAmount()) {
                     return;
@@ -206,8 +204,11 @@ public final class QuestRewardDistributionResolver {
                     result.computeIfAbsent(playerUUID, k -> new ArrayList<>()).add(scaled);
                 }
 
-                if (entry.remainderStrategy() != RemainderStrategy.DISCARD) {
-                    distributeRemainder(entry, baseMultiplier, qualifyingPlayers,
+                // Distribute the leftover between the pot total and what was actually granted. Passing the
+                // real per-player amount (rather than re-deriving it from the multiplier) keeps the remainder
+                // consistent with the reward type's own rounding, so granted + remainder == pot.
+                if (entry.remainderStrategy() != RemainderStrategy.DISCARD && scaledAmount.isPresent()) {
+                    distributeRemainder(entry, scaledAmount.getAsLong(), qualifyingPlayers,
                             snapshot, result, random);
                 }
             }
@@ -250,10 +251,7 @@ public final class QuestRewardDistributionResolver {
                 for (UUID playerUUID : qualifyingPlayers) {
                     long playerContribution = snapshot.contributions().getOrDefault(playerUUID, 0L);
                     double multiplier = (double) playerContribution / totalContribution;
-                    QuestRewardType scaled = entry.reward().withAmountMultiplier(multiplier);
-                    boolean isScalable = scaled != entry.reward();
-
-                    if (!isScalable) {
+                    if (!entry.reward().isScalable()) {
                         logger.warning("Non-scalable reward '" + entry.reward().getKey()
                                 + "' used with SCALE pot-behavior; granting unscaled to all");
                         for (UUID uuid : qualifyingPlayers) {
@@ -263,6 +261,7 @@ public final class QuestRewardDistributionResolver {
                         return;
                     }
 
+                    QuestRewardType scaled = entry.reward().withAmountMultiplier(multiplier);
                     OptionalLong scaledAmount = scaled.getNumericAmount();
                     if (scaledAmount.isPresent() && scaledAmount.getAsLong() < entry.minScaledAmount()) {
                         continue;
@@ -276,9 +275,14 @@ public final class QuestRewardDistributionResolver {
 
     /**
      * Distributes any remainder reward to one or more players based on the configured strategy.
+     * <p>
+     * {@code perPlayerAmount} is the amount each qualifying player actually received, so the
+     * remainder ({@code total - perPlayerAmount * players}) reflects the reward type's real rounding
+     * rather than a re-derived estimate. Remainder shares are granted with
+     * {@link QuestRewardType#withExactAmount(long)} so no rounding drift is introduced.
      *
      * @param entry             the reward entry with remainder configuration
-     * @param baseMultiplier    the base multiplier used for per-player calculation
+     * @param perPlayerAmount   the exact numeric amount each qualifying player was granted
      * @param qualifyingPlayers the set of qualifying players
      * @param snapshot          the contribution snapshot
      * @param result            the reward map to populate
@@ -286,7 +290,7 @@ public final class QuestRewardDistributionResolver {
      */
     private void distributeRemainder(
             @NotNull DistributionRewardEntry entry,
-            double baseMultiplier,
+            long perPlayerAmount,
             @NotNull Set<UUID> qualifyingPlayers,
             @NotNull ContributionSnapshot snapshot,
             @NotNull Map<UUID, List<QuestRewardType>> result,
@@ -298,9 +302,7 @@ public final class QuestRewardDistributionResolver {
         }
 
         long total = originalAmount.getAsLong();
-        long perPlayer = Math.max(entry.minScaledAmount(),
-                Math.round(total * baseMultiplier));
-        long distributed = perPlayer * qualifyingPlayers.size();
+        long distributed = perPlayerAmount * qualifyingPlayers.size();
         long remainder = total - distributed;
 
         if (remainder <= 0) {
@@ -309,15 +311,14 @@ public final class QuestRewardDistributionResolver {
 
         switch (entry.remainderStrategy()) {
             case TOP_CONTRIBUTOR -> findTopContributor(qualifyingPlayers, snapshot).ifPresent(top -> {
-                QuestRewardType extra = entry.reward().withAmountMultiplier(
-                        (double) remainder / total);
+                QuestRewardType extra = entry.reward().withExactAmount(remainder);
                 result.computeIfAbsent(top, k -> new ArrayList<>()).add(extra);
             });
             case RANDOM -> {
                 List<UUID> shuffled = new ArrayList<>(qualifyingPlayers);
                 Collections.shuffle(shuffled, random);
                 for (int i = 0; i < remainder && i < shuffled.size(); i++) {
-                    QuestRewardType extra = entry.reward().withAmountMultiplier(1.0 / total);
+                    QuestRewardType extra = entry.reward().withExactAmount(1);
                     result.computeIfAbsent(shuffled.get(i), k -> new ArrayList<>()).add(extra);
                 }
             }

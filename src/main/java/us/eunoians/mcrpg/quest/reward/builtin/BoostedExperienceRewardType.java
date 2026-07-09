@@ -115,10 +115,21 @@ public class BoostedExperienceRewardType implements QuestRewardType {
         return new BoostedExperienceRewardType(amt, route, label);
     }
 
+    @Override
+    public boolean isScalable() {
+        return true;
+    }
+
     @NotNull
     @Override
     public BoostedExperienceRewardType withAmountMultiplier(double multiplier) {
         return new BoostedExperienceRewardType(Math.max(1, (int) (amount * multiplier)), localizationRoute, displayLabel);
+    }
+
+    @NotNull
+    @Override
+    public BoostedExperienceRewardType withExactAmount(long exactAmount) {
+        return new BoostedExperienceRewardType((int) exactAmount, localizationRoute, displayLabel);
     }
 
     @NotNull

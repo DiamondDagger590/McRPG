@@ -116,10 +116,21 @@ public class RedeemableExperienceRewardType implements QuestRewardType {
         return new RedeemableExperienceRewardType(amt, route, label);
     }
 
+    @Override
+    public boolean isScalable() {
+        return true;
+    }
+
     @NotNull
     @Override
     public RedeemableExperienceRewardType withAmountMultiplier(double multiplier) {
         return new RedeemableExperienceRewardType(Math.max(1, (int) (amount * multiplier)), localizationRoute, displayLabel);
+    }
+
+    @NotNull
+    @Override
+    public RedeemableExperienceRewardType withExactAmount(long exactAmount) {
+        return new RedeemableExperienceRewardType((int) exactAmount, localizationRoute, displayLabel);
     }
 
     @NotNull

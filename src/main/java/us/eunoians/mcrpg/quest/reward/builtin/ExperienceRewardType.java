@@ -141,11 +141,22 @@ public class ExperienceRewardType implements QuestRewardType {
         return OptionalLong.of(amount);
     }
 
+    @Override
+    public boolean isScalable() {
+        return true;
+    }
+
     @NotNull
     @Override
     public ExperienceRewardType withAmountMultiplier(double multiplier) {
         long scaled = Math.max(1, (long) (amount * multiplier));
         return new ExperienceRewardType(skillName, scaled, localizationRoute, displayLabel);
+    }
+
+    @NotNull
+    @Override
+    public ExperienceRewardType withExactAmount(long exactAmount) {
+        return new ExperienceRewardType(skillName, exactAmount, localizationRoute, displayLabel);
     }
 
     @NotNull

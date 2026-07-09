@@ -53,16 +53,12 @@ public class QuestCompleteListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuestComplete(@NotNull QuestCompleteEvent event) {
         QuestInstance questInstance = event.getQuestInstance();
-        questInstance.grantRewards(event.getQuestDefinition().getRewards());
 
-        event.getQuestDefinition().getRewardDistribution().ifPresent(config -> {
-            Map<UUID, Long> contributions = contributionAggregator.fromQuest(questInstance);
-            Set<UUID> groupMembers = questInstance.getQuestScope()
-                    .map(scope -> scope.getCurrentPlayersInScope())
-                    .orElse(Set.of());
-            distributionService.resolveAndGrant(config, contributions, groupMembers, questInstance);
-        });
-
+        // State-critical lifecycle first: completion logging (enforces ONCE/LIMITED repeat modes),
+        // board-slot release, retirement, and ephemeral-definition cleanup must all run even if a
+        // reward grant later throws. Otherwise a single throwing reward type would leave a ONCE quest
+        // unlogged (infinitely repeatable), un-retired (a zombie in the active map), and its board slot
+        // held forever.
         logCompletionForAllScopePlayers(questInstance);
         terminator.releaseBoardSlot(questInstance, "COMPLETED");
         terminator.decrementBoardCount(questInstance);
@@ -72,6 +68,52 @@ public class QuestCompleteListener implements Listener {
         questManager.retireQuest(questInstance);
 
         terminator.deregisterEphemeralDefinition(questInstance.getQuestKey());
+
+        // Reward granting last, isolated. retireQuest only relocates the instance between tiers, so the
+        // scope and contribution data read here are still live. Each grant path already isolates
+        // individual reward failures; these guards ensure an unexpected throw cannot undo the lifecycle
+        // steps above.
+        grantQuestRewards(questInstance, event);
+        grantDistributionRewards(questInstance, event);
+    }
+
+    /**
+     * Grants the quest-level rewards, isolating any failure so it cannot abort completion handling.
+     *
+     * @param questInstance the completed quest instance
+     * @param event         the completion event carrying the quest definition
+     */
+    private void grantQuestRewards(@NotNull QuestInstance questInstance, @NotNull QuestCompleteEvent event) {
+        try {
+            questInstance.grantRewards(event.getQuestDefinition().getRewards());
+        } catch (RuntimeException e) {
+            McRPG.getInstance().getLogger().log(Level.SEVERE,
+                    "Failed to grant quest rewards for " + questInstance.getQuestUUID()
+                            + "; the quest completion has already been finalized.", e);
+        }
+    }
+
+    /**
+     * Resolves and grants distribution rewards for a scoped quest, isolating any failure so it cannot
+     * abort completion handling.
+     *
+     * @param questInstance the completed quest instance
+     * @param event         the completion event carrying the quest definition
+     */
+    private void grantDistributionRewards(@NotNull QuestInstance questInstance, @NotNull QuestCompleteEvent event) {
+        event.getQuestDefinition().getRewardDistribution().ifPresent(config -> {
+            try {
+                Map<UUID, Long> contributions = contributionAggregator.fromQuest(questInstance);
+                Set<UUID> groupMembers = questInstance.getQuestScope()
+                        .map(scope -> scope.getCurrentPlayersInScope())
+                        .orElse(Set.of());
+                distributionService.resolveAndGrant(config, contributions, groupMembers, questInstance);
+            } catch (RuntimeException e) {
+                McRPG.getInstance().getLogger().log(Level.SEVERE,
+                        "Failed to grant distribution rewards for " + questInstance.getQuestUUID()
+                                + "; the quest completion has already been finalized.", e);
+            }
+        });
     }
 
     private void logCompletionForAllScopePlayers(@NotNull QuestInstance questInstance) {
