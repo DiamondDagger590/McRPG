@@ -2,9 +2,9 @@ package us.eunoians.mcrpg.quest.board;
 
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.McRPGBaseTest;
 
 import java.time.Duration;
 import java.util.List;
@@ -16,11 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
  * Tests the scope guards that keep scoped/personal offerings off the shared board and out of the
- * shared-board acceptance path.
+ * shared-board acceptance path. These are pure-Java static helpers, so no MockBukkit bootstrap is needed.
  */
-public class QuestBoardManagerScopeGuardTest extends McRPGBaseTest {
+public class QuestBoardManagerScopeGuardTest {
 
-    private BoardOffering offering(@org.jetbrains.annotations.Nullable String scopeTargetId, int slot) {
+    private BoardOffering offering(@Nullable String scopeTargetId, int slot) {
         return new BoardOffering(
                 UUID.randomUUID(),
                 UUID.randomUUID(),

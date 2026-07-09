@@ -53,4 +53,11 @@ public class RewardTypeScalabilityTest extends McRPGBaseTest {
     void withExactAmount_singleUnit_yieldsOne(String name, Supplier<QuestRewardType> factory) {
         assertEquals(1L, factory.get().withExactAmount(1).getNumericAmount().getAsLong(), name);
     }
+
+    @ParameterizedTest(name = "{0} withExactAmount(0) yields amount 0")
+    @MethodSource("scalableRewardTypes")
+    @DisplayName("withExactAmount(0) — boundary — carries exactly 0 without clamping to 1")
+    void withExactAmount_zero_yieldsZero(String name, Supplier<QuestRewardType> factory) {
+        assertEquals(0L, factory.get().withExactAmount(0).getNumericAmount().getAsLong(), name);
+    }
 }

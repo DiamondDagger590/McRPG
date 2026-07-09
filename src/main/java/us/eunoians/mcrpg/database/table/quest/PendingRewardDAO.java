@@ -147,26 +147,32 @@ public class PendingRewardDAO {
             try (ResultSet rs = select.executeQuery()) {
                 while (rs.next()) {
                     String rowId = rs.getString("id");
-                    String rewardTypeKeyStr = rs.getString("reward_type_key");
-                    String questKeyStr = rs.getString("quest_key");
-                    NamespacedKey rewardTypeKey = NamespacedKey.fromString(rewardTypeKeyStr);
-                    NamespacedKey questKey = NamespacedKey.fromString(questKeyStr);
-                    if (rewardTypeKey == null || questKey == null) {
-                        McRPG.getInstance().getLogger().log(Level.WARNING, "[PendingRewardDAO] Skipping pending reward row " + rowId
-                                + " for player " + playerUUID + " — unparseable key(s): reward_type_key='" + rewardTypeKeyStr
-                                + "', quest_key='" + questKeyStr + "'. Row retained for manual inspection.");
-                        continue;
+                    try {
+                        String rewardTypeKeyStr = rs.getString("reward_type_key");
+                        String questKeyStr = rs.getString("quest_key");
+                        NamespacedKey rewardTypeKey = NamespacedKey.fromString(rewardTypeKeyStr);
+                        NamespacedKey questKey = NamespacedKey.fromString(questKeyStr);
+                        if (rewardTypeKey == null || questKey == null) {
+                            McRPG.getInstance().getLogger().log(Level.WARNING, "[PendingRewardDAO] Skipping pending reward row " + rowId
+                                    + " for player " + playerUUID + " — unparseable key(s): reward_type_key='" + rewardTypeKeyStr
+                                    + "', quest_key='" + questKeyStr + "'. Row retained for manual inspection.");
+                            continue;
+                        }
+                        Map<String, Object> config = GSON.fromJson(rs.getString("serialized_config"), CONFIG_MAP_TYPE);
+                        rewards.add(new PendingReward(
+                                UUID.fromString(rowId),
+                                playerUUID,
+                                rewardTypeKey,
+                                config,
+                                questKey,
+                                rs.getLong("created_at"),
+                                rs.getLong("expires_at")
+                        ));
+                    } catch (RuntimeException e) {
+                        // A single corrupt row (bad JSON, malformed UUID) must not abort the whole load.
+                        McRPG.getInstance().getLogger().log(Level.WARNING, "[PendingRewardDAO] Skipping unparseable pending reward row "
+                                + rowId + " for player " + playerUUID + "; row retained for manual inspection.", e);
                     }
-                    Map<String, Object> config = GSON.fromJson(rs.getString("serialized_config"), CONFIG_MAP_TYPE);
-                    rewards.add(new PendingReward(
-                            UUID.fromString(rowId),
-                            playerUUID,
-                            rewardTypeKey,
-                            config,
-                            questKey,
-                            rs.getLong("created_at"),
-                            rs.getLong("expires_at")
-                    ));
                 }
             }
         } catch (SQLException e) {
@@ -192,16 +198,29 @@ public class PendingRewardDAO {
             select.setLong(2, now);
             try (ResultSet rs = select.executeQuery()) {
                 while (rs.next()) {
-                    Map<String, Object> config = GSON.fromJson(rs.getString("serialized_config"), CONFIG_MAP_TYPE);
-                    rewards.add(new PendingReward(
-                            UUID.fromString(rs.getString("id")),
-                            playerUUID,
-                            NamespacedKey.fromString(rs.getString("reward_type_key")),
-                            config,
-                            NamespacedKey.fromString(rs.getString("quest_key")),
-                            rs.getLong("created_at"),
-                            rs.getLong("expires_at")
-                    ));
+                    String rowId = rs.getString("id");
+                    try {
+                        NamespacedKey rewardTypeKey = NamespacedKey.fromString(rs.getString("reward_type_key"));
+                        NamespacedKey questKey = NamespacedKey.fromString(rs.getString("quest_key"));
+                        if (rewardTypeKey == null || questKey == null) {
+                            McRPG.getInstance().getLogger().log(Level.WARNING, "[PendingRewardDAO] Skipping pending reward row "
+                                    + rowId + " for player " + playerUUID + " — unparseable key(s).");
+                            continue;
+                        }
+                        Map<String, Object> config = GSON.fromJson(rs.getString("serialized_config"), CONFIG_MAP_TYPE);
+                        rewards.add(new PendingReward(
+                                UUID.fromString(rowId),
+                                playerUUID,
+                                rewardTypeKey,
+                                config,
+                                questKey,
+                                rs.getLong("created_at"),
+                                rs.getLong("expires_at")
+                        ));
+                    } catch (RuntimeException e) {
+                        McRPG.getInstance().getLogger().log(Level.WARNING, "[PendingRewardDAO] Skipping unparseable pending reward row "
+                                + rowId + " for player " + playerUUID + ".", e);
+                    }
                 }
             }
         } catch (SQLException e) {

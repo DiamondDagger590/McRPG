@@ -509,6 +509,21 @@ public class QuestBoardManager extends Manager<McRPG> {
     }
 
     /**
+     * Returns every cached offering for a board regardless of scope, including scoped (group)
+     * offerings. Intended only for internal consumers that must see scope-targeted entries (e.g.
+     * {@link #getScopedOfferingsForPlayer}); shared-board-facing views must use
+     * {@link #getSharedOfferingsForBoard}, which strips scoped/personal offerings.
+     *
+     * @param boardKey the board key
+     * @return an immutable list of all cached offerings, or empty if the cache is not warmed
+     */
+    @NotNull
+    private List<BoardOffering> getAllCachedOfferings(@NotNull NamespacedKey boardKey) {
+        Map<UUID, BoardOffering> cached = offeringCache.get(boardKey);
+        return cached != null ? List.copyOf(cached.values()) : List.of();
+    }
+
+    /**
      * Filters a collection of offerings down to the shared (unscoped) ones — those whose
      * {@code scopeTargetId} is empty. Scoped (group) and personal offerings are excluded so
      * they never render on the shared board.
@@ -1161,7 +1176,9 @@ public class QuestBoardManager extends Manager<McRPG> {
         ScopedBoardAdapterRegistry adapterRegistry = plugin().registryAccess()
                 .registry(McRPGRegistryKey.SCOPED_BOARD_ADAPTER);
         QuestBoard board = getDefaultBoard();
-        List<BoardOffering> allOfferings = getSharedOfferingsForBoard(board.getBoardKey());
+        // Scoped offerings are stripped from the shared view, so read the full cache here and filter by
+        // the caller's entity scope below.
+        List<BoardOffering> allOfferings = getAllCachedOfferings(board.getBoardKey());
 
         Map<String, List<BoardOffering>> result = new HashMap<>();
 
