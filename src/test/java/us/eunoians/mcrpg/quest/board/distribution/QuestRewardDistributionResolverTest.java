@@ -258,6 +258,84 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
         assertTrue(result.isEmpty());
     }
 
+    /**
+     * Reward double that does not opt into scaling — {@code isScalable()} keeps the interface default
+     * of {@code false}. Used to exercise the resolver's non-scalable guard.
+     */
+    static class NonScalableReward implements QuestRewardType {
+
+        static final NamespacedKey KEY = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "non_scalable_reward");
+
+        @Override
+        public @org.jetbrains.annotations.NotNull NamespacedKey getKey() {
+            return KEY;
+        }
+
+        @Override
+        public @org.jetbrains.annotations.NotNull QuestRewardType parseConfig(@org.jetbrains.annotations.NotNull Section section) {
+            return this;
+        }
+
+        @Override
+        public void grant(@org.jetbrains.annotations.NotNull Player player) {
+        }
+
+        @Override
+        public @org.jetbrains.annotations.NotNull Map<String, Object> serializeConfig() {
+            return Map.of();
+        }
+
+        @Override
+        public @org.jetbrains.annotations.NotNull QuestRewardType fromSerializedConfig(@org.jetbrains.annotations.NotNull Map<String, Object> config) {
+            return this;
+        }
+
+        @Override
+        public @org.jetbrains.annotations.NotNull Optional<NamespacedKey> getExpansionKey() {
+            return Optional.empty();
+        }
+    }
+
+    @Nested
+    @DisplayName("SPLIT_PROPORTIONAL scalability guard")
+    class ProportionalScalabilityGuard {
+
+        @Test
+        @DisplayName("a non-scalable reward is granted unscaled to every qualifying player")
+        void nonScalableReward_grantedUnscaledToAll() {
+            UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
+            var entry = new DistributionRewardEntry(new NonScalableReward(), PotBehavior.SCALE,
+                    RemainderStrategy.DISCARD, 1, 1, null);
+            var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
+                    RewardSplitMode.SPLIT_PROPORTIONAL, List.of(entry), Map.of(), null, null);
+            var config = new RewardDistributionConfig(List.of(tier));
+            var snapshot = new ContributionSnapshot(Map.of(p1, 75L, p2, 25L), 100, Set.of(p1, p2), null);
+
+            var result = resolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+
+            assertEquals(2, result.size());
+            assertTrue(result.get(p1).get(0) instanceof NonScalableReward);
+            assertTrue(result.get(p2).get(0) instanceof NonScalableReward);
+        }
+
+        @Test
+        @DisplayName("a scalable reward is split proportionally by contribution")
+        void scalableReward_splitProportionally() {
+            UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID();
+            var entry = new DistributionRewardEntry(new TestRewardType(1000), PotBehavior.SCALE,
+                    RemainderStrategy.DISCARD, 1, 1, null);
+            var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
+                    RewardSplitMode.SPLIT_PROPORTIONAL, List.of(entry), Map.of(), null, null);
+            var config = new RewardDistributionConfig(List.of(tier));
+            var snapshot = new ContributionSnapshot(Map.of(p1, 75L, p2, 25L), 100, Set.of(p1, p2), null);
+
+            var result = resolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+
+            assertEquals(750, ((TestRewardType) result.get(p1).get(0)).getAmount());
+            assertEquals(250, ((TestRewardType) result.get(p2).get(0)).getAmount());
+        }
+    }
+
     @Nested
     @DisplayName("Remainder distribution")
     class RemainderDistribution {
