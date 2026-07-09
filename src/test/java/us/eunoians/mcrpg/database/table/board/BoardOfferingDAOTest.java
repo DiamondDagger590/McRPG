@@ -230,6 +230,41 @@ public class BoardOfferingDAOTest extends McRPGBaseTest {
         verify(mockConnection).prepareStatement(contains("scope_target_id IS NULL"));
     }
 
+    @DisplayName("loadSharedOfferingsForRotation returns built offerings when rows are present")
+    @Test
+    void loadSharedOfferingsForRotation_returnsOfferings_whenPresent() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+
+        UUID offeringId = UUID.randomUUID();
+        UUID rotId = UUID.randomUUID();
+
+        when(mockResultSet.next()).thenReturn(true, false);
+        when(mockResultSet.getString("offering_id")).thenReturn(offeringId.toString());
+        when(mockResultSet.getString("rotation_id")).thenReturn(rotId.toString());
+        when(mockResultSet.getString("category_key")).thenReturn("mcrpg:daily_shared");
+        when(mockResultSet.getInt("slot_index")).thenReturn(0);
+        when(mockResultSet.getString("quest_definition_key")).thenReturn("mcrpg:mine_stone");
+        when(mockResultSet.getString("rarity_key")).thenReturn("mcrpg:common");
+        when(mockResultSet.getString("scope_target_id")).thenReturn(null);
+        when(mockResultSet.getString("state")).thenReturn("VISIBLE");
+        when(mockResultSet.getLong("accepted_at")).thenReturn(0L);
+        when(mockResultSet.wasNull()).thenReturn(true);
+        when(mockResultSet.getString("quest_instance_uuid")).thenReturn(null);
+        when(mockResultSet.getLong("completion_time_ms")).thenReturn(86400000L);
+        when(mockResultSet.getString("generated_definition")).thenReturn(null);
+        when(mockResultSet.getString("template_key")).thenReturn(null);
+
+        List<BoardOffering> result = BoardOfferingDAO.loadSharedOfferingsForRotation(mockConnection, rotId);
+
+        assertEquals(1, result.size());
+        assertEquals(offeringId, result.get(0).getOfferingId());
+        assertTrue(result.get(0).getScopeTargetId().isEmpty());
+    }
+
     @DisplayName("loadPersonalOfferingsForRotation returns empty when no results")
     @Test
     void loadPersonalOfferingsForRotation_returnsEmpty() throws SQLException {

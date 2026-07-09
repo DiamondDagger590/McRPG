@@ -615,16 +615,21 @@ public class QuestInstance {
             try (Connection connection = database.getConnection()) {
                 List<PreparedStatement> statements = new ArrayList<>();
                 for (QuestRewardType reward : rewards) {
-                    PendingReward pending = new PendingReward(
-                            UUID.randomUUID(),
-                            playerUUID,
-                            reward.getKey(),
-                            reward.serializeConfig(),
-                            questKey,
-                            nowMillis,
-                            expiresAt
-                    );
-                    statements.addAll(PendingRewardDAO.savePendingReward(connection, pending));
+                    try {
+                        PendingReward pending = new PendingReward(
+                                UUID.randomUUID(),
+                                playerUUID,
+                                reward.getKey(),
+                                reward.serializeConfig(),
+                                questKey,
+                                nowMillis,
+                                expiresAt
+                        );
+                        statements.addAll(PendingRewardDAO.savePendingReward(connection, pending));
+                    } catch (RuntimeException e) {
+                        McRPG.getInstance().getLogger().log(Level.SEVERE, "Failed to build pending reward '" + reward.getKey()
+                                + "' for offline player " + playerUUID + " (quest: " + questKey + "); skipping this reward.", e);
+                    }
                 }
                 new FailSafeTransaction(connection, statements).executeTransaction();
             } catch (SQLException e) {

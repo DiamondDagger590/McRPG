@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.quest.board.distribution;
 
 import com.diamonddagger590.mccore.database.Database;
+import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
@@ -17,6 +18,7 @@ import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -97,23 +99,28 @@ public final class RewardDistributionGranter {
                 .getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
             try (Connection connection = database.getConnection()) {
+                List<PreparedStatement> statements = new ArrayList<>();
                 for (QuestRewardType reward : rewards) {
-                    PendingReward pending = new PendingReward(
-                            UUID.randomUUID(),
-                            playerUUID,
-                            reward.getKey(),
-                            reward.serializeConfig(),
-                            questKey,
-                            now,
-                            expiresAt
-                    );
-                    for (PreparedStatement stmt : PendingRewardDAO.savePendingReward(connection, pending)) {
-                        stmt.executeUpdate();
+                    try {
+                        PendingReward pending = new PendingReward(
+                                UUID.randomUUID(),
+                                playerUUID,
+                                reward.getKey(),
+                                reward.serializeConfig(),
+                                questKey,
+                                now,
+                                expiresAt
+                        );
+                        statements.addAll(PendingRewardDAO.savePendingReward(connection, pending));
+                    } catch (RuntimeException e) {
+                        plugin.getLogger().log(Level.SEVERE, "Failed to build pending distribution reward '" + reward.getKey()
+                                + "' for offline player " + playerUUID + " (quest: " + questKey + "); skipping this reward.", e);
                     }
                 }
+                new FailSafeTransaction(connection, statements).executeTransaction();
             } catch (SQLException e) {
                 plugin.getLogger().log(Level.SEVERE,
-                        "Failed to persist pending reward for offline player (quest: " + questKey + ")", e);
+                        "Failed to persist pending rewards for offline player (quest: " + questKey + ")", e);
             }
         });
     }

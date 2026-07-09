@@ -371,6 +371,27 @@ public class QuestRewardDistributionResolverTest extends McRPGBaseTest {
         }
 
         @Test
+        @DisplayName("TOP_CONTRIBUTOR extra reward carries the exact remainder amount")
+        void topContributor_extraRewardCarriesExactRemainder() {
+            UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID(), p4 = UUID.randomUUID();
+            // Pot 11 / 4 players truncates to a 2 share each (8 granted); the exact leftover 3 goes to the top.
+            var entry = new DistributionRewardEntry(new TestRewardType(11), PotBehavior.SCALE,
+                    RemainderStrategy.TOP_CONTRIBUTOR, 1, 1, null);
+            var tier = new DistributionTierConfig("t1", ParticipatedDistributionType.KEY,
+                    RewardSplitMode.SPLIT_EVEN, List.of(entry), Map.of(), null, null);
+            var config = new RewardDistributionConfig(List.of(tier));
+            var snapshot = new ContributionSnapshot(
+                    Map.of(p1, 40L, p2, 30L, p3, 20L, p4, 10L), 100, Set.of(p1, p2, p3, p4), null);
+
+            var result = resolver.resolve(config, snapshot, null, rarityRegistry, typeRegistry);
+
+            assertEquals(11, grantedTotal(result));
+            // The extra reward must carry the exact remainder (3), not a rounded/multiplier value.
+            assertTrue(result.get(p1).stream().anyMatch(reward -> ((TestRewardType) reward).getAmount() == 3),
+                    "Top contributor must receive an extra reward of exactly the remainder (3)");
+        }
+
+        @Test
         @DisplayName("DISCARD drops the truncation remainder")
         void discard_dropsRemainder() {
             UUID p1 = UUID.randomUUID(), p2 = UUID.randomUUID(), p3 = UUID.randomUUID(), p4 = UUID.randomUUID();
