@@ -11,6 +11,7 @@ import us.eunoians.mcrpg.McRPGBaseTest;
 import java.util.OptionalLong;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -46,6 +47,28 @@ class QuestRewardTypeDefaultMethodsTest extends McRPGBaseTest {
         void returnsEmpty_byDefault() {
             OptionalLong result = rewardType.getNumericAmount();
             assertTrue(result.isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("isScalable")
+    class IsScalable {
+
+        @Test
+        @DisplayName("returns false by default")
+        void returnsFalse_byDefault() {
+            assertFalse(rewardType.isScalable());
+        }
+    }
+
+    @Nested
+    @DisplayName("withExactAmount")
+    class WithExactAmount {
+
+        @Test
+        @DisplayName("returns this by default")
+        void returnsThis_byDefault() {
+            assertSame(rewardType, rewardType.withExactAmount(5));
         }
     }
 
