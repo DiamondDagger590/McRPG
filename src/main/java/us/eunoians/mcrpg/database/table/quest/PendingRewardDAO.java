@@ -15,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -140,19 +141,29 @@ public class PendingRewardDAO {
         }
 
         try (PreparedStatement select = connection.prepareStatement(
-                "SELECT * FROM " + TABLE_NAME + " WHERE player_uuid = ?")) {
+                "SELECT * FROM " + TABLE_NAME + " WHERE player_uuid = ? AND expires_at > ?")) {
             select.setString(1, playerUUID.toString());
+            select.setLong(2, now);
             try (ResultSet rs = select.executeQuery()) {
                 while (rs.next()) {
-                    Map<String, Object> config = GSON.fromJson(rs.getString("serialized_config"), CONFIG_MAP_TYPE);
+                    String rowId = rs.getString("id");
                     String rewardTypeKeyStr = rs.getString("reward_type_key");
                     String questKeyStr = rs.getString("quest_key");
+                    NamespacedKey rewardTypeKey = NamespacedKey.fromString(rewardTypeKeyStr);
+                    NamespacedKey questKey = NamespacedKey.fromString(questKeyStr);
+                    if (rewardTypeKey == null || questKey == null) {
+                        McRPG.getInstance().getLogger().log(Level.WARNING, "[PendingRewardDAO] Skipping pending reward row " + rowId
+                                + " for player " + playerUUID + " — unparseable key(s): reward_type_key='" + rewardTypeKeyStr
+                                + "', quest_key='" + questKeyStr + "'. Row retained for manual inspection.");
+                        continue;
+                    }
+                    Map<String, Object> config = GSON.fromJson(rs.getString("serialized_config"), CONFIG_MAP_TYPE);
                     rewards.add(new PendingReward(
-                            UUID.fromString(rs.getString("id")),
+                            UUID.fromString(rowId),
                             playerUUID,
-                            NamespacedKey.fromString(rewardTypeKeyStr),
+                            rewardTypeKey,
                             config,
-                            NamespacedKey.fromString(questKeyStr),
+                            questKey,
                             rs.getLong("created_at"),
                             rs.getLong("expires_at")
                     ));
@@ -231,5 +242,31 @@ public class PendingRewardDAO {
         } catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING, "[PendingRewardDAO] Failed to delete pending reward " + rewardId, e);
         }
+    }
+
+    /**
+     * Generates the prepared statements to delete a set of pending rewards by ID.
+     * The returned statements are not executed — callers run them inside a single
+     * transaction (e.g. {@code FailSafeTransaction}) so that deletion of granted
+     * rewards is atomic and cannot partially fail.
+     *
+     * @param connection the database connection
+     * @param rewardIds  the pending reward IDs to delete
+     * @return the list of prepared delete statements (one per ID); empty if {@code rewardIds} is empty
+     */
+    @NotNull
+    public static List<PreparedStatement> deletePendingRewards(@NotNull Connection connection, @NotNull Collection<UUID> rewardIds) {
+        List<PreparedStatement> statements = new ArrayList<>();
+        for (UUID rewardId : rewardIds) {
+            try {
+                PreparedStatement statement = connection.prepareStatement(
+                        "DELETE FROM " + TABLE_NAME + " WHERE id = ?");
+                statement.setString(1, rewardId.toString());
+                statements.add(statement);
+            } catch (SQLException e) {
+                McRPG.getInstance().getLogger().log(Level.WARNING, "[PendingRewardDAO] Failed to prepare delete statement for pending reward " + rewardId, e);
+            }
+        }
+        return statements;
     }
 }
