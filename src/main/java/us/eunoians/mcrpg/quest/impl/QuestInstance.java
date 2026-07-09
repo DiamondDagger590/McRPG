@@ -1,6 +1,7 @@
 package us.eunoians.mcrpg.quest.impl;
 
 import com.diamonddagger590.mccore.database.Database;
+import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.Methods;
@@ -46,6 +47,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * Mutable runtime instance of a quest, tracking state, timestamps, scope, and child stage instances.
@@ -605,6 +607,7 @@ public class QuestInstance {
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
             try (Connection connection = database.getConnection()) {
+                List<PreparedStatement> statements = new ArrayList<>();
                 for (QuestRewardType reward : rewards) {
                     PendingReward pending = new PendingReward(
                             UUID.randomUUID(),
@@ -615,12 +618,12 @@ public class QuestInstance {
                             nowMillis,
                             expiresAt
                     );
-                    for (PreparedStatement stmt : PendingRewardDAO.savePendingReward(connection, pending)) {
-                        stmt.executeUpdate();
-                    }
+                    statements.addAll(PendingRewardDAO.savePendingReward(connection, pending));
                 }
+                new FailSafeTransaction(connection, statements).executeTransaction();
             } catch (SQLException e) {
-                e.printStackTrace();
+                McRPG.getInstance().getLogger().log(Level.SEVERE,
+                        "Failed to persist pending rewards for offline player " + playerUUID + " (quest: " + questKey + ")", e);
             }
         });
     }
