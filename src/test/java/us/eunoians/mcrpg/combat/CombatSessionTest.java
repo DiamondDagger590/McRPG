@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -199,6 +200,17 @@ class CombatSessionTest extends McRPGBaseTest {
             assertTrue(evicted.isPresent());
             assertEquals(mob1.getUUID(), evicted.get().getUUID());
             assertFalse(session.hasParticipant(mob1.getUUID()));
+        }
+
+        @DisplayName("MOB add does not throw when max mob participants is zero")
+        @Test
+        void addParticipant_mobType_doesNotThrow_whenMaxIsZero() {
+            CombatSession session = new CombatSession(ownerUUID, 0, TIMEOUT_MILLIS);
+            CombatParticipant mob = createMobParticipant();
+
+            // The eviction guard must not call removeFirst() on an empty queue (NoSuchElementException).
+            assertDoesNotThrow(() -> session.addParticipant(mob));
+            assertTrue(session.hasParticipant(mob.getUUID()));
         }
     }
 

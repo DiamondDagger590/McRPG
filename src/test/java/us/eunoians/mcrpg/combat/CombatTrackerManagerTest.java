@@ -44,6 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @DisplayName("CombatTrackerManager")
@@ -68,18 +69,29 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
     }
 
     /**
-     * Unregisters the anonymous combat-event listeners registered by individual tests. MockBukkit
-     * keeps the server (and its registered listeners) across test methods, so without this cleanup a
-     * listener that cancels {@link CombatParticipantAddEvent} or {@link CombatSessionStartEvent} in
-     * one test leaks into later tests. Production registers no listeners for these custom events, so
-     * unregistering their handler lists is safe.
+     * Cleans up state that MockBukkit and the shared registries keep across test methods:
+     * <ul>
+     *   <li>Anonymous combat-event listeners registered by individual tests — without this a listener
+     *       that cancels {@link CombatParticipantAddEvent} or {@link CombatSessionStartEvent} leaks
+     *       into later tests. Production registers no listeners for these custom events, so
+     *       unregistering their handler lists is safe.</li>
+     *   <li>Combat conditions registered into the shared {@link CombatConditionRegistry} — a leaked
+     *       condition would be consulted by later tests' timeout scans. McRPG ships no built-in
+     *       conditions, so clearing the registry is safe.</li>
+     * </ul>
      */
     @AfterEach
-    void unregisterCombatEventListeners() {
+    void cleanUpSharedCombatState() {
         CombatSessionStartEvent.getHandlerList().unregister(mcRPG);
         CombatSessionEndEvent.getHandlerList().unregister(mcRPG);
         CombatParticipantAddEvent.getHandlerList().unregister(mcRPG);
         CombatParticipantRemoveEvent.getHandlerList().unregister(mcRPG);
+
+        CombatConditionRegistry conditionRegistry = mcRPG.registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_CONDITION);
+        for (NamespacedKey key : conditionRegistry.getRegisteredKeys()) {
+            conditionRegistry.unregister(key);
+        }
     }
 
     @Nested
@@ -321,7 +333,11 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
                     new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("CREEPER"));
 
             assertFalse(captured.isEmpty());
-            assertEquals(ParticipantRemovalReason.EVICTION, captured.get(0).getReason());
+            CombatParticipantRemoveEvent evictionEvent = captured.get(0);
+            assertEquals(ParticipantRemovalReason.EVICTION, evictionEvent.getReason());
+            // A mob-for-mob eviction leaves the player count unchanged, so the type is PVE either side.
+            assertEquals(CombatType.PVE, evictionEvent.getPreviousCombatType());
+            assertEquals(CombatType.PVE, evictionEvent.getNewCombatType());
         }
     }
 
@@ -521,8 +537,39 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
             manager.startConditionTask(condition);
             manager.stopConditionTask(condKey);
 
-            // Verify cancelTask was called
-            org.mockito.Mockito.verify(mockTask).cancelTask();
+            verify(mockTask).cancelTask();
+        }
+
+        @Test
+        @DisplayName("startConditionTask cancels the previous task when called twice for the same key")
+        void startConditionTask_cancelsPreviousTask_whenCalledTwice() {
+            CombatCondition condition = mock(CombatCondition.class);
+            NamespacedKey condKey = new NamespacedKey("mcrpg", "double_start_condition");
+            when(condition.getKey()).thenReturn(condKey);
+            when(condition.getCheckIntervalSeconds()).thenReturn(1.0);
+            CombatConditionTask firstTask = mock(CombatConditionTask.class);
+            CombatConditionTask secondTask = mock(CombatConditionTask.class);
+            when(condition.createTask(any(), any())).thenReturn(firstTask, secondTask);
+
+            manager.startConditionTask(condition);
+            manager.startConditionTask(condition);
+
+            verify(firstTask).cancelTask();
+        }
+    }
+
+    @Nested
+    @DisplayName("Configuration validation")
+    class ConfigurationValidation {
+
+        @Test
+        @DisplayName("getMaxMobParticipants clamps a configured value below 1 up to 1")
+        void getMaxMobParticipants_clampsToOne_whenConfiguredBelowOne() {
+            YamlDocument config = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.FILE).getFile(FileType.COMBAT_CONFIG);
+            when(config.getInt(CombatConfigFile.MAX_MOB_PARTICIPANTS)).thenReturn(0);
+
+            assertEquals(1, manager.getMaxMobParticipants());
         }
     }
 }

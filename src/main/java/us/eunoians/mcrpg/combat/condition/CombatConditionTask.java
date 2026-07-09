@@ -10,6 +10,7 @@ import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * Repeating task that evaluates a single {@link CombatCondition} at its declared cadence. The default
@@ -44,15 +45,35 @@ public class CombatConditionTask extends CancelableCoreTask {
     @Override
     protected void onIntervalComplete() {
         for (Player player : evaluateEntities()) {
-            if (condition.isInCombat(player)) {
-                Set<UUID> impliedParticipants = condition.getImpliedParticipants(player);
-                if (impliedParticipants.isEmpty()) {
-                    combatTrackerManager.reportConditionActivity(player.getUniqueId(), condition.getKey());
-                } else {
-                    for (UUID participantUUID : impliedParticipants) {
-                        combatTrackerManager.reportCombatActivity(player.getUniqueId(), participantUUID);
-                    }
-                }
+            // Evaluate each player defensively: a third-party condition that throws for one player
+            // must not abort the whole pass (which, because the interval only advances on a normal
+            // return, would otherwise re-run and re-throw every tick).
+            try {
+                evaluatePlayer(player);
+            } catch (Exception e) {
+                getPlugin().getLogger().log(Level.WARNING, "Combat condition " + condition.getKey()
+                        + " threw while evaluating player " + player.getUniqueId() + "; skipping", e);
+            }
+        }
+    }
+
+    /**
+     * Evaluates the condition for a single player and reports activity to the manager. Reports
+     * condition-only activity when the condition implies no specific participants, otherwise reports
+     * a combat interaction against each implied participant.
+     *
+     * @param player The player to evaluate.
+     */
+    private void evaluatePlayer(@NotNull Player player) {
+        if (!condition.isInCombat(player)) {
+            return;
+        }
+        Set<UUID> impliedParticipants = condition.getImpliedParticipants(player);
+        if (impliedParticipants.isEmpty()) {
+            combatTrackerManager.reportConditionActivity(player.getUniqueId(), condition.getKey());
+        } else {
+            for (UUID participantUUID : impliedParticipants) {
+                combatTrackerManager.reportCombatActivity(player.getUniqueId(), participantUUID);
             }
         }
     }

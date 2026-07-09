@@ -70,17 +70,24 @@ class CombatSessionTimeoutTaskTest extends McRPGBaseTest {
     }
 
     /**
-     * Unregisters the anonymous combat-event listeners registered by individual tests. MockBukkit
-     * keeps the server (and its registered listeners) across test methods, so leaked listeners from
-     * one test would otherwise affect later tests (in this class or others). Production registers no
-     * listeners for these custom events, so unregistering their handler lists is safe.
+     * Cleans up state that MockBukkit and the shared registries keep across test methods: anonymous
+     * combat-event listeners registered by individual tests, and combat conditions registered into
+     * the shared {@link CombatConditionRegistry}. Both would otherwise leak into later tests (in this
+     * class or others). Production registers no listeners for these custom events and ships no
+     * built-in conditions, so this cleanup is safe.
      */
     @AfterEach
-    void unregisterCombatEventListeners() {
+    void cleanUpSharedCombatState() {
         CombatSessionStartEvent.getHandlerList().unregister(mcRPG);
         CombatSessionEndEvent.getHandlerList().unregister(mcRPG);
         CombatParticipantAddEvent.getHandlerList().unregister(mcRPG);
         CombatParticipantRemoveEvent.getHandlerList().unregister(mcRPG);
+
+        CombatConditionRegistry conditionRegistry = mcRPG.registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_CONDITION);
+        for (NamespacedKey key : conditionRegistry.getRegisteredKeys()) {
+            conditionRegistry.unregister(key);
+        }
     }
 
     @Test
@@ -176,9 +183,6 @@ class CombatSessionTimeoutTaskTest extends McRPGBaseTest {
     }
 
     @Test
-    @Disabled("Pre-existing test (never compiled before this batch) encoding COR-2 intent: the condition "
-            + "hold-open check must run before the empty-roster end. Current production removes the timed-out "
-            + "participant and ends the session first. Re-enabled by the COR-2 fix in batch 2.")
     @DisplayName("sessions past timeout are held open when a condition returns true")
     void sessionHeldOpen_whenConditionReturnsTrue() {
         PlayerMock player = server.addPlayer();
@@ -204,6 +208,61 @@ class CombatSessionTimeoutTaskTest extends McRPGBaseTest {
         manager.scanSessionsForTimeout();
 
         assertTrue(manager.hasActiveSession(player.getUniqueId()));
+    }
+
+    @Test
+    @DisplayName("emptied sessions still end when a registered condition returns false")
+    void sessionEnds_whenConditionReturnsFalse() {
+        PlayerMock player = server.addPlayer();
+        UUID mobUUID = UUID.randomUUID();
+
+        manager.handleCombatInteraction(player.getUniqueId(), mobUUID,
+                new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+
+        CombatConditionRegistry conditionRegistry = mcRPG.registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_CONDITION);
+        CombatCondition idleCondition = mock(CombatCondition.class);
+        when(idleCondition.getKey()).thenReturn(new NamespacedKey("mcrpg", "idle_condition"));
+        when(idleCondition.getCheckIntervalSeconds()).thenReturn(1.0);
+        when(idleCondition.isInCombat(any(LivingEntity.class))).thenReturn(false);
+        when(idleCondition.getExpansionKey()).thenReturn(Optional.empty());
+        conditionRegistry.register(idleCondition);
+
+        long currentMillis = timeProvider.now().toEpochMilli();
+        when(timeProvider.now()).thenReturn(Instant.ofEpochMilli(currentMillis + 9000));
+
+        manager.scanSessionsForTimeout();
+
+        assertFalse(manager.hasActiveSession(player.getUniqueId()));
+    }
+
+    @Test
+    @DisplayName("a condition that throws does not abort the timeout scan")
+    void scanCompletes_whenConditionThrows() {
+        PlayerMock player = server.addPlayer();
+        UUID mobUUID = UUID.randomUUID();
+
+        manager.handleCombatInteraction(player.getUniqueId(), mobUUID,
+                new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+
+        CombatConditionRegistry conditionRegistry = mcRPG.registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_CONDITION);
+        CombatCondition throwingCondition = mock(CombatCondition.class);
+        when(throwingCondition.getKey()).thenReturn(new NamespacedKey("mcrpg", "throwing_condition"));
+        when(throwingCondition.getCheckIntervalSeconds()).thenReturn(1.0);
+        when(throwingCondition.isInCombat(any(LivingEntity.class)))
+                .thenThrow(new RuntimeException("condition failure"));
+        when(throwingCondition.getExpansionKey()).thenReturn(Optional.empty());
+        conditionRegistry.register(throwingCondition);
+
+        long currentMillis = timeProvider.now().toEpochMilli();
+        when(timeProvider.now()).thenReturn(Instant.ofEpochMilli(currentMillis + 9000));
+
+        // The throwing condition is caught and skipped, so the scan completes and the timed-out
+        // session is ended rather than being wrongly held open.
+        manager.scanSessionsForTimeout();
+
+        assertFalse(manager.hasActiveSession(player.getUniqueId()));
     }
 
     @Test

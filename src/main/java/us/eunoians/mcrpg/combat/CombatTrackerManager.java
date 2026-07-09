@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * Central manager for the combat tracker system. Owns the session map, condition task lifecycle,
@@ -283,7 +284,9 @@ public class CombatTrackerManager extends Manager<McRPG> {
                 session, removedParticipant.get(), reason, previousType, newType);
         Bukkit.getPluginManager().callEvent(removeEvent);
 
-        if (session.isEmpty()) {
+        // An emptied roster ends the session — unless a registered condition still holds the owner
+        // in combat (e.g. a proximity/region condition), in which case the session persists.
+        if (session.isEmpty() && !isHeldOpenByCondition(session)) {
             endSession(session.getEntityUUID(), CombatSessionEndReason.ALL_PARTICIPANTS_GONE);
         }
         return removedParticipant;
@@ -301,9 +304,6 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * keys are snapshotted before iterating because removal and session-ending mutate the session map.
      */
     public void scanSessionsForTimeout() {
-        CombatConditionRegistry conditionRegistry = plugin().registryAccess()
-                .registry(McRPGRegistryKey.COMBAT_CONDITION);
-
         List<UUID> sessionKeys = new ArrayList<>(activeSessions.keySet());
 
         for (UUID ownerUUID : sessionKeys) {
@@ -321,7 +321,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
                 continue;
             }
 
-            if (session.isTimedOut() && !isHeldOpenByCondition(session, conditionRegistry)) {
+            if (session.isTimedOut() && !isHeldOpenByCondition(session)) {
                 endSession(ownerUUID, CombatSessionEndReason.TIMEOUT);
             }
         }
@@ -331,21 +331,30 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * Checks whether any registered {@link CombatCondition} currently holds the given session's
      * owner in combat. When a condition matches, the session's activity timer is refreshed via
      * {@link CombatSession#recordActivity()} so it is not ended on this scan pass.
+     * <p>
+     * Each condition is evaluated defensively: a third-party condition that throws is logged and
+     * skipped so one faulty condition cannot abort the whole timeout scan.
      *
-     * @param session           The session whose owner to evaluate.
-     * @param conditionRegistry The {@link CombatConditionRegistry} to consult.
+     * @param session The session whose owner to evaluate.
      * @return {@code true} if a condition holds the session open (and its timer was refreshed).
      */
-    private boolean isHeldOpenByCondition(@NotNull CombatSession session,
-                                          @NotNull CombatConditionRegistry conditionRegistry) {
+    private boolean isHeldOpenByCondition(@NotNull CombatSession session) {
         Player player = Bukkit.getPlayer(session.getEntityUUID());
         if (player == null) {
             return false;
         }
+        CombatConditionRegistry conditionRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_CONDITION);
         for (CombatCondition condition : conditionRegistry.getAll()) {
-            if (condition.isInCombat(player)) {
-                session.recordActivity();
-                return true;
+            try {
+                if (condition.isInCombat(player)) {
+                    session.recordActivity();
+                    return true;
+                }
+            } catch (Exception e) {
+                plugin().getLogger().log(Level.WARNING, "Combat condition " + condition.getKey()
+                        + " threw while evaluating combat hold-open for player " + player.getUniqueId()
+                        + "; skipping this condition", e);
             }
         }
         return false;
@@ -369,10 +378,14 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * <p>
      * For standalone plugins registering conditions at runtime, call
      * {@code conditionRegistry.register(condition)} first, then this method.
+     * <p>
+     * If a task is already running for this condition's key, it is cancelled before the new one is
+     * started, so calling this twice for the same key cannot leak an orphaned, uncancellable task.
      *
      * @param condition The condition whose task to start.
      */
     public void startConditionTask(@NotNull CombatCondition condition) {
+        stopConditionTask(condition.getKey());
         CombatConditionTask conditionTask = condition.createTask(plugin(), this);
         conditionTask.runTask();
         conditionTasks.put(condition.getKey(), conditionTask);
@@ -462,16 +475,24 @@ public class CombatTrackerManager extends Manager<McRPG> {
     }
 
     /**
-     * Gets the configured maximum mob participant count from the combat configuration file.
+     * Gets the configured maximum mob participant count from the combat configuration file. The
+     * value is floored at 1: a configured value below 1 would make FIFO eviction attempt to evict
+     * from an empty roster on the first mob add, so it is clamped and a warning is logged.
      *
-     * @return The max mob participant count.
+     * @return The max mob participant count (always at least 1).
      */
     public int getMaxMobParticipants() {
         YamlDocument config = plugin().registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.COMBAT_CONFIG);
-        return config.getInt(CombatConfigFile.MAX_MOB_PARTICIPANTS);
+        int configured = config.getInt(CombatConfigFile.MAX_MOB_PARTICIPANTS);
+        if (configured < 1) {
+            plugin().getLogger().log(Level.WARNING, "Combat config {0} is {1}, which is invalid; using 1 instead.",
+                    new Object[]{CombatConfigFile.MAX_MOB_PARTICIPANTS.toString(), configured});
+            return 1;
+        }
+        return configured;
     }
 
     /**
@@ -598,15 +619,15 @@ public class CombatTrackerManager extends Manager<McRPG> {
 
         Optional<CombatParticipant> evictedParticipant = session.addParticipant(newParticipant);
 
-        // Handle FIFO eviction if a mob was evicted
+        // Handle FIFO eviction if a mob was evicted. The eviction event's "previous" type is the
+        // session's type before this add/evict operation; the "new" type is the type afterward.
         if (evictedParticipant.isPresent()) {
             CombatParticipant evicted = evictedParticipant.get();
-            CombatType typeBeforeEviction = session.getCombatType();
             CombatType typeAfterEviction = session.getCombatType();
 
             CombatParticipantRemoveEvent evictionEvent = new CombatParticipantRemoveEvent(
                     session, evicted, ParticipantRemovalReason.EVICTION,
-                    typeBeforeEviction, typeAfterEviction);
+                    previousCombatType, typeAfterEviction);
             Bukkit.getPluginManager().callEvent(evictionEvent);
         }
 

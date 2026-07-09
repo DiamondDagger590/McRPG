@@ -4,6 +4,8 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.statistic.StatisticRegistry;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
+import us.eunoians.mcrpg.combat.condition.CombatCondition;
 import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
@@ -230,13 +232,20 @@ public enum ContentHandlerType {
     /**
      * This processor handles processing {@link CombatConditionContentPack}s by registering
      * each {@link us.eunoians.mcrpg.combat.condition.CombatCondition} into the
-     * {@link CombatConditionRegistry}.
+     * {@link CombatConditionRegistry} and starting its periodic evaluation task. Starting the task
+     * here (rather than relying solely on the bootstrap-time bulk start) is what lets a third-party
+     * expansion register combat conditions after McRPG's own startup and have them actually polled.
      */
     COMBAT_CONDITION((mcRPG, mcRPGContent) -> {
         if (mcRPGContent instanceof CombatConditionContentPack combatConditionPack) {
             CombatConditionRegistry conditionRegistry = mcRPG.registryAccess()
                     .registry(McRPGRegistryKey.COMBAT_CONDITION);
-            combatConditionPack.getContent().forEach(conditionRegistry::register);
+            CombatTrackerManager combatTrackerManager = mcRPG.registryAccess()
+                    .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_TRACKER);
+            for (CombatCondition condition : combatConditionPack.getContent()) {
+                conditionRegistry.register(condition);
+                combatTrackerManager.startConditionTask(condition);
+            }
             return true;
         }
         return false;

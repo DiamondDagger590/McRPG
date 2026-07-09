@@ -161,7 +161,7 @@ public class CombatSession {
         }
 
         Optional<CombatParticipant> evictedParticipant = Optional.empty();
-        if (mobParticipants.size() >= maxMobParticipants) {
+        if (!mobParticipants.isEmpty() && mobParticipants.size() >= maxMobParticipants) {
             evictedParticipant = Optional.of(mobParticipants.removeFirst());
         }
         mobParticipants.addLast(participant);
