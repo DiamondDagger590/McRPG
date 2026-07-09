@@ -69,6 +69,7 @@ import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -227,10 +228,12 @@ public class QuestBoardManager extends Manager<McRPG> {
                 }
                 // Warm the offering cache so getSharedOfferingsForBoard() never hits DB on main thread
                 List<BoardOffering> warmOfferings = new ArrayList<>();
+                // Load only shared (unscoped) offerings — scoped/personal rows must never enter the
+                // shared cache, or they would render on every player's board and be acceptable cross-scope.
                 dailyRotation.ifPresent(daily ->
-                        warmOfferings.addAll(BoardOfferingDAO.loadOfferingsForRotation(connection, daily.getRotationId())));
+                        warmOfferings.addAll(BoardOfferingDAO.loadSharedOfferingsForRotation(connection, daily.getRotationId())));
                 weeklyRotation.ifPresent(weekly ->
-                        warmOfferings.addAll(BoardOfferingDAO.loadOfferingsForRotation(connection, weekly.getRotationId())));
+                        warmOfferings.addAll(BoardOfferingDAO.loadSharedOfferingsForRotation(connection, weekly.getRotationId())));
                 validateOfferingStates(connection, warmOfferings);
                 offeringCache.put(DEFAULT_BOARD_KEY, toOfferingMap(warmOfferings));
 
@@ -496,11 +499,43 @@ public class QuestBoardManager extends Manager<McRPG> {
     public List<BoardOffering> getSharedOfferingsForBoard(@NotNull NamespacedKey boardKey) {
         Map<UUID, BoardOffering> cached = offeringCache.get(boardKey);
         if (cached != null) {
-            return List.copyOf(cached.values());
+            // Only unscoped offerings belong on the shared board. Filtering here (rather than in the GUI)
+            // guarantees every consumer of the shared view inherits the scope guarantee.
+            return filterSharedOfferings(cached.values());
         }
         plugin().getLogger().warning("[QuestBoard] Offering cache miss for " + boardKey
                 + " — cache should have been warmed during initialization or rotation");
         return List.of();
+    }
+
+    /**
+     * Filters a collection of offerings down to the shared (unscoped) ones — those whose
+     * {@code scopeTargetId} is empty. Scoped (group) and personal offerings are excluded so
+     * they never render on the shared board.
+     *
+     * @param offerings the offerings to filter
+     * @return an immutable list containing only the unscoped offerings
+     */
+    @NotNull
+    static List<BoardOffering> filterSharedOfferings(@NotNull Collection<BoardOffering> offerings) {
+        return offerings.stream()
+                .filter(offering -> offering.getScopeTargetId().isEmpty())
+                .toList();
+    }
+
+    /**
+     * Determines whether an offering may be accepted through the shared-board acceptance path by the
+     * given player. Unscoped offerings are always acceptable; a scope-targeted offering is only
+     * acceptable if its target is the clicking player (a personal offering). Scoped (group) offerings —
+     * whose target is a group entity id — are rejected here and handled by the scoped-acceptance path.
+     *
+     * @param offering   the offering being accepted
+     * @param playerUUID the UUID of the accepting player
+     * @return {@code true} if acceptance through the shared-board path is permitted
+     */
+    static boolean canAcceptThroughSharedBoard(@NotNull BoardOffering offering, @NotNull UUID playerUUID) {
+        Optional<String> scopeTargetId = offering.getScopeTargetId();
+        return scopeTargetId.isEmpty() || scopeTargetId.get().equals(playerUUID.toString());
     }
 
     /**
@@ -522,6 +557,13 @@ public class QuestBoardManager extends Manager<McRPG> {
 
             if (offering == null || !offering.canTransitionTo(BoardOffering.State.ACCEPTED)) {
                 return OfferingAcceptResult.NOT_AVAILABLE;
+            }
+
+            // Guard against cross-scope acceptance: this shared-board path may only accept unscoped
+            // offerings (or, defensively, a personal offering belonging to the clicking player). Scoped
+            // (group) offerings are accepted through acceptScopedOffering, never here.
+            if (!canAcceptThroughSharedBoard(offering, player.getUniqueId())) {
+                return OfferingAcceptResult.WRONG_SCOPE;
             }
 
             int activeCount = getActiveBoardQuestCount(player.getUniqueId());

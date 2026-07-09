@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.quest.board.BoardOffering;
 
 import java.sql.Connection;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.logging.Level;
 
 /**
  * DAO for the {@code mcrpg_board_offering} table.
@@ -125,6 +127,35 @@ public class BoardOfferingDAO {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+        return offerings;
+    }
+
+    /**
+     * Loads only the shared (unscoped) offerings for a rotation — rows whose
+     * {@code scope_target_id} is {@code NULL}. Scoped (group) and personal offerings
+     * are excluded so they can never leak into the shared board cache on restart.
+     *
+     * @param connection the database connection
+     * @param rotationId the rotation UUID
+     * @return the list of shared offerings for the rotation
+     */
+    @NotNull
+    public static List<BoardOffering> loadSharedOfferingsForRotation(@NotNull Connection connection,
+                                                                     @NotNull UUID rotationId) {
+        List<BoardOffering> offerings = new ArrayList<>();
+        try (PreparedStatement ps = connection.prepareStatement(
+                "SELECT * FROM " + TABLE_NAME
+                        + " WHERE rotation_id = ? AND scope_target_id IS NULL ORDER BY slot_index")) {
+            ps.setString(1, rotationId.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    offerings.add(buildOffering(rs));
+                }
+            }
+        } catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING,
+                    "[BoardOfferingDAO] Failed to load shared offerings for rotation " + rotationId, e);
         }
         return offerings;
     }

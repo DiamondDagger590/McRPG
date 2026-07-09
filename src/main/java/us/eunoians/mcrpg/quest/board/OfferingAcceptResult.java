@@ -40,7 +40,14 @@ public enum OfferingAcceptResult {
      * scope-validation failure inside the manager).
      * This is an internal error state and should not normally be presented to players.
      */
-    QUEST_START_FAILED;
+    QUEST_START_FAILED,
+
+    /**
+     * The offering is scope-targeted (a group/scoped offering, or another player's personal offering)
+     * and cannot be accepted through the shared-board path by the requesting player. Scoped offerings
+     * are accepted via their dedicated scoped-acceptance path instead.
+     */
+    WRONG_SCOPE;
 
     /**
      * Returns {@code true} if this result represents a successful acceptance.
