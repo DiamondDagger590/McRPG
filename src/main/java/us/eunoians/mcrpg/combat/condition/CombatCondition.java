@@ -3,6 +3,8 @@ package us.eunoians.mcrpg.combat.condition;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 
 import java.util.Set;
@@ -61,14 +63,13 @@ public interface CombatCondition extends McRPGContent {
      * implementation returns a {@link CombatConditionTask} that iterates all online players.
      * Third-party conditions may override this to provide a custom task subclass with
      * scoped entity evaluation or specialized logic.
-     * <p>
-     * The returned task resolves the {@link us.eunoians.mcrpg.combat.CombatTrackerManager} via
-     * {@link com.diamonddagger590.mccore.registry.RegistryAccess} internally.
      *
+     * @param mcRPG                The {@link McRPG} plugin instance the task is scheduled under.
+     * @param combatTrackerManager The {@link CombatTrackerManager} the task reports activity to.
      * @return A new {@link CombatConditionTask} for this condition.
      */
     @NotNull
-    default CombatConditionTask createTask() {
-        return new CombatConditionTask(this);
+    default CombatConditionTask createTask(@NotNull McRPG mcRPG, @NotNull CombatTrackerManager combatTrackerManager) {
+        return new CombatConditionTask(mcRPG, combatTrackerManager, this);
     }
 }

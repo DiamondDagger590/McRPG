@@ -89,6 +89,6 @@ public class RampingFrenzy extends McRPGAbility implements PassiveAbility, Confi
     }
 
     public boolean hasRampingFrenzyStacks() {
-
+        return false;
     }
 }

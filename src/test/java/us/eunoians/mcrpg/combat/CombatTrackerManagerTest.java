@@ -8,7 +8,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -39,6 +41,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -62,6 +65,21 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
         lenient().when(combatConfig.getDouble(CombatConfigFile.TIMEOUT_SCAN_INTERVAL_SECONDS)).thenReturn(0.5);
 
         manager = new CombatTrackerManager(mcRPG);
+    }
+
+    /**
+     * Unregisters the anonymous combat-event listeners registered by individual tests. MockBukkit
+     * keeps the server (and its registered listeners) across test methods, so without this cleanup a
+     * listener that cancels {@link CombatParticipantAddEvent} or {@link CombatSessionStartEvent} in
+     * one test leaks into later tests. Production registers no listeners for these custom events, so
+     * unregistering their handler lists is safe.
+     */
+    @AfterEach
+    void unregisterCombatEventListeners() {
+        CombatSessionStartEvent.getHandlerList().unregister(mcRPG);
+        CombatSessionEndEvent.getHandlerList().unregister(mcRPG);
+        CombatParticipantAddEvent.getHandlerList().unregister(mcRPG);
+        CombatParticipantRemoveEvent.getHandlerList().unregister(mcRPG);
     }
 
     @Nested
@@ -481,7 +499,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
             when(condition.getKey()).thenReturn(condKey);
             when(condition.getCheckIntervalSeconds()).thenReturn(1.0);
             CombatConditionTask mockTask = mock(CombatConditionTask.class);
-            when(condition.createTask()).thenReturn(mockTask);
+            when(condition.createTask(any(), any())).thenReturn(mockTask);
             conditionRegistry.register(condition);
 
             manager.startConditionTasks();
@@ -498,7 +516,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
             when(condition.getKey()).thenReturn(condKey);
             when(condition.getCheckIntervalSeconds()).thenReturn(1.0);
             CombatConditionTask mockTask = mock(CombatConditionTask.class);
-            when(condition.createTask()).thenReturn(mockTask);
+            when(condition.createTask(any(), any())).thenReturn(mockTask);
 
             manager.startConditionTask(condition);
             manager.stopConditionTask(condKey);

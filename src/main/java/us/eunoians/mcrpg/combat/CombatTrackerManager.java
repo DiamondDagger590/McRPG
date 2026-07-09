@@ -242,34 +242,113 @@ public class CombatTrackerManager extends Manager<McRPG> {
      */
     public void removeParticipantFromAllSessions(@NotNull UUID participantUUID,
                                                   @NotNull ParticipantRemovalReason reason) {
-        // Snapshot to avoid ConcurrentModificationException (endSession modifies activeSessions)
+        // Snapshot to avoid ConcurrentModificationException (removeParticipant may end sessions, mutating activeSessions)
         List<Map.Entry<UUID, CombatSession>> snapshot = new ArrayList<>(activeSessions.entrySet());
 
         for (Map.Entry<UUID, CombatSession> entry : snapshot) {
-            UUID ownerUUID = entry.getKey();
             CombatSession session = entry.getValue();
-
-            if (!session.hasParticipant(participantUUID)) {
-                continue;
-            }
-
-            CombatType previousType = session.getCombatType();
-            Optional<CombatParticipant> removedParticipant = session.removeParticipant(participantUUID);
-
-            if (removedParticipant.isEmpty()) {
-                continue;
-            }
-
-            CombatType newType = session.getCombatType();
-
-            CombatParticipantRemoveEvent removeEvent = new CombatParticipantRemoveEvent(
-                    session, removedParticipant.get(), reason, previousType, newType);
-            Bukkit.getPluginManager().callEvent(removeEvent);
-
-            if (session.isEmpty()) {
-                endSession(ownerUUID, CombatSessionEndReason.ALL_PARTICIPANTS_GONE);
+            if (session.hasParticipant(participantUUID)) {
+                removeParticipant(session, participantUUID, reason);
             }
         }
+    }
+
+    /**
+     * Removes a participant from a single session, firing {@link CombatParticipantRemoveEvent} with
+     * the session's combat-type transition and ending the session with
+     * {@link CombatSessionEndReason#ALL_PARTICIPANTS_GONE} if its roster empties as a result.
+     * <p>
+     * This is the sole owner of participant-removal lifecycle. Every removal path — the death /
+     * quit / despawn sweep and the per-participant timeout scan — routes through it so event firing
+     * and empty-session handling stay consistent in one place.
+     *
+     * @param session         The session to remove the participant from.
+     * @param participantUUID The UUID of the participant to remove.
+     * @param reason          The {@link ParticipantRemovalReason} for the removal.
+     * @return An {@link Optional} containing the removed {@link CombatParticipant}, or empty if the
+     *         session did not contain the participant.
+     */
+    @NotNull
+    private Optional<CombatParticipant> removeParticipant(@NotNull CombatSession session,
+                                                          @NotNull UUID participantUUID,
+                                                          @NotNull ParticipantRemovalReason reason) {
+        CombatType previousType = session.getCombatType();
+        Optional<CombatParticipant> removedParticipant = session.removeParticipant(participantUUID);
+        if (removedParticipant.isEmpty()) {
+            return Optional.empty();
+        }
+        CombatType newType = session.getCombatType();
+
+        CombatParticipantRemoveEvent removeEvent = new CombatParticipantRemoveEvent(
+                session, removedParticipant.get(), reason, previousType, newType);
+        Bukkit.getPluginManager().callEvent(removeEvent);
+
+        if (session.isEmpty()) {
+            endSession(session.getEntityUUID(), CombatSessionEndReason.ALL_PARTICIPANTS_GONE);
+        }
+        return removedParticipant;
+    }
+
+    /**
+     * Scans all active sessions for per-participant and session-level timeouts on the main thread.
+     * For each session it removes participants whose per-participant inactivity timer has expired
+     * (firing {@link CombatParticipantRemoveEvent} with {@link ParticipantRemovalReason#TIMEOUT} and
+     * ending the session if its roster empties), then ends the session with
+     * {@link CombatSessionEndReason#TIMEOUT} if the session's own inactivity timer has expired —
+     * unless a registered {@link CombatCondition} holds it open.
+     * <p>
+     * Invoked by {@link CombatSessionTimeoutTask} at the configured scan cadence. The active session
+     * keys are snapshotted before iterating because removal and session-ending mutate the session map.
+     */
+    public void scanSessionsForTimeout() {
+        CombatConditionRegistry conditionRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_CONDITION);
+
+        List<UUID> sessionKeys = new ArrayList<>(activeSessions.keySet());
+
+        for (UUID ownerUUID : sessionKeys) {
+            CombatSession session = activeSessions.get(ownerUUID);
+            if (session == null) {
+                continue;
+            }
+
+            for (CombatParticipant participant : session.getTimedOutParticipants()) {
+                removeParticipant(session, participant.getUUID(), ParticipantRemovalReason.TIMEOUT);
+            }
+
+            // removeParticipant ends and unmaps the session if its roster emptied.
+            if (!activeSessions.containsKey(ownerUUID)) {
+                continue;
+            }
+
+            if (session.isTimedOut() && !isHeldOpenByCondition(session, conditionRegistry)) {
+                endSession(ownerUUID, CombatSessionEndReason.TIMEOUT);
+            }
+        }
+    }
+
+    /**
+     * Checks whether any registered {@link CombatCondition} currently holds the given session's
+     * owner in combat. When a condition matches, the session's activity timer is refreshed via
+     * {@link CombatSession#recordActivity()} so it is not ended on this scan pass.
+     *
+     * @param session           The session whose owner to evaluate.
+     * @param conditionRegistry The {@link CombatConditionRegistry} to consult.
+     * @return {@code true} if a condition holds the session open (and its timer was refreshed).
+     */
+    private boolean isHeldOpenByCondition(@NotNull CombatSession session,
+                                          @NotNull CombatConditionRegistry conditionRegistry) {
+        Player player = Bukkit.getPlayer(session.getEntityUUID());
+        if (player == null) {
+            return false;
+        }
+        for (CombatCondition condition : conditionRegistry.getAll()) {
+            if (condition.isInCombat(player)) {
+                session.recordActivity();
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -294,7 +373,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * @param condition The condition whose task to start.
      */
     public void startConditionTask(@NotNull CombatCondition condition) {
-        CombatConditionTask conditionTask = condition.createTask();
+        CombatConditionTask conditionTask = condition.createTask(plugin(), this);
         conditionTask.runTask();
         conditionTasks.put(condition.getKey(), conditionTask);
     }
@@ -320,7 +399,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
     public void startTimeoutTask() {
         stopTimeoutTask();
         double scanIntervalSeconds = getScanIntervalSeconds();
-        this.timeoutTask = new CombatSessionTimeoutTask(this, scanIntervalSeconds);
+        this.timeoutTask = new CombatSessionTimeoutTask(plugin(), this, scanIntervalSeconds);
         this.timeoutTask.runTask();
     }
 
@@ -442,65 +521,95 @@ public class CombatTrackerManager extends Manager<McRPG> {
         CombatSession session = activeSessions.get(ownerUUID);
 
         if (session == null) {
-            // No session exists — fire start event and create
-            CombatSessionStartEvent startEvent = new CombatSessionStartEvent(
-                    ownerUUID, otherUUID, otherType, otherEntityWrapper);
-            Bukkit.getPluginManager().callEvent(startEvent);
-
-            if (startEvent.isCancelled()) {
-                return;
-            }
-
-            session = new CombatSession(ownerUUID, getMaxMobParticipants(), getSessionTimeoutMillis());
-            activeSessions.put(ownerUUID, session);
-
-            long nowMillis = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
-            CombatParticipant participant = new CombatParticipant(otherUUID, otherType, otherEntityWrapper, nowMillis);
-            session.addParticipant(participant);
-            session.recordParticipantInteraction(otherUUID);
+            createSessionForInteraction(ownerUUID, otherUUID, otherType, otherEntityWrapper);
             return;
         }
 
         if (!session.hasParticipant(otherUUID)) {
-            // Session exists but participant is new — fire add event
-            CombatType previousCombatType = session.getCombatType();
-
-            long nowMillis = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
-            CombatParticipant newParticipant = new CombatParticipant(otherUUID, otherType, otherEntityWrapper, nowMillis);
-
-            // Compute what the combat type would be after adding the new participant
-            CombatType newCombatType = otherType == ParticipantType.PLAYER
-                    ? CombatType.PVP
-                    : previousCombatType;
-
-            CombatParticipantAddEvent addEvent = new CombatParticipantAddEvent(
-                    session, newParticipant, previousCombatType, newCombatType);
-            Bukkit.getPluginManager().callEvent(addEvent);
-
-            if (addEvent.isCancelled()) {
-                session.recordParticipantInteraction(otherUUID);
-                return;
-            }
-
-            Optional<CombatParticipant> evictedParticipant = session.addParticipant(newParticipant);
-
-            // Handle FIFO eviction if a mob was evicted
-            if (evictedParticipant.isPresent()) {
-                CombatParticipant evicted = evictedParticipant.get();
-                CombatType typeBeforeEviction = session.getCombatType();
-                CombatType typeAfterEviction = session.getCombatType();
-
-                CombatParticipantRemoveEvent evictionEvent = new CombatParticipantRemoveEvent(
-                        session, evicted, ParticipantRemovalReason.EVICTION,
-                        typeBeforeEviction, typeAfterEviction);
-                Bukkit.getPluginManager().callEvent(evictionEvent);
-            }
-
-            session.recordParticipantInteraction(otherUUID);
+            addNewParticipant(session, otherUUID, otherType, otherEntityWrapper);
             return;
         }
 
         // Participant already exists — just record the interaction
+        session.recordParticipantInteraction(otherUUID);
+    }
+
+    /**
+     * Creates a new session for {@code ownerUUID} after firing and confirming a non-cancelled
+     * {@link CombatSessionStartEvent}, then adds the other entity as its first participant.
+     *
+     * @param ownerUUID          The UUID of the session owner (always a player).
+     * @param otherUUID          The UUID of the other entity in the interaction.
+     * @param otherType          The {@link ParticipantType} of the other entity.
+     * @param otherEntityWrapper The {@link CustomEntityWrapper} of the other entity.
+     */
+    private void createSessionForInteraction(@NotNull UUID ownerUUID, @NotNull UUID otherUUID,
+                                             @NotNull ParticipantType otherType,
+                                             @NotNull CustomEntityWrapper otherEntityWrapper) {
+        CombatSessionStartEvent startEvent = new CombatSessionStartEvent(
+                ownerUUID, otherUUID, otherType, otherEntityWrapper);
+        Bukkit.getPluginManager().callEvent(startEvent);
+
+        if (startEvent.isCancelled()) {
+            return;
+        }
+
+        CombatSession session = new CombatSession(ownerUUID, getMaxMobParticipants(), getSessionTimeoutMillis());
+        activeSessions.put(ownerUUID, session);
+
+        long nowMillis = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+        CombatParticipant participant = new CombatParticipant(otherUUID, otherType, otherEntityWrapper, nowMillis);
+        session.addParticipant(participant);
+        session.recordParticipantInteraction(otherUUID);
+    }
+
+    /**
+     * Adds a new participant to an existing session after firing and confirming a non-cancelled
+     * {@link CombatParticipantAddEvent}. Handles FIFO mob eviction, firing
+     * {@link CombatParticipantRemoveEvent} with {@link ParticipantRemovalReason#EVICTION} when a mob
+     * is displaced. If the add event is cancelled, the session's activity timer is still refreshed.
+     *
+     * @param session            The existing session to add the participant to.
+     * @param otherUUID          The UUID of the entity to add.
+     * @param otherType          The {@link ParticipantType} of the entity.
+     * @param otherEntityWrapper The {@link CustomEntityWrapper} of the entity.
+     */
+    private void addNewParticipant(@NotNull CombatSession session, @NotNull UUID otherUUID,
+                                   @NotNull ParticipantType otherType,
+                                   @NotNull CustomEntityWrapper otherEntityWrapper) {
+        CombatType previousCombatType = session.getCombatType();
+
+        long nowMillis = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
+        CombatParticipant newParticipant = new CombatParticipant(otherUUID, otherType, otherEntityWrapper, nowMillis);
+
+        // Compute what the combat type would be after adding the new participant
+        CombatType newCombatType = otherType == ParticipantType.PLAYER
+                ? CombatType.PVP
+                : previousCombatType;
+
+        CombatParticipantAddEvent addEvent = new CombatParticipantAddEvent(
+                session, newParticipant, previousCombatType, newCombatType);
+        Bukkit.getPluginManager().callEvent(addEvent);
+
+        if (addEvent.isCancelled()) {
+            session.recordParticipantInteraction(otherUUID);
+            return;
+        }
+
+        Optional<CombatParticipant> evictedParticipant = session.addParticipant(newParticipant);
+
+        // Handle FIFO eviction if a mob was evicted
+        if (evictedParticipant.isPresent()) {
+            CombatParticipant evicted = evictedParticipant.get();
+            CombatType typeBeforeEviction = session.getCombatType();
+            CombatType typeAfterEviction = session.getCombatType();
+
+            CombatParticipantRemoveEvent evictionEvent = new CombatParticipantRemoveEvent(
+                    session, evicted, ParticipantRemovalReason.EVICTION,
+                    typeBeforeEviction, typeAfterEviction);
+            Bukkit.getPluginManager().callEvent(evictionEvent);
+        }
+
         session.recordParticipantInteraction(otherUUID);
     }
 }
