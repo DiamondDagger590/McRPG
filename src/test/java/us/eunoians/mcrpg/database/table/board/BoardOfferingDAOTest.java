@@ -17,6 +17,7 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.*;
 
 public class BoardOfferingDAOTest extends McRPGBaseTest {
@@ -210,6 +211,23 @@ public class BoardOfferingDAOTest extends McRPGBaseTest {
         assertTrue(offering.isTemplateGenerated());
         assertEquals(new NamespacedKey("mcrpg", "daily_mining"), offering.getTemplateKey().orElseThrow());
         assertEquals(generatedDef, offering.getGeneratedDefinition().orElseThrow());
+    }
+
+    @DisplayName("loadSharedOfferingsForRotation filters on scope_target_id IS NULL")
+    @Test
+    void loadSharedOfferingsForRotation_filtersOnNullScope() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+        when(mockResultSet.next()).thenReturn(false);
+
+        List<BoardOffering> result = BoardOfferingDAO.loadSharedOfferingsForRotation(mockConnection, UUID.randomUUID());
+
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+        verify(mockConnection).prepareStatement(contains("scope_target_id IS NULL"));
     }
 
     @DisplayName("loadPersonalOfferingsForRotation returns empty when no results")
