@@ -3,10 +3,13 @@ package us.eunoians.mcrpg.quest.board.rarity;
 import com.diamonddagger590.mccore.registry.Registry;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
@@ -77,6 +80,16 @@ public class QuestRarityRegistry implements Registry<QuestRarity> {
         }
 
         int totalWeight = rarities.values().stream().mapToInt(QuestRarity::getWeight).sum();
+        // A total weight of zero (all weights 0, or an owner zeroed them) would make nextInt throw
+        // "bound must be positive" mid-rotation. Fall back to a uniform pick so the board keeps rotating.
+        if (totalWeight <= 0) {
+            McRPG.getInstance().getLogger().warning("[QuestBoard] All quest rarity weights sum to " + totalWeight
+                    + " in board.yml; weighted selection is impossible. Falling back to a uniform random pick."
+                    + " Give at least one rarity a positive weight.");
+            List<QuestRarity> rarityList = new ArrayList<>(rarities.values());
+            return rarityList.get(random.nextInt(rarityList.size()));
+        }
+
         int roll = random.nextInt(totalWeight);
         int cumulative = 0;
 

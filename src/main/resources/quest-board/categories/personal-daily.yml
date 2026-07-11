@@ -5,6 +5,7 @@ personal-daily:
   # PERSONAL: each player gets a unique set of offerings.
   visibility: PERSONAL
   refresh-type: DAILY
+  # Duration format: 1d / 12h / 30m / 90s (combinable, case-insensitive) or a plain number of seconds.
   refresh-interval: 1d
   completion-time: 1d
   scope-provider: mcrpg:single_player

@@ -24,6 +24,8 @@ quest-source-weights:
 # weight: relative chance of this rarity being rolled (higher = more common)
 # difficulty-multiplier: scales objective targets (e.g., "mine 100 blocks" becomes "mine 150")
 # reward-multiplier: scales reward amounts (e.g., 100 XP becomes 200 XP)
+# These keys are hot-reloadable via /mcrpg admin reload; edits apply to the next rotation.
+# At least one rarity must have a positive weight, or the board falls back to a uniform pick.
 rarities:
   COMMON:
     weight: 50
@@ -69,7 +71,7 @@ rarities:
 
 # Controls when the board rotates (replaces expired offerings with new ones).
 # NOTE: Changing any value in this section requires a server restart to take effect.
-#       These keys are NOT hot-reloadable via /mcrpg quest admin reload.
+#       These keys are NOT hot-reloadable via /mcrpg admin reload.
 rotation:
   # Time of day (HH:mm, 24-hour clock) when daily rotations occur.
   time: "00:00"
@@ -82,7 +84,7 @@ rotation:
   task-check-interval-seconds: 60
 
 # Controls player-facing notifications for quest events.
-# All keys in this section are reload-safe (/mcrpg quest admin reload).
+# All keys in this section are reload-safe (/mcrpg admin reload).
 notifications:
   # Minutes before a quest expires at which the player receives a near-expiry warning.
   near-expiry-threshold-minutes: 60

@@ -73,6 +73,31 @@ public class BoardCategoryConfigLoaderTest extends McRPGBaseTest {
         assertEquals(10, cat.getPriority());
     }
 
+    @DisplayName("plain-number and uppercase-unit durations parse via the quest grammar")
+    @Test
+    void loadCategoriesFromDirectory_plainNumberAndUppercaseDurations() throws IOException {
+        String yaml = """
+                seconds-cat:
+                  visibility: SHARED
+                  refresh-type: daily
+                  refresh-interval: 24H
+                  completion-time: 86400
+                  scope-provider: single_player
+                  min: 1
+                  max: 3
+                """;
+        writeYaml("seconds.yml", yaml);
+
+        Map<NamespacedKey, BoardSlotCategory> result = loader.loadCategoriesFromDirectory(tempDir);
+
+        BoardSlotCategory cat = result.get(new NamespacedKey("mcrpg", "seconds_cat"));
+        assertNotNull(cat);
+        // A bare number is seconds (McCore's getTimeInSeconds silently returned ZERO here).
+        assertEquals(Duration.ofSeconds(86400), cat.getCompletionTime());
+        // Units are case-insensitive (McCore's getTimeInSeconds rejected "24H").
+        assertEquals(Duration.ofHours(24), cat.getRefreshInterval());
+    }
+
     @DisplayName("loadCategoriesFromDirectory returns empty for nonexistent directory")
     @Test
     void loadCategoriesFromDirectory_returnsEmptyForNonexistentDirectory() {

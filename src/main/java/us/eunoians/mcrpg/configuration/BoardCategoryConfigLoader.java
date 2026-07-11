@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.configuration;
 
-import com.diamonddagger590.mccore.util.Methods;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import dev.dejvokep.boostedyaml.settings.general.GeneralSettings;
@@ -86,8 +85,11 @@ public final class BoardCategoryConfigLoader {
         Visibility visibility = Visibility.valueOf(section.getString("visibility", "SHARED").toUpperCase());
         NamespacedKey refreshTypeKey = autoNamespace(section.getString("refresh-type", "daily"));
 
-        Duration refreshInterval = Methods.getTimeInSeconds(section.getString("refresh-interval", "24h"));
-        Duration completionTime = Methods.getTimeInSeconds(section.getString("completion-time", "24h"));
+        // Use the quest duration grammar (case-insensitive; a plain number is seconds; clear errors)
+        // rather than McCore's Methods.getTimeInSeconds, which is case-sensitive and silently parses a
+        // bare number as ZERO.
+        Duration refreshInterval = QuestConfigLoader.parseDuration(section.getString("refresh-interval", "24h"));
+        Duration completionTime = QuestConfigLoader.parseDuration(section.getString("completion-time", "24h"));
 
         NamespacedKey scopeProviderKey = autoNamespace(section.getString("scope-provider", "single_player"));
 
@@ -98,7 +100,7 @@ public final class BoardCategoryConfigLoader {
 
         Duration appearanceCooldown = null;
         if (section.contains("appearance-cooldown")) {
-            appearanceCooldown = Methods.getTimeInSeconds(section.getString("appearance-cooldown"));
+            appearanceCooldown = QuestConfigLoader.parseDuration(section.getString("appearance-cooldown"));
         }
 
         String requiredPermission = section.contains("required-permission")

@@ -36,6 +36,12 @@ public class ReloadPluginCommand extends McRPGCommandBase {
 
                     plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).reloadFiles();
 
+                    // Re-parse all reloadable content (board rarities/categories/templates, ability
+                    // config, etc.) from the freshly reloaded YAML documents. Without this, board.yml
+                    // edits silently no-op until a restart.
+                    plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT)
+                            .reloadAllContent();
+
                     // Invalidate level caches for all online players since leveling equations may have changed
                     plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()
                             .forEach(player -> player.asSkillHolder().invalidateAllLevelCaches());

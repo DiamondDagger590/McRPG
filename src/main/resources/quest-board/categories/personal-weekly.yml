@@ -3,6 +3,7 @@ personal-weekly:
   # PERSONAL: each player gets a unique set of offerings.
   visibility: PERSONAL
   refresh-type: WEEKLY
+  # Duration format: 1d / 12h / 30m / 90s (combinable, case-insensitive) or a plain number of seconds.
   refresh-interval: 7d
   completion-time: 7d
   scope-provider: mcrpg:single_player

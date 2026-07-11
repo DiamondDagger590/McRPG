@@ -10,7 +10,6 @@ import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.board.BoardMetadata;
-import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestDefinitionMetadata;
@@ -307,16 +306,16 @@ public class QuestConfigLoader {
 
         boolean boardEligible = boardSection.getBoolean("board-eligible", true);
 
+        // An empty set is the "all rarities" sentinel, resolved lazily at board-eligibility time
+        // (QuestPool treats empty as matching any rolled rarity). Do NOT snapshot the rarity registry
+        // here: quest definitions load before board.yml rarities are registered, so a snapshot would be
+        // empty on every restart and only fill in after a manual reload.
         Set<NamespacedKey> supportedRarities = new LinkedHashSet<>();
         if (boardSection.contains("supported-rarities")) {
             for (String rawRarity : boardSection.getStringList("supported-rarities")) {
                 NamespacedKey key = McRPGMethods.parseNamespacedKey(rawRarity);
                 supportedRarities.add(key);
             }
-        } else {
-            QuestRarityRegistry rarityRegistry = RegistryAccess.registryAccess()
-                    .registry(McRPGRegistryKey.QUEST_RARITY);
-            supportedRarities.addAll(rarityRegistry.getRegisteredKeys());
         }
 
         Duration acceptanceCooldown = null;

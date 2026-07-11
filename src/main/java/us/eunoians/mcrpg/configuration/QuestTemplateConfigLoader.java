@@ -141,6 +141,13 @@ public final class QuestTemplateConfigLoader {
         } catch (IOException e) {
             logger.log(Level.WARNING, "Failed to load YAML file " + file.getName(), e);
             return;
+        } catch (RuntimeException e) {
+            // SnakeYAML surfaces syntax errors (unclosed quotes, bad indentation) as unchecked
+            // exceptions. Without this, a single malformed template file would escape the directory
+            // walk and abort loading of every other template. Skip just this file with a WARNING.
+            logger.log(Level.WARNING, "Skipping template file " + file.getName()
+                    + " due to a YAML syntax error: " + e.getMessage(), e);
+            return;
         }
 
         Section templatesSection = yaml.getSection("quest-templates");
