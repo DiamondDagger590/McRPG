@@ -212,6 +212,23 @@ class CombatSessionTest extends McRPGBaseTest {
             assertDoesNotThrow(() -> session.addParticipant(mob));
             assertTrue(session.hasParticipant(mob.getUUID()));
         }
+
+        @DisplayName("Re-adding the same mob does not create a duplicate or evict")
+        @Test
+        void addParticipant_mobType_deduplicates_whenAddedTwice() {
+            CombatSession session = createSession();
+            CombatParticipant mob = createMobParticipant();
+
+            session.addParticipant(mob);
+            Optional<CombatParticipant> evicted = session.addParticipant(mob);
+
+            assertTrue(evicted.isEmpty());
+            assertEquals(1, session.getMobParticipants().size());
+            assertTrue(session.hasParticipant(mob.getUUID()));
+            // A single removal fully removes the mob (no lingering duplicate entry).
+            session.removeParticipant(mob.getUUID());
+            assertFalse(session.hasParticipant(mob.getUUID()));
+        }
     }
 
     @Nested

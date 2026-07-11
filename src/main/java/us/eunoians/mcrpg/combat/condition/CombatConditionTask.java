@@ -26,9 +26,16 @@ public class CombatConditionTask extends CancelableCoreTask {
     private final CombatCondition condition;
 
     /**
+     * The minimum allowed check interval, in seconds. A third-party condition returning a value below
+     * this would make the task run every tick and scan all online players, so it is floored here.
+     */
+    private static final double MINIMUM_CHECK_INTERVAL_SECONDS = 0.25;
+
+    /**
      * Constructs a new {@link CombatConditionTask}.
      * <p>
-     * The task frequency is derived from the condition's {@link CombatCondition#getCheckIntervalSeconds()}.
+     * The task frequency is derived from the condition's {@link CombatCondition#getCheckIntervalSeconds()},
+     * floored at {@value #MINIMUM_CHECK_INTERVAL_SECONDS} seconds.
      *
      * @param plugin               The {@link McRPG} plugin instance.
      * @param combatTrackerManager The {@link CombatTrackerManager} to report combat activity to.
@@ -37,9 +44,13 @@ public class CombatConditionTask extends CancelableCoreTask {
     public CombatConditionTask(@NotNull McRPG plugin,
                                @NotNull CombatTrackerManager combatTrackerManager,
                                @NotNull CombatCondition condition) {
-        super(plugin, 0, condition.getCheckIntervalSeconds());
+        super(plugin, 0, Math.max(MINIMUM_CHECK_INTERVAL_SECONDS, condition.getCheckIntervalSeconds()));
         this.combatTrackerManager = combatTrackerManager;
         this.condition = condition;
+        if (condition.getCheckIntervalSeconds() < MINIMUM_CHECK_INTERVAL_SECONDS) {
+            plugin.getLogger().log(Level.WARNING, "Combat condition {0} check interval {1}s is below the minimum; using {2}s.",
+                    new Object[]{condition.getKey().toString(), condition.getCheckIntervalSeconds(), MINIMUM_CHECK_INTERVAL_SECONDS});
+        }
     }
 
     @Override

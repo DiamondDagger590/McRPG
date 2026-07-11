@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -23,10 +23,12 @@ import java.util.UUID;
  * <ul>
  *   <li><b>Player participants</b> — stored in an unbounded {@link HashMap} keyed by UUID.
  *       There is no cap on the number of player opponents tracked.</li>
- *   <li><b>Mob participants</b> — stored in a bounded FIFO {@link LinkedList}. When the
- *       queue exceeds {@code maxMobParticipants}, the oldest mob is evicted and returned
- *       from {@link #addParticipant(CombatParticipant)} so the caller can fire the
- *       appropriate removal event.</li>
+ *   <li><b>Mob participants</b> — stored in a bounded {@link LinkedHashMap} keyed by UUID, whose
+ *       insertion order provides FIFO eviction. When adding a new mob would exceed
+ *       {@code maxMobParticipants}, the oldest mob is evicted and returned from
+ *       {@link #addParticipant(CombatParticipant)} so the caller can fire the appropriate removal
+ *       event. Keying by UUID makes lookup, containment, and removal O(1) on the combat hot path and
+ *       prevents duplicate entries for the same mob.</li>
  * </ul>
  * <p>
  * The {@link CombatType} (PVP vs PVE) is derived dynamically from the participant roster
@@ -48,7 +50,7 @@ public class CombatSession {
 
     private final UUID entityUUID;
     private final Map<UUID, CombatParticipant> playerParticipants;
-    private final LinkedList<CombatParticipant> mobParticipants;
+    private final LinkedHashMap<UUID, CombatParticipant> mobParticipants;
     private final int maxMobParticipants;
     private final long startTimeMillis;
     private final long timeoutMillis;
@@ -64,7 +66,7 @@ public class CombatSession {
     public CombatSession(@NotNull UUID entityUUID, int maxMobParticipants, long timeoutMillis) {
         this.entityUUID = entityUUID;
         this.playerParticipants = new HashMap<>();
-        this.mobParticipants = new LinkedList<>();
+        this.mobParticipants = new LinkedHashMap<>();
         this.maxMobParticipants = maxMobParticipants;
         long nowMillis = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
         this.startTimeMillis = nowMillis;
@@ -103,7 +105,7 @@ public class CombatSession {
     public Collection<CombatParticipant> getParticipants() {
         List<CombatParticipant> allParticipants = new ArrayList<>(playerParticipants.size() + mobParticipants.size());
         allParticipants.addAll(playerParticipants.values());
-        allParticipants.addAll(mobParticipants);
+        allParticipants.addAll(mobParticipants.values());
         return Collections.unmodifiableList(allParticipants);
     }
 
@@ -124,7 +126,7 @@ public class CombatSession {
      */
     @NotNull
     public Collection<CombatParticipant> getMobParticipants() {
-        return Collections.unmodifiableCollection(mobParticipants);
+        return Collections.unmodifiableCollection(mobParticipants.values());
     }
 
     /**
@@ -139,19 +141,18 @@ public class CombatSession {
         if (playerParticipant != null) {
             return Optional.of(playerParticipant);
         }
-        return mobParticipants.stream()
-                .filter(participant -> participant.getUUID().equals(participantUUID))
-                .findFirst();
+        return Optional.ofNullable(mobParticipants.get(participantUUID));
     }
 
     /**
-     * Adds a participant to the roster. Player participants go into the unlimited player map.
-     * Mob participants go into the FIFO queue — if the queue is full, the oldest mob is evicted
-     * and returned.
+     * Adds a participant to the roster. Player participants go into the unlimited player map. Mob
+     * participants go into the bounded FIFO map — re-adding an existing mob updates it in place
+     * without evicting or changing its FIFO position, and adding a new mob when the map is full
+     * evicts and returns the oldest.
      *
      * @param participant The participant to add.
      * @return An {@link Optional} containing the evicted {@link CombatParticipant} if a mob was
-     *         evicted from the FIFO queue, or empty if no eviction occurred.
+     *         evicted from the FIFO map, or empty if no eviction occurred.
      */
     @NotNull
     public Optional<CombatParticipant> addParticipant(@NotNull CombatParticipant participant) {
@@ -160,11 +161,20 @@ public class CombatSession {
             return Optional.empty();
         }
 
+        UUID mobUUID = participant.getUUID();
+        // Re-adding an existing mob updates it in place — no eviction, FIFO position preserved.
+        if (mobParticipants.containsKey(mobUUID)) {
+            mobParticipants.put(mobUUID, participant);
+            return Optional.empty();
+        }
+
         Optional<CombatParticipant> evictedParticipant = Optional.empty();
         if (!mobParticipants.isEmpty() && mobParticipants.size() >= maxMobParticipants) {
-            evictedParticipant = Optional.of(mobParticipants.removeFirst());
+            Iterator<CombatParticipant> mobIterator = mobParticipants.values().iterator();
+            evictedParticipant = Optional.of(mobIterator.next());
+            mobIterator.remove();
         }
-        mobParticipants.addLast(participant);
+        mobParticipants.put(mobUUID, participant);
         return evictedParticipant;
     }
 
@@ -180,15 +190,7 @@ public class CombatSession {
         if (removedPlayer != null) {
             return Optional.of(removedPlayer);
         }
-        Iterator<CombatParticipant> mobIterator = mobParticipants.iterator();
-        while (mobIterator.hasNext()) {
-            CombatParticipant mobParticipant = mobIterator.next();
-            if (mobParticipant.getUUID().equals(participantUUID)) {
-                mobIterator.remove();
-                return Optional.of(mobParticipant);
-            }
-        }
-        return Optional.empty();
+        return Optional.ofNullable(mobParticipants.remove(participantUUID));
     }
 
     /**
@@ -198,10 +200,7 @@ public class CombatSession {
      * @return {@code true} if the participant is in the roster.
      */
     public boolean hasParticipant(@NotNull UUID participantUUID) {
-        if (playerParticipants.containsKey(participantUUID)) {
-            return true;
-        }
-        return mobParticipants.stream().anyMatch(participant -> participant.getUUID().equals(participantUUID));
+        return playerParticipants.containsKey(participantUUID) || mobParticipants.containsKey(participantUUID);
     }
 
     /**

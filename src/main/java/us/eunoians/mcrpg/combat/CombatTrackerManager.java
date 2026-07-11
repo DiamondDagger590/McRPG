@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 /**
@@ -122,17 +123,54 @@ public class CombatTrackerManager extends Manager<McRPG> {
                                         @NotNull CustomEntityWrapper sourceEntityWrapper,
                                         @NotNull CustomEntityWrapper targetEntityWrapper) {
         requireMainThread();
+        handleInteraction(sourceUUID, targetUUID, () -> sourceEntityWrapper, () -> targetEntityWrapper);
+    }
+
+    /**
+     * Entity-based variant of
+     * {@link #handleCombatInteraction(UUID, UUID, CustomEntityWrapper, CustomEntityWrapper)} for hot
+     * callers such as the damage listener. The {@link CustomEntityWrapper}s are built lazily and only
+     * when a session or participant is actually created, so the dominant steady-state case (both
+     * entities already tracked) constructs no wrappers at all. Prefer this overload on the damage
+     * path; the wrapper overload exists for callers that already hold wrappers.
+     *
+     * @param sourceUUID   The UUID of the entity dealing damage.
+     * @param targetUUID   The UUID of the entity taking damage.
+     * @param sourceEntity The source entity.
+     * @param targetEntity The target entity.
+     */
+    public void handleCombatInteraction(@NotNull UUID sourceUUID, @NotNull UUID targetUUID,
+                                        @NotNull Entity sourceEntity, @NotNull Entity targetEntity) {
+        requireMainThread();
+        handleInteraction(sourceUUID, targetUUID,
+                () -> new CustomEntityWrapper(sourceEntity), () -> new CustomEntityWrapper(targetEntity));
+    }
+
+    /**
+     * Shared implementation of combat-interaction handling. Dispatches to
+     * {@link #handleSideInteraction(UUID, UUID, ParticipantType, Supplier)} for each player side. The
+     * wrapper suppliers are resolved lazily by the side handler, so they are only invoked when a
+     * session or participant is created — never on the steady-state re-hit path.
+     *
+     * @param sourceUUID            The UUID of the source entity.
+     * @param targetUUID            The UUID of the target entity.
+     * @param sourceWrapperSupplier Supplier of the source entity's {@link CustomEntityWrapper}.
+     * @param targetWrapperSupplier Supplier of the target entity's {@link CustomEntityWrapper}.
+     */
+    private void handleInteraction(@NotNull UUID sourceUUID, @NotNull UUID targetUUID,
+                                   @NotNull Supplier<CustomEntityWrapper> sourceWrapperSupplier,
+                                   @NotNull Supplier<CustomEntityWrapper> targetWrapperSupplier) {
         ParticipantType sourceType = resolveParticipantType(sourceUUID);
         ParticipantType targetType = resolveParticipantType(targetUUID);
 
         // Handle the source side (if source is a player)
         if (sourceType == ParticipantType.PLAYER) {
-            handleSideInteraction(sourceUUID, targetUUID, targetType, targetEntityWrapper);
+            handleSideInteraction(sourceUUID, targetUUID, targetType, targetWrapperSupplier);
         }
 
         // Handle the target side (if target is a player)
         if (targetType == ParticipantType.PLAYER) {
-            handleSideInteraction(targetUUID, sourceUUID, sourceType, sourceEntityWrapper);
+            handleSideInteraction(targetUUID, sourceUUID, sourceType, sourceWrapperSupplier);
         }
     }
 
@@ -155,8 +193,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
         Entity targetEntity = Bukkit.getEntity(targetUUID);
 
         if (sourceEntity != null && targetEntity != null) {
-            handleCombatInteraction(sourceUUID, targetUUID,
-                    new CustomEntityWrapper(sourceEntity), new CustomEntityWrapper(targetEntity));
+            handleCombatInteraction(sourceUUID, targetUUID, sourceEntity, targetEntity);
             return;
         }
 
@@ -501,17 +538,24 @@ public class CombatTrackerManager extends Manager<McRPG> {
 
     /**
      * Gets the configured session timeout in milliseconds. Reads the
-     * {@link CombatConfigFile#SESSION_TIMEOUT_SECONDS} value from the combat configuration
-     * file and converts it to milliseconds.
+     * {@link CombatConfigFile#SESSION_TIMEOUT_SECONDS} value from the combat configuration file and
+     * converts it to milliseconds. The value is floored at 1 second: a zero or negative timeout would
+     * make every session expire on the next scan pass, silently disabling combat tracking.
      *
-     * @return The session timeout in milliseconds.
+     * @return The session timeout in milliseconds (always at least 1000).
      */
     public long getSessionTimeoutMillis() {
         YamlDocument config = plugin().registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.COMBAT_CONFIG);
-        return (long) (config.getDouble(CombatConfigFile.SESSION_TIMEOUT_SECONDS) * 1000);
+        double seconds = config.getDouble(CombatConfigFile.SESSION_TIMEOUT_SECONDS);
+        if (seconds < 1.0) {
+            plugin().getLogger().log(Level.WARNING, "Combat config {0} is {1}, which is invalid; using 1.0 instead.",
+                    new Object[]{CombatConfigFile.SESSION_TIMEOUT_SECONDS.toString(), seconds});
+            seconds = 1.0;
+        }
+        return (long) (seconds * 1000);
     }
 
     /**
@@ -536,17 +580,24 @@ public class CombatTrackerManager extends Manager<McRPG> {
     }
 
     /**
-     * Gets the configured scan interval for the timeout task in seconds from the combat
-     * configuration file.
+     * Gets the configured scan interval for the timeout task in seconds from the combat configuration
+     * file. The value is floored at 0.25 seconds: a zero or negative interval would degrade the scan
+     * task to running every tick (or break it entirely), hurting tick time.
      *
-     * @return The scan interval in seconds.
+     * @return The scan interval in seconds (always at least 0.25).
      */
     private double getScanIntervalSeconds() {
         YamlDocument config = plugin().registryAccess()
                 .registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.COMBAT_CONFIG);
-        return config.getDouble(CombatConfigFile.TIMEOUT_SCAN_INTERVAL_SECONDS);
+        double interval = config.getDouble(CombatConfigFile.TIMEOUT_SCAN_INTERVAL_SECONDS);
+        if (interval < 0.25) {
+            plugin().getLogger().log(Level.WARNING, "Combat config {0} is {1}, which is invalid; using 0.25 instead.",
+                    new Object[]{CombatConfigFile.TIMEOUT_SCAN_INTERVAL_SECONDS.toString(), interval});
+            interval = 0.25;
+        }
+        return interval;
     }
 
     /**
@@ -584,24 +635,27 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * <p>
      * This method is called once per player side of a combat interaction — a PvP hit calls
      * it twice (once for each player), while a PvE hit calls it once (for the player only).
+     * <p>
+     * The other entity's {@link CustomEntityWrapper} is supplied lazily and resolved only when a
+     * session or participant is actually created; the steady-state re-hit path never resolves it.
      *
-     * @param ownerUUID          The UUID of the session owner (always a player).
-     * @param otherUUID          The UUID of the other entity in the interaction.
-     * @param otherType          The {@link ParticipantType} of the other entity.
-     * @param otherEntityWrapper The {@link CustomEntityWrapper} of the other entity.
+     * @param ownerUUID            The UUID of the session owner (always a player).
+     * @param otherUUID            The UUID of the other entity in the interaction.
+     * @param otherType            The {@link ParticipantType} of the other entity.
+     * @param otherWrapperSupplier Supplier of the other entity's {@link CustomEntityWrapper}.
      */
     private void handleSideInteraction(@NotNull UUID ownerUUID, @NotNull UUID otherUUID,
                                        @NotNull ParticipantType otherType,
-                                       @NotNull CustomEntityWrapper otherEntityWrapper) {
+                                       @NotNull Supplier<CustomEntityWrapper> otherWrapperSupplier) {
         CombatSession session = activeSessions.get(ownerUUID);
 
         if (session == null) {
-            createSessionForInteraction(ownerUUID, otherUUID, otherType, otherEntityWrapper);
+            createSessionForInteraction(ownerUUID, otherUUID, otherType, otherWrapperSupplier.get());
             return;
         }
 
         if (!session.hasParticipant(otherUUID)) {
-            addNewParticipant(session, otherUUID, otherType, otherEntityWrapper);
+            addNewParticipant(session, otherUUID, otherType, otherWrapperSupplier.get());
             return;
         }
 

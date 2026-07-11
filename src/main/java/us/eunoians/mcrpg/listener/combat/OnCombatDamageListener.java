@@ -1,6 +1,5 @@
 package us.eunoians.mcrpg.listener.combat;
 
-import com.diamonddagger590.mccore.util.item.CustomEntityWrapper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Projectile;
@@ -33,8 +32,8 @@ public class OnCombatDamageListener implements Listener {
 
     /**
      * Handles entity-on-entity damage events. Resolves the true source entity for projectiles
-     * via {@link Projectile#getShooter()}, constructs {@link CustomEntityWrapper}s for both
-     * entities, then reports the combat interaction to the manager.
+     * via {@link Projectile#getShooter()}, constructs {@link com.diamonddagger590.mccore.util.item.CustomEntityWrapper}s
+     * for both entities, then reports the combat interaction to the manager.
      * <p>
      * Guards applied:
      * <ul>
@@ -71,9 +70,8 @@ public class OnCombatDamageListener implements Listener {
             return;
         }
 
-        CustomEntityWrapper sourceWrapper = new CustomEntityWrapper(sourceEntity);
-        CustomEntityWrapper targetWrapper = new CustomEntityWrapper(targetEntity);
-
-        combatTrackerManager.handleCombatInteraction(sourceUUID, targetUUID, sourceWrapper, targetWrapper);
+        // Pass the entities directly — the manager builds CustomEntityWrappers lazily and only when a
+        // session or participant is actually created, avoiding wrapper construction on every hit.
+        combatTrackerManager.handleCombatInteraction(sourceUUID, targetUUID, sourceEntity, targetEntity);
     }
 }

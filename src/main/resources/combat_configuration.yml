@@ -1,19 +1,27 @@
+config-version: 1
+
 # Combat Tracker Configuration
 # Controls per-player combat session tracking, timeout behavior, and participant management.
-
-config-version: 1
 
 session:
   # Seconds of inactivity before a combat session ends.
   # Also used as the per-participant inactivity threshold — participants that haven't
   # interacted with the session owner for this duration are individually removed.
+  # Minimum: 1 (values below 1 are clamped to 1 and a warning is logged).
+  # Reload: applies to newly started combat sessions after /mcrpg admin reload; sessions
+  # already in progress keep the value they started with.
   timeout-seconds: 8
 
   # Maximum number of mob participants tracked in a session's FIFO queue.
   # When the queue is full, the oldest mob is evicted. Player participants are unlimited.
+  # Minimum: 1 (values below 1 are clamped to 1 and a warning is logged).
+  # Reload: applies to newly started combat sessions after /mcrpg admin reload; sessions
+  # already in progress keep the value they started with.
   max-mob-participants: 16
 
   # Seconds between global timeout scan passes.
   # Lower values = more responsive timeouts, slightly higher tick cost.
   # 0.5 seconds is sufficient — timing precision for an 8-second timeout doesn't need sub-second granularity.
+  # Minimum: 0.25 (values below 0.25 are clamped to 0.25 and a warning is logged).
+  # Reload: applied immediately by /mcrpg admin reload (the scan task is restarted).
   timeout-scan-interval-seconds: 0.5

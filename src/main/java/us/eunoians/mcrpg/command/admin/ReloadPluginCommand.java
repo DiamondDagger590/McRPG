@@ -36,6 +36,10 @@ public class ReloadPluginCommand extends McRPGCommandBase {
 
                     plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).reloadFiles();
 
+                    // Restart the combat timeout scan task so a changed scan interval takes effect on reload.
+                    // Active sessions live in the manager and are untouched; only the scan cadence is refreshed.
+                    plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_TRACKER).startTimeoutTask();
+
                     // Invalidate level caches for all online players since leveling equations may have changed
                     plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER).getAllPlayers()
                             .forEach(player -> player.asSkillHolder().invalidateAllLevelCaches());

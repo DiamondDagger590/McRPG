@@ -5,6 +5,7 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -59,13 +60,16 @@ public class CombatConditionRegistry implements Registry<CombatCondition> {
     }
 
     /**
-     * Gets all registered combat conditions.
+     * Gets all registered combat conditions as an unmodifiable live view over the backing map.
+     * Conditions are registered at startup and the view is only iterated on the main thread (e.g. by
+     * the timeout scan), so no defensive copy is taken — callers must not retain the collection
+     * across a registration change.
      *
-     * @return an unmodifiable collection of all registered conditions
+     * @return an unmodifiable view of all registered conditions
      */
     @NotNull
     public Collection<CombatCondition> getAll() {
-        return Set.copyOf(conditions.values());
+        return Collections.unmodifiableCollection(conditions.values());
     }
 
     /**
