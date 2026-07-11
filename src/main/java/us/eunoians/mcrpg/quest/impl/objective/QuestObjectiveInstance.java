@@ -33,6 +33,7 @@ public class QuestObjectiveInstance {
     private long requiredProgression;
     private long currentProgression;
     private final Map<UUID, Long> playerContributionTracker;
+    private Map<String, Object> customData;
 
     /**
      * Creates a new objective instance in {@link QuestObjectiveState#NOT_STARTED} state
@@ -47,6 +48,7 @@ public class QuestObjectiveInstance {
         this.questStage = questStage;
         this.questObjectiveState = QuestObjectiveState.NOT_STARTED;
         this.playerContributionTracker = new HashMap<>();
+        this.customData = new HashMap<>();
     }
 
     /**
@@ -61,11 +63,13 @@ public class QuestObjectiveInstance {
      * @param requiredProgression      the total progress required
      * @param currentProgression       the current progress amount
      * @param playerContributionTracker per-player contribution amounts
+     * @param customData               persisted structured custom-data for custom objective types
      */
     public QuestObjectiveInstance(@NotNull NamespacedKey questObjectiveKey, @NotNull UUID questObjectiveUUID,
                                   @NotNull QuestStageInstance questStage, @NotNull QuestObjectiveState questObjectiveState,
                                   @Nullable Long startTime, @Nullable Long endTime, long requiredProgression,
-                                  long currentProgression, @NotNull Map<UUID, Long> playerContributionTracker) {
+                                  long currentProgression, @NotNull Map<UUID, Long> playerContributionTracker,
+                                  @NotNull Map<String, Object> customData) {
         this.questObjectiveKey = questObjectiveKey;
         this.questObjectiveUUID = questObjectiveUUID;
         this.questStage = questStage;
@@ -75,6 +79,43 @@ public class QuestObjectiveInstance {
         this.requiredProgression = requiredProgression;
         this.currentProgression = currentProgression;
         this.playerContributionTracker = new HashMap<>(playerContributionTracker);
+        this.customData = new HashMap<>(customData);
+    }
+
+    /**
+     * Gets the mutable custom-data map for this objective instance. Custom {@link
+     * us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType} implementations use this to persist
+     * structured progress state that the scalar progression counter cannot express — for example the
+     * set of distinct biomes visited for a "visit 5 distinct biomes" objective. The map is serialized
+     * to a JSON column and restored on load. Mutating the returned map directly does <b>not</b> mark
+     * the quest dirty; call {@link #markCustomDataDirty()} (or progress the objective) after changing it
+     * so the change is persisted.
+     *
+     * @return the live, mutable custom-data map (never {@code null})
+     */
+    @NotNull
+    public Map<String, Object> getCustomData() {
+        return customData;
+    }
+
+    /**
+     * Replaces the custom-data map for this objective instance. Used by the load path to restore
+     * persisted custom data, and by custom objective types that prefer to swap the whole map. Marks the
+     * owning quest dirty so the change is flushed.
+     *
+     * @param customData the new custom-data map; a defensive copy is stored
+     */
+    public void setCustomData(@NotNull Map<String, Object> customData) {
+        this.customData = new HashMap<>(customData);
+        questStage.getQuestInstance().markDirty();
+    }
+
+    /**
+     * Marks the owning quest dirty after an in-place mutation of the map returned by
+     * {@link #getCustomData()}, so the change is persisted on the next flush.
+     */
+    public void markCustomDataDirty() {
+        questStage.getQuestInstance().markDirty();
     }
 
     /**

@@ -12,7 +12,9 @@ import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.database.table.quest.PendingRewardDAO;
 import us.eunoians.mcrpg.quest.reward.PendingReward;
+import us.eunoians.mcrpg.quest.reward.QuestRewardGranter;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
+import us.eunoians.mcrpg.quest.reward.RewardGrantContext;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
@@ -34,9 +36,11 @@ import java.util.logging.Level;
 public final class RewardDistributionGranter {
 
     private final McRPG plugin;
+    private final QuestRewardGranter rewardGranter;
 
     public RewardDistributionGranter(@NotNull McRPG plugin) {
         this.plugin = plugin;
+        this.rewardGranter = new QuestRewardGranter(plugin);
     }
 
     /**
@@ -58,15 +62,7 @@ public final class RewardDistributionGranter {
 
             Player player = Bukkit.getPlayer(playerUUID);
             if (player != null && player.isOnline()) {
-                for (QuestRewardType reward : rewards) {
-                    try {
-                        reward.grant(player);
-                    } catch (RuntimeException e) {
-                        plugin.getLogger().log(Level.SEVERE, "Failed to grant distribution reward '" + reward.getKey()
-                                + "' for quest " + questKey + " to player " + playerUUID
-                                + "; other rewards are unaffected.", e);
-                    }
-                }
+                rewardGranter.grantToOnlinePlayer(player, rewards, questKey, null, RewardGrantContext.DISTRIBUTION);
             } else {
                 queueForOffline(playerUUID, rewards, questKey);
             }

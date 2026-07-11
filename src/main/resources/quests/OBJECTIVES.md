@@ -649,3 +649,34 @@ objectives:
 | [`QuestObjectiveCompleteListener`](../listener/quest/QuestObjectiveCompleteListener.java) | Reward granting + stage advancement |
 | [`QuestObjectiveTypeContentPack`](../expansion/content/QuestObjectiveTypeContentPack.java) | Expansion pack for types |
 | [`McRPGExpansion`](../expansion/McRPGExpansion.java) | Registers built-in types |
+
+---
+
+## Persisting structured progress state (custom objective types)
+
+The scalar progress counter cannot express set-like objectives ("visit 5
+*distinct* biomes", "kill one of each boss"). A custom `QuestObjectiveType` can
+persist arbitrary structured state on the objective instance via
+`QuestObjectiveInstance.getCustomData()` — a `Map<String, Object>` serialized to
+a JSON column and restored on load.
+
+```java
+@Override
+public long processProgress(QuestObjectiveInstance instance, QuestObjectiveProgressContext context) {
+    String biome = ((BiomeVisitContext) context).getBiomeKey();
+    @SuppressWarnings("unchecked")
+    List<String> visited = (List<String>) instance.getCustomData()
+            .computeIfAbsent("visited_biomes", key -> new ArrayList<String>());
+    if (visited.contains(biome)) {
+        return 0; // already counted — revisiting does not progress
+    }
+    visited.add(biome);
+    instance.markCustomDataDirty(); // flag the change for persistence
+    return 1;
+}
+```
+
+Mutate the map in place and call `markCustomDataDirty()` (or replace it wholesale
+with `setCustomData(...)`, which marks the quest dirty for you). Custom data
+round-trips through save → restart → load. Keep values JSON-friendly (strings,
+numbers, booleans, lists, maps).

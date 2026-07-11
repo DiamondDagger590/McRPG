@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.event.quest;
 
+import org.bukkit.event.HandlerList;
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -107,5 +108,28 @@ public class QuestObjectiveProgressEvent extends QuestEvent implements Cancellab
     @Override
     public void setCancelled(boolean cancel) {
         this.cancelled = cancel;
+    }
+
+    private static final HandlerList HANDLERS = new HandlerList();
+
+    /**
+     * Gets the handler list for this event.
+     *
+     * @return the handler list
+     */
+    @NotNull
+    @Override
+    public HandlerList getHandlers() {
+        return HANDLERS;
+    }
+
+    /**
+     * Gets the static handler list for this event, used by Bukkit for registration.
+     *
+     * @return the handler list
+     */
+    @NotNull
+    public static HandlerList getHandlerList() {
+        return HANDLERS;
     }
 }

@@ -2,14 +2,19 @@ package us.eunoians.mcrpg.database.table.quest;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveInstance;
 import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveState;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 
+import java.lang.reflect.Type;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,7 +33,11 @@ import java.util.logging.Level;
 public class QuestObjectiveInstanceDAO {
 
     static final String TABLE_NAME = "mcrpg_quest_objective_instances";
-    private static final int CURRENT_TABLE_VERSION = 1;
+    private static final int CURRENT_TABLE_VERSION = 2;
+    private static final String CUSTOM_DATA_COLUMN = "custom_data";
+    private static final Gson GSON = new Gson();
+    private static final Type CUSTOM_DATA_TYPE = new TypeToken<Map<String, Object>>() {
+    }.getType();
 
     /**
      * Attempts to create the objective instances table if it does not already exist.
@@ -50,6 +59,7 @@ public class QuestObjectiveInstanceDAO {
                 "`current_progress` BIGINT NOT NULL DEFAULT 0," +
                 "`start_time` BIGINT," +
                 "`end_time` BIGINT," +
+                "`custom_data` TEXT," +
                 "PRIMARY KEY (`objective_uuid`)," +
                 "FOREIGN KEY (`stage_uuid`) REFERENCES `" + QuestStageInstanceDAO.TABLE_NAME + "`(`stage_uuid`) ON DELETE CASCADE" +
                 ");")) {
@@ -79,7 +89,65 @@ public class QuestObjectiveInstanceDAO {
                 McRPG.getInstance().getLogger().log(Level.SEVERE, "[QuestObjectiveInstanceDAO] Failed to create index during migration", e);
             }
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
+            lastStoredVersion = 1;
         }
+
+        // Version 2: add custom_data column for structured per-type objective progress state
+        if (lastStoredVersion == 1) {
+            ensureColumnExists(connection, CUSTOM_DATA_COLUMN, "TEXT");
+            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 2);
+        }
+    }
+
+    /**
+     * Adds the given column to the table if it does not already exist.
+     *
+     * @param connection           the database connection
+     * @param columnName           the column name
+     * @param addColumnSqlFragment the type/constraint fragment appended after {@code ADD COLUMN}
+     */
+    private static void ensureColumnExists(@NotNull Connection connection, @NotNull String columnName,
+                                           @NotNull String addColumnSqlFragment) {
+        if (columnExists(connection, columnName)) {
+            return;
+        }
+        try (PreparedStatement ps = connection.prepareStatement(
+                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + columnName + " " + addColumnSqlFragment)) {
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.SEVERE, "[QuestObjectiveInstanceDAO] Failed to add column "
+                    + columnName + " during migration", e);
+        }
+    }
+
+    /**
+     * Checks whether a column exists on the objective instances table, tolerating SQLite metadata
+     * quirks by falling back to a {@code PRAGMA table_info} scan.
+     *
+     * @param connection the database connection
+     * @param columnName the column name to look for
+     * @return {@code true} if the column exists
+     */
+    private static boolean columnExists(@NotNull Connection connection, @NotNull String columnName) {
+        try {
+            DatabaseMetaData metaData = connection.getMetaData();
+            try (ResultSet rs = metaData.getColumns(null, null, TABLE_NAME, columnName)) {
+                if (rs.next()) {
+                    return true;
+                }
+            }
+            try (PreparedStatement ps = connection.prepareStatement("PRAGMA table_info(" + TABLE_NAME + ")");
+                 ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    if (columnName.equalsIgnoreCase(rs.getString("name"))) {
+                        return true;
+                    }
+                }
+            }
+        } catch (SQLException ignored) {
+            // If we can't determine it, assume it does not exist and let the ALTER attempt decide.
+        }
+        return false;
     }
 
     /**
@@ -96,13 +164,14 @@ public class QuestObjectiveInstanceDAO {
         try {
             PreparedStatement ps = connection.prepareStatement(
                     "INSERT INTO " + TABLE_NAME +
-                            " (objective_uuid, stage_uuid, definition_key, state, required_progress, current_progress, start_time, end_time)" +
-                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?)" +
+                            " (objective_uuid, stage_uuid, definition_key, state, required_progress, current_progress, start_time, end_time, custom_data)" +
+                            " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)" +
                             " ON CONFLICT(objective_uuid) DO UPDATE SET" +
                             " state = excluded.state," +
                             " current_progress = excluded.current_progress," +
                             " start_time = excluded.start_time," +
-                            " end_time = excluded.end_time");
+                            " end_time = excluded.end_time," +
+                            " custom_data = excluded.custom_data");
             ps.setString(1, objective.getQuestObjectiveUUID().toString());
             ps.setString(2, objective.getQuestStage().getQuestStageUUID().toString());
             ps.setString(3, objective.getQuestObjectiveKey().toString());
@@ -111,6 +180,7 @@ public class QuestObjectiveInstanceDAO {
             ps.setLong(6, objective.getCurrentProgression());
             setNullableLong(ps, 7, objective.getStartTime().orElse(null));
             setNullableLong(ps, 8, objective.getEndTime().orElse(null));
+            ps.setString(9, serializeCustomData(objective.getCustomData()));
             statements.add(ps);
         } catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING, "[QuestObjectiveInstanceDAO] Failed to prepare saveObjectiveInstance statement for objective " + objective.getQuestObjectiveUUID(), e);
@@ -151,7 +221,7 @@ public class QuestObjectiveInstanceDAO {
                                                                       @NotNull QuestStageInstance stage) {
         List<QuestObjectiveInstance> objectives = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT objective_uuid, definition_key, state, required_progress, current_progress, start_time, end_time" +
+                "SELECT objective_uuid, definition_key, state, required_progress, current_progress, start_time, end_time, custom_data" +
                         " FROM " + TABLE_NAME + " WHERE stage_uuid = ?")) {
             ps.setString(1, stageUUID.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -163,10 +233,11 @@ public class QuestObjectiveInstanceDAO {
                     long currentProgress = rs.getLong("current_progress");
                     Long startTime = getNullableLong(rs, "start_time");
                     Long endTime = getNullableLong(rs, "end_time");
+                    Map<String, Object> customData = deserializeCustomData(rs.getString("custom_data"));
                     Map<UUID, Long> emptyContributions = new HashMap<>();
                     objectives.add(new QuestObjectiveInstance(
                             defKey, objectiveUUID, stage, state, startTime, endTime,
-                            requiredProgress, currentProgress, emptyContributions));
+                            requiredProgress, currentProgress, emptyContributions, customData));
                 }
             }
         } catch (SQLException e) {
@@ -190,7 +261,7 @@ public class QuestObjectiveInstanceDAO {
             @NotNull Connection connection, @NotNull UUID stageUUID, @NotNull QuestStageInstance stage) {
         List<QuestObjectiveInstance> objectives = new ArrayList<>();
         try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT objective_uuid, definition_key, state, required_progress, current_progress, start_time, end_time" +
+                "SELECT objective_uuid, definition_key, state, required_progress, current_progress, start_time, end_time, custom_data" +
                         " FROM " + TABLE_NAME + " WHERE stage_uuid = ?")) {
             ps.setString(1, stageUUID.toString());
             try (ResultSet rs = ps.executeQuery()) {
@@ -202,11 +273,12 @@ public class QuestObjectiveInstanceDAO {
                     long currentProgress = rs.getLong("current_progress");
                     Long startTime = getNullableLong(rs, "start_time");
                     Long endTime = getNullableLong(rs, "end_time");
+                    Map<String, Object> customData = deserializeCustomData(rs.getString("custom_data"));
                     Map<UUID, Long> contributions = QuestObjectiveContributionDAO.loadContributions(
                             connection, objectiveUUID);
                     objectives.add(new QuestObjectiveInstance(
                             defKey, objectiveUUID, stage, state, startTime, endTime,
-                            requiredProgress, currentProgress, contributions));
+                            requiredProgress, currentProgress, contributions, customData));
                 }
             }
         } catch (SQLException e) {
@@ -235,6 +307,43 @@ public class QuestObjectiveInstanceDAO {
             McRPG.getInstance().getLogger().log(Level.WARNING, "[QuestObjectiveInstanceDAO] Failed to prepare deleteObjectiveInstances statement for stage " + stageUUID, e);
         }
         return statements;
+    }
+
+    /**
+     * Serializes an objective's custom-data map to a JSON string for storage, returning {@code null}
+     * when the map is empty so empty state occupies no column value.
+     *
+     * @param customData the custom-data map
+     * @return the JSON string, or {@code null} if the map is empty
+     */
+    @Nullable
+    private static String serializeCustomData(@NotNull Map<String, Object> customData) {
+        if (customData.isEmpty()) {
+            return null;
+        }
+        return GSON.toJson(customData, CUSTOM_DATA_TYPE);
+    }
+
+    /**
+     * Deserializes a stored custom-data JSON string back into a map, tolerating {@code null}/blank
+     * values (older rows, empty state) and malformed JSON by returning an empty map.
+     *
+     * @param json the stored JSON string, may be {@code null}
+     * @return the deserialized custom-data map (never {@code null})
+     */
+    @NotNull
+    private static Map<String, Object> deserializeCustomData(@Nullable String json) {
+        if (json == null || json.isBlank()) {
+            return new HashMap<>();
+        }
+        try {
+            Map<String, Object> parsed = GSON.fromJson(json, CUSTOM_DATA_TYPE);
+            return parsed != null ? parsed : new HashMap<>();
+        } catch (RuntimeException e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING,
+                    "[QuestObjectiveInstanceDAO] Failed to parse custom_data JSON; ignoring: " + json, e);
+            return new HashMap<>();
+        }
     }
 
     private static void setNullableLong(@NotNull PreparedStatement ps, int index, Long value) throws SQLException {

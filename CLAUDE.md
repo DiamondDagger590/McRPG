@@ -256,6 +256,8 @@ src/main/java/us/eunoians/mcrpg/
 | **QuestObjectiveType** | Extensible interface defining the behavior and progress-tracking logic for a category of objectives (e.g., `BlockBreakObjectiveType`, `MobKillObjectiveType`). Registered in `QuestObjectiveTypeRegistry`. Extensible via `QuestObjectiveTypeContentPack`. |
 | **QuestRewardType** | Extensible interface defining how a specific reward is granted (e.g., `CommandRewardType`, `ExperienceRewardType`, `AbilityUpgradeRewardType`). Registered in `QuestRewardTypeRegistry`. Extensible via `QuestRewardTypeContentPack`. |
 | **PendingReward** | A serialized reward queued for a player who was offline at the time of grant. Stored in the DB and granted at next login; expires after a configurable duration. |
+| **QuestRewardGranter** | Central collaborator (`quest/reward/`) that grants a reward batch to an online player, firing the cancellable `QuestRewardGrantEvent` before and the informational `QuestRewardGrantedEvent` after. All three grant pathways (inline completion, distribution, pending-reward login) route through it, distinguished by `RewardGrantContext` (`INLINE`/`DISTRIBUTION`/`PENDING`). |
+| **Objective custom data** | Optional structured per-instance progress state for custom `QuestObjectiveType`s, held as `Map<String,Object>` on `QuestObjectiveInstance.getCustomData()` and persisted as a JSON `custom_data` column (`QuestObjectiveInstanceDAO` table v2). Used for set-like objectives (distinct biomes, one-of-each). Mutate in place + `markCustomDataDirty()`. |
 
 ### Quest Chain System
 

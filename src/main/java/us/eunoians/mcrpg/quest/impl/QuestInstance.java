@@ -25,7 +25,9 @@ import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestPhaseDefinition;
 import us.eunoians.mcrpg.quest.reward.PendingReward;
+import us.eunoians.mcrpg.quest.reward.QuestRewardGranter;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
+import us.eunoians.mcrpg.quest.reward.RewardGrantContext;
 import us.eunoians.mcrpg.quest.definition.QuestStageDefinition;
 import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveInstance;
 import us.eunoians.mcrpg.quest.impl.scope.QuestScope;
@@ -573,19 +575,12 @@ public class QuestInstance {
         if (rewards.isEmpty()) {
             return;
         }
+        QuestRewardGranter granter = new QuestRewardGranter(McRPG.getInstance());
         getQuestScope().ifPresent(scope -> {
             for (UUID playerUUID : scope.getCurrentPlayersInScope()) {
                 Player player = Bukkit.getPlayer(playerUUID);
                 if (player != null && player.isOnline()) {
-                    for (QuestRewardType reward : rewards) {
-                        try {
-                            reward.grant(player);
-                        } catch (RuntimeException e) {
-                            McRPG.getInstance().getLogger().log(Level.SEVERE, "Failed to grant reward '" + reward.getKey()
-                                    + "' for quest " + questKey + " to player " + playerUUID
-                                    + "; other rewards are unaffected.", e);
-                        }
-                    }
+                    granter.grantToOnlinePlayer(player, rewards, questKey, this, RewardGrantContext.INLINE);
                 } else {
                     queueRewardsForOfflinePlayer(playerUUID, rewards);
                 }

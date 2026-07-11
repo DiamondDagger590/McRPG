@@ -1,0 +1,175 @@
+package us.eunoians.mcrpg.quest.reward;
+
+import dev.dejvokep.boostedyaml.block.implementation.Section;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.event.quest.QuestRewardGrantEvent;
+import us.eunoians.mcrpg.event.quest.QuestRewardGrantedEvent;
+import us.eunoians.mcrpg.util.McRPGMethods;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+/**
+ * Verifies {@link QuestRewardGranter} fires the interception events and honors listener cancellation
+ * and reward-list mutation across the shared grant path used by all three grant sites.
+ */
+public class QuestRewardGranterTest extends McRPGBaseTest {
+
+    private NamespacedKey key(@NotNull String name) {
+        return new NamespacedKey(McRPGMethods.getMcRPGNamespace(), name);
+    }
+
+    /**
+     * The MockBukkit server is shared across tests, so registered listeners persist on the events'
+     * static handler lists. Clear this suite's two event types after each test to prevent a listener
+     * from one test (e.g. the cancelling one) leaking into the next.
+     */
+    @AfterEach
+    void clearRewardEventListeners() {
+        QuestRewardGrantEvent.getHandlerList().unregisterAll();
+        QuestRewardGrantedEvent.getHandlerList().unregisterAll();
+    }
+
+    @Test
+    @DisplayName("grants all rewards and fires granted event when uncancelled")
+    void grantToOnlinePlayer_grantsAll_whenNotCancelled() {
+        Player player = server.addPlayer();
+        QuestRewardGranter granter = new QuestRewardGranter(McRPG.getInstance());
+        RecordingReward reward = new RecordingReward(key("good"));
+        CapturingListener listener = new CapturingListener();
+        server.getPluginManager().registerEvents(listener, McRPG.getInstance());
+
+        List<QuestRewardType> granted = granter.grantToOnlinePlayer(player, List.of(reward), key("quest"),
+                null, RewardGrantContext.INLINE);
+
+        assertTrue(reward.wasGranted(), "reward should be granted");
+        assertEquals(1, granted.size(), "granted list should contain the one reward");
+        assertNotNull(listener.grantedEvent, "post-grant event should fire");
+        assertEquals(1, listener.grantedEvent.getGrantedRewards().size());
+    }
+
+    @Test
+    @DisplayName("cancelled event grants nothing and returns empty")
+    void grantToOnlinePlayer_grantsNothing_whenCancelled() {
+        Player player = server.addPlayer();
+        QuestRewardGranter granter = new QuestRewardGranter(McRPG.getInstance());
+        RecordingReward reward = new RecordingReward(key("good"));
+        server.getPluginManager().registerEvents(new CancellingListener(), McRPG.getInstance());
+
+        List<QuestRewardType> granted = granter.grantToOnlinePlayer(player, List.of(reward), key("quest"),
+                null, RewardGrantContext.INLINE);
+
+        assertFalse(reward.wasGranted(), "cancelled batch must not grant");
+        assertTrue(granted.isEmpty(), "cancelled batch returns empty granted list");
+    }
+
+    @Test
+    @DisplayName("listener mutation of the reward list is honored")
+    void grantToOnlinePlayer_honorsMutation() {
+        Player player = server.addPlayer();
+        QuestRewardGranter granter = new QuestRewardGranter(McRPG.getInstance());
+        RecordingReward original = new RecordingReward(key("original"));
+        RecordingReward added = new RecordingReward(key("added"));
+        server.getPluginManager().registerEvents(new MutatingListener(added), McRPG.getInstance());
+
+        List<QuestRewardType> granted = granter.grantToOnlinePlayer(player, List.of(original), key("quest"),
+                null, RewardGrantContext.INLINE);
+
+        assertFalse(original.wasGranted(), "listener removed the original reward");
+        assertTrue(added.wasGranted(), "listener-added reward should be granted");
+        assertEquals(1, granted.size());
+    }
+
+    /** Captures the post-grant event. */
+    private static class CapturingListener implements Listener {
+        private QuestRewardGrantedEvent grantedEvent;
+
+        @EventHandler
+        public void onGranted(@NotNull QuestRewardGrantedEvent event) {
+            this.grantedEvent = event;
+        }
+    }
+
+    /** Cancels every grant event. */
+    private static class CancellingListener implements Listener {
+        @EventHandler
+        public void onGrant(@NotNull QuestRewardGrantEvent event) {
+            event.setCancelled(true);
+        }
+    }
+
+    /** Replaces the reward batch with a single injected reward. */
+    private static class MutatingListener implements Listener {
+        private final QuestRewardType replacement;
+
+        MutatingListener(@NotNull QuestRewardType replacement) {
+            this.replacement = replacement;
+        }
+
+        @EventHandler
+        public void onGrant(@NotNull QuestRewardGrantEvent event) {
+            List<QuestRewardType> rewards = event.getRewards();
+            rewards.clear();
+            rewards.add(replacement);
+        }
+    }
+
+    /** Reward that records whether its grant ran. */
+    private static class RecordingReward implements QuestRewardType {
+        private final NamespacedKey key;
+        private boolean granted;
+
+        RecordingReward(@NotNull NamespacedKey key) {
+            this.key = key;
+        }
+
+        boolean wasGranted() {
+            return granted;
+        }
+
+        @Override
+        public @NotNull NamespacedKey getKey() {
+            return key;
+        }
+
+        @Override
+        public @NotNull QuestRewardType parseConfig(@NotNull Section section) {
+            return this;
+        }
+
+        @Override
+        public void grant(@NotNull Player player) {
+            granted = true;
+        }
+
+        @Override
+        public @NotNull Map<String, Object> serializeConfig() {
+            return Map.of();
+        }
+
+        @Override
+        public @NotNull QuestRewardType fromSerializedConfig(@NotNull Map<String, Object> config) {
+            return this;
+        }
+
+        @Override
+        public @NotNull Optional<NamespacedKey> getExpansionKey() {
+            return Optional.empty();
+        }
+    }
+}
