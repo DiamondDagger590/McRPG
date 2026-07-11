@@ -2,10 +2,12 @@ package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
+import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.loadout.Loadout;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
@@ -15,6 +17,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,12 +38,24 @@ import static org.mockito.Mockito.when;
 class LoadoutAbilityDAOTest extends McRPGBaseTest {
 
     private static final UUID PLAYER_UUID = UUID.randomUUID();
+    private static final NamespacedKey TEST_ABILITY_KEY = new NamespacedKey("mcrpg", "test_ability");
+    private static final String TEST_ABILITY_DB_NAME = "test_ability";
 
     @BeforeEach
     void setUp() {
         RegistryAccess registryAccess = RegistryAccess.registryAccess();
+        AbilityRegistry abilityRegistry;
         if (registryAccess.registry(McRPGRegistryKey.ABILITY) == null) {
-            registryAccess.register(new AbilityRegistry(mcRPG));
+            abilityRegistry = new AbilityRegistry(mcRPG);
+            registryAccess.register(abilityRegistry);
+        } else {
+            abilityRegistry = registryAccess.registry(McRPGRegistryKey.ABILITY);
+        }
+        if (!abilityRegistry.registered(TEST_ABILITY_KEY)) {
+            Ability mockAbility = mock(Ability.class);
+            when(mockAbility.getAbilityKey()).thenReturn(TEST_ABILITY_KEY);
+            when(mockAbility.getDatabaseName()).thenReturn(TEST_ABILITY_DB_NAME);
+            abilityRegistry.register(mockAbility);
         }
     }
 
@@ -139,5 +154,61 @@ class LoadoutAbilityDAOTest extends McRPGBaseTest {
         Loadout loadout = LoadoutAbilityDAO.getLoadout(mockConnection, PLAYER_UUID, 1);
 
         assertTrue(loadout.getAbilities().isEmpty());
+    }
+
+    @Test
+    @DisplayName("saveLoadout returns only delete statements when abilities empty")
+    void saveLoadout_returnsOnlyDeleteStatements_whenAbilitiesEmpty() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+
+        Loadout mockLoadout = mock(Loadout.class);
+        when(mockLoadout.getLoadoutSlot()).thenReturn(1);
+        when(mockLoadout.getAbilities()).thenReturn(Set.of());
+
+        List<PreparedStatement> result = LoadoutAbilityDAO.saveLoadout(mockConnection, PLAYER_UUID, mockLoadout);
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    @DisplayName("saveLoadout produces delete and insert statements when abilities exist")
+    void saveLoadout_producesDeleteAndInsertStatements_whenAbilitiesExist() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+
+        Loadout mockLoadout = mock(Loadout.class);
+        when(mockLoadout.getLoadoutSlot()).thenReturn(1);
+        when(mockLoadout.getAbilities()).thenReturn(Set.of(TEST_ABILITY_KEY));
+        when(mockLoadout.getOrderedAbilities()).thenReturn(List.of(TEST_ABILITY_KEY));
+
+        List<PreparedStatement> result = LoadoutAbilityDAO.saveLoadout(mockConnection, PLAYER_UUID, mockLoadout);
+
+        assertEquals(2, result.size());
+    }
+
+    @Test
+    @DisplayName("saveLoadout binds correct parameters on insert")
+    void saveLoadout_bindsCorrectParametersOnInsert() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockDeleteStatement = mock(PreparedStatement.class);
+        PreparedStatement mockInsertStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(anyString()))
+                .thenReturn(mockDeleteStatement, mockInsertStatement);
+
+        int loadoutSlot = 2;
+        Loadout mockLoadout = mock(Loadout.class);
+        when(mockLoadout.getLoadoutSlot()).thenReturn(loadoutSlot);
+        when(mockLoadout.getAbilities()).thenReturn(Set.of(TEST_ABILITY_KEY));
+        when(mockLoadout.getOrderedAbilities()).thenReturn(List.of(TEST_ABILITY_KEY));
+
+        LoadoutAbilityDAO.saveLoadout(mockConnection, PLAYER_UUID, mockLoadout);
+
+        verify(mockInsertStatement).setString(1, PLAYER_UUID.toString());
+        verify(mockInsertStatement).setInt(2, loadoutSlot);
+        verify(mockInsertStatement).setString(3, TEST_ABILITY_DB_NAME);
+        verify(mockInsertStatement).setInt(4, 0);
     }
 }
