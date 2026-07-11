@@ -1,5 +1,9 @@
 # Example quest definitions for McRPG.
 #
+# Full format guides live alongside this file in plugins/McRPG/quests/:
+#   SERVER-OWNER-GUIDE.md, QUEST-DEFINITIONS.md, OBJECTIVES.md, REWARDS.md,
+#   CONDITIONS.md, TEMPLATES.md, CHAIN-GUIDE.md, BOARD-INTEGRATION.md
+#
 # All .yml files in this directory (and subdirectories) are loaded automatically.
 # Organize files however you like — quest identity comes from the key, not the file name.
 #

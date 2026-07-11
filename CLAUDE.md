@@ -882,7 +882,7 @@ quest/board/
 | `DistributionRewardEntry.java` | Distribution tier reward with pot behavior |
 | `QuestRewardDistributionResolver.java` | Pure stateless distribution math |
 | `BoardConfigFile.java` | Route constants for `board.yml` |
-| `quest/REWARDS.md` | Developer guide for reward types and configuration |
+| `quests/REWARDS.md` | Developer guide for reward types and configuration (bundled in the jar and extracted to `plugins/McRPG/quests/`) |
 
 ---
 

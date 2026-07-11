@@ -121,6 +121,27 @@ public class QuestManager extends Manager<McRPG> {
             "quest-board/quests/legendary/legendary.yml"
     };
     private static final String DEFAULT_GENERIC_UPGRADE_QUEST_RESOURCE = "quests/upgrades/generic_ability_upgrades.yml";
+    private static final String DEFAULT_EXAMPLE_CHAIN_QUEST_RESOURCE = "quests/example_chain.yml";
+    private static final String[] DEFAULT_TUTORIAL_QUEST_RESOURCES = {
+            "quests/tutorial/chain.yml",
+            "quests/tutorial/first_steps.yml",
+            "quests/tutorial/mcrpg_menu.yml",
+            "quests/tutorial/natural_talent.yml",
+            "quests/tutorial/your_arsenal.yml",
+            "quests/tutorial/unleashed_power.yml",
+            "quests/tutorial/combo_strike.yml",
+            "quests/tutorial/quest_board.yml"
+    };
+    private static final String[] DEFAULT_OWNER_GUIDE_RESOURCES = {
+            "quests/CHAIN-GUIDE.md",
+            "quests/SERVER-OWNER-GUIDE.md",
+            "quests/OBJECTIVES.md",
+            "quests/REWARDS.md",
+            "quests/TEMPLATES.md",
+            "quests/CONDITIONS.md",
+            "quests/QUEST-DEFINITIONS.md",
+            "quests/BOARD-INTEGRATION.md"
+    };
 
     private final ReloadableContent<Long> finishedQuestKeepAliveNanos;
 
@@ -1213,6 +1234,10 @@ public class QuestManager extends Manager<McRPG> {
         if (!upgradesDir.exists()) {
             upgradesDir.mkdirs();
         }
+        File tutorialDir = new File(questsDir, "tutorial");
+        if (!tutorialDir.exists()) {
+            tutorialDir.mkdirs();
+        }
 
         File markerFile = new File(questsDir, ".extracted-defaults");
         Set<String> alreadyExtracted = loadExtractedMarker(markerFile);
@@ -1225,15 +1250,7 @@ public class QuestManager extends Manager<McRPG> {
             }
         }
 
-        List<String> defaultResources = new ArrayList<>(List.of(
-                DEFAULT_QUEST_RESOURCE,
-                DEFAULT_SWORDS_UPGRADE_QUEST_RESOURCE,
-                DEFAULT_MINING_UPGRADE_QUEST_RESOURCE,
-                DEFAULT_WOODCUTTING_UPGRADE_QUEST_RESOURCE,
-                DEFAULT_HERBALISM_UPGRADE_QUEST_RESOURCE,
-                DEFAULT_GENERIC_UPGRADE_QUEST_RESOURCE
-        ));
-        defaultResources.addAll(List.of(DEFAULT_BOARD_QUEST_RESOURCES));
+        List<String> defaultResources = getDefaultExtractionResources();
 
         boolean markerDirty = false;
         for (String resource : defaultResources) {
@@ -1250,6 +1267,31 @@ public class QuestManager extends Manager<McRPG> {
         }
     }
 
+    /**
+     * Builds the ordered list of bundled default resources that are extracted into the data folder on
+     * startup. Includes the example quest, per-skill and generic upgrade quests, the example chain, the
+     * first-join tutorial chain and its quests, the board quests, and the server-owner documentation
+     * guides. Package-private so the resource list can be validated against the packaged jar in tests.
+     *
+     * @return the mutable, ordered list of resource paths to extract
+     */
+    @NotNull
+    static List<String> getDefaultExtractionResources() {
+        List<String> defaultResources = new ArrayList<>(List.of(
+                DEFAULT_QUEST_RESOURCE,
+                DEFAULT_SWORDS_UPGRADE_QUEST_RESOURCE,
+                DEFAULT_MINING_UPGRADE_QUEST_RESOURCE,
+                DEFAULT_WOODCUTTING_UPGRADE_QUEST_RESOURCE,
+                DEFAULT_HERBALISM_UPGRADE_QUEST_RESOURCE,
+                DEFAULT_GENERIC_UPGRADE_QUEST_RESOURCE
+        ));
+        defaultResources.add(DEFAULT_EXAMPLE_CHAIN_QUEST_RESOURCE);
+        defaultResources.addAll(List.of(DEFAULT_TUTORIAL_QUEST_RESOURCES));
+        defaultResources.addAll(List.of(DEFAULT_BOARD_QUEST_RESOURCES));
+        defaultResources.addAll(List.of(DEFAULT_OWNER_GUIDE_RESOURCES));
+        return defaultResources;
+    }
+
     @NotNull
     private static Set<String> loadExtractedMarker(@NotNull File markerFile) {
         Set<String> entries = new LinkedHashSet<>();
@@ -1264,7 +1306,10 @@ public class QuestManager extends Manager<McRPG> {
                 }
             }
         } catch (IOException e) {
-            // If we can't read the marker, treat as empty so defaults are re-offered
+            // If we can't read the marker, treat as empty so defaults are re-offered. Log it so an
+            // owner can diagnose why default resources are re-extracted every startup.
+            McRPG.getInstance().getLogger().log(Level.WARNING, "Failed to read quest default-extraction marker "
+                    + markerFile.getAbsolutePath() + "; treating as empty (defaults may be re-offered).", e);
         }
         return entries;
     }
@@ -1273,7 +1318,10 @@ public class QuestManager extends Manager<McRPG> {
         try {
             Files.write(markerFile.toPath(), entries);
         } catch (IOException e) {
-            // Non-fatal; worst case defaults are re-offered on next startup
+            // Non-fatal; worst case defaults are re-offered on next startup. Log it so a persistent
+            // write failure (permissions, full disk) is diagnosable rather than silently re-extracting.
+            McRPG.getInstance().getLogger().log(Level.WARNING, "Failed to write quest default-extraction marker "
+                    + markerFile.getAbsolutePath() + "; defaults may be re-offered on next startup.", e);
         }
     }
 
