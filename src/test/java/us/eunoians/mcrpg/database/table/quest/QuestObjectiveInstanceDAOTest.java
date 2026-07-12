@@ -85,8 +85,8 @@ public class QuestObjectiveInstanceDAOTest extends McRPGBaseTest {
         assertFalse(result.isEmpty());
     }
 
-    @DisplayName("Given custom data, when saving then loading, then the structured data round-trips")
     @Test
+    @DisplayName("Given custom data, when saving then loading, then the structured data round-trips")
     public void customData_roundTripsThroughSaveAndLoad() throws SQLException {
         QuestDefinition def = QuestTestHelper.singlePhaseQuest("dao_custom_data");
         QuestInstance quest = QuestTestHelper.startedQuestInstance(def);
@@ -133,8 +133,8 @@ public class QuestObjectiveInstanceDAOTest extends McRPGBaseTest {
         assertTrue(((List<?>) visited).contains("desert"));
     }
 
-    @DisplayName("Given empty custom data, when saving, then the custom_data column is null")
     @Test
+    @DisplayName("Given empty custom data, when saving, then the custom_data column is null")
     public void saveObjectiveInstance_writesNullCustomData_whenEmpty() throws SQLException {
         QuestDefinition def = QuestTestHelper.singlePhaseQuest("dao_empty_custom_data");
         QuestInstance quest = QuestTestHelper.startedQuestInstance(def);

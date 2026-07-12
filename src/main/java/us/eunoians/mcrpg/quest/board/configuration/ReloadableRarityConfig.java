@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * Custom {@link ReloadableContent} subclass that re-parses rarity config from {@code board.yml}
@@ -52,8 +53,8 @@ public class ReloadableRarityConfig extends ReloadableContent<Map<NamespacedKey,
                                 nameColor
                         ));
                     } catch (RuntimeException exception) {
-                        McRPG.getInstance().getLogger().warning("[QuestBoard] Skipping malformed rarity '" + rawKey
-                                + "' in board.yml: " + exception.getMessage());
+                        McRPG.getInstance().getLogger().log(Level.WARNING,
+                                "[QuestBoard] Skipping malformed rarity '" + rawKey + "' in board.yml", exception);
                     }
                 }
             }

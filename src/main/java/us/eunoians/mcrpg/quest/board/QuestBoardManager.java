@@ -275,13 +275,15 @@ public class QuestBoardManager extends Manager<McRPG> {
     private DayOfWeek parseResetDayOrDefault(String rawResetDay) {
         String configured = rawResetDay;
         if (configured == null || configured.isBlank()) {
+            plugin().getLogger().warning("[QuestBoard] Missing weekly-reset-day in board.yml (expected one of"
+                    + " MONDAY-SUNDAY). Falling back to MONDAY.");
             configured = DayOfWeek.MONDAY.name();
         }
         try {
             return DayOfWeek.valueOf(configured.trim().toUpperCase(Locale.ROOT));
         } catch (IllegalArgumentException exception) {
-            plugin().getLogger().warning("[QuestBoard] Invalid weekly-reset-day '" + rawResetDay
-                    + "' in board.yml (expected a day name such as MONDAY). Falling back to MONDAY.");
+            plugin().getLogger().log(Level.WARNING, "[QuestBoard] Invalid weekly-reset-day '" + rawResetDay
+                    + "' in board.yml (expected one of MONDAY-SUNDAY). Falling back to MONDAY.", exception);
             return DayOfWeek.MONDAY;
         }
     }

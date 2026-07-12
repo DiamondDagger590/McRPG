@@ -21,6 +21,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -114,14 +115,16 @@ public final class QuestBoardRotationTask extends CancelableCoreTask {
     private LocalTime parseTimeOrDefault(String time) {
         String configuredTime = time;
         if (configuredTime == null || configuredTime.isBlank()) {
+            LOGGER.warning("[QuestBoard] Missing rotation.time in board.yml (expected 24-hour HH:mm, e.g."
+                    + " \"06:00\"). Falling back to " + DEFAULT_ROTATION_TIME + ".");
             configuredTime = DEFAULT_ROTATION_TIME;
         }
         try {
             return LocalTime.parse(configuredTime);
         } catch (Exception exception) {
-            LOGGER.warning("[QuestBoard] Invalid rotation time '" + configuredTime
+            LOGGER.log(Level.WARNING, "[QuestBoard] Invalid rotation time '" + configuredTime
                     + "' configured in board.yml (expected 24-hour HH:mm, e.g. \"06:00\"). Falling back to "
-                    + DEFAULT_ROTATION_TIME + ".");
+                    + DEFAULT_ROTATION_TIME + ".", exception);
             return LocalTime.parse(DEFAULT_ROTATION_TIME);
         }
     }

@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -144,8 +145,9 @@ public class QuestObjectiveInstanceDAO {
                     }
                 }
             }
-        } catch (SQLException ignored) {
-            // If we can't determine it, assume it does not exist and let the ALTER attempt decide.
+        } catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING, "[QuestObjectiveInstanceDAO] Failed to check whether"
+                    + " column " + columnName + " exists; assuming absent and letting the ALTER attempt decide", e);
         }
         return false;
     }
@@ -338,7 +340,13 @@ public class QuestObjectiveInstanceDAO {
         }
         try {
             Map<String, Object> parsed = GSON.fromJson(json, CUSTOM_DATA_TYPE);
-            return parsed != null ? parsed : new HashMap<>();
+            if (parsed == null) {
+                return new HashMap<>();
+            }
+            // The instance backs custom data with a ConcurrentHashMap, which rejects null values; drop
+            // any null-valued entries defensively so a malformed row cannot NPE the whole quest load.
+            parsed.values().removeIf(Objects::isNull);
+            return parsed;
         } catch (RuntimeException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING,
                     "[QuestObjectiveInstanceDAO] Failed to parse custom_data JSON; ignoring: " + json, e);

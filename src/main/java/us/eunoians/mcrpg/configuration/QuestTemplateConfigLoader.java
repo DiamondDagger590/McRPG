@@ -142,11 +142,13 @@ public final class QuestTemplateConfigLoader {
             logger.log(Level.WARNING, "Failed to load YAML file " + file.getName(), e);
             return;
         } catch (RuntimeException e) {
-            // SnakeYAML surfaces syntax errors (unclosed quotes, bad indentation) as unchecked
-            // exceptions. Without this, a single malformed template file would escape the directory
-            // walk and abort loading of every other template. Skip just this file with a WARNING.
+            // BoostedYaml wraps SnakeYAML syntax errors (unclosed quotes, bad indentation) in unchecked
+            // exceptions whose concrete type is not a plain org.yaml.snakeyaml YAMLException, so we catch
+            // RuntimeException to guarantee per-file isolation: without this, one malformed template file
+            // would escape the directory walk and abort loading of every other template. The throwable is
+            // logged (nothing is swallowed silently) so an unrelated defect is still diagnosable.
             logger.log(Level.WARNING, "Skipping template file " + file.getName()
-                    + " due to a YAML syntax error: " + e.getMessage(), e);
+                    + " due to a YAML syntax error", e);
             return;
         }
 

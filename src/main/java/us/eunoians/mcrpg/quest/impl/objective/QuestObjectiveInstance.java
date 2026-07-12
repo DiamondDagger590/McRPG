@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.UUID;
 
 /**
@@ -33,7 +34,9 @@ public class QuestObjectiveInstance {
     private long requiredProgression;
     private long currentProgression;
     private final Map<UUID, Long> playerContributionTracker;
-    private Map<String, Object> customData;
+    // Mutated on the main thread (via getCustomData()) but serialized on the DB executor thread during
+    // saveQuestAsync; a ConcurrentHashMap + volatile reference avoids a ConcurrentModificationException.
+    private volatile Map<String, Object> customData;
 
     /**
      * Creates a new objective instance in {@link QuestObjectiveState#NOT_STARTED} state
@@ -48,33 +51,11 @@ public class QuestObjectiveInstance {
         this.questStage = questStage;
         this.questObjectiveState = QuestObjectiveState.NOT_STARTED;
         this.playerContributionTracker = new HashMap<>();
-        this.customData = new HashMap<>();
+        this.customData = new ConcurrentHashMap<>();
     }
 
     /**
      * Reconstruction constructor for loading an objective instance from the database.
-     *
-     * @param questObjectiveKey        the definition key
-     * @param questObjectiveUUID       the persisted UUID
-     * @param questStage               the parent stage instance
-     * @param questObjectiveState      the persisted state
-     * @param startTime                the start timestamp in epoch millis, or {@code null}
-     * @param endTime                  the end timestamp in epoch millis, or {@code null}
-     * @param requiredProgression      the total progress required
-     * @param currentProgression       the current progress amount
-     * @param playerContributionTracker per-player contribution amounts
-     */
-    public QuestObjectiveInstance(@NotNull NamespacedKey questObjectiveKey, @NotNull UUID questObjectiveUUID,
-                                  @NotNull QuestStageInstance questStage, @NotNull QuestObjectiveState questObjectiveState,
-                                  @Nullable Long startTime, @Nullable Long endTime, long requiredProgression,
-                                  long currentProgression, @NotNull Map<UUID, Long> playerContributionTracker) {
-        this(questObjectiveKey, questObjectiveUUID, questStage, questObjectiveState, startTime, endTime,
-                requiredProgression, currentProgression, playerContributionTracker, Map.of());
-    }
-
-    /**
-     * Reconstruction constructor for loading an objective instance from the database, including any
-     * persisted custom-data for custom objective types.
      *
      * @param questObjectiveKey        the definition key
      * @param questObjectiveUUID       the persisted UUID
@@ -101,7 +82,7 @@ public class QuestObjectiveInstance {
         this.requiredProgression = requiredProgression;
         this.currentProgression = currentProgression;
         this.playerContributionTracker = new HashMap<>(playerContributionTracker);
-        this.customData = new HashMap<>(customData);
+        this.customData = new ConcurrentHashMap<>(customData);
     }
 
     /**
@@ -136,7 +117,7 @@ public class QuestObjectiveInstance {
      * @param customData the new custom-data map; a defensive copy is stored
      */
     public void setCustomData(@NotNull Map<String, Object> customData) {
-        this.customData = new HashMap<>(customData);
+        this.customData = new ConcurrentHashMap<>(customData);
         questStage.getQuestInstance().markDirty();
     }
 

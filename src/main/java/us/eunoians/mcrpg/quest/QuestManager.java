@@ -122,7 +122,7 @@ public class QuestManager extends Manager<McRPG> {
     };
     private static final String DEFAULT_GENERIC_UPGRADE_QUEST_RESOURCE = "quests/upgrades/generic_ability_upgrades.yml";
     private static final String DEFAULT_EXAMPLE_CHAIN_QUEST_RESOURCE = "quests/example_chain.yml";
-    private static final String[] DEFAULT_TUTORIAL_QUEST_RESOURCES = {
+    private static final List<String> DEFAULT_TUTORIAL_QUEST_RESOURCES = List.of(
             "quests/tutorial/chain.yml",
             "quests/tutorial/first_steps.yml",
             "quests/tutorial/mcrpg_menu.yml",
@@ -131,8 +131,8 @@ public class QuestManager extends Manager<McRPG> {
             "quests/tutorial/unleashed_power.yml",
             "quests/tutorial/combo_strike.yml",
             "quests/tutorial/quest_board.yml"
-    };
-    private static final String[] DEFAULT_OWNER_GUIDE_RESOURCES = {
+    );
+    private static final List<String> DEFAULT_OWNER_GUIDE_RESOURCES = List.of(
             "quests/CHAIN-GUIDE.md",
             "quests/SERVER-OWNER-GUIDE.md",
             "quests/OBJECTIVES.md",
@@ -141,7 +141,7 @@ public class QuestManager extends Manager<McRPG> {
             "quests/CONDITIONS.md",
             "quests/QUEST-DEFINITIONS.md",
             "quests/BOARD-INTEGRATION.md"
-    };
+    );
 
     private final ReloadableContent<Long> finishedQuestKeepAliveNanos;
 
@@ -1286,9 +1286,9 @@ public class QuestManager extends Manager<McRPG> {
                 DEFAULT_GENERIC_UPGRADE_QUEST_RESOURCE
         ));
         defaultResources.add(DEFAULT_EXAMPLE_CHAIN_QUEST_RESOURCE);
-        defaultResources.addAll(List.of(DEFAULT_TUTORIAL_QUEST_RESOURCES));
+        defaultResources.addAll(DEFAULT_TUTORIAL_QUEST_RESOURCES);
         defaultResources.addAll(List.of(DEFAULT_BOARD_QUEST_RESOURCES));
-        defaultResources.addAll(List.of(DEFAULT_OWNER_GUIDE_RESOURCES));
+        defaultResources.addAll(DEFAULT_OWNER_GUIDE_RESOURCES);
         return defaultResources;
     }
 
