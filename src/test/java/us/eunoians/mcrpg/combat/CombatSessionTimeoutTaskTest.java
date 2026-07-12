@@ -1,9 +1,7 @@
 package us.eunoians.mcrpg.combat;
 
-import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.TimeProvider;
 import com.diamonddagger590.mccore.util.item.CustomEntityWrapper;
-import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
@@ -12,7 +10,6 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
@@ -20,29 +17,22 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.combat.condition.CombatCondition;
 import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
-import us.eunoians.mcrpg.combat.task.CombatSessionTimeoutTask;
-import us.eunoians.mcrpg.configuration.FileManager;
-import us.eunoians.mcrpg.configuration.FileType;
-import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
 import us.eunoians.mcrpg.event.combat.CombatParticipantAddEvent;
 import us.eunoians.mcrpg.event.combat.CombatParticipantRemoveEvent;
 import us.eunoians.mcrpg.event.combat.CombatSessionEndEvent;
 import us.eunoians.mcrpg.event.combat.CombatSessionStartEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
-import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -50,23 +40,13 @@ import static org.mockito.Mockito.when;
 class CombatSessionTimeoutTaskTest extends McRPGBaseTest {
 
     private CombatTrackerManager manager;
-    private CombatSessionTimeoutTask timeoutTask;
     private TimeProvider timeProvider;
 
     @BeforeEach
     void setUp() {
         timeProvider = McRPG.getInstance().getTimeProvider();
-
-        FileManager fileManager = mcRPG.registryAccess()
-                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
-        YamlDocument combatConfig = mock(YamlDocument.class);
-        lenient().when(fileManager.getFile(FileType.COMBAT_CONFIG)).thenReturn(combatConfig);
-        lenient().when(combatConfig.getDouble(CombatConfigFile.SESSION_TIMEOUT_SECONDS)).thenReturn(8.0);
-        lenient().when(combatConfig.getInt(CombatConfigFile.MAX_MOB_PARTICIPANTS)).thenReturn(16);
-        lenient().when(combatConfig.getDouble(CombatConfigFile.TIMEOUT_SCAN_INTERVAL_SECONDS)).thenReturn(0.5);
-
+        CombatTestSupport.mockCombatConfig(mcRPG, 8.0, 16, 0.5);
         manager = new CombatTrackerManager(mcRPG);
-        timeoutTask = new CombatSessionTimeoutTask(mcRPG, manager, 0.5);
     }
 
     /**
@@ -150,21 +130,17 @@ class CombatSessionTimeoutTaskTest extends McRPGBaseTest {
     }
 
     @Test
-    @Disabled("Pre-existing test (never compiled before this batch): asserts a session-level TIMEOUT end, "
-            + "but two idle players empty their rosters via per-participant timeout and end with "
-            + "ALL_PARTICIPANTS_GONE. The scenario cannot reach a session-level TIMEOUT; needs redesign in "
-            + "the Phase 5 test work.")
-    @DisplayName("sessions past the inactivity timeout are ended with TIMEOUT")
-    void sessionPastTimeout_endsWithTimeout() {
+    @DisplayName("an empty condition-created session past its timeout ends with TIMEOUT")
+    void emptyConditionSessionPastTimeout_endsWithTimeout() {
         PlayerMock player = server.addPlayer();
-        PlayerMock otherPlayer = server.addPlayer();
 
-        manager.handleCombatInteraction(player.getUniqueId(), otherPlayer.getUniqueId(),
-                new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("PLAYER"));
+        // Condition-created sessions carry no participants. With no condition holding it open, such a
+        // session reaches the session-level timeout and ends with TIMEOUT (not ALL_PARTICIPANTS_GONE,
+        // which only fires when a participant removal empties the roster).
+        manager.reportConditionActivity(player.getUniqueId(), new NamespacedKey("mcrpg", "proximity"));
 
         long currentMillis = timeProvider.now().toEpochMilli();
-        Instant futureInstant = Instant.ofEpochMilli(currentMillis + 9000);
-        when(timeProvider.now()).thenReturn(futureInstant);
+        when(timeProvider.now()).thenReturn(Instant.ofEpochMilli(currentMillis + 9000));
 
         List<CombatSessionEndEvent> captured = new ArrayList<>();
         Bukkit.getPluginManager().registerEvents(new Listener() {
@@ -176,10 +152,10 @@ class CombatSessionTimeoutTaskTest extends McRPGBaseTest {
 
         manager.scanSessionsForTimeout();
 
-        boolean hasTimeout = captured.stream()
-                .anyMatch(e -> e.getEntityUUID().equals(player.getUniqueId())
-                        && e.getReason() == CombatSessionEndReason.TIMEOUT);
-        assertTrue(hasTimeout);
+        assertFalse(captured.isEmpty());
+        assertEquals(CombatSessionEndReason.TIMEOUT, captured.get(0).getReason());
+        assertEquals(player.getUniqueId(), captured.get(0).getEntityUUID());
+        assertFalse(manager.hasActiveSession(player.getUniqueId()));
     }
 
     @Test
@@ -305,10 +281,9 @@ class CombatSessionTimeoutTaskTest extends McRPGBaseTest {
 
         manager.scanSessionsForTimeout();
 
-        // Session should still have the fresh participant
-        Optional<CombatSession> session = manager.getSession(player.getUniqueId());
-        if (session.isPresent()) {
-            assertTrue(session.get().hasParticipant(mob2));
-        }
+        // The session must survive: the timed-out mob1 is removed, but the fresh mob2 keeps it alive.
+        CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+        assertTrue(session.hasParticipant(mob2));
+        assertFalse(session.hasParticipant(mob1));
     }
 }

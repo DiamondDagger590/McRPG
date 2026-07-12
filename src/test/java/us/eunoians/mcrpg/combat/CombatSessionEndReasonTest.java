@@ -2,40 +2,18 @@ package us.eunoians.mcrpg.combat;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.McRPGBaseTest;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("CombatSessionEndReason")
-class CombatSessionEndReasonTest extends McRPGBaseTest {
+class CombatSessionEndReasonTest {
 
-    @DisplayName("TIMEOUT enum value exists")
+    @DisplayName("declares the expected values that round-trip through valueOf")
     @Test
-    void timeoutExists() {
-        assertNotNull(CombatSessionEndReason.TIMEOUT);
-    }
-
-    @DisplayName("DEATH enum value exists")
-    @Test
-    void deathExists() {
-        assertNotNull(CombatSessionEndReason.DEATH);
-    }
-
-    @DisplayName("LOGOUT enum value exists")
-    @Test
-    void logoutExists() {
-        assertNotNull(CombatSessionEndReason.LOGOUT);
-    }
-
-    @DisplayName("ALL_PARTICIPANTS_GONE enum value exists")
-    @Test
-    void allParticipantsGoneExists() {
-        assertNotNull(CombatSessionEndReason.ALL_PARTICIPANTS_GONE);
-    }
-
-    @DisplayName("PLUGIN enum value exists")
-    @Test
-    void pluginExists() {
-        assertNotNull(CombatSessionEndReason.PLUGIN);
+    void values_roundTripThroughValueOf() {
+        assertEquals(5, CombatSessionEndReason.values().length);
+        for (CombatSessionEndReason reason : CombatSessionEndReason.values()) {
+            assertEquals(reason, CombatSessionEndReason.valueOf(reason.name()));
+        }
     }
 }

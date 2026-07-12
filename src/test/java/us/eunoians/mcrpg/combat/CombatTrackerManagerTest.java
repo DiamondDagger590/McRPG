@@ -7,6 +7,7 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -27,10 +28,10 @@ import us.eunoians.mcrpg.event.combat.CombatParticipantAddEvent;
 import us.eunoians.mcrpg.event.combat.CombatParticipantRemoveEvent;
 import us.eunoians.mcrpg.event.combat.CombatSessionEndEvent;
 import us.eunoians.mcrpg.event.combat.CombatSessionStartEvent;
-import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,7 +44,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -57,15 +57,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
     @BeforeEach
     void setUp() {
         timeProvider = McRPG.getInstance().getTimeProvider();
-
-        FileManager fileManager = mcRPG.registryAccess()
-                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
-        YamlDocument combatConfig = mock(YamlDocument.class);
-        lenient().when(fileManager.getFile(FileType.COMBAT_CONFIG)).thenReturn(combatConfig);
-        lenient().when(combatConfig.getDouble(CombatConfigFile.SESSION_TIMEOUT_SECONDS)).thenReturn(8.0);
-        lenient().when(combatConfig.getInt(CombatConfigFile.MAX_MOB_PARTICIPANTS)).thenReturn(16);
-        lenient().when(combatConfig.getDouble(CombatConfigFile.TIMEOUT_SCAN_INTERVAL_SECONDS)).thenReturn(0.5);
-
+        CombatTestSupport.mockCombatConfig(mcRPG, 8.0, 16, 0.5);
         manager = new CombatTrackerManager(mcRPG);
     }
 
@@ -118,7 +110,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("creates a session for a player source")
-        void createsSessionForPlayerSource() {
+        void handleCombatInteraction_createsSession_whenSourceIsPlayer() {
             PlayerMock player = server.addPlayer();
             UUID mobUUID = UUID.randomUUID();
 
@@ -211,10 +203,15 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
             CombatParticipant participant = session.getParticipant(mobUUID).orElseThrow();
             long firstInteraction = participant.getLastInteractionMillis();
 
+            // Advance the clock so a genuine refresh is observable (the fixed clock would otherwise
+            // make this assertion pass whether or not the timestamp is actually updated).
+            long later = firstInteraction + 3000;
+            when(timeProvider.now()).thenReturn(Instant.ofEpochMilli(later));
+
             manager.handleCombatInteraction(player.getUniqueId(), mobUUID,
                     new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
 
-            assertEquals(firstInteraction, participant.getLastInteractionMillis());
+            assertEquals(later, participant.getLastInteractionMillis());
         }
 
         @Test
@@ -308,10 +305,9 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("fires CombatParticipantRemoveEvent with EVICTION when mob FIFO is full")
-        void firesEvictionEvent() {
-            FileManager fileManager = mcRPG.registryAccess()
-                    .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE);
-            YamlDocument combatConfig = fileManager.getFile(FileType.COMBAT_CONFIG);
+        void handleCombatInteraction_firesEvictionEvent_whenMobQueueFull() {
+            YamlDocument combatConfig = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.FILE).getFile(FileType.COMBAT_CONFIG);
             when(combatConfig.getInt(CombatConfigFile.MAX_MOB_PARTICIPANTS)).thenReturn(2);
 
             CombatTrackerManager smallManager = new CombatTrackerManager(mcRPG);
@@ -386,7 +382,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("is a no-op when no session exists")
-        void noOpWhenNoSession() {
+        void endSession_isNoOp_whenNoSession() {
             List<CombatSessionEndEvent> captured = new ArrayList<>();
             Bukkit.getPluginManager().registerEvents(new Listener() {
                 @EventHandler
@@ -406,8 +402,37 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
     class RemoveParticipantFromAllSessions {
 
         @Test
-        @DisplayName("removes participant from every session that contains it")
+        @DisplayName("removes participant from surviving sessions and keeps their other participants")
         void removesFromAllSessions() {
+            PlayerMock player1 = server.addPlayer();
+            PlayerMock player2 = server.addPlayer();
+            UUID sharedMob = UUID.randomUUID();
+            UUID otherMob1 = UUID.randomUUID();
+            UUID otherMob2 = UUID.randomUUID();
+
+            // Give each session a second participant so removing the shared mob does not empty it.
+            manager.handleCombatInteraction(player1.getUniqueId(), sharedMob,
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            manager.handleCombatInteraction(player1.getUniqueId(), otherMob1,
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("SKELETON"));
+            manager.handleCombatInteraction(player2.getUniqueId(), sharedMob,
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            manager.handleCombatInteraction(player2.getUniqueId(), otherMob2,
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("SKELETON"));
+
+            manager.removeParticipantFromAllSessions(sharedMob, ParticipantRemovalReason.DEATH);
+
+            CombatSession session1 = manager.getSession(player1.getUniqueId()).orElseThrow();
+            CombatSession session2 = manager.getSession(player2.getUniqueId()).orElseThrow();
+            assertFalse(session1.hasParticipant(sharedMob));
+            assertTrue(session1.hasParticipant(otherMob1));
+            assertFalse(session2.hasParticipant(sharedMob));
+            assertTrue(session2.hasParticipant(otherMob2));
+        }
+
+        @Test
+        @DisplayName("ends sessions that the removed participant empties")
+        void endsSessions_whenParticipantWasSoleMember() {
             PlayerMock player1 = server.addPlayer();
             PlayerMock player2 = server.addPlayer();
             UUID mobUUID = UUID.randomUUID();
@@ -419,15 +444,8 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
 
             manager.removeParticipantFromAllSessions(mobUUID, ParticipantRemovalReason.DEATH);
 
-            CombatSession session1 = manager.getSession(player1.getUniqueId()).orElse(null);
-            CombatSession session2 = manager.getSession(player2.getUniqueId()).orElse(null);
-
-            if (session1 != null) {
-                assertFalse(session1.hasParticipant(mobUUID));
-            }
-            if (session2 != null) {
-                assertFalse(session2.hasParticipant(mobUUID));
-            }
+            assertFalse(manager.hasActiveSession(player1.getUniqueId()));
+            assertFalse(manager.hasActiveSession(player2.getUniqueId()));
         }
 
         @Test
@@ -484,7 +502,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
     class Shutdown {
 
         @Test
-        @DisplayName("ends all active sessions and cancels all tasks")
+        @DisplayName("ends all active sessions and cancels all condition tasks")
         void endsAllSessionsAndCancelsTasks() {
             PlayerMock player1 = server.addPlayer();
             PlayerMock player2 = server.addPlayer();
@@ -494,10 +512,19 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
             manager.handleCombatInteraction(player2.getUniqueId(), UUID.randomUUID(),
                     new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("SKELETON"));
 
+            // Start a mocked condition task so its cancellation on shutdown is observable.
+            CombatCondition condition = mock(CombatCondition.class);
+            when(condition.getKey()).thenReturn(new NamespacedKey("mcrpg", "shutdown_condition"));
+            when(condition.getCheckIntervalSeconds()).thenReturn(1.0);
+            CombatConditionTask mockTask = mock(CombatConditionTask.class);
+            when(condition.createTask(any(), any())).thenReturn(mockTask);
+            manager.startConditionTask(condition);
+
             manager.shutdown();
 
             assertFalse(manager.hasActiveSession(player1.getUniqueId()));
             assertFalse(manager.hasActiveSession(player2.getUniqueId()));
+            verify(mockTask).cancelTask();
         }
     }
 
@@ -521,8 +548,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
 
             manager.startConditionTasks();
 
-            // If we got here without an exception, the task was started
-            assertNotNull(conditionRegistry.get(condKey).orElse(null));
+            verify(mockTask).runTask();
         }
 
         @Test
@@ -640,6 +666,86 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
 
             assertNotNull(thrown.get());
             assertTrue(thrown.get() instanceof IllegalStateException);
+        }
+    }
+
+    @Nested
+    @DisplayName("reportCombatActivity / reportConditionActivity")
+    class ReportActivity {
+
+        @Test
+        @DisplayName("reportCombatActivity creates a session when both entities are loaded")
+        void reportCombatActivity_createsSession_whenBothEntitiesLoaded() {
+            PlayerMock player = server.addPlayer();
+            Zombie mob = spawnEntity(Zombie.class);
+
+            manager.reportCombatActivity(player.getUniqueId(), mob.getUniqueId());
+
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+            assertTrue(session.hasParticipant(mob.getUniqueId()));
+        }
+
+        @Test
+        @DisplayName("reportConditionActivity creates an empty session carrying the condition key")
+        void reportConditionActivity_createsEmptySession_withConditionKey() {
+            PlayerMock player = server.addPlayer();
+            NamespacedKey conditionKey = new NamespacedKey("mcrpg", "proximity");
+            List<CombatSessionStartEvent> captured = new ArrayList<>();
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onStart(CombatSessionStartEvent event) {
+                    captured.add(event);
+                }
+            }, mcRPG);
+
+            manager.reportConditionActivity(player.getUniqueId(), conditionKey);
+
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+            assertTrue(session.isEmpty());
+            assertEquals(1, captured.size());
+            assertEquals(conditionKey, captured.get(0).getTriggeringConditionKey().orElse(null));
+        }
+
+        @Test
+        @DisplayName("reportConditionActivity refreshes an existing session's activity timer")
+        void reportConditionActivity_refreshesExistingSession() {
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+
+            long later = timeProvider.now().toEpochMilli() + 4000;
+            when(timeProvider.now()).thenReturn(Instant.ofEpochMilli(later));
+
+            manager.reportConditionActivity(player.getUniqueId(), new NamespacedKey("mcrpg", "proximity"));
+
+            assertEquals(later, session.getLastActivityMillis());
+        }
+
+        @Test
+        @DisplayName("reportConditionActivity is a no-op when the player is offline")
+        void reportConditionActivity_noOp_whenPlayerOffline() {
+            UUID offlineUUID = UUID.randomUUID();
+
+            manager.reportConditionActivity(offlineUUID, new NamespacedKey("mcrpg", "proximity"));
+
+            assertFalse(manager.hasActiveSession(offlineUUID));
+        }
+
+        @Test
+        @DisplayName("reportConditionActivity does not create a session when the start event is cancelled")
+        void reportConditionActivity_respectsCancellation() {
+            PlayerMock player = server.addPlayer();
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onStart(CombatSessionStartEvent event) {
+                    event.setCancelled(true);
+                }
+            }, mcRPG);
+
+            manager.reportConditionActivity(player.getUniqueId(), new NamespacedKey("mcrpg", "proximity"));
+
+            assertFalse(manager.hasActiveSession(player.getUniqueId()));
         }
     }
 }

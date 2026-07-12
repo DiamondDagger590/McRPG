@@ -2,46 +2,18 @@ package us.eunoians.mcrpg.combat;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.McRPGBaseTest;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @DisplayName("ParticipantRemovalReason")
-class ParticipantRemovalReasonTest extends McRPGBaseTest {
+class ParticipantRemovalReasonTest {
 
-    @DisplayName("DEATH enum value exists")
+    @DisplayName("declares the expected values that round-trip through valueOf")
     @Test
-    void deathExists() {
-        assertNotNull(ParticipantRemovalReason.DEATH);
-    }
-
-    @DisplayName("LOGOUT enum value exists")
-    @Test
-    void logoutExists() {
-        assertNotNull(ParticipantRemovalReason.LOGOUT);
-    }
-
-    @DisplayName("DESPAWN enum value exists")
-    @Test
-    void despawnExists() {
-        assertNotNull(ParticipantRemovalReason.DESPAWN);
-    }
-
-    @DisplayName("TIMEOUT enum value exists")
-    @Test
-    void timeoutExists() {
-        assertNotNull(ParticipantRemovalReason.TIMEOUT);
-    }
-
-    @DisplayName("EVICTION enum value exists")
-    @Test
-    void evictionExists() {
-        assertNotNull(ParticipantRemovalReason.EVICTION);
-    }
-
-    @DisplayName("SESSION_END enum value exists")
-    @Test
-    void sessionEndExists() {
-        assertNotNull(ParticipantRemovalReason.SESSION_END);
+    void values_roundTripThroughValueOf() {
+        assertEquals(7, ParticipantRemovalReason.values().length);
+        for (ParticipantRemovalReason reason : ParticipantRemovalReason.values()) {
+            assertEquals(reason, ParticipantRemovalReason.valueOf(reason.name()));
+        }
     }
 }
