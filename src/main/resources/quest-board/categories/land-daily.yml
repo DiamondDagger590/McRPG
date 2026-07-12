@@ -28,6 +28,7 @@ land-daily:
   # 0.15 = 15% chance per slot. Combined with min: 0, most days will have no land quest.
   chance-per-slot: 0.15
   # Cooldown before the same quest definition can reappear in this category.
+  # Duration format: 1d / 12h / 30m / 90s (combinable, case-insensitive) or a plain number of seconds.
   appearance-cooldown: 7d
   # Priority relative to other categories. Higher priority categories fill slots first.
   priority: 5

@@ -22,6 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /**
@@ -95,13 +96,79 @@ public class QuestRewardGranterTest extends McRPGBaseTest {
         assertEquals(1, granted.size());
     }
 
-    /** Captures the post-grant event. */
+    @Test
+    @DisplayName("a throwing reward is isolated; other rewards still grant")
+    void grantToOnlinePlayer_isolatesThrowingReward() {
+        Player player = server.addPlayer();
+        QuestRewardGranter granter = new QuestRewardGranter(McRPG.getInstance());
+        ThrowingReward bad = new ThrowingReward(key("bad"));
+        RecordingReward good = new RecordingReward(key("good"));
+
+        List<QuestRewardType> granted = granter.grantToOnlinePlayer(player, List.of(bad, good), key("quest"),
+                null, RewardGrantContext.INLINE);
+
+        assertTrue(good.wasGranted(), "the reward after the throwing one must still grant");
+        assertEquals(List.of(good), granted, "the thrown reward must be absent from the granted list");
+    }
+
+    @Test
+    @DisplayName("empty reward batch returns empty and fires no events")
+    void grantToOnlinePlayer_emptyBatch_firesNoEvents() {
+        Player player = server.addPlayer();
+        QuestRewardGranter granter = new QuestRewardGranter(McRPG.getInstance());
+        CapturingListener listener = new CapturingListener();
+        server.getPluginManager().registerEvents(listener, McRPG.getInstance());
+
+        List<QuestRewardType> granted = granter.grantToOnlinePlayer(player, List.of(), key("quest"),
+                null, RewardGrantContext.INLINE);
+
+        assertTrue(granted.isEmpty());
+        assertFalse(listener.grantSeen, "no pre-grant event should fire for an empty batch");
+        assertNull(listener.grantedEvent, "no post-grant event should fire for an empty batch");
+    }
+
+    @Test
+    @DisplayName("batch where every reward throws fires the pre-event but no granted event")
+    void grantToOnlinePlayer_allThrow_firesNoGrantedEvent() {
+        Player player = server.addPlayer();
+        QuestRewardGranter granter = new QuestRewardGranter(McRPG.getInstance());
+        CapturingListener listener = new CapturingListener();
+        server.getPluginManager().registerEvents(listener, McRPG.getInstance());
+
+        List<QuestRewardType> granted = granter.grantToOnlinePlayer(player,
+                List.of(new ThrowingReward(key("bad1")), new ThrowingReward(key("bad2"))),
+                key("quest"), null, RewardGrantContext.INLINE);
+
+        assertTrue(granted.isEmpty());
+        assertTrue(listener.grantSeen, "the cancellable pre-grant event still fires for a non-empty batch");
+        assertNull(listener.grantedEvent, "no granted event fires when nothing was granted");
+    }
+
+    /** Captures both the pre- and post-grant events. */
     private static class CapturingListener implements Listener {
+        private boolean grantSeen;
         private QuestRewardGrantedEvent grantedEvent;
+
+        @EventHandler
+        public void onGrant(@NotNull QuestRewardGrantEvent event) {
+            this.grantSeen = true;
+        }
 
         @EventHandler
         public void onGranted(@NotNull QuestRewardGrantedEvent event) {
             this.grantedEvent = event;
+        }
+    }
+
+    /** Reward whose grant always throws. */
+    private static class ThrowingReward extends RecordingReward {
+        ThrowingReward(@NotNull NamespacedKey key) {
+            super(key);
+        }
+
+        @Override
+        public void grant(@NotNull Player player) {
+            throw new IllegalStateException("boom");
         }
     }
 

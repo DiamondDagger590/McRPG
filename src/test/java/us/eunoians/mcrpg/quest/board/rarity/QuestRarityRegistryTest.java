@@ -76,7 +76,8 @@ public class QuestRarityRegistryTest extends McRPGBaseTest {
         registry.register(second);
 
         QuestRarity result = assertDoesNotThrow(() -> registry.rollRarity(new Random(1)));
-        assertTrue(result == first || result == second, "fallback must return one of the registered rarities");
+        assertTrue(result.getKey().equals(first.getKey()) || result.getKey().equals(second.getKey()),
+                "fallback must return one of the registered rarities");
     }
 
     @DisplayName("replaceConfigRarities replaces config rarities, expansion rarities untouched")

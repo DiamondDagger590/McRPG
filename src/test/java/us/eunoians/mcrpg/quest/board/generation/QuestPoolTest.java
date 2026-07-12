@@ -111,6 +111,17 @@ public class QuestPoolTest extends McRPGBaseTest {
         assertTrue(rareEligible.contains(bothQuest.getQuestKey()));
     }
 
+    @DisplayName("getEligibleDefinitions: empty supportedRarities matches every rolled rarity")
+    @Test
+    void getEligibleDefinitions_emptySupportedRarities_matchesAnyRarity() {
+        QuestDefinition anyRarityQuest = questWithBoardMetadata("any_rarity_quest", true, Set.of());
+        registry.register(anyRarityQuest);
+
+        assertTrue(questPool.getEligibleDefinitions(COMMON_KEY).contains(anyRarityQuest.getQuestKey()));
+        assertTrue(questPool.getEligibleDefinitions(RARE_KEY).contains(anyRarityQuest.getQuestKey()));
+        assertTrue(questPool.getEligibleDefinitions(EPIC_KEY).contains(anyRarityQuest.getQuestKey()));
+    }
+
     @DisplayName("getEligibleDefinitions: definitions without board metadata excluded")
     @Test
     void getEligibleDefinitions_definitionsWithoutBoardMetadataExcluded() {

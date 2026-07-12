@@ -8,8 +8,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
@@ -50,10 +50,9 @@ class QuestEventHandlerListTest {
             HandlerList handlerList = handlerListOf(eventClass);
             assertNotNull(handlerList, eventClass.getSimpleName() + " must expose a handler list");
             Class<?> collision = seen.put(handlerList, eventClass);
-            assertEquals(null, collision, eventClass.getSimpleName() + " shares a handler list with "
+            assertNull(collision, eventClass.getSimpleName() + " shares a handler list with "
                     + (collision != null ? collision.getSimpleName() : "none"));
         }
-        assertEquals(CONCRETE_EVENTS.size(), seen.size(), "all handler lists must be distinct instances");
     }
 
     @Test

@@ -87,7 +87,11 @@ public class QuestRewardGrantEvent extends Event implements Cancellable {
     }
 
     /**
-     * Gets the mutable list of rewards about to be granted. Listeners may add or remove entries.
+     * Gets the mutable list of rewards about to be granted. Listeners may add or remove entries, and
+     * the granter grants exactly the list's final contents. As with any Bukkit event, listeners run in
+     * priority order and each sees the mutations made by earlier listeners; do not cache the list
+     * across listeners and assume it is unchanged. The same list instance is returned to every
+     * listener.
      *
      * @return the mutable reward list
      */

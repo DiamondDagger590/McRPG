@@ -63,6 +63,28 @@ public class QuestObjectiveInstance {
      * @param requiredProgression      the total progress required
      * @param currentProgression       the current progress amount
      * @param playerContributionTracker per-player contribution amounts
+     */
+    public QuestObjectiveInstance(@NotNull NamespacedKey questObjectiveKey, @NotNull UUID questObjectiveUUID,
+                                  @NotNull QuestStageInstance questStage, @NotNull QuestObjectiveState questObjectiveState,
+                                  @Nullable Long startTime, @Nullable Long endTime, long requiredProgression,
+                                  long currentProgression, @NotNull Map<UUID, Long> playerContributionTracker) {
+        this(questObjectiveKey, questObjectiveUUID, questStage, questObjectiveState, startTime, endTime,
+                requiredProgression, currentProgression, playerContributionTracker, Map.of());
+    }
+
+    /**
+     * Reconstruction constructor for loading an objective instance from the database, including any
+     * persisted custom-data for custom objective types.
+     *
+     * @param questObjectiveKey        the definition key
+     * @param questObjectiveUUID       the persisted UUID
+     * @param questStage               the parent stage instance
+     * @param questObjectiveState      the persisted state
+     * @param startTime                the start timestamp in epoch millis, or {@code null}
+     * @param endTime                  the end timestamp in epoch millis, or {@code null}
+     * @param requiredProgression      the total progress required
+     * @param currentProgression       the current progress amount
+     * @param playerContributionTracker per-player contribution amounts
      * @param customData               persisted structured custom-data for custom objective types
      */
     public QuestObjectiveInstance(@NotNull NamespacedKey questObjectiveKey, @NotNull UUID questObjectiveUUID,
@@ -90,6 +112,14 @@ public class QuestObjectiveInstance {
      * to a JSON column and restored on load. Mutating the returned map directly does <b>not</b> mark
      * the quest dirty; call {@link #markCustomDataDirty()} (or progress the objective) after changing it
      * so the change is persisted.
+     * <p>
+     * <b>JSON round-trip note:</b> values are persisted via Gson into an untyped
+     * {@code Map<String, Object>}, so after a save/load cycle numeric values come back as
+     * {@code Double} (a stored {@code 5} reads back as {@code 5.0}) and integer lists as
+     * {@code List<Double>}. Read numbers back through {@link Number} (e.g.
+     * {@code ((Number) map.get("count")).longValue()}) rather than casting straight to
+     * {@code Integer}/{@code Long}. Keep values JSON-friendly (strings, numbers, booleans, and lists
+     * or maps of those).
      *
      * @return the live, mutable custom-data map (never {@code null})
      */

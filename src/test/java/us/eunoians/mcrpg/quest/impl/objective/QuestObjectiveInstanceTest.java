@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.quest.impl.QuestState;
 import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 
 import java.time.Instant;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,6 +46,24 @@ public class QuestObjectiveInstanceTest extends McRPGBaseTest {
         UUID player = UUID.randomUUID();
         objective.progress(5, player);
         assertThat(server.getPluginManager(), hasFiredEventInstance(QuestObjectiveProgressEvent.class));
+    }
+
+    @DisplayName("Given an objective, when marking custom data dirty, then the owning quest is dirty")
+    @Test
+    public void markCustomDataDirty_marksQuestDirty() {
+        quest.clearDirty();
+        objective.getCustomData().put("visited", "plains");
+        objective.markCustomDataDirty();
+        assertTrue(quest.isDirty(), "mutating custom data + markCustomDataDirty must mark the quest dirty");
+    }
+
+    @DisplayName("Given an objective, when replacing custom data via setter, then the owning quest is dirty")
+    @Test
+    public void setCustomData_marksQuestDirty() {
+        quest.clearDirty();
+        objective.setCustomData(Map.of("visited", "desert"));
+        assertTrue(quest.isDirty(), "setCustomData must mark the quest dirty");
+        assertEquals("desert", objective.getCustomData().get("visited"));
     }
 
     @DisplayName("Given an objective, when progressing with zero delta, then it throws IllegalArgumentException")

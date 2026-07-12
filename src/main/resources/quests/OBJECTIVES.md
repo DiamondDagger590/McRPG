@@ -680,3 +680,10 @@ Mutate the map in place and call `markCustomDataDirty()` (or replace it wholesal
 with `setCustomData(...)`, which marks the quest dirty for you). Custom data
 round-trips through save → restart → load. Keep values JSON-friendly (strings,
 numbers, booleans, lists, maps).
+
+**Numbers come back as `Double`.** Custom data is persisted with Gson into an
+untyped `Map<String, Object>`, so after a save/load cycle a stored `5` reads back
+as `5.0` (`Double`) and an integer list as a `List<Double>`. Read numbers through
+`Number` — e.g. `((Number) instance.getCustomData().get("count")).longValue()` —
+rather than casting straight to `Integer`/`Long`, which throws `ClassCastException`
+on a reloaded quest.

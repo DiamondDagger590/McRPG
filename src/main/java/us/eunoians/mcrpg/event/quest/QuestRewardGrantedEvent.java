@@ -19,6 +19,12 @@ import java.util.UUID;
  * after per-reward failures were skipped), and is immutable.
  * <p>
  * This event fires on all three grant pathways — see {@link RewardGrantContext}.
+ * <p>
+ * <b>Fires only when at least one reward was granted.</b> If the pre-grant
+ * {@link QuestRewardGrantEvent} was cancelled, or every reward in the batch threw during
+ * {@code grant}, no {@code QuestRewardGrantedEvent} fires. Audit listeners that need to observe
+ * every attempted batch (including fully-failed ones) should also listen for
+ * {@link QuestRewardGrantEvent}, which fires for every non-empty batch before granting.
  */
 public class QuestRewardGrantedEvent extends Event {
 
