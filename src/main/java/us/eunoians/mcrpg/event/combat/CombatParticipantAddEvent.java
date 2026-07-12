@@ -9,8 +9,10 @@ import us.eunoians.mcrpg.combat.CombatSession;
 import us.eunoians.mcrpg.combat.CombatType;
 
 /**
- * Fired when a new participant is about to join an existing combat session. Cancellable — cancelling prevents the
- * participant from being added.
+ * Fired when a new participant is about to join an existing combat session. Cancellable — cancelling
+ * prevents the participant from being added and leaves the session's activity timer untouched, so a
+ * listener that consistently cancels adds (e.g. excluding pets or NPCs from combat) will not keep the
+ * owner's session alive indefinitely.
  */
 public class CombatParticipantAddEvent extends Event implements Cancellable {
 

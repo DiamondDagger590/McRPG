@@ -280,7 +280,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
         }
 
         @Test
-        @DisplayName("does not add participant when CombatParticipantAddEvent is cancelled")
+        @DisplayName("does not add participant or refresh activity when CombatParticipantAddEvent is cancelled")
         void doesNotAddParticipantWhenAddEventCancelled() {
             PlayerMock player = server.addPlayer();
             UUID mob1 = UUID.randomUUID();
@@ -288,6 +288,8 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
 
             manager.handleCombatInteraction(player.getUniqueId(), mob1,
                     new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+            long activityBeforeCancelledAdd = session.getLastActivityMillis();
 
             Bukkit.getPluginManager().registerEvents(new Listener() {
                 @EventHandler
@@ -296,11 +298,14 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
+            // Advance the clock so a stray activity refresh would be observable.
+            when(timeProvider.now()).thenReturn(Instant.ofEpochMilli(activityBeforeCancelledAdd + 3000));
+
             manager.handleCombatInteraction(player.getUniqueId(), mob2,
                     new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("SKELETON"));
 
-            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
             assertFalse(session.hasParticipant(mob2));
+            assertEquals(activityBeforeCancelledAdd, session.getLastActivityMillis());
         }
 
         @Test

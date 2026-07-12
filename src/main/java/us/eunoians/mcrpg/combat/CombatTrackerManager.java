@@ -696,7 +696,8 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * Adds a new participant to an existing session after firing and confirming a non-cancelled
      * {@link CombatParticipantAddEvent}. Handles FIFO mob eviction, firing
      * {@link CombatParticipantRemoveEvent} with {@link ParticipantRemovalReason#EVICTION} when a mob
-     * is displaced. If the add event is cancelled, the session's activity timer is still refreshed.
+     * is displaced. If the add event is cancelled, the entity is not added and the session's activity
+     * timer is left untouched (a rejected participant should not keep the session alive).
      *
      * @param session            The existing session to add the participant to.
      * @param otherUUID          The UUID of the entity to add.
@@ -721,7 +722,8 @@ public class CombatTrackerManager extends Manager<McRPG> {
         Bukkit.getPluginManager().callEvent(addEvent);
 
         if (addEvent.isCancelled()) {
-            session.recordParticipantInteraction(otherUUID);
+            // The participant was rejected — do not refresh the session's activity timer, otherwise a
+            // listener that persistently cancels adds would keep the owner's session alive forever.
             return;
         }
 
