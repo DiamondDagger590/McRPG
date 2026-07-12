@@ -97,6 +97,21 @@ public class QuestRewardGranterTest extends McRPGBaseTest {
     }
 
     @Test
+    @DisplayName("a null reward inserted by a listener is skipped; real rewards still grant")
+    void grantToOnlinePlayer_skipsNullReward() {
+        Player player = server.addPlayer();
+        QuestRewardGranter granter = new QuestRewardGranter(McRPG.getInstance());
+        RecordingReward good = new RecordingReward(key("good"));
+        server.getPluginManager().registerEvents(new NullInsertingListener(), McRPG.getInstance());
+
+        List<QuestRewardType> granted = granter.grantToOnlinePlayer(player, List.of(good), key("quest"),
+                null, RewardGrantContext.INLINE);
+
+        assertTrue(good.wasGranted(), "the real reward must still grant despite a null in the batch");
+        assertEquals(List.of(good), granted, "the null must not appear in the granted list");
+    }
+
+    @Test
     @DisplayName("a throwing reward is isolated; other rewards still grant")
     void grantToOnlinePlayer_isolatesThrowingReward() {
         Player player = server.addPlayer();
@@ -177,6 +192,14 @@ public class QuestRewardGranterTest extends McRPGBaseTest {
         @EventHandler
         public void onGrant(@NotNull QuestRewardGrantEvent event) {
             event.setCancelled(true);
+        }
+    }
+
+    /** Inserts a null into the reward batch to simulate a misbehaving listener. */
+    private static class NullInsertingListener implements Listener {
+        @EventHandler
+        public void onGrant(@NotNull QuestRewardGrantEvent event) {
+            event.getRewards().add(null);
         }
     }
 

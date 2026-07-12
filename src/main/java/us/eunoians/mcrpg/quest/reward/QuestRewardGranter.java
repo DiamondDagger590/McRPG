@@ -67,6 +67,13 @@ public final class QuestRewardGranter {
 
         List<QuestRewardType> granted = new ArrayList<>();
         for (QuestRewardType reward : grantEvent.getRewards()) {
+            // A listener may have inserted a null into the mutable reward list; skip it defensively so a
+            // single bad entry cannot abort the batch (and so the catch block below never dereferences null).
+            if (reward == null) {
+                plugin.getLogger().log(Level.WARNING, "Skipping a null reward inserted into the grant batch"
+                        + " for quest " + questKey + " (context " + context + ").");
+                continue;
+            }
             try {
                 reward.grant(player);
                 granted.add(reward);

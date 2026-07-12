@@ -133,6 +133,38 @@ public class QuestObjectiveInstanceDAOTest extends McRPGBaseTest {
         assertTrue(((List<?>) visited).contains("desert"));
     }
 
+    @DisplayName("Given a malformed custom_data JSON row, when loading, then it yields empty custom data without throwing")
+    @Test
+    public void loadObjectiveInstances_toleratesMalformedCustomDataJson() throws SQLException {
+        QuestDefinition def = QuestTestHelper.singlePhaseQuest("dao_bad_custom_data");
+        QuestInstance quest = QuestTestHelper.startedQuestInstance(def);
+        QuestStageInstance stage = quest.getQuestStageInstances().get(0);
+        QuestObjectiveInstance objective = stage.getQuestObjectives().get(0);
+
+        Connection conn = mock(Connection.class);
+        PreparedStatement ps = mock(PreparedStatement.class);
+        ResultSet rs = mock(ResultSet.class);
+        when(conn.prepareStatement(anyString())).thenReturn(ps);
+        when(ps.executeQuery()).thenReturn(rs);
+        when(rs.next()).thenReturn(true, false);
+        when(rs.getString("objective_uuid")).thenReturn(objective.getQuestObjectiveUUID().toString());
+        when(rs.getString("definition_key")).thenReturn(objective.getQuestObjectiveKey().toString());
+        when(rs.getString("state")).thenReturn(objective.getQuestObjectiveState().name());
+        when(rs.getLong("required_progress")).thenReturn(objective.getRequiredProgression());
+        when(rs.getLong("current_progress")).thenReturn(objective.getCurrentProgression());
+        when(rs.getLong("start_time")).thenReturn(0L);
+        when(rs.getLong("end_time")).thenReturn(0L);
+        when(rs.wasNull()).thenReturn(true);
+        when(rs.getString("custom_data")).thenReturn("this is not json");
+
+        List<QuestObjectiveInstance> loaded = QuestObjectiveInstanceDAO.loadObjectiveInstances(
+                conn, stage.getQuestStageUUID(), stage);
+
+        assertEquals(1, loaded.size());
+        assertTrue(loaded.get(0).getCustomData().isEmpty(),
+                "a corrupt custom_data row must load as empty rather than aborting the quest load");
+    }
+
     @Test
     @DisplayName("Given empty custom data, when saving, then the custom_data column is null")
     public void saveObjectiveInstance_writesNullCustomData_whenEmpty() throws SQLException {
