@@ -1,7 +1,8 @@
 # Phase 1 LLD: Core Combat Session Engine
 
 > **HLD Reference:** [Combat Tracker & Ramping Frenzy](../../hld/combat/combat-tracker-and-ramping-frenzy.md)
-> **Status:** Not yet implemented
+> **Status:** Implemented
+> **Last Updated:** 2026-07-12
 
 ---
 
@@ -11,7 +12,7 @@ This phase delivers the foundational combat session engine — the per-player se
 
 **In scope:**
 
-- `CombatSession` — per-player session with participant roster (unlimited players, FIFO mob queue)
+- `CombatSession` — per-player session with participant roster (unlimited players, bounded FIFO mob map keyed by UUID)
 - `CombatParticipant` — mutable participant data (UUID, classification, `CustomEntityWrapper` (existing McCore), last-interaction timestamp)
 - `CombatType` / `ParticipantType` — enums for session classification
 - `CombatSessionEndReason` / `ParticipantRemovalReason` — enums for lifecycle events
@@ -20,12 +21,12 @@ This phase delivers the foundational combat session engine — the per-player se
 - Focused listeners — `OnCombatDamageListener` (HIGHEST), `OnCombatEntityDeathListener`, `OnCombatEntityRemoveListener`, `OnCombatPlayerQuitListener`, `OnProjectileLaunchListener` (all MONITOR)
 - `CombatSessionTimeoutTask` — global periodic scan extending `CancelableCoreTask`
 - `CombatCondition` interface + `CombatConditionContentPack` + per-condition periodic task with factory method
-- `CombatConditionTask` — base task class extending `CancelableCoreTask`, overridable via `CombatCondition.createTask()`
+- `CombatConditionTask` — base task class extending `CancelableCoreTask`, overridable via `CombatCondition.createTask(McRPG, CombatTrackerManager)` (injected dependencies)
 - Core Bukkit events — `CombatSessionStartEvent`, `CombatParticipantAddEvent`, `CombatParticipantRemoveEvent`, `CombatSessionEndEvent`
 - `CombatConfigFile` + `FileType.COMBAT_CONFIG` — `combat_configuration.yml`
 - Projectile resolution — `Projectile.getShooter()` + PDC launch timestamp
 - `reportCombatActivity(UUID, UUID)` public API for indirect/DOT damage attribution
-- Placeholder methods on `CombatSessionEndEvent` for Phase 2 statistics and state data
+- Per-session statistics and combat state snapshots on `CombatSessionEndEvent` are **deferred to Phase 2** (no placeholder accessors in Phase 1)
 
 **Out of scope (later phases):**
 
@@ -68,7 +69,7 @@ classDiagram
     class CombatSession {
         -UUID entityUUID
         -Map~UUID, CombatParticipant~ playerParticipants
-        -LinkedList~CombatParticipant~ mobParticipants
+        -LinkedHashMap~UUID, CombatParticipant~ mobParticipants
         -int maxMobParticipants
         -long startTimeMillis
         -long lastActivityMillis
@@ -143,6 +144,7 @@ classDiagram
         TIMEOUT
         EVICTION
         SESSION_END
+        PLUGIN
     }
 
     CombatSession *-- "0..*" CombatParticipant : playerParticipants
@@ -165,10 +167,13 @@ classDiagram
         +getSession(UUID) Optional~CombatSession~
         +hasActiveSession(UUID) boolean
         +handleCombatInteraction(UUID, UUID, CustomEntityWrapper, CustomEntityWrapper) void
+        +handleCombatInteraction(UUID, UUID, Entity, Entity) void
         +reportCombatActivity(UUID, UUID) void
         +reportConditionActivity(UUID, NamespacedKey) void
         +endSession(UUID, CombatSessionEndReason) void
         +removeParticipantFromAllSessions(UUID, ParticipantRemovalReason) void
+        +removeParticipantFromSession(UUID, UUID, ParticipantRemovalReason) Optional~CombatParticipant~
+        +scanSessionsForTimeout() void
         +startConditionTasks() void
         +startConditionTask(CombatCondition) void
         +stopConditionTask(NamespacedKey) void
@@ -176,6 +181,10 @@ classDiagram
         +stopTimeoutTask() void
         +getActiveSessions() Map~UUID, CombatSession~
         +shutdown() void
+        -handleInteraction(UUID, UUID, Supplier, Supplier) void
+        -removeParticipant(CombatSession, UUID, ParticipantRemovalReason) Optional~CombatParticipant~
+        -isHeldOpenByCondition(CombatSession) boolean
+        -requireMainThread() void
     }
 
     class CombatConditionRegistry {
@@ -215,7 +224,6 @@ classDiagram
 
     class CombatSessionTimeoutTask {
         -CombatTrackerManager combatTrackerManager
-        -CombatConditionRegistry conditionRegistry
         #onIntervalComplete() void
     }
 
@@ -223,12 +231,13 @@ classDiagram
         -CombatCondition condition
         -CombatTrackerManager combatTrackerManager
         #onIntervalComplete() void
+        -evaluatePlayer(Player) void
         #evaluateEntities() Collection~Player~
     }
 
     class CombatCondition {
         <<interface>>
-        +createTask() CombatConditionTask
+        +createTask(McRPG, CombatTrackerManager) CombatConditionTask
     }
 
     class Manager~McRPG~ {
@@ -256,7 +265,7 @@ classDiagram
     OnCombatEntityRemoveListener --> CombatTrackerManager
     OnCombatPlayerQuitListener --> CombatTrackerManager
     CombatSessionTimeoutTask --|> CancelableCoreTask
-    CombatSessionTimeoutTask --> CombatConditionRegistry
+    CombatSessionTimeoutTask --> CombatTrackerManager : delegates scan
     CombatConditionTask --|> CancelableCoreTask
     CombatConditionTask --> CombatCondition
     CombatCondition ..> CombatConditionTask : creates via factory
@@ -271,11 +280,13 @@ classDiagram
         -UUID triggerParticipantUUID
         -ParticipantType triggerParticipantType
         -CustomEntityWrapper triggerEntityWrapper
+        -NamespacedKey triggeringConditionKey ?
         -boolean cancelled
         +getEntityUUID() UUID
         +getTriggerParticipantUUID() UUID
         +getTriggerParticipantType() ParticipantType
         +getTriggerEntityWrapper() CustomEntityWrapper
+        +getTriggeringConditionKey() Optional~NamespacedKey~
     }
 
     class CombatParticipantAddEvent {
@@ -314,8 +325,6 @@ classDiagram
         +getFinalParticipants() Collection~CombatParticipant~
         +getFinalCombatType() CombatType
         +getDurationMillis() long
-        +getSessionStatistics() Map
-        +getCombatStateData() Map
     }
 
     class CombatCondition {
@@ -324,7 +333,7 @@ classDiagram
         +getCheckIntervalSeconds() double
         +isInCombat(LivingEntity) boolean
         +getImpliedParticipants(LivingEntity) Set~UUID~
-        +createTask() CombatConditionTask
+        +createTask(McRPG, CombatTrackerManager) CombatConditionTask
         +getExpansionKey() Optional~NamespacedKey~
     }
 
@@ -476,7 +485,13 @@ public enum ParticipantRemovalReason {
     /**
      * The participant was removed because the session itself is ending.
      */
-    SESSION_END
+    SESSION_END,
+
+    /**
+     * The participant was removed programmatically by McRPG or a third-party plugin (for example an
+     * arena, duel, or AFK plugin removing a specific participant from a session).
+     */
+    PLUGIN
 }
 ```
 
@@ -579,14 +594,14 @@ public class CombatParticipant {
 **Package:** `us.eunoians.mcrpg.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/combat/CombatSession.java`
 
-Per-player combat session. Manages the participant roster with unlimited player slots and a configurable FIFO queue for mob participants. The derived `CombatType` is recomputed on every roster mutation.
+Per-player combat session. Manages the participant roster with unlimited player slots (a `HashMap` keyed by UUID) and a configurable, bounded FIFO map for mob participants (a `LinkedHashMap` keyed by UUID whose insertion order provides FIFO eviction). Keying mobs by UUID makes lookup, containment, and removal O(1) on the combat hot path and prevents duplicate entries for the same mob. The derived `CombatType` is recomputed on every roster mutation.
 
 ```java
 public class CombatSession {
 
     private final UUID entityUUID;
     private final Map<UUID, CombatParticipant> playerParticipants;
-    private final LinkedList<CombatParticipant> mobParticipants;
+    private final LinkedHashMap<UUID, CombatParticipant> mobParticipants;
     private final int maxMobParticipants;
     private final long startTimeMillis;
     private final long timeoutMillis;
@@ -602,7 +617,7 @@ public class CombatSession {
     public CombatSession(@NotNull UUID entityUUID, int maxMobParticipants, long timeoutMillis) {
         this.entityUUID = entityUUID;
         this.playerParticipants = new HashMap<>();
-        this.mobParticipants = new LinkedList<>();
+        this.mobParticipants = new LinkedHashMap<>();
         this.maxMobParticipants = maxMobParticipants;
         long nowMillis = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
         this.startTimeMillis = nowMillis;
@@ -641,7 +656,7 @@ public class CombatSession {
     public Collection<CombatParticipant> getParticipants() {
         List<CombatParticipant> allParticipants = new ArrayList<>(playerParticipants.size() + mobParticipants.size());
         allParticipants.addAll(playerParticipants.values());
-        allParticipants.addAll(mobParticipants);
+        allParticipants.addAll(mobParticipants.values());
         return Collections.unmodifiableList(allParticipants);
     }
 
@@ -662,7 +677,7 @@ public class CombatSession {
      */
     @NotNull
     public Collection<CombatParticipant> getMobParticipants() {
-        return Collections.unmodifiableCollection(mobParticipants);
+        return Collections.unmodifiableCollection(mobParticipants.values());
     }
 
     /**
@@ -677,19 +692,19 @@ public class CombatSession {
         if (playerParticipant != null) {
             return Optional.of(playerParticipant);
         }
-        return mobParticipants.stream()
-                .filter(participant -> participant.getUUID().equals(participantUUID))
-                .findFirst();
+        return Optional.ofNullable(mobParticipants.get(participantUUID));
     }
 
     /**
-     * Adds a participant to the roster. Player participants go into the unlimited player map.
-     * Mob participants go into the FIFO queue — if the queue is full, the oldest mob is evicted
-     * and returned.
+     * Adds a participant to the roster. Player participants go into the unlimited player map. Mob
+     * participants go into the bounded FIFO map — re-adding an existing mob updates it in place
+     * without evicting or changing its FIFO position, and adding a new mob when the map is full
+     * evicts and returns the oldest. The eviction branch is guarded so it never evicts from an empty
+     * map (protecting against a misconfigured {@code maxMobParticipants < 1}).
      *
      * @param participant The participant to add.
      * @return An {@link Optional} containing the evicted {@link CombatParticipant} if a mob was
-     *         evicted from the FIFO queue, or empty if no eviction occurred.
+     *         evicted from the FIFO map, or empty if no eviction occurred.
      */
     @NotNull
     public Optional<CombatParticipant> addParticipant(@NotNull CombatParticipant participant) {
@@ -698,16 +713,26 @@ public class CombatSession {
             return Optional.empty();
         }
 
-        Optional<CombatParticipant> evictedParticipant = Optional.empty();
-        if (mobParticipants.size() >= maxMobParticipants) {
-            evictedParticipant = Optional.of(mobParticipants.removeFirst());
+        UUID mobUUID = participant.getUUID();
+        // Re-adding an existing mob updates it in place — no eviction, FIFO position preserved.
+        if (mobParticipants.containsKey(mobUUID)) {
+            mobParticipants.put(mobUUID, participant);
+            return Optional.empty();
         }
-        mobParticipants.addLast(participant);
+
+        Optional<CombatParticipant> evictedParticipant = Optional.empty();
+        if (!mobParticipants.isEmpty() && mobParticipants.size() >= maxMobParticipants) {
+            Iterator<CombatParticipant> mobIterator = mobParticipants.values().iterator();
+            evictedParticipant = Optional.of(mobIterator.next());
+            mobIterator.remove();
+        }
+        mobParticipants.put(mobUUID, participant);
         return evictedParticipant;
     }
 
     /**
-     * Removes a participant from the roster by UUID.
+     * Removes a participant from the roster by UUID. Both the player map and the mob map provide
+     * O(1) removal.
      *
      * @param participantUUID The UUID of the participant to remove.
      * @return An {@link Optional} containing the removed participant, or empty if not found.
@@ -718,28 +743,18 @@ public class CombatSession {
         if (removedPlayer != null) {
             return Optional.of(removedPlayer);
         }
-        Iterator<CombatParticipant> mobIterator = mobParticipants.iterator();
-        while (mobIterator.hasNext()) {
-            CombatParticipant mobParticipant = mobIterator.next();
-            if (mobParticipant.getUUID().equals(participantUUID)) {
-                mobIterator.remove();
-                return Optional.of(mobParticipant);
-            }
-        }
-        return Optional.empty();
+        return Optional.ofNullable(mobParticipants.remove(participantUUID));
     }
 
     /**
-     * Checks if the roster contains a participant with the given UUID.
+     * Checks if the roster contains a participant with the given UUID. Both the player map and the
+     * mob map provide O(1) containment.
      *
      * @param participantUUID The UUID to check.
      * @return {@code true} if the participant is in the roster.
      */
     public boolean hasParticipant(@NotNull UUID participantUUID) {
-        if (playerParticipants.containsKey(participantUUID)) {
-            return true;
-        }
-        return mobParticipants.stream().anyMatch(participant -> participant.getUUID().equals(participantUUID));
+        return playerParticipants.containsKey(participantUUID) || mobParticipants.containsKey(participantUUID);
     }
 
     /**
@@ -891,14 +906,17 @@ public interface CombatCondition extends McRPGContent {
      * Third-party conditions may override this to provide a custom task subclass with
      * scoped entity evaluation or specialized logic.
      * <p>
-     * The returned task resolves the {@link CombatTrackerManager} via
-     * {@link com.diamonddagger590.mccore.registry.RegistryAccess} internally.
+     * Both the {@link McRPG} plugin instance and the {@link CombatTrackerManager} are injected as
+     * parameters rather than resolved via {@code RegistryAccess}, so the task holds its collaborators
+     * directly instead of performing a per-tick registry lookup.
      *
+     * @param mcRPG                The {@link McRPG} plugin instance the task is scheduled under.
+     * @param combatTrackerManager The {@link CombatTrackerManager} the task reports activity to.
      * @return A new {@link CombatConditionTask} for this condition.
      */
     @NotNull
-    default CombatConditionTask createTask() {
-        return new CombatConditionTask(this);
+    default CombatConditionTask createTask(@NotNull McRPG mcRPG, @NotNull CombatTrackerManager combatTrackerManager) {
+        return new CombatConditionTask(mcRPG, combatTrackerManager, this);
     }
 }
 ```
@@ -931,41 +949,76 @@ public class CombatConditionContentPack extends McRPGContentPack<CombatCondition
 
 Repeating task that evaluates a single `CombatCondition` at its declared cadence. The default implementation iterates all online players and calls `isInCombat()`. For entities that match, it reports combat activity to the manager — creating sessions for entities not yet in combat and refreshing existing sessions.
 
+The `McRPG` plugin and the `CombatTrackerManager` are injected via the constructor rather than resolved via `RegistryAccess` on each tick. The check interval is floored at a `MINIMUM_CHECK_INTERVAL_SECONDS` of `0.25` (a warning is logged when a condition declares a lower value) so a misbehaving third-party condition can't drive the task down to a per-tick, all-players scan. Each player is evaluated inside a try/catch: a condition that throws for one player is logged at `WARNING` and skipped, so one bad condition can't abort the whole pass — and, because the interval only advances on a normal return, can't re-throw every tick.
+
 Subclasses may override `evaluateEntities()` to scope the entity set (e.g., only players in an arena region).
 
 ```java
 public class CombatConditionTask extends CancelableCoreTask {
 
+    private final CombatTrackerManager combatTrackerManager;
     private final CombatCondition condition;
+
+    /**
+     * The minimum allowed check interval, in seconds. A third-party condition returning a value below
+     * this would make the task run every tick and scan all online players, so it is floored here.
+     */
+    private static final double MINIMUM_CHECK_INTERVAL_SECONDS = 0.25;
 
     /**
      * Constructs a new {@link CombatConditionTask}.
      * <p>
-     * The task frequency is derived from the condition's {@link CombatCondition#getCheckIntervalSeconds()}.
-     * The {@link CombatTrackerManager} is resolved on demand via {@link RegistryAccess} rather than
-     * being injected, so third-party conditions can create tasks without holding a manager reference.
+     * The task frequency is derived from the condition's {@link CombatCondition#getCheckIntervalSeconds()},
+     * floored at {@value #MINIMUM_CHECK_INTERVAL_SECONDS} seconds.
      *
-     * @param condition The {@link CombatCondition} to evaluate.
+     * @param plugin               The {@link McRPG} plugin instance.
+     * @param combatTrackerManager The {@link CombatTrackerManager} to report combat activity to.
+     * @param condition            The {@link CombatCondition} to evaluate.
      */
-    public CombatConditionTask(@NotNull CombatCondition condition) {
-        super(McRPG.getInstance(), 0, condition.getCheckIntervalSeconds());
+    public CombatConditionTask(@NotNull McRPG plugin,
+                               @NotNull CombatTrackerManager combatTrackerManager,
+                               @NotNull CombatCondition condition) {
+        super(plugin, 0, Math.max(MINIMUM_CHECK_INTERVAL_SECONDS, condition.getCheckIntervalSeconds()));
+        this.combatTrackerManager = combatTrackerManager;
         this.condition = condition;
+        if (condition.getCheckIntervalSeconds() < MINIMUM_CHECK_INTERVAL_SECONDS) {
+            plugin.getLogger().log(Level.WARNING, "Combat condition {0} check interval {1}s is below the minimum; using {2}s.",
+                    new Object[]{condition.getKey().toString(), condition.getCheckIntervalSeconds(), MINIMUM_CHECK_INTERVAL_SECONDS});
+        }
     }
 
     @Override
     protected void onIntervalComplete() {
-        CombatTrackerManager combatTrackerManager = RegistryAccess.registryAccess()
-                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_TRACKER);
         for (Player player : evaluateEntities()) {
-            if (condition.isInCombat(player)) {
-                Set<UUID> impliedParticipants = condition.getImpliedParticipants(player);
-                if (impliedParticipants.isEmpty()) {
-                    combatTrackerManager.reportConditionActivity(player.getUniqueId(), condition.getKey());
-                } else {
-                    for (UUID participantUUID : impliedParticipants) {
-                        combatTrackerManager.reportCombatActivity(player.getUniqueId(), participantUUID);
-                    }
-                }
+            // Evaluate each player defensively: a third-party condition that throws for one player
+            // must not abort the whole pass (which, because the interval only advances on a normal
+            // return, would otherwise re-run and re-throw every tick).
+            try {
+                evaluatePlayer(player);
+            } catch (Exception e) {
+                getPlugin().getLogger().log(Level.WARNING, "Combat condition " + condition.getKey()
+                        + " threw while evaluating player " + player.getUniqueId() + "; skipping", e);
+            }
+        }
+    }
+
+    /**
+     * Evaluates the condition for a single player and reports activity to the manager. Reports
+     * condition-only activity when the condition implies no specific participants, otherwise reports
+     * a combat interaction against each implied participant.
+     *
+     * @param player The player to evaluate.
+     */
+    private void evaluatePlayer(@NotNull Player player) {
+        if (!condition.isInCombat(player)) {
+            return;
+        }
+        Set<UUID> impliedParticipants = condition.getImpliedParticipants(player);
+        if (impliedParticipants.isEmpty()) {
+            combatTrackerManager.reportConditionActivity(player.getUniqueId(), condition.getKey());
+        } else {
+            for (UUID participantUUID : impliedParticipants) {
+                combatTrackerManager.reportCombatActivity(player.getUniqueId(), participantUUID);
             }
         }
     }
@@ -1014,11 +1067,11 @@ public class CombatConditionTask extends CancelableCoreTask {
 **Package:** `us.eunoians.mcrpg.combat.task`
 **File:** `src/main/java/us/eunoians/mcrpg/combat/task/CombatSessionTimeoutTask.java`
 
-Global repeating task that scans all active sessions for timeout. For each session:
-1. Checks per-participant timeouts and removes stale participants
-2. Checks whether any registered `CombatCondition` holds the session open
-3. Checks session-level timeout and ends expired sessions
-4. Checks for empty rosters (all participants gone)
+This is a **thin scheduler shim**. The scan/timeout logic itself lives in
+`CombatTrackerManager.scanSessionsForTimeout()` (see §1.11) — participant removal, session ending,
+and the condition hold-open gate all stay owned by the manager. The task's only job is to invoke that
+method at the configured cadence. The `McRPG` plugin and the `CombatTrackerManager` are injected via
+the constructor, and the task no longer references the `CombatConditionRegistry` at all.
 
 ```java
 public class CombatSessionTimeoutTask extends CancelableCoreTask {
@@ -1028,36 +1081,23 @@ public class CombatSessionTimeoutTask extends CancelableCoreTask {
     /**
      * Constructs a new {@link CombatSessionTimeoutTask}.
      *
-     * @param combatTrackerManager  The {@link CombatTrackerManager} to scan.
-     * @param scanIntervalSeconds   The interval in seconds between scans.
+     * @param plugin               The {@link McRPG} plugin instance.
+     * @param combatTrackerManager The {@link CombatTrackerManager} whose sessions to scan.
+     * @param scanIntervalSeconds  The interval in seconds between timeout scans.
      */
-    public CombatSessionTimeoutTask(@NotNull CombatTrackerManager combatTrackerManager,
+    public CombatSessionTimeoutTask(@NotNull McRPG plugin,
+                                    @NotNull CombatTrackerManager combatTrackerManager,
                                     double scanIntervalSeconds) {
-        super(McRPG.getInstance(), 0, scanIntervalSeconds);
+        super(plugin, 0, scanIntervalSeconds);
         this.combatTrackerManager = combatTrackerManager;
     }
 
     /**
-     * Scans all active sessions for per-participant and session-level timeouts.
-     * <p>
-     * For each session:
-     * <ol>
-     *   <li>Find participants whose per-participant timer has expired and remove them
-     *       (fires {@code CombatParticipantRemoveEvent} with reason {@code TIMEOUT}).</li>
-     *   <li>If the roster is now empty, end the session with reason {@code ALL_PARTICIPANTS_GONE}.</li>
-     *   <li>If the session-level timer has expired, check all registered {@link CombatCondition}s
-     *       via the {@link CombatConditionRegistry}. If any condition returns {@code true} for the
-     *       session owner, reset the session timeout and skip ending. Otherwise, end the session
-     *       with reason {@code TIMEOUT}.</li>
-     * </ol>
+     * Delegates the timeout scan to {@link CombatTrackerManager#scanSessionsForTimeout()}.
      */
     @Override
     protected void onIntervalComplete() {
-        CombatConditionRegistry conditionRegistry = RegistryAccess.registryAccess()
-                .registry(McRPGRegistryKey.COMBAT_CONDITION);
-        // 1. Snapshot session UUIDs to avoid ConcurrentModificationException
-        // 2. For each session: remove timed-out participants, check empty, check session timeout
-        // 3. Hold-open gate: evaluate registered conditions before ending
+        combatTrackerManager.scanSessionsForTimeout();
     }
 
     @Override
@@ -1086,6 +1126,10 @@ Central manager for the combat tracker system. Owns the session map, condition t
 
 The `CombatConditionRegistry` is an independent registry accessed via `McRPGRegistryKey.COMBAT_CONDITION`. The manager reads from it and coordinates task lifecycle, but does not own it.
 
+**Threading:** this manager is **main-thread-only**. Its session map, per-session collections, and timestamp fields are plain (non-concurrent) structures, and it dispatches Bukkit events. Every public mutating entry point (`handleCombatInteraction` overloads, `reportCombatActivity`, `reportConditionActivity`, `endSession`, `removeParticipantFromAllSessions`, `removeParticipantFromSession`) calls a private `requireMainThread()` fail-fast guard that throws `IllegalStateException` if invoked off the main server thread. The class Javadoc documents this contract.
+
+**Participant-removal lifecycle:** all participant removals route through a single private core, `removeParticipant(CombatSession, UUID, ParticipantRemovalReason)`, which fires `CombatParticipantRemoveEvent` with the combat-type transition and ends the session with `ALL_PARTICIPANTS_GONE` if the roster empties and no condition holds it open. The death/quit/despawn sweep (`removeParticipantFromAllSessions`), the per-participant timeout scan (`scanSessionsForTimeout`), and third-party single-participant removal (`removeParticipantFromSession`) all delegate to it, so event firing and empty-session handling live in one place.
+
 The class referenced by the existing `McRPGManagerKey.COMBAT_TRACKER` entry — the import `us.eunoians.mcrpg.combat.CombatTrackerManager` is already declared in `McRPGManagerKey.java`.
 
 ```java
@@ -1093,6 +1137,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
 
     private final Map<UUID, CombatSession> activeSessions;
     private final Map<NamespacedKey, CombatConditionTask> conditionTasks;
+    @Nullable
     private CombatSessionTimeoutTask timeoutTask;
 
     /**
@@ -1129,26 +1174,60 @@ public class CombatTrackerManager extends Manager<McRPG> {
 
     /**
      * Handles a combat interaction between two entities. Creates or updates sessions for the
-     * source entity (if the source is a player) and manages participant rosters. This is the
-     * primary entry point called by {@link OnCombatDamageListener} on damage events.
+     * source and target entities (if they are players) and manages participant rosters. Only
+     * creates sessions for players; mobs are tracked as participants but do not get their own.
      * <p>
-     * Only creates sessions for players. Mobs are tracked as participants in player sessions
-     * but do not get their own sessions.
+     * This wrapper overload exists for callers that already hold {@link CustomEntityWrapper}s. The
+     * damage listener uses the {@link #handleCombatInteraction(UUID, UUID, Entity, Entity) Entity
+     * overload} instead. Both delegate to the private {@code handleInteraction(...)} which takes
+     * lazily-resolved wrapper {@link Supplier}s.
      *
-     * @param sourceUUID         The UUID of the entity dealing damage.
-     * @param targetUUID         The UUID of the entity taking damage.
+     * @param sourceUUID          The UUID of the entity dealing damage.
+     * @param targetUUID          The UUID of the entity taking damage.
      * @param sourceEntityWrapper The {@link CustomEntityWrapper} of the source entity.
      * @param targetEntityWrapper The {@link CustomEntityWrapper} of the target entity.
      */
     public void handleCombatInteraction(@NotNull UUID sourceUUID, @NotNull UUID targetUUID,
                                         @NotNull CustomEntityWrapper sourceEntityWrapper,
                                         @NotNull CustomEntityWrapper targetEntityWrapper) {
-        // 1. If source is a player: ensure session exists, add target as participant
-        // 2. If target is a player: ensure session exists, add source as participant
-        // 3. Fire CombatSessionStartEvent (cancellable) for new sessions
-        // 4. Fire CombatParticipantAddEvent (cancellable) for new participants
-        // 5. Record activity on both sessions (if both exist)
-        // 6. Handle FIFO eviction: fire CombatParticipantRemoveEvent with EVICTION reason
+        requireMainThread();
+        handleInteraction(sourceUUID, targetUUID, () -> sourceEntityWrapper, () -> targetEntityWrapper);
+    }
+
+    /**
+     * Entity-based variant for hot callers such as the damage listener. The {@link CustomEntityWrapper}s
+     * are built lazily and only when a session or participant is actually created, so the dominant
+     * steady-state case (both entities already tracked) constructs no wrappers at all. Prefer this
+     * overload on the damage path.
+     *
+     * @param sourceUUID   The UUID of the entity dealing damage.
+     * @param targetUUID   The UUID of the entity taking damage.
+     * @param sourceEntity The source entity.
+     * @param targetEntity The target entity.
+     */
+    public void handleCombatInteraction(@NotNull UUID sourceUUID, @NotNull UUID targetUUID,
+                                        @NotNull Entity sourceEntity, @NotNull Entity targetEntity) {
+        requireMainThread();
+        handleInteraction(sourceUUID, targetUUID,
+                () -> new CustomEntityWrapper(sourceEntity), () -> new CustomEntityWrapper(targetEntity));
+    }
+
+    /**
+     * Shared implementation. Resolves each side's {@link ParticipantType}, then dispatches to the
+     * private {@code handleSideInteraction(owner, other, otherType, wrapperSupplier)} once per player
+     * side (a PvP hit calls it twice, a PvE hit once). The side handler resolves the wrapper supplier
+     * only in its session-create and participant-add branches — the extracted private helpers
+     * {@code createSessionForInteraction(...)} (fires cancellable {@link CombatSessionStartEvent})
+     * and {@code addNewParticipant(...)} (fires cancellable {@link CombatParticipantAddEvent} and, on
+     * mob FIFO eviction, {@link CombatParticipantRemoveEvent} with
+     * {@link ParticipantRemovalReason#EVICTION}) — so the steady-state re-hit path allocates no wrapper.
+     */
+    private void handleInteraction(@NotNull UUID sourceUUID, @NotNull UUID targetUUID,
+                                   @NotNull Supplier<CustomEntityWrapper> sourceWrapperSupplier,
+                                   @NotNull Supplier<CustomEntityWrapper> targetWrapperSupplier) {
+        // 1. Resolve source/target ParticipantType via resolveParticipantType()
+        // 2. If source is a player: handleSideInteraction(source, target, targetType, targetWrapperSupplier)
+        // 3. If target is a player: handleSideInteraction(target, source, sourceType, sourceWrapperSupplier)
     }
 
     /**
@@ -1165,9 +1244,11 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * @param targetUUID The UUID of the target entity.
      */
     public void reportCombatActivity(@NotNull UUID sourceUUID, @NotNull UUID targetUUID) {
-        // 1. Resolve CustomEntityWrappers from Bukkit.getEntity()
-        // 2. Delegate to handleCombatInteraction() if both entities are resolvable
-        // 3. If only one is resolvable, update that entity's session only
+        requireMainThread();
+        // 1. Resolve both entities via Bukkit.getEntity()
+        // 2. If both are resolvable, delegate to the Entity overload of handleCombatInteraction()
+        // 3. If only one is resolvable and it is a player with a session, record the interaction on
+        //    that session only (no session is created for an unresolved counterpart)
     }
 
     /**
@@ -1177,13 +1258,20 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * <p>
      * Used by {@link CombatConditionTask} when a condition returns {@code true} for an entity
      * but provides no implied participants (proximity-based conditions).
+     * <p>
+     * When creating a new session, {@link CombatSessionStartEvent} is fired with the entity's own
+     * UUID as both the entity and trigger participant, and with {@code conditionKey} passed through as
+     * the triggering condition, so listeners can distinguish condition-driven starts from damage-driven
+     * ones via {@link CombatSessionStartEvent#getTriggeringConditionKey()}.
      *
      * @param entityUUID   The UUID of the entity held in combat.
-     * @param conditionKey The key of the condition holding the entity.
+     * @param conditionKey The {@link NamespacedKey} of the condition holding the entity.
      */
     public void reportConditionActivity(@NotNull UUID entityUUID, @NotNull NamespacedKey conditionKey) {
-        // 1. If no session exists: create one with no participants, fire CombatSessionStartEvent
-        // 2. If session exists: record activity to prevent timeout
+        requireMainThread();
+        // 1. If a session exists: record activity to prevent timeout, then return
+        // 2. If no session exists and the entity is an online player: fire CombatSessionStartEvent
+        //    with the entity's own UUID and conditionKey; if not cancelled, create an empty session
     }
 
     /**
@@ -1194,22 +1282,103 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * @param reason     The {@link CombatSessionEndReason} for ending the session.
      */
     public void endSession(@NotNull UUID entityUUID, @NotNull CombatSessionEndReason reason) {
-        // 1. Remove session from activeSessions
-        // 2. Fire CombatSessionEndEvent (not cancellable)
+        requireMainThread();
+        // 1. Remove session from activeSessions (no-op if absent)
+        // 2. Fire CombatSessionEndEvent (not cancellable) with the session's final state
     }
 
     /**
      * Removes a participant from all active sessions that reference it. Used when an entity
-     * dies, despawns, or logs out.
+     * dies, despawns, or logs out. Snapshots the session entries first (the removal core may end
+     * sessions, mutating the session map), then delegates each removal to the private removal core.
      *
      * @param participantUUID The UUID of the participant to remove.
      * @param reason          The {@link ParticipantRemovalReason} for removal.
      */
     public void removeParticipantFromAllSessions(@NotNull UUID participantUUID,
                                                   @NotNull ParticipantRemovalReason reason) {
-        // 1. Iterate all active sessions
-        // 2. For each session that contains the participant: remove and fire CombatParticipantRemoveEvent
-        // 3. If removal empties the roster: end session with ALL_PARTICIPANTS_GONE
+        requireMainThread();
+        // 1. Snapshot activeSessions entries to avoid ConcurrentModificationException
+        // 2. For each session that contains the participant: removeParticipant(session, uuid, reason)
+    }
+
+    /**
+     * Removes a specific participant from a specific entity's session — the supported entry point for
+     * third-party plugins (arena, duel, AFK, etc.) that need to drop a single participant. Resolves
+     * the owner's session and delegates to the private removal core.
+     *
+     * @param ownerUUID       The UUID of the session owner to remove the participant from.
+     * @param participantUUID The UUID of the participant to remove.
+     * @param reason          The {@link ParticipantRemovalReason} for the removal.
+     * @return An {@link Optional} containing the removed {@link CombatParticipant}, or empty if the
+     *         owner has no session or the session did not contain the participant.
+     */
+    @NotNull
+    public Optional<CombatParticipant> removeParticipantFromSession(@NotNull UUID ownerUUID,
+                                                                    @NotNull UUID participantUUID,
+                                                                    @NotNull ParticipantRemovalReason reason) {
+        requireMainThread();
+        // 1. Look up the owner's session; return empty if absent or it lacks the participant
+        // 2. Delegate to removeParticipant(session, participantUUID, reason)
+    }
+
+    /**
+     * The single owner of participant-removal lifecycle. Fires {@link CombatParticipantRemoveEvent}
+     * with the session's combat-type transition, then — if the roster empties as a result AND no
+     * registered condition holds the owner in combat — ends the session with
+     * {@link CombatSessionEndReason#ALL_PARTICIPANTS_GONE}. Checking the condition hold-open before
+     * the empty-session end lets a condition-held session with an emptied roster survive instead of
+     * flickering. Every removal path routes through here.
+     *
+     * @param session         The session to remove the participant from.
+     * @param participantUUID The UUID of the participant to remove.
+     * @param reason          The {@link ParticipantRemovalReason} for the removal.
+     * @return An {@link Optional} containing the removed {@link CombatParticipant}, or empty if absent.
+     */
+    @NotNull
+    private Optional<CombatParticipant> removeParticipant(@NotNull CombatSession session,
+                                                          @NotNull UUID participantUUID,
+                                                          @NotNull ParticipantRemovalReason reason) {
+        // 1. Capture previousType, remove the participant (return empty if not present), capture newType
+        // 2. Fire CombatParticipantRemoveEvent(session, removed, reason, previousType, newType)
+        // 3. If session.isEmpty() && !isHeldOpenByCondition(session): endSession(ALL_PARTICIPANTS_GONE)
+    }
+
+    /**
+     * Scans all active sessions for per-participant and session-level timeouts on the main thread.
+     * The timeout scan logic lives here (the {@link CombatSessionTimeoutTask} is only a scheduler
+     * shim that calls this). Session keys are snapshotted first because removal and session-ending
+     * mutate the session map.
+     * <p>
+     * For each session: remove every participant whose per-participant timer has expired via the
+     * shared removal core (reason {@link ParticipantRemovalReason#TIMEOUT}, which also ends the
+     * session if its roster empties); if the session still exists and its own inactivity timer has
+     * expired and no registered {@link CombatCondition} holds it open, end it with
+     * {@link CombatSessionEndReason#TIMEOUT}.
+     */
+    public void scanSessionsForTimeout() {
+        // 1. Snapshot activeSessions keys
+        // 2. For each session: removeParticipant(...) for each getTimedOutParticipants() with TIMEOUT
+        // 3. Skip if the session was already ended (roster emptied) during step 2
+        // 4. If session.isTimedOut() && !isHeldOpenByCondition(session): endSession(TIMEOUT)
+    }
+
+    /**
+     * Checks whether any registered {@link CombatCondition} currently holds the given session's owner
+     * in combat. When a condition matches, the session's activity timer is refreshed via
+     * {@link CombatSession#recordActivity()} so it is not ended on this scan pass. Used by both
+     * {@link #scanSessionsForTimeout()} and the removal core's empty-session check.
+     * <p>
+     * Each condition is evaluated inside a try/catch: a third-party condition that throws is logged at
+     * {@code WARNING} and skipped so one faulty condition cannot abort the check.
+     *
+     * @param session The session whose owner to evaluate.
+     * @return {@code true} if a condition holds the session open (and its timer was refreshed).
+     */
+    private boolean isHeldOpenByCondition(@NotNull CombatSession session) {
+        // 1. Resolve the owner as an online player; return false if offline
+        // 2. For each registered condition (guarded by try/catch): if isInCombat(player), recordActivity() and return true
+        // 3. Return false if no condition matched
     }
 
     /**
@@ -1230,11 +1399,17 @@ public class CombatTrackerManager extends Manager<McRPG> {
      * <p>
      * For standalone plugins registering conditions at runtime, call
      * {@code conditionRegistry.register(condition)} first, then this method.
+     * <p>
+     * If a task is already running for this condition's key, it is cancelled first (stop-first), so
+     * calling this twice for the same key cannot leak an orphaned task. This makes the bootstrap bulk
+     * start and the per-content-pack start (see {@code ContentHandlerType.COMBAT_CONDITION}) idempotent.
+     * The task's collaborators are injected via {@code createTask(plugin(), this)}.
      *
      * @param condition The condition whose task to start.
      */
     public void startConditionTask(@NotNull CombatCondition condition) {
-        CombatConditionTask conditionTask = condition.createTask();
+        stopConditionTask(condition.getKey());
+        CombatConditionTask conditionTask = condition.createTask(plugin(), this);
         conditionTask.runTask();
         conditionTasks.put(condition.getKey(), conditionTask);
     }
@@ -1254,14 +1429,16 @@ public class CombatTrackerManager extends Manager<McRPG> {
     }
 
     /**
-     * Gets a read-only view of all active sessions. The returned map is an unmodifiable
-     * snapshot — callers should not cache it across ticks.
+     * Gets an immutable snapshot of all active sessions, keyed by session-owner UUID. The returned
+     * map is a copy taken at call time (via {@link Map#copyOf(Map)}), so it is safe to iterate while
+     * mutating combat state (for example calling {@link #endSession(UUID, CombatSessionEndReason)}
+     * during the iteration). It does not reflect sessions started or ended after the call.
      *
-     * @return An unmodifiable {@link Map} of entity UUID to {@link CombatSession}.
+     * @return An immutable snapshot {@link Map} of entity UUID to {@link CombatSession}.
      */
     @NotNull
     public Map<UUID, CombatSession> getActiveSessions() {
-        return Collections.unmodifiableMap(activeSessions);
+        return Map.copyOf(activeSessions);
     }
 
     /**
@@ -1296,30 +1473,50 @@ public class CombatTrackerManager extends Manager<McRPG> {
     }
 
     /**
-     * Gets the configured session timeout in milliseconds.
+     * Gets the configured session timeout in milliseconds. The value is floored at 1 second: a zero
+     * or negative timeout would make every session expire on the next scan pass. A warning is logged
+     * when the configured value is clamped.
      *
-     * @return The session timeout in milliseconds.
+     * @return The session timeout in milliseconds (always at least 1000).
      */
     public long getSessionTimeoutMillis() {
-        // Read from CombatConfigFile.SESSION_TIMEOUT_SECONDS, convert to millis
+        // Read CombatConfigFile.SESSION_TIMEOUT_SECONDS; floor at 1.0s (warn on clamp); convert to millis
     }
 
     /**
-     * Gets the configured maximum mob participant count.
+     * Gets the configured maximum mob participant count. The value is floored at 1: a value below 1
+     * would make FIFO eviction attempt to evict from an empty roster. A warning is logged when the
+     * configured value is clamped.
      *
-     * @return The max mob participant count.
+     * @return The max mob participant count (always at least 1).
      */
     public int getMaxMobParticipants() {
-        // Read from CombatConfigFile.MAX_MOB_PARTICIPANTS
+        // Read CombatConfigFile.MAX_MOB_PARTICIPANTS; clamp values < 1 up to 1 (warn on clamp)
     }
 
     /**
-     * Gets the configured scan interval for the timeout task in seconds.
+     * Gets the configured scan interval for the timeout task in seconds. The value is floored at
+     * 0.25 seconds: a zero or negative interval would degrade the scan to running every tick. A
+     * warning is logged when the configured value is clamped.
      *
-     * @return The scan interval in seconds.
+     * @return The scan interval in seconds (always at least 0.25).
      */
     private double getScanIntervalSeconds() {
-        // Read from CombatConfigFile.TIMEOUT_SCAN_INTERVAL_SECONDS
+        // Read CombatConfigFile.TIMEOUT_SCAN_INTERVAL_SECONDS; floor at 0.25s (warn on clamp)
+    }
+
+    /**
+     * Guards a public entry point against being called off the main server thread. The session map,
+     * per-session collections, and timestamp fields are not thread-safe and this manager fires Bukkit
+     * events, so all mutating calls must run on the main thread.
+     *
+     * @throws IllegalStateException if called from any thread other than the main server thread.
+     */
+    private void requireMainThread() {
+        if (!Bukkit.isPrimaryThread()) {
+            throw new IllegalStateException("CombatTrackerManager must be called from the main server thread, "
+                    + "but was called from thread: " + Thread.currentThread().getName());
+        }
     }
 }
 ```
@@ -1347,18 +1544,19 @@ public class OnCombatDamageListener implements Listener {
 
     /**
      * Handles entity-on-entity damage events. Resolves the true source entity for projectiles
-     * via {@link Projectile#getShooter()}, constructs {@link CustomEntityWrapper}s for both
-     * entities, then reports the combat interaction to the manager.
+     * via {@link Projectile#getShooter()}, then passes the resolved {@link org.bukkit.entity.Entity}
+     * objects to the {@link CombatTrackerManager}'s Entity overload — the manager builds
+     * {@link CustomEntityWrapper}s lazily and only when a session or participant is actually created,
+     * so no wrapper is allocated on the steady-state re-hit path.
      *
      * @param event The damage event.
      */
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onEntityDamageByEntity(@NotNull EntityDamageByEntityEvent event) {
-        // 1. Resolve damager: if Projectile, resolve via getShooter()
+        // 1. Resolve damager: if Projectile, resolve via getShooter() (bail if the shooter is not an Entity)
         // 2. Guard: both source and target must be LivingEntity
-        // 3. Guard: source and target must not be the same entity
-        // 4. Construct CustomEntityWrappers for source and target
-        // 5. Delegate to combatTrackerManager.handleCombatInteraction()
+        // 3. Guard: source and target must not be the same entity (compared by UUID)
+        // 4. Delegate to combatTrackerManager.handleCombatInteraction(sourceUUID, targetUUID, sourceEntity, targetEntity)
     }
 }
 ```
@@ -1404,7 +1602,7 @@ public class OnCombatEntityDeathListener implements Listener {
 **Package:** `us.eunoians.mcrpg.listener.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/listener/combat/OnCombatEntityRemoveListener.java`
 
-Handles entity removal from the world (despawn, chunk unload, plugin removal). Removes the entity from all participant rosters. Players are handled by `OnCombatPlayerQuitListener`.
+Handles entity removal from the world (despawn, chunk unload, plugin removal). Removes the entity from all participant rosters. Fast-skips the common cases that can never be combat participants: `EntityRemoveEvent.Cause.DEATH` removals (owned by `OnCombatEntityDeathListener`), players (owned by `OnCombatPlayerQuitListener`), and non-`LivingEntity` removals (items, projectiles, XP orbs) — so the frequent chunk-unload and item-despawn removals return before touching the session map.
 
 ```java
 public class OnCombatEntityRemoveListener implements Listener {
@@ -1422,17 +1620,22 @@ public class OnCombatEntityRemoveListener implements Listener {
 
     /**
      * Handles entity removal from the world. Removes the entity from all sessions' participant
-     * rosters. Skips players — player removal is handled by {@link OnCombatPlayerQuitListener}.
+     * rosters. Fast-skips DEATH-cause removals (handled by {@link OnCombatEntityDeathListener}),
+     * players (handled by {@link OnCombatPlayerQuitListener}), and non-living entities (items,
+     * projectiles, experience orbs).
      *
      * @param event The entity remove event.
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityRemove(@NotNull EntityRemoveEvent event) {
-        if (event.getEntity() instanceof Player) {
+        if (event.getCause() == EntityRemoveEvent.Cause.DEATH) {
             return;
         }
-        UUID removedEntityUUID = event.getEntity().getUniqueId();
-        combatTrackerManager.removeParticipantFromAllSessions(removedEntityUUID, ParticipantRemovalReason.DESPAWN);
+        Entity entity = event.getEntity();
+        if (!(entity instanceof LivingEntity) || entity instanceof Player) {
+            return;
+        }
+        combatTrackerManager.removeParticipantFromAllSessions(entity.getUniqueId(), ParticipantRemovalReason.DESPAWN);
     }
 }
 ```
@@ -1506,12 +1709,15 @@ public class OnProjectileLaunchListener implements Listener {
 }
 ```
 
-### 1.13 CombatSessionStartEvent
+### 1.17 CombatSessionStartEvent
 
 **Package:** `us.eunoians.mcrpg.event.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/event/combat/CombatSessionStartEvent.java`
 
-Fired when a new combat session is about to be created for an entity. Cancellable — cancelling prevents the session from being created. The next qualifying damage event will fire another `CombatSessionStartEvent`.
+Fired before a new combat session is created for an entity. Cancellable — cancelling prevents the session from being created; the next qualifying trigger will fire another `CombatSessionStartEvent`. A session can be started two ways, distinguished by `getTriggeringConditionKey()`:
+
+- **Damage-triggered** — the trigger participant is the other combatant, and the triggering condition key is absent.
+- **Condition-triggered** — a periodic `CombatCondition` (proximity/region) put the entity in combat with no specific opponent. The trigger participant is the entity's own UUID and the triggering condition key is present.
 
 ```java
 public class CombatSessionStartEvent extends Event implements Cancellable {
@@ -1522,10 +1728,12 @@ public class CombatSessionStartEvent extends Event implements Cancellable {
     private final UUID triggerParticipantUUID;
     private final ParticipantType triggerParticipantType;
     private final CustomEntityWrapper triggerEntityWrapper;
+    @Nullable
+    private final NamespacedKey triggeringConditionKey;
     private boolean cancelled;
 
     /**
-     * Constructs a new {@link CombatSessionStartEvent}.
+     * Constructs a damage-triggered {@link CombatSessionStartEvent} with no triggering condition.
      *
      * @param entityUUID              The UUID of the entity entering combat.
      * @param triggerParticipantUUID   The UUID of the entity that triggered combat entry.
@@ -1535,10 +1743,29 @@ public class CombatSessionStartEvent extends Event implements Cancellable {
     public CombatSessionStartEvent(@NotNull UUID entityUUID, @NotNull UUID triggerParticipantUUID,
                                     @NotNull ParticipantType triggerParticipantType,
                                     @NotNull CustomEntityWrapper triggerEntityWrapper) {
+        this(entityUUID, triggerParticipantUUID, triggerParticipantType, triggerEntityWrapper, null);
+    }
+
+    /**
+     * Constructs a new {@link CombatSessionStartEvent}.
+     *
+     * @param entityUUID               The UUID of the entity entering combat.
+     * @param triggerParticipantUUID   The UUID of the entity that triggered combat entry. For a
+     *                                 condition-triggered start this is the entity's own UUID.
+     * @param triggerParticipantType   The {@link ParticipantType} of the triggering entity.
+     * @param triggerEntityWrapper     The {@link CustomEntityWrapper} of the triggering entity.
+     * @param triggeringConditionKey   The {@link NamespacedKey} of the condition that triggered this
+     *                                 start, or {@code null} for a damage-triggered start.
+     */
+    public CombatSessionStartEvent(@NotNull UUID entityUUID, @NotNull UUID triggerParticipantUUID,
+                                    @NotNull ParticipantType triggerParticipantType,
+                                    @NotNull CustomEntityWrapper triggerEntityWrapper,
+                                    @Nullable NamespacedKey triggeringConditionKey) {
         this.entityUUID = entityUUID;
         this.triggerParticipantUUID = triggerParticipantUUID;
         this.triggerParticipantType = triggerParticipantType;
         this.triggerEntityWrapper = triggerEntityWrapper;
+        this.triggeringConditionKey = triggeringConditionKey;
     }
 
     /**
@@ -1581,6 +1808,19 @@ public class CombatSessionStartEvent extends Event implements Cancellable {
         return triggerEntityWrapper;
     }
 
+    /**
+     * Gets the key of the {@link us.eunoians.mcrpg.combat.condition.CombatCondition} that triggered
+     * this combat start, if any. Present for condition-triggered starts and empty for damage-triggered
+     * starts.
+     *
+     * @return An {@link Optional} containing the triggering condition's {@link NamespacedKey}, or
+     *         empty for a damage-triggered start.
+     */
+    @NotNull
+    public Optional<NamespacedKey> getTriggeringConditionKey() {
+        return Optional.ofNullable(triggeringConditionKey);
+    }
+
     @Override
     public boolean isCancelled() {
         return cancelled;
@@ -1604,7 +1844,7 @@ public class CombatSessionStartEvent extends Event implements Cancellable {
 }
 ```
 
-### 1.14 CombatParticipantAddEvent
+### 1.18 CombatParticipantAddEvent
 
 **Package:** `us.eunoians.mcrpg.event.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/event/combat/CombatParticipantAddEvent.java`
@@ -1703,7 +1943,7 @@ public class CombatParticipantAddEvent extends Event implements Cancellable {
 }
 ```
 
-### 1.15 CombatParticipantRemoveEvent
+### 1.19 CombatParticipantRemoveEvent
 
 **Package:** `us.eunoians.mcrpg.event.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/event/combat/CombatParticipantRemoveEvent.java`
@@ -1805,12 +2045,12 @@ public class CombatParticipantRemoveEvent extends Event {
 }
 ```
 
-### 1.16 CombatSessionEndEvent
+### 1.20 CombatSessionEndEvent
 
 **Package:** `us.eunoians.mcrpg.event.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/event/combat/CombatSessionEndEvent.java`
 
-Fired when a combat session ends. Not cancellable — informational only. Includes placeholder methods for Phase 2 statistics and combat state data.
+Fired when a combat session ends. Not cancellable — informational only. Carries the final participant roster, the derived combat type, the end reason, and the total session duration. Per-session statistics and a combat state snapshot are **deferred to the Phase 2 LLD** ([Combat State & Statistics Platform](phase-2-combat-state-and-statistics-platform.md)); Phase 1 exposes no placeholder accessors for them.
 
 ```java
 public class CombatSessionEndEvent extends Event {
@@ -1893,32 +2133,6 @@ public class CombatSessionEndEvent extends Event {
         return durationMillis;
     }
 
-    // TODO: Phase 2 — replace with real per-session statistics container
-    /**
-     * Gets the per-session statistics accumulated during this combat session.
-     * <p>
-     * Placeholder for Phase 2 — returns an empty map until the statistics platform is implemented.
-     *
-     * @return An empty {@link Map} (placeholder).
-     */
-    @NotNull
-    public Map<NamespacedKey, Number> getSessionStatistics() {
-        return Collections.emptyMap();
-    }
-
-    // TODO: Phase 2 — replace with real combat state data snapshot
-    /**
-     * Gets the combat state data attached to this session at the time it ended.
-     * <p>
-     * Placeholder for Phase 2 — returns an empty map until the combat state platform is implemented.
-     *
-     * @return An empty {@link Map} (placeholder).
-     */
-    @NotNull
-    public Map<NamespacedKey, Object> getCombatStateData() {
-        return Collections.emptyMap();
-    }
-
     @NotNull
     @Override
     public HandlerList getHandlers() {
@@ -1932,7 +2146,7 @@ public class CombatSessionEndEvent extends Event {
 }
 ```
 
-### 1.17 CombatConfigFile
+### 1.21 CombatConfigFile
 
 **Package:** `us.eunoians.mcrpg.configuration.file`
 **File:** `src/main/java/us/eunoians/mcrpg/configuration/file/CombatConfigFile.java`
@@ -2018,21 +2232,27 @@ private CombatConditionContentPack getCombatConditionContent() {
 }
 ```
 
-### 2.4 ContentExpansionManager — Register Combat Conditions
+### 2.4 ContentHandlerType — Register Combat Conditions
 
-**File:** `src/main/java/us/eunoians/mcrpg/expansion/ContentExpansionManager.java`
+**File:** `src/main/java/us/eunoians/mcrpg/expansion/handler/ContentHandlerType.java`
 
-In the method that processes content packs from registered expansions, add handling for `CombatConditionContentPack` — iterate its content and register each `CombatCondition` with the `CombatTrackerManager`.
+Add a `COMBAT_CONDITION` processor to the `ContentHandlerType` enum. For each `CombatCondition` in a `CombatConditionContentPack`, the processor both **registers** it in the `CombatConditionRegistry` and **starts its periodic evaluation task** via `CombatTrackerManager.startConditionTask(condition)`. Starting the task here — rather than relying solely on the bootstrap-time bulk start (`startConditionTasks()`) — is what lets a third-party `ContentExpansion` register combat conditions *after* McRPG's own startup and have them actually polled. Because `startConditionTask` is stop-first, the bootstrap bulk start plus this per-pack start are idempotent (no orphaned/duplicate tasks).
 
 ```java
-// Add to the content pack processing loop
-if (pack instanceof CombatConditionContentPack combatConditionPack) {
-    CombatConditionRegistry conditionRegistry = plugin().registryAccess()
-            .registry(McRPGRegistryKey.COMBAT_CONDITION);
-    for (CombatCondition condition : combatConditionPack.getContent()) {
-        conditionRegistry.register(condition);
+COMBAT_CONDITION((mcRPG, mcRPGContent) -> {
+    if (mcRPGContent instanceof CombatConditionContentPack combatConditionPack) {
+        CombatConditionRegistry conditionRegistry = mcRPG.registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_CONDITION);
+        CombatTrackerManager combatTrackerManager = mcRPG.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_TRACKER);
+        for (CombatCondition condition : combatConditionPack.getContent()) {
+            conditionRegistry.register(condition);
+            combatTrackerManager.startConditionTask(condition);
+        }
+        return true;
     }
-}
+    return false;
+});
 ```
 
 ### 2.5 McRPGBootstrap — Manager Initialization and Lifecycle
@@ -2062,6 +2282,18 @@ if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.COMB
 }
 ```
 
+### 2.6 ReloadPluginCommand — Restart the Timeout Task on Reload
+
+**File:** `src/main/java/us/eunoians/mcrpg/command/admin/ReloadPluginCommand.java`
+
+After `/mcrpg admin reload` reloads the config files, restart the combat timeout scan task so a changed `timeout-scan-interval-seconds` takes effect on reload. Active sessions live in the manager and are untouched — only the scan cadence is refreshed. (The other two combat config values, `timeout-seconds` and `max-mob-participants`, are read per session at creation, so they apply to newly started sessions after a reload without any task restart.)
+
+```java
+// After fileManager.reloadFiles():
+plugin.registryAccess().registry(RegistryKey.MANAGER)
+        .manager(McRPGManagerKey.COMBAT_TRACKER).startTimeoutTask();
+```
+
 ---
 
 ## 3. YAML Configuration
@@ -2069,6 +2301,8 @@ if (registryAccess.registry(RegistryKey.MANAGER).registered(McRPGManagerKey.COMB
 ### 3.1 combat_configuration.yml
 
 ```yaml
+config-version: 1
+
 # Combat Tracker Configuration
 # Controls per-player combat session tracking, timeout behavior, and participant management.
 
@@ -2076,17 +2310,27 @@ session:
   # Seconds of inactivity before a combat session ends.
   # Also used as the per-participant inactivity threshold — participants that haven't
   # interacted with the session owner for this duration are individually removed.
+  # Minimum: 1 (values below 1 are clamped to 1 and a warning is logged).
+  # Reload: applies to newly started combat sessions after /mcrpg admin reload; sessions
+  # already in progress keep the value they started with.
   timeout-seconds: 8
 
   # Maximum number of mob participants tracked in a session's FIFO queue.
   # When the queue is full, the oldest mob is evicted. Player participants are unlimited.
+  # Minimum: 1 (values below 1 are clamped to 1 and a warning is logged).
+  # Reload: applies to newly started combat sessions after /mcrpg admin reload; sessions
+  # already in progress keep the value they started with.
   max-mob-participants: 16
 
   # Seconds between global timeout scan passes.
   # Lower values = more responsive timeouts, slightly higher tick cost.
   # 0.5 seconds is sufficient — timing precision for an 8-second timeout doesn't need sub-second granularity.
+  # Minimum: 0.25 (values below 0.25 are clamped to 0.25 and a warning is logged).
+  # Reload: applied immediately by /mcrpg admin reload (the scan task is restarted).
   timeout-scan-interval-seconds: 0.5
 ```
+
+The `config-version: 1` line at the top is the file's schema version (managed by boostedyaml, matching `CombatConfigFile.CURRENT_VERSION`); the descriptive header comment follows it.
 
 ---
 
@@ -2099,18 +2343,24 @@ Player A hits Mob 1 with a sword:
   L-> EntityDamageByEntityEvent fires
       |-> OnCombatDamageListener.onEntityDamageByEntity() [HIGHEST]
           |-> Resolve damager: Player A (not a projectile)
-          |-> combatTrackerManager.handleCombatInteraction(A.uuid, Mob1.uuid, PLAYER, ZOMBIE)
-              |-> A is a Player — check for existing session
-              |   |-> No session exists
-              |   |-> Fire CombatSessionStartEvent(A.uuid, Mob1.uuid, MOB, ZOMBIE)
-              |   |   |-> Not cancelled
-              |   |-> Create CombatSession for A (timeout=8s, maxMob=16)
-              |   |-> Create CombatParticipant(Mob1.uuid, MOB, ZOMBIE, now)
-              |   |-> session.addParticipant(participant) — no eviction (queue empty)
-              |   |-> session.recordParticipantInteraction(Mob1.uuid)
-              |-> Mob1 is not a Player — skip session creation for Mob1
+          |-> combatTrackerManager.handleCombatInteraction(A.uuid, Mob1.uuid, playerAEntity, mob1Entity)  [Entity overload]
+              |-> requireMainThread()
+              |-> handleInteraction(...) with lazy CustomEntityWrapper suppliers
+              |-> A resolves to PLAYER, Mob1 resolves to MOB
+              |-> handleSideInteraction(A, Mob1, MOB, mob1WrapperSupplier)
+              |   |-> No session exists → createSessionForInteraction(...)
+              |   |   |-> Resolve mob1 wrapper lazily (ZOMBIE) — first wrapper allocation
+              |   |   |-> Fire CombatSessionStartEvent(A.uuid, Mob1.uuid, MOB, ZOMBIE)  [no condition key]
+              |   |   |   |-> Not cancelled
+              |   |   |-> Create CombatSession for A (timeout=8s, maxMob=16)
+              |   |   |-> Create CombatParticipant(Mob1.uuid, MOB, ZOMBIE, now)
+              |   |   |-> session.addParticipant(participant) — no eviction (map empty)
+              |   |   |-> session.recordParticipantInteraction(Mob1.uuid)
+              |-> Mob1 is not a Player — skip session management for Mob1 (its wrapper is never resolved)
       |-> OnAttackAbilityListener.onDamage() [MONITOR]
           |-> Abilities can now query combatTrackerManager.getSession(A.uuid) — it exists
+Note: on a subsequent hit against Mob 1, the participant already exists, so handleSideInteraction
+just calls session.recordParticipantInteraction — the wrapper suppliers are never invoked (no allocation).
 ```
 
 ### 4.2 Participant Addition to Existing Session
@@ -2141,51 +2391,53 @@ Player A (already fighting Mob 1) hits Player B:
 ### 4.3 Mob FIFO Eviction
 
 ```
-Player A (already fighting mobs 1-16, queue full) hits Mob 17:
+Player A (already fighting mobs 1-16, map full) hits Mob 17:
   L-> EntityDamageByEntityEvent fires
       |-> OnCombatDamageListener.onEntityDamageByEntity() [HIGHEST]
-          |-> combatTrackerManager.handleCombatInteraction(A.uuid, Mob17.uuid, PLAYER, SKELETON)
+          |-> combatTrackerManager.handleCombatInteraction(A.uuid, Mob17.uuid, playerAEntity, mob17Entity)
               |-> A is a Player — session exists
-              |   |-> Mob 17 is not in A's roster
-              |   |-> Capture previousType = A.session.getCombatType() → PVE
-              |   |-> Create CombatParticipant(Mob17.uuid, MOB, SKELETON, now)
-              |   |-> Compute newType with Mob 17 added → PVE (unchanged)
-              |   |-> Fire CombatParticipantAddEvent(A.session, participant, PVE, PVE)
-              |   |   |-> Not cancelled
-              |   |-> A.session.addParticipant(participant)
-              |   |   |-> Mob queue full (16/16) — evict oldest: Mob 1
-              |   |   |-> Returns Optional.of(evictedParticipant)
-              |   |-> Fire CombatParticipantRemoveEvent(A.session, evictedParticipant, EVICTION, PVE, PVE)
-              |   |-> A.session.recordParticipantInteraction(Mob17.uuid)
-              |-> Mob 17 is not a Player — skip session creation
+              |   |-> Mob 17 is not in A's roster → addNewParticipant(...)
+              |   |   |-> Capture previousCombatType = A.session.getCombatType() → PVE (true pre-add type)
+              |   |   |-> Resolve mob17 wrapper lazily (SKELETON)
+              |   |   |-> Create CombatParticipant(Mob17.uuid, MOB, SKELETON, now)
+              |   |   |-> Compute newCombatType (MOB add → previousCombatType) → PVE (unchanged)
+              |   |   |-> Fire CombatParticipantAddEvent(A.session, participant, PVE, PVE)
+              |   |   |   |-> Not cancelled
+              |   |   |-> A.session.addParticipant(participant)
+              |   |   |   |-> Mob map full (16/16) — evict oldest: Mob 1 → Optional.of(evicted)
+              |   |   |-> Eviction: typeAfterEviction = A.session.getCombatType() → PVE
+              |   |   |-> Fire CombatParticipantRemoveEvent(A.session, evicted, EVICTION, previousCombatType=PVE, typeAfterEviction=PVE)
+              |   |   |-> A.session.recordParticipantInteraction(Mob17.uuid)
+              |-> Mob 17 is not a Player — skip session management
+(If the add event is cancelled, the participant is not added and the session activity timer is left
+untouched — a rejected participant must not keep the session alive.)
 ```
 
 ### 4.4 Timeout Scan — Per-Participant and Session Timeout
 
 ```
 CombatSessionTimeoutTask.onIntervalComplete() fires (every configured interval, default 0.5s):
-  L-> Snapshot activeSessions keys
+  L-> combatTrackerManager.scanSessionsForTimeout()   [scan logic lives in the manager]
+      |-> Snapshot activeSessions keys
       |-> For each session:
-          |-> timedOutParticipants = session.getTimedOutParticipants()
-          |-> For each timed-out participant:
-          |   |-> previousType = session.getCombatType()
-          |   |-> session.removeParticipant(participant.uuid)
-          |   |-> newType = session.getCombatType()
-          |   |-> Fire CombatParticipantRemoveEvent(session, participant, TIMEOUT, previousType, newType)
-          |-> If session.isEmpty():
-          |   |-> combatTrackerManager.endSession(uuid, ALL_PARTICIPANTS_GONE)
-          |   |-> continue
-          |-> If session.isTimedOut():
-          |   |-> Check hold-open gate: iterate registered CombatConditions
-          |   |   |-> entity = Bukkit.getPlayer(session.getEntityUUID())
-          |   |   |-> If entity != null AND any condition.isInCombat(entity) returns true:
-          |   |   |   |-> session.recordActivity() — reset timeout
-          |   |   |   |-> continue (session held open)
-          |   |   |-> No condition holds — end session
-          |   |-> combatTrackerManager.endSession(uuid, TIMEOUT)
+          |-> For each participant in session.getTimedOutParticipants():
+          |   |-> removeParticipant(session, participant.uuid, TIMEOUT)   [shared removal core]
+          |   |   |-> previousType = session.getCombatType()
+          |   |   |-> session.removeParticipant(participant.uuid); newType = session.getCombatType()
+          |   |   |-> Fire CombatParticipantRemoveEvent(session, participant, TIMEOUT, previousType, newType)
+          |   |   |-> If session.isEmpty() AND NOT isHeldOpenByCondition(session):
+          |   |   |   |-> endSession(uuid, ALL_PARTICIPANTS_GONE)
+          |   |   |-> (a condition-held session with an emptied roster survives — hold-open is checked
+          |   |   |    BEFORE the empty-session end, so it does not flicker)
+          |-> If the session was already ended during removal (no longer in activeSessions): continue
+          |-> If session.isTimedOut() AND NOT isHeldOpenByCondition(session):
+          |   |-> endSession(uuid, TIMEOUT)
+          |-> (isHeldOpenByCondition refreshes session activity via recordActivity() when a condition
+          |    holds it open, and evaluates each condition in a try/catch so one throwing condition
+          |    can't abort the scan)
 ```
 
-### 4.4 Entity Death — Session End and Cross-Session Cleanup
+### 4.5 Entity Death — Session End and Cross-Session Cleanup
 
 ```
 Mob 1 dies while Player A and Player B are fighting it:
@@ -2194,20 +2446,19 @@ Mob 1 dies while Player A and Player B are fighting it:
           |-> combatTrackerManager.endSession(Mob1.uuid, DEATH)
           |   |-> Mob1 has no session (mobs don't get sessions) — no-op
           |-> combatTrackerManager.removeParticipantFromAllSessions(Mob1.uuid, DEATH)
-              |-> Iterate all active sessions
-              |-> A's session contains Mob1:
+              |-> Snapshot activeSessions entries (removal may end sessions, mutating the map)
+              |-> A's session contains Mob1 → removeParticipant(A.session, Mob1.uuid, DEATH)  [shared core]
               |   |-> previousType = A.session.getCombatType() → PVE (assuming B timed out)
-              |   |-> A.session.removeParticipant(Mob1.uuid)
-              |   |-> newType = A.session.getCombatType()
+              |   |-> A.session.removeParticipant(Mob1.uuid); newType = A.session.getCombatType()
               |   |-> Fire CombatParticipantRemoveEvent(A.session, mob1Participant, DEATH, previousType, newType)
-              |   |-> A's session is now empty
-              |   |-> combatTrackerManager.endSession(A.uuid, ALL_PARTICIPANTS_GONE)
-              |       |-> Fire CombatSessionEndEvent(A.uuid, ALL_PARTICIPANTS_GONE, [...], PVE, duration)
-              |-> B's session contains Mob1:
+              |   |-> A's session is now empty AND NOT isHeldOpenByCondition(A.session):
+              |   |   |-> endSession(A.uuid, ALL_PARTICIPANTS_GONE)
+              |   |       |-> Fire CombatSessionEndEvent(A.uuid, ALL_PARTICIPANTS_GONE, [...], PVE, duration)
+              |-> B's session contains Mob1 → removeParticipant(B.session, Mob1.uuid, DEATH)
               |   |-> (Same flow as A's)
 ```
 
-### 4.5 Projectile Hit — Shooter Resolution
+### 4.6 Projectile Hit — Shooter Resolution
 
 ```
 Player A shoots an arrow that hits Player B:
@@ -2217,9 +2468,8 @@ Player A shoots an arrow that hits Player B:
   ...arrow flies...
   L-> EntityDamageByEntityEvent fires (damager = Arrow)
       |-> OnCombatDamageListener.onEntityDamageByEntity() [HIGHEST]
-          |-> damager instanceof Projectile → resolve source
-          |-> arrow.getShooter() → Player A
-          |-> combatTrackerManager.handleCombatInteraction(A.uuid, B.uuid, PLAYER, PLAYER)
+          |-> damager instanceof Projectile → resolve source via getShooter() → Player A
+          |-> combatTrackerManager.handleCombatInteraction(A.uuid, B.uuid, playerAEntity, playerBEntity)  [Entity overload]
           |-> (session creation / participant addition as in 4.1 / 4.2)
 ```
 
@@ -2277,10 +2527,12 @@ Player A shoots an arrow that hits Player B:
 - `getCombatType` returns `PVE` when roster is empty
 - `getCombatType` transitions from `PVE` to `PVP` when a player participant is added
 - `getCombatType` transitions from `PVP` to `PVE` when the last player participant is removed
-- `addParticipant` with `PLAYER` type adds to player map — returns null (no eviction)
-- `addParticipant` with `MOB` type adds to mob queue — returns null when queue is not full
-- `addParticipant` with `MOB` type evicts oldest mob when queue is at capacity
+- `addParticipant` with `PLAYER` type adds to player map — returns empty (no eviction)
+- `addParticipant` with `MOB` type adds to mob map — returns empty when map is not full
+- `addParticipant` with `MOB` type evicts oldest mob when map is at capacity
 - Evicted mob is the first mob added (FIFO order)
+- `addParticipant` with `MOB` type does not throw when max mob participants is zero (empty-roster guard)
+- Re-adding the same mob does not create a duplicate or evict (in-place update, FIFO position preserved)
 - `removeParticipant` removes a player participant by UUID
 - `removeParticipant` removes a mob participant by UUID
 - `removeParticipant` returns empty when UUID is not in the roster
@@ -2301,24 +2553,31 @@ Player A shoots an arrow that hits Player B:
 - `isEmpty` returns `true` when no participants exist
 - `isEmpty` returns `false` when player participants exist
 - `isEmpty` returns `false` when mob participants exist
-- `getDurationSeconds` returns elapsed time since construction
+- `getDurationMillis` returns elapsed time since construction
 
 ### 6.3 CombatTypeTest
 
-- `PVE` and `PVP` enum values exist
-- `values()` returns exactly two values
+Simplified to a pure-enum `values()`/`valueOf` round-trip; no longer extends the MockBukkit base class.
+
+- Declares the expected values (`PVE`, `PVP`) that round-trip through `valueOf`
 
 ### 6.4 CombatSessionEndReasonTest
 
-- All expected enum values exist: `TIMEOUT`, `DEATH`, `LOGOUT`, `ALL_PARTICIPANTS_GONE`, `PLUGIN`
+Simplified to a pure-enum `values()`/`valueOf` round-trip; no longer extends the MockBukkit base class.
+
+- Declares the expected values (`TIMEOUT`, `DEATH`, `LOGOUT`, `ALL_PARTICIPANTS_GONE`, `PLUGIN`) that round-trip through `valueOf`
 
 ### 6.5 ParticipantRemovalReasonTest
 
-- All expected enum values exist: `DEATH`, `LOGOUT`, `DESPAWN`, `TIMEOUT`, `EVICTION`, `SESSION_END`
+Simplified to a pure-enum `values()`/`valueOf` round-trip; no longer extends the MockBukkit base class.
+
+- Declares the expected values (`DEATH`, `LOGOUT`, `DESPAWN`, `TIMEOUT`, `EVICTION`, `SESSION_END`, `PLUGIN`) that round-trip through `valueOf`
 
 ### 6.6 CombatSessionStartEventTest
 
-- Constructor stores entityUUID, triggerParticipantUUID, triggerParticipantType, triggerEntityType
+- Constructor stores entityUUID, triggerParticipantUUID, triggerParticipantType, triggerEntityWrapper
+- Damage-triggered start has no triggering condition key (empty `Optional`)
+- Condition-triggered start carries the triggering condition key
 - Default cancelled state is `false`
 - `setCancelled(true)` makes `isCancelled()` return `true`
 - `getHandlerList()` returns a non-null static HandlerList
@@ -2338,48 +2597,74 @@ Player A shoots an arrow that hits Player B:
 
 ### 6.9 CombatSessionEndEventTest
 
-- Constructor stores entityUUID, reason, finalParticipants, finalCombatType, durationSeconds
+- Constructor stores entityUUID, reason, finalParticipants, finalCombatType, durationMillis
 - `getFinalParticipants()` returns an unmodifiable collection
-- `getSessionStatistics()` returns an empty map (placeholder)
-- `getCombatStateData()` returns an empty map (placeholder)
 - Event is not cancellable (no `Cancellable` interface)
 - `getHandlerList()` returns a non-null static HandlerList
 
 ### 6.10 CombatTrackerManagerTest
 
-- `getSession` returns empty when no session exists for the UUID
-- `hasActiveSession` returns `false` when no session exists
-- `handleCombatInteraction` creates a session for a player source
-- `handleCombatInteraction` creates a session for a player target
-- `handleCombatInteraction` creates sessions for both players in PvP
-- `handleCombatInteraction` does not create a session for a mob source
-- `handleCombatInteraction` does not create a session for a mob target
-- `handleCombatInteraction` adds participant to existing session on repeat damage
-- `handleCombatInteraction` refreshes lastInteraction on existing participant
-- `handleCombatInteraction` fires `CombatSessionStartEvent` on new session
-- `handleCombatInteraction` does not create session when `CombatSessionStartEvent` is cancelled
-- `handleCombatInteraction` fires `CombatParticipantAddEvent` for new participant on existing session
-- `handleCombatInteraction` does not add participant when `CombatParticipantAddEvent` is cancelled
-- `handleCombatInteraction` fires `CombatParticipantRemoveEvent` with `EVICTION` when mob FIFO is full
-- `endSession` removes session from active map
-- `endSession` fires `CombatSessionEndEvent` with correct reason, participants, type, duration
-- `endSession` is a no-op when no session exists
-- `removeParticipantFromAllSessions` removes participant from every session that contains it
-- `removeParticipantFromAllSessions` fires `CombatParticipantRemoveEvent` for each removal
-- `removeParticipantFromAllSessions` ends sessions that become empty with `ALL_PARTICIPANTS_GONE`
-- `startConditionTask` starts a repeating task at the condition's declared interval
-- `stopConditionTask` cancels the condition's task
-- `startConditionTasks` bulk-starts tasks for all conditions in the registry
-- `shutdown` ends all active sessions and cancels all tasks
+Organized into `@Nested` groups by method/concern.
+
+- **getSession / hasActiveSession** — return empty / `false` when no session exists
+- **handleCombatInteraction** — creates a session for a player source; for a player target; for both players in PvP; does not create a session for a mob source or a mob-only interaction; adds a participant to an existing session on repeat damage; refreshes `lastInteraction` on an existing participant; fires `CombatSessionStartEvent` on a new session; does not create a session when the start event is cancelled; fires `CombatParticipantAddEvent` for a new participant on an existing session; does not add the participant or refresh activity when the add event is cancelled; fires `CombatParticipantRemoveEvent` with `EVICTION` when the mob FIFO is full
+- **endSession** — removes the session from the active map; fires `CombatSessionEndEvent` with the correct reason; is a no-op when no session exists
+- **removeParticipantFromAllSessions** — removes the participant from surviving sessions while keeping their other participants; ends sessions the removed participant empties (with `ALL_PARTICIPANTS_GONE`); fires `CombatParticipantRemoveEvent` for each removal
+- **removeParticipantFromSession** — removes a single participant and fires a remove event with the given reason; returns empty when the owner has no session
+- **reportCombatActivity / reportConditionActivity** — `reportCombatActivity` creates a session when both entities are loaded; `reportConditionActivity` creates an empty session carrying the condition key, refreshes an existing session's activity timer, is a no-op when the player is offline, and does not create a session when the start event is cancelled
+- **Condition tasks** — `startConditionTasks` bulk-starts tasks for all conditions in the registry; `stopConditionTask` cancels the condition's task; `startConditionTask` cancels the previous task when called twice for the same key (stop-first)
+- **Configuration validation** — `getMaxMobParticipants` clamps a configured value below 1 up to 1
+- **Main-thread enforcement** — a mutating call from a non-main thread throws `IllegalStateException`
+- **shutdown** — ends all active sessions and cancels all condition tasks
 
 ### 6.11 CombatSessionTimeoutTaskTest
 
+Drives the scan by calling `manager.scanSessionsForTimeout()` directly (the task is a thin shim).
+
 - Timed-out participants are removed from sessions (fires `CombatParticipantRemoveEvent` with `TIMEOUT`)
-- Sessions with empty rosters after participant timeout are ended with `ALL_PARTICIPANTS_GONE`
-- Sessions past the inactivity timeout are ended with `TIMEOUT`
-- Sessions past inactivity timeout are held open when a registered condition returns `true`
+- Sessions with empty rosters after participant timeout end with `ALL_PARTICIPANTS_GONE`
+- An empty condition-created session past its timeout ends with `TIMEOUT`
+- Sessions past timeout are held open when a registered condition returns `true`
+- Emptied sessions still end when a registered condition returns `false`
+- A condition that throws does not abort the timeout scan
 - Sessions within the timeout window are not ended
 - Fresh participants are not removed even when the session is near timeout
+
+### 6.12 CombatConditionRegistryTest
+
+- `register` then `get` returns the same condition; `get` returns empty for an unregistered key
+- `register` throws `IllegalStateException` on a duplicate key
+- `unregister` removes and returns the condition; returns empty when the key was not registered
+- `isRegistered` and `registered` reflect registration state
+- `getAll` and `getRegisteredKeys` return all registered conditions
+
+### 6.13 CombatConditionTaskTest
+
+- Reports condition activity when in combat with no implied participants
+- Reports combat activity for each implied participant when in combat
+- Reports nothing when the player is not in combat
+- A throwing condition is caught and does not report or propagate
+
+### 6.14 OnCombatDamageListenerTest
+
+- Reports the interaction for a direct living-entity hit
+- Resolves the projectile shooter as the source
+- Ignores a projectile with no entity shooter
+- Ignores a non-living damager
+- Ignores self-damage where source and target are the same entity
+
+### 6.15 OnCombatEntityRemoveListenerTest
+
+- Removes a despawning non-player living entity from all sessions
+- Ignores `DEATH`-cause removals (handled by the death listener)
+- Ignores player removals (handled by the quit listener)
+- Ignores non-living entities (items, projectiles, orbs)
+
+### 6.16 CombatConditionContentHandlerTest
+
+- The `ContentHandlerType.COMBAT_CONDITION` processor registers each condition and starts its evaluation task
+
+> **Shared fixture:** `CombatTestSupport` (in `src/testFixtures/java/us/eunoians/mcrpg/combat/`) centralizes the combat-config stubbing (`mockCombatConfig(...)`) so combat test classes don't duplicate it and a new config key only needs to be added in one place.
 
 ---
 
@@ -2399,17 +2684,31 @@ Player A shoots an arrow that hits Player B:
 
 7. **Per-participant and session-level timeout share the same threshold.** A single `timeout-seconds` config value governs both the per-participant inactivity timeout (how long until a stale participant is removed from the roster) and the session-level inactivity timeout (how long until the entire session ends). Separate thresholds would create confusing interactions — a per-participant timeout longer than the session timeout would be meaningless.
 
-8. **Conditions are state-based with per-condition cadence; event-based triggers use the public API.** `CombatCondition` is the extensibility interface for continuous state checks (proximity, region). Each condition declares `getCheckIntervalTicks()` and gets a managed `CombatConditionTask` that iterates online players at that cadence. Event-based combat triggers (healing-as-combat, custom damage) do not implement `CombatCondition` — they listen to Bukkit events directly and call `reportCombatActivity()`. This avoids forcing event-driven plugins into a polling model.
+8. **Conditions are state-based with per-condition cadence; event-based triggers use the public API.** `CombatCondition` is the extensibility interface for continuous state checks (proximity, region). Each condition declares `getCheckIntervalSeconds()` (floored at `0.25s` by the task) and gets a managed `CombatConditionTask` that iterates online players at that cadence. Event-based combat triggers (healing-as-combat, custom damage) do not implement `CombatCondition` — they listen to Bukkit events directly and call `reportCombatActivity()`. This avoids forcing event-driven plugins into a polling model.
 
 9. **Conditions can both create and hold sessions.** When a condition's periodic task finds a player in combat without an existing session, it creates one. The timeout scan also checks all conditions as a hold-open gate before ending sessions — if any condition returns `true`, the session timeout is reset. This dual role means a boss proximity condition can both pull players into combat (push via task) and keep them there while they remain nearby (pull via timeout gate).
 
 10. **CombatConditionTask.evaluateEntities() is overridable.** The default implementation iterates all online players, which is sufficient for most conditions (100-200 players per check is trivial). Conditions with their own entity scope (arena regions, boss encounter lists) can override this to avoid unnecessary iteration.
 
-11. **Placeholder methods on CombatSessionEndEvent.** `getSessionStatistics()` and `getCombatStateData()` are included as stub methods returning empty maps, with `// TODO` comments pointing to Phase 2. This ensures the event contract is established early and Phase 2 doesn't need to rehash the event design.
+11. **No placeholder accessors on CombatSessionEndEvent — stats/state deferred to Phase 2.** An earlier design added stub `getSessionStatistics()` / `getCombatStateData()` methods returning empty maps. These were removed: empty-map stubs are a misleading contract (callers can't tell "not implemented" from "genuinely empty"), and the accessor shapes should be designed alongside the real data. Per-session statistics and combat state snapshots are deferred to the [Phase 2 LLD (Combat State & Statistics Platform)](phase-2-combat-state-and-statistics-platform.md), which will introduce the accessors together with their backing state.
 
 12. **No CombatSessionStartEvent for condition-created sessions without participants.** When `reportConditionActivity()` creates a session with no implied participants (proximity-based), `CombatSessionStartEvent` still fires — but with the condition's key as context rather than a participant UUID. The `triggerParticipantUUID` field will carry the entity's own UUID in this case, and `triggerParticipantType` will be `PLAYER`. This is a degenerate case (session with no roster) that condition implementors should handle by providing implied participants where possible.
 
 13. **PlayerQuitEvent listener does not set ignoreCancelled.** `PlayerQuitEvent` is not cancellable in the Bukkit API — setting `ignoreCancelled = true` on it would have no effect but could mislead readers into thinking logout can be cancelled.
+
+14. **Main-thread-only contract enforced by a fail-fast guard.** The manager's state is non-concurrent and it fires Bukkit events, so it is main-thread-only. Rather than document this only in prose, every public mutating entry point calls a `requireMainThread()` guard that throws `IllegalStateException` off-thread. A misbehaving third-party integration fails loudly and immediately at the call site instead of corrupting the session map under a race.
+
+15. **Lazy `CustomEntityWrapper` construction via an `Entity` overload.** The damage listener passes live `Entity` objects to an `Entity` overload of `handleCombatInteraction`; wrappers are built through `Supplier`s resolved only in the session-create and participant-add branches. The steady-state case — repeatedly hitting an already-tracked opponent — allocates no wrapper at all, keeping the hottest combat path garbage-free. The original `CustomEntityWrapper` overload remains for callers that already hold wrappers.
+
+16. **`LinkedHashMap` mob roster.** Mob participants are stored in a `LinkedHashMap` keyed by UUID rather than a `LinkedList`. Insertion order still provides FIFO eviction, but lookup, containment, and removal become O(1) on the combat hot path, and duplicate entries for the same mob UUID are impossible (a re-add updates in place without changing FIFO position).
+
+17. **`getActiveSessions` returns an immutable snapshot.** It returns `Map.copyOf(activeSessions)` rather than an unmodifiable *view*. A live view would throw `ConcurrentModificationException` if a caller ended a session while iterating; a snapshot lets callers iterate and mutate combat state safely, at the cost of not reflecting sessions started/ended after the call.
+
+18. **Config validation floors applied at read time.** The config getters clamp out-of-range values every read (timeout ≥ 1s, max-mob ≥ 1, scan interval ≥ 0.25s) and log a warning, rather than trusting the YAML. A misconfigured `0` timeout would otherwise silently disable combat tracking, a `max-mob < 1` would evict from an empty roster, and a `0` scan interval would degrade the task to per-tick. The `CombatConditionTask` applies the same 0.25s floor to a condition's declared interval.
+
+19. **A condition-held session with an emptied roster survives.** The empty-session end (`ALL_PARTICIPANTS_GONE`) checks `isHeldOpenByCondition` *before* ending. A proximity/region condition that keeps a player in combat with no explicit participant would otherwise flicker: the roster empties, the session ends, the condition task immediately re-creates it. Checking hold-open first keeps such a session stable.
+
+20. **A single centralized participant-removal lifecycle.** All removal paths — the death/quit/despawn sweep, the per-participant timeout scan, and third-party single-participant removal — route through one private `removeParticipant(session, uuid, reason)` core. Event firing (with the combat-type transition) and empty-session handling live in exactly one place, so the three call sites can't drift in how they fire events or end emptied sessions.
 
 ---
 
@@ -2423,8 +2722,8 @@ Player A shoots an arrow that hits Player B:
 
 4. **DOT attribution for future abilities.** `reportCombatActivity(UUID, UUID)` exists for future DOT effects to report ongoing combat. When new DOT abilities are implemented, they should call this method on each tick to maintain session timeout and participant relationships.
 
-5. **Thread safety.** The combat tracker is strictly main-thread-only. All Bukkit event handlers, the timeout task, and condition tasks run on the main thread. `reportCombatActivity()` and `reportConditionActivity()` must only be called from the main thread. If async damage plugins exist on the server, the combat tracker will not see their damage events — this is by design, as the Bukkit API contract requires entity interaction on the main thread.
+5. **Thread safety.** The combat tracker is strictly main-thread-only, and this is now enforced: every public mutating entry point calls a `requireMainThread()` guard that throws `IllegalStateException` off the main thread (see Design Decision 14). All Bukkit event handlers, the timeout task, and condition tasks run on the main thread. If async damage plugins exist on the server, the combat tracker will not see their damage events — this is by design, as the Bukkit API contract requires entity interaction on the main thread.
 
-6. **Condition registration lifecycle.** Conditions registered via `CombatConditionContentPack` are added to `CombatConditionRegistry` during content expansion processing. `CombatTrackerManager.startConditionTasks()` then bulk-starts tasks for all registered conditions. Standalone plugins registering conditions at runtime call `conditionRegistry.register(condition)` followed by `combatTrackerManager.startConditionTask(condition)` — the registry owns data, the manager owns task lifecycle.
+6. **Condition registration lifecycle.** Conditions registered via `CombatConditionContentPack` are added to `CombatConditionRegistry` by the `ContentHandlerType.COMBAT_CONDITION` processor during content-expansion processing, which *also* starts each condition's task (`startConditionTask`) — so a condition registered by an expansion that loads after McRPG's own startup is still polled. `CombatTrackerManager.startConditionTasks()` remains as the bootstrap bulk-start covering any conditions already in the registry. Standalone plugins registering conditions at runtime call `conditionRegistry.register(condition)` followed by `combatTrackerManager.startConditionTask(condition)`; the stop-first guard in `startConditionTask` makes the two starts idempotent. The registry owns data, the manager owns task lifecycle.
 
 7. **PAPI placeholder preparation.** Phase 3 will add `%mcrpg_in_combat%` and `%mcrpg_combat_seconds_remaining%` placeholders. The data for both is available from `CombatTrackerManager.getSession()` and `CombatSession.getLastActivityMillis()` / `getTimeoutMillis()` — no structural changes to Phase 1 classes will be needed.
