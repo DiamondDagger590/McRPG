@@ -14,7 +14,6 @@ import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 
 import java.lang.reflect.Type;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,8 +33,7 @@ import java.util.logging.Level;
 public class QuestObjectiveInstanceDAO {
 
     static final String TABLE_NAME = "mcrpg_quest_objective_instances";
-    private static final int CURRENT_TABLE_VERSION = 2;
-    private static final String CUSTOM_DATA_COLUMN = "custom_data";
+    private static final int CURRENT_TABLE_VERSION = 1;
     private static final Gson GSON = new Gson();
     private static final Type CUSTOM_DATA_TYPE = new TypeToken<Map<String, Object>>() {
     }.getType();
@@ -90,66 +88,7 @@ public class QuestObjectiveInstanceDAO {
                 McRPG.getInstance().getLogger().log(Level.SEVERE, "[QuestObjectiveInstanceDAO] Failed to create index during migration", e);
             }
             TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 1);
-            lastStoredVersion = 1;
         }
-
-        // Version 2: add custom_data column for structured per-type objective progress state
-        if (lastStoredVersion == 1) {
-            ensureColumnExists(connection, CUSTOM_DATA_COLUMN, "TEXT");
-            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, 2);
-        }
-    }
-
-    /**
-     * Adds the given column to the table if it does not already exist.
-     *
-     * @param connection           the database connection
-     * @param columnName           the column name
-     * @param addColumnSqlFragment the type/constraint fragment appended after {@code ADD COLUMN}
-     */
-    private static void ensureColumnExists(@NotNull Connection connection, @NotNull String columnName,
-                                           @NotNull String addColumnSqlFragment) {
-        if (columnExists(connection, columnName)) {
-            return;
-        }
-        try (PreparedStatement ps = connection.prepareStatement(
-                "ALTER TABLE " + TABLE_NAME + " ADD COLUMN " + columnName + " " + addColumnSqlFragment)) {
-            ps.executeUpdate();
-        } catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.SEVERE, "[QuestObjectiveInstanceDAO] Failed to add column "
-                    + columnName + " during migration", e);
-        }
-    }
-
-    /**
-     * Checks whether a column exists on the objective instances table, tolerating SQLite metadata
-     * quirks by falling back to a {@code PRAGMA table_info} scan.
-     *
-     * @param connection the database connection
-     * @param columnName the column name to look for
-     * @return {@code true} if the column exists
-     */
-    private static boolean columnExists(@NotNull Connection connection, @NotNull String columnName) {
-        try {
-            DatabaseMetaData metaData = connection.getMetaData();
-            try (ResultSet rs = metaData.getColumns(null, null, TABLE_NAME, columnName)) {
-                if (rs.next()) {
-                    return true;
-                }
-            }
-            try (PreparedStatement ps = connection.prepareStatement("PRAGMA table_info(" + TABLE_NAME + ")");
-                 ResultSet rs = ps.executeQuery()) {
-                while (rs.next()) {
-                    if (columnName.equalsIgnoreCase(rs.getString("name"))) {
-                        return true;
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.WARNING, "[QuestObjectiveInstanceDAO] Failed to check whether"
-                    + " column " + columnName + " exists; assuming absent and letting the ALTER attempt decide", e);
-        }
-        return false;
     }
 
     /**
@@ -328,7 +267,8 @@ public class QuestObjectiveInstanceDAO {
 
     /**
      * Deserializes a stored custom-data JSON string back into a map, tolerating {@code null}/blank
-     * values (older rows, empty state) and malformed JSON by returning an empty map.
+     * values (an objective with empty custom data stores {@code null}) and malformed JSON by
+     * returning an empty map.
      *
      * @param json the stored JSON string, may be {@code null}
      * @return the deserialized custom-data map (never {@code null})
