@@ -65,7 +65,7 @@ jobs:
           claude_args: |
             --model ${{ env.CLAUDE_MODEL }}
             --max-turns 40
-            --allowedTools "Task,Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Task,Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),mcp__github_inline_comment__create_inline_comment"
 
   # On-demand: an @claude mention in a PR comment or review comment. Tag mode
   # (no prompt) — claude-code-action handles the sticky comment natively here.
@@ -101,5 +101,5 @@ jobs:
           claude_args: |
             --model ${{ env.CLAUDE_MODEL }}
             --max-turns 40
-            --allowedTools "Task,Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),mcp__github_inline_comment__create_inline_comment"
+            --allowedTools "Task,Read,Grep,Glob,Bash(gh pr diff:*),Bash(gh pr view:*),Bash(git diff:*),Bash(git log:*),Bash(git show:*),mcp__github_inline_comment__create_inline_comment"
             --append-system-prompt "If asked to review or re-review this PR, follow .github/claude-review-prompt.md including its re-review convergence protocol. Otherwise answer the request directly."
