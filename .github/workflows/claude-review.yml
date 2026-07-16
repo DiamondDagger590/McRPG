@@ -42,10 +42,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: anthropics/claude-code-action@fffa3483bb78e47a0c02fdcb79109570f1e1a617  # v1
+      - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           # Reuse the ambient token (as the old pipeline did); comments post as
@@ -80,7 +80,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Reject fork PRs
@@ -91,7 +91,7 @@ jobs:
           PR_NUMBER="${{ github.event.issue.number || github.event.pull_request.number }}"
           IS_FORK="$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json isCrossRepository -q '.isCrossRepository')"
           echo "is_fork=$IS_FORK" >> "$GITHUB_OUTPUT"
-      - uses: anthropics/claude-code-action@fffa3483bb78e47a0c02fdcb79109570f1e1a617  # v1
+      - uses: anthropics/claude-code-action@v1
         if: steps.fork-check.outputs.is_fork != 'true'
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
