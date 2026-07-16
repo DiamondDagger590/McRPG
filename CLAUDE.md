@@ -622,7 +622,7 @@ Use a builder when a class meets **any** of these criteria:
 - **No ability state stored on the ability object** — ability state is per-holder, stored in `AbilityData`/`AbilityAttribute`; ability objects are shared singletons
 - **Don't put McRPG-specific logic in McCore** — McCore changes affect all downstream plugins
 - **No fully-qualified type references in method bodies** — always declare a top-level `import` statement for the type; writing `org.bukkit.Location loc` inline is forbidden even when it compiles
-- **No `e.printStackTrace()`** — always use `Logger.log(Level.SEVERE, "context message", e)` so stack traces route through the server logger and are preserved in log aggregators
+- **No `e.printStackTrace()`** — always use `CorePlugin.getInstance().getLogger().log(Level.SEVERE, "context message", e)` so stack traces route through the server logger and are preserved in log aggregators
 - **No `Optional.get()` without a guard** — always use `orElse`, `orElseGet`, `orElseThrow`, or check `isPresent()` first; bare `.get()` is a guaranteed crash on the empty path
 - **No Bukkit API calls from async threads** — any world, entity, or inventory mutation must be scheduled on the main thread via `Bukkit.getScheduler().runTask(plugin, () -> { ... })`
 - **No blocking `.get()` on a `CompletableFuture` from the main thread** — this deadlocks if the future's completion path needs the main thread scheduler
