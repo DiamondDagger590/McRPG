@@ -911,7 +911,7 @@ After any commit or PR that introduces one of the following, **update `CLAUDE.md
 | New error handling anti-pattern found (swallowed exception, bad logging) | `persona-error-handling.mdc` + `.claude/commands/review-error-handling.md` + `core.mdc` |
 | New performance anti-pattern found (hot path, unbounded collection, leak) | `persona-performance.mdc` + `.claude/commands/review-performance.md` |
 | New concurrency anti-pattern found (thread boundary, race, future handling) | `persona-concurrency.mdc` + `.claude/commands/review-concurrency.md` + `core.mdc` |
-| CI review file-pattern for a new domain | `.github/workflows/pr-review.yml` detect-changes step |
+| CI review routing, persona set, or signal rule changed | `.github/claude-review-prompt.md` + `.claude/agents/review-*.md` (+ `.github/workflows/claude-review.yml` for triggers/model) |
 | Quest board system changed (new condition, distribution type, template feature) | `CLAUDE.md` Quest Board System section + `quest-board-system.mdc` |
 | Quest chain system changed (new trigger type, repeat mode enforced, chain event added) | `CLAUDE.md` Quest Chain System terminology + `chain-system-backlog.md` |
 | Mana balance parameters changed (pool size, regen rate, bucket ranges) | `CLAUDE.md` Mana Balance Philosophy section + `mana-balance-philosophy.mdc` + `core.mdc` |
