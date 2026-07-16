@@ -4,6 +4,7 @@ land-weekly:
   # SCOPED categories generate offerings per scope entity (e.g., one set per land).
   visibility: SCOPED
   refresh-type: WEEKLY
+  # Duration format: 1d / 12h / 30m / 90s (combinable, case-insensitive) or a plain number of seconds.
   refresh-interval: 7d
   completion-time: 10d
   scope-provider: mcrpg:land_scope
@@ -11,5 +12,6 @@ land-weekly:
   min: 0
   max: 1
   chance-per-slot: 0.15
+  # Duration format: 1d / 12h / 30m / 90s (combinable, case-insensitive) or a plain number of seconds.
   appearance-cooldown: 14d
   priority: 3

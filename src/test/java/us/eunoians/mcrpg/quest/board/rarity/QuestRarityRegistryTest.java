@@ -9,6 +9,7 @@ import us.eunoians.mcrpg.McRPGBaseTest;
 import java.util.Map;
 import java.util.Random;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -64,6 +65,19 @@ public class QuestRarityRegistryTest extends McRPGBaseTest {
     @Test
     void rollRarityEmptyThrows() {
         assertThrows(IllegalStateException.class, () -> registry.rollRarity(new Random()));
+    }
+
+    @DisplayName("rollRarity with all-zero weights falls back to a uniform pick without throwing")
+    @Test
+    void rollRarity_allZeroWeights_fallsBackWithoutThrowing() {
+        var first = new QuestRarity(new NamespacedKey("mcrpg", "first"), 0, 1.0, 1.0, MCRPG_EXPANSION);
+        var second = new QuestRarity(new NamespacedKey("mcrpg", "second"), 0, 1.0, 1.0, MCRPG_EXPANSION);
+        registry.register(first);
+        registry.register(second);
+
+        QuestRarity result = assertDoesNotThrow(() -> registry.rollRarity(new Random(1)));
+        assertTrue(result.getKey().equals(first.getKey()) || result.getKey().equals(second.getKey()),
+                "fallback must return one of the registered rarities");
     }
 
     @DisplayName("replaceConfigRarities replaces config rarities, expansion rarities untouched")

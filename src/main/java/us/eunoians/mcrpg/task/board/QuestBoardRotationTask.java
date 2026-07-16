@@ -21,6 +21,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -34,8 +35,9 @@ public final class QuestBoardRotationTask extends CancelableCoreTask {
 
     private static final Logger LOGGER = McRPG.getInstance().getLogger();
     private static final String DEFAULT_ROTATION_TIMEZONE = "UTC";
+    private static final String DEFAULT_ROTATION_TIME = "00:00";
 
-    private final String rotationTime;
+    private final LocalTime rotationLocalTime;
     private final ZoneId rotationZone;
     private final Map<NamespacedKey, Long> lastRefreshEpochs = new HashMap<>();
     private boolean seededFromCurrentBoardRotations = false;
@@ -46,7 +48,7 @@ public final class QuestBoardRotationTask extends CancelableCoreTask {
                                   @NotNull String rotationTime,
                                   @NotNull String timezone) {
         super(plugin, taskDelay, taskFrequency);
-        this.rotationTime = rotationTime;
+        this.rotationLocalTime = parseTimeOrDefault(rotationTime);
         this.rotationZone = parseZoneOrDefault(timezone);
     }
 
@@ -56,9 +58,8 @@ public final class QuestBoardRotationTask extends CancelableCoreTask {
             seedFromCurrentBoardRotations();
         }
         ZonedDateTime now = getPlugin().getTimeProvider().now().atZone(rotationZone);
-        LocalTime configuredTime = LocalTime.parse(rotationTime);
 
-        if (now.toLocalTime().isBefore(configuredTime)) {
+        if (now.toLocalTime().isBefore(rotationLocalTime)) {
             return;
         }
 
@@ -97,6 +98,34 @@ public final class QuestBoardRotationTask extends CancelableCoreTask {
     private void seedEpoch(@NotNull NamespacedKey refreshTypeKey, BoardRotation rotation) {
         if (rotation != null) {
             lastRefreshEpochs.put(refreshTypeKey, rotation.getRotationEpoch());
+        }
+    }
+
+    /**
+     * Parses the configured rotation time (strict ISO {@code HH:mm}) once at construction, falling back
+     * to {@link #DEFAULT_ROTATION_TIME} with a WARNING when the value is missing or malformed. This
+     * mirrors {@link #parseZoneOrDefault} and prevents a bad {@code rotation.time} from throwing a
+     * {@link java.time.format.DateTimeParseException} on every interval tick (a per-minute crash loop
+     * with a board that never rotates).
+     *
+     * @param time the configured rotation time string
+     * @return the parsed {@link LocalTime}, or the default on invalid input
+     */
+    @NotNull
+    private LocalTime parseTimeOrDefault(String time) {
+        String configuredTime = time;
+        if (configuredTime == null || configuredTime.isBlank()) {
+            LOGGER.warning("[QuestBoard] Missing rotation.time in board.yml (expected 24-hour HH:mm, e.g."
+                    + " \"06:00\"). Falling back to " + DEFAULT_ROTATION_TIME + ".");
+            configuredTime = DEFAULT_ROTATION_TIME;
+        }
+        try {
+            return LocalTime.parse(configuredTime);
+        } catch (Exception exception) {
+            LOGGER.log(Level.WARNING, "[QuestBoard] Invalid rotation time '" + configuredTime
+                    + "' configured in board.yml (expected 24-hour HH:mm, e.g. \"06:00\"). Falling back to "
+                    + DEFAULT_ROTATION_TIME + ".", exception);
+            return LocalTime.parse(DEFAULT_ROTATION_TIME);
         }
     }
 

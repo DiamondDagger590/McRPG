@@ -24,6 +24,8 @@ quest-source-weights:
 # weight: relative chance of this rarity being rolled (higher = more common)
 # difficulty-multiplier: scales objective targets (e.g., "mine 100 blocks" becomes "mine 150")
 # reward-multiplier: scales reward amounts (e.g., 100 XP becomes 200 XP)
+# These keys are hot-reloadable via /mcrpg admin reload; edits apply to the next rotation.
+# At least one rarity must have a positive weight, or the board falls back to a uniform pick.
 rarities:
   COMMON:
     weight: 50
@@ -69,20 +71,23 @@ rarities:
 
 # Controls when the board rotates (replaces expired offerings with new ones).
 # NOTE: Changing any value in this section requires a server restart to take effect.
-#       These keys are NOT hot-reloadable via /mcrpg quest admin reload.
+#       These keys are NOT hot-reloadable via /mcrpg admin reload.
 rotation:
-  # Time of day (HH:mm, 24-hour clock) when daily rotations occur.
+  # Time of day (HH:mm, 24-hour clock, leading zero required — e.g. "06:00", not "6:00") when daily
+  # rotations occur. An invalid value falls back to "00:00" and logs a console WARNING.
   time: "00:00"
   # Timezone used for rotation scheduling. Use standard Java timezone IDs (e.g. "America/New_York").
+  # An invalid value falls back to "UTC" and logs a console WARNING.
   timezone: "UTC"
-  # Day of the week when weekly rotations occur.
+  # Day of the week when weekly rotations occur. Valid values: MONDAY, TUESDAY, WEDNESDAY, THURSDAY,
+  # FRIDAY, SATURDAY, SUNDAY (uppercase). An invalid value falls back to MONDAY and logs a WARNING.
   weekly-reset-day: MONDAY
   # How often (in seconds) the rotation task checks whether a rotation is due.
   # Lower values increase responsiveness but add minor overhead. Minimum recommended: 30.
   task-check-interval-seconds: 60
 
 # Controls player-facing notifications for quest events.
-# All keys in this section are reload-safe (/mcrpg quest admin reload).
+# All keys in this section are reload-safe (/mcrpg admin reload).
 notifications:
   # Minutes before a quest expires at which the player receives a near-expiry warning.
   near-expiry-threshold-minutes: 60

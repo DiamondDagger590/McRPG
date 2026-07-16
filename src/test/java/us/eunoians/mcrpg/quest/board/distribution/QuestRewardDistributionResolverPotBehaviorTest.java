@@ -87,8 +87,18 @@ class QuestRewardDistributionResolverPotBehaviorTest {
         }
 
         @Override
+        public boolean isScalable() {
+            return true;
+        }
+
+        @Override
         public @NotNull QuestRewardType withAmountMultiplier(double multiplier) {
             return new ScalableReward(Math.max(1, Math.round(amount * multiplier)));
+        }
+
+        @Override
+        public @NotNull QuestRewardType withExactAmount(long exactAmount) {
+            return new ScalableReward(exactAmount);
         }
 
         @Override

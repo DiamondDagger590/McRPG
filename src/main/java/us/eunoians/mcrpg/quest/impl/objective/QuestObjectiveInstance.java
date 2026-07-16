@@ -14,6 +14,7 @@ import us.eunoians.mcrpg.quest.impl.stage.QuestStageInstance;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.UUID;
 
 /**
@@ -33,6 +34,9 @@ public class QuestObjectiveInstance {
     private long requiredProgression;
     private long currentProgression;
     private final Map<UUID, Long> playerContributionTracker;
+    // Mutated on the main thread (via getCustomData()) but serialized on the DB executor thread during
+    // saveQuestAsync; a ConcurrentHashMap + volatile reference avoids a ConcurrentModificationException.
+    private volatile Map<String, Object> customData;
 
     /**
      * Creates a new objective instance in {@link QuestObjectiveState#NOT_STARTED} state
@@ -47,6 +51,7 @@ public class QuestObjectiveInstance {
         this.questStage = questStage;
         this.questObjectiveState = QuestObjectiveState.NOT_STARTED;
         this.playerContributionTracker = new HashMap<>();
+        this.customData = new ConcurrentHashMap<>();
     }
 
     /**
@@ -61,11 +66,13 @@ public class QuestObjectiveInstance {
      * @param requiredProgression      the total progress required
      * @param currentProgression       the current progress amount
      * @param playerContributionTracker per-player contribution amounts
+     * @param customData               persisted structured custom-data for custom objective types
      */
     public QuestObjectiveInstance(@NotNull NamespacedKey questObjectiveKey, @NotNull UUID questObjectiveUUID,
                                   @NotNull QuestStageInstance questStage, @NotNull QuestObjectiveState questObjectiveState,
                                   @Nullable Long startTime, @Nullable Long endTime, long requiredProgression,
-                                  long currentProgression, @NotNull Map<UUID, Long> playerContributionTracker) {
+                                  long currentProgression, @NotNull Map<UUID, Long> playerContributionTracker,
+                                  @NotNull Map<String, Object> customData) {
         this.questObjectiveKey = questObjectiveKey;
         this.questObjectiveUUID = questObjectiveUUID;
         this.questStage = questStage;
@@ -75,6 +82,51 @@ public class QuestObjectiveInstance {
         this.requiredProgression = requiredProgression;
         this.currentProgression = currentProgression;
         this.playerContributionTracker = new HashMap<>(playerContributionTracker);
+        this.customData = new ConcurrentHashMap<>(customData);
+    }
+
+    /**
+     * Gets the mutable custom-data map for this objective instance. Custom {@link
+     * us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType} implementations use this to persist
+     * structured progress state that the scalar progression counter cannot express — for example the
+     * set of distinct biomes visited for a "visit 5 distinct biomes" objective. The map is serialized
+     * to a JSON column and restored on load. Mutating the returned map directly does <b>not</b> mark
+     * the quest dirty; call {@link #markCustomDataDirty()} (or progress the objective) after changing it
+     * so the change is persisted.
+     * <p>
+     * <b>JSON round-trip note:</b> values are persisted via Gson into an untyped
+     * {@code Map<String, Object>}, so after a save/load cycle numeric values come back as
+     * {@code Double} (a stored {@code 5} reads back as {@code 5.0}) and integer lists as
+     * {@code List<Double>}. Read numbers back through {@link Number} (e.g.
+     * {@code ((Number) map.get("count")).longValue()}) rather than casting straight to
+     * {@code Integer}/{@code Long}. Keep values JSON-friendly (strings, numbers, booleans, and lists
+     * or maps of those).
+     *
+     * @return the live, mutable custom-data map (never {@code null})
+     */
+    @NotNull
+    public Map<String, Object> getCustomData() {
+        return customData;
+    }
+
+    /**
+     * Replaces the custom-data map for this objective instance. Used by the load path to restore
+     * persisted custom data, and by custom objective types that prefer to swap the whole map. Marks the
+     * owning quest dirty so the change is flushed.
+     *
+     * @param customData the new custom-data map; a defensive copy is stored
+     */
+    public void setCustomData(@NotNull Map<String, Object> customData) {
+        this.customData = new ConcurrentHashMap<>(customData);
+        questStage.getQuestInstance().markDirty();
+    }
+
+    /**
+     * Marks the owning quest dirty after an in-place mutation of the map returned by
+     * {@link #getCustomData()}, so the change is persisted on the next flush.
+     */
+    public void markCustomDataDirty() {
+        questStage.getQuestInstance().markDirty();
     }
 
     /**

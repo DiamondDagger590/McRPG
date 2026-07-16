@@ -8,6 +8,7 @@ land-daily:
   # How often this category's offerings refresh. Must match a registered refresh type.
   refresh-type: DAILY
   # Duration between refreshes. Used by the rotation scheduler.
+  # Duration format: 1d / 12h / 30m / 90s (combinable, case-insensitive) or a plain number of seconds.
   refresh-interval: 1d
   # How long a player/entity has to complete the quest after accepting it.
   completion-time: 3d
@@ -27,6 +28,7 @@ land-daily:
   # 0.15 = 15% chance per slot. Combined with min: 0, most days will have no land quest.
   chance-per-slot: 0.15
   # Cooldown before the same quest definition can reappear in this category.
+  # Duration format: 1d / 12h / 30m / 90s (combinable, case-insensitive) or a plain number of seconds.
   appearance-cooldown: 7d
   # Priority relative to other categories. Higher priority categories fill slots first.
   priority: 5

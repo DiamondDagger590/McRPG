@@ -262,4 +262,30 @@ public class QuestBoardRotationTaskTest extends McRPGBaseTest {
         verify(mockBoardManager, times(1)).triggerRotation(daily.getKey());
         verify(task, times(1)).onIntervalComplete();
     }
+
+    @Test
+    @DisplayName("Invalid rotation time falls back to midnight and still triggers without crashing")
+    void onIntervalComplete_usesMidnightFallback_whenRotationTimeIsInvalid() {
+        DailyRefreshType daily = new DailyRefreshType();
+        refreshTypeRegistry.register(daily);
+
+        // Start just after 00:00 so the rotation only fires if the fallback is specifically midnight
+        // (a fallback later than 00:01 would not trigger yet).
+        Instant instant = instantAt(0, 1);
+        when(timeProvider.now()).thenReturn(instant);
+
+        // "6:00" is not strict ISO (needs "06:00"); it must fall back to 00:00 rather than throwing
+        // a DateTimeParseException on every tick.
+        QuestBoardRotationTask task = spy(new QuestBoardRotationTask(
+                McRPG.getInstance(), 0, 1f, "6:00", "UTC"));
+        task.runTask();
+
+        MockBukkit.getMock().getScheduler().performOneTick();
+        instant = instant.plusSeconds(1);
+        when(timeProvider.now()).thenReturn(instant);
+        MockBukkit.getMock().getScheduler().performOneTick();
+
+        verify(mockBoardManager, times(1)).triggerRotation(daily.getKey());
+        verify(task, times(1)).onIntervalComplete();
+    }
 }

@@ -670,3 +670,38 @@ pack.addContent(new MoneyRewardType());
 - **Forgetting `getExpansionKey()`** — `QuestRewardType` extends `McRPGContent`, which requires `getExpansionKey()`. If it returns `Optional.empty()` or the wrong key, content tracking and localization resolution may behave unexpectedly. Always return your expansion's `NamespacedKey`.
 
 - **Registering after quest load** — if your expansion is registered after `QuestManager` has already loaded quest definitions from YAML, any quest file referencing your type will have skipped that reward entry with a warning. Register your expansion early in `onEnable`, before McRPG processes quest files.
+
+---
+
+## Intercepting reward grants (third-party API)
+
+Every quest reward granted to an **online** player fires a cancellable
+`QuestRewardGrantEvent` immediately before the batch is granted, and a
+non-cancellable `QuestRewardGrantedEvent` immediately after. This is the single
+interception point for boosters (e.g. double weekend XP), auditors, and reward
+blockers. It fires uniformly on all three grant pathways, distinguished by
+`RewardGrantContext`:
+
+| Context | Source |
+|---|---|
+| `INLINE` | Rewards granted directly to a quest's scope players on completion |
+| `DISTRIBUTION` | Rewards granted through the scoped/group distribution pipeline |
+| `PENDING` | Rewards queued while offline, granted at login |
+
+```java
+@EventHandler
+public void onRewardGrant(QuestRewardGrantEvent event) {
+    // Mutate the batch — the granter honors additions/removals:
+    if (isDoubleXpWeekend()) {
+        event.getRewards().replaceAll(reward ->
+            reward.isScalable() ? reward.withAmountMultiplier(2.0) : reward);
+    }
+    // Or veto the whole batch (pending rewards are retained for a later retry):
+    if (isRewardsDisabledIn(event.getPlayerUUID())) {
+        event.setCancelled(true);
+    }
+}
+```
+
+`QuestRewardGrantedEvent.getGrantedRewards()` returns the rewards that were
+actually granted (after mutation and after per-reward failures were skipped).

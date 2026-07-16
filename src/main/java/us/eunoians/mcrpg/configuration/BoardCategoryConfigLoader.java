@@ -86,6 +86,8 @@ public final class BoardCategoryConfigLoader {
         Visibility visibility = Visibility.valueOf(section.getString("visibility", "SHARED").toUpperCase());
         NamespacedKey refreshTypeKey = autoNamespace(section.getString("refresh-type", "daily"));
 
+        // Methods.getTimeInSeconds is case-insensitive, treats a bare number as seconds, and supports
+        // d/h/m/s/w/y (see McCore).
         Duration refreshInterval = Methods.getTimeInSeconds(section.getString("refresh-interval", "24h"));
         Duration completionTime = Methods.getTimeInSeconds(section.getString("completion-time", "24h"));
 

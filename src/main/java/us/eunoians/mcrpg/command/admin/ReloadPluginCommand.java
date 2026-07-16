@@ -34,6 +34,9 @@ public class ReloadPluginCommand extends McRPGCommandBase {
                     Audience senderAudience = commandContext.sender().getSender();
                     McRPG plugin = McRPG.getInstance();
 
+                    // reloadFiles() reloads the YamlDocuments and then calls
+                    // ReloadableContentManager.reloadAllContent(), which re-parses the board
+                    // rarity/category/template configs (now tracked in QuestBoardManager.initialize).
                     plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE).reloadFiles();
 
                     // Invalidate level caches for all online players since leveling equations may have changed

@@ -94,6 +94,22 @@ public class PlayerJoinListenerTest extends McRPGBaseTest {
         assertTrue(granted.contains(ok.getId()));
     }
 
+    @Test
+    @DisplayName("grantRewards deletes both rows when two pending rewards resolve to the same instance")
+    void grantRewards_deletesBothRows_whenDuplicateRewardInstance() {
+        NamespacedKey key = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "dup_reward");
+        // RecordingRewardType.fromSerializedConfig returns the same instance, so both rows reconstruct
+        // to one QuestRewardType object — the case a plain identity map would collapse to a single id.
+        registry.register(new RecordingRewardType(key));
+        PendingReward first = pending(key);
+        PendingReward second = pending(key);
+
+        Set<UUID> granted = listener.grantRewards(McRPG.getInstance(), player, List.of(first, second), registry);
+
+        assertEquals(Set.of(first.getId(), second.getId()), granted,
+                "both pending rows must be marked for deletion so neither re-grants on the next login");
+    }
+
     /** Reward type that grants without side effects. */
     private static class RecordingRewardType implements QuestRewardType {
         private final NamespacedKey key;

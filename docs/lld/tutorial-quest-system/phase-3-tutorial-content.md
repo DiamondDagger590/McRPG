@@ -2833,6 +2833,6 @@ No remaining open items — all feedback items have been resolved into in-scope 
 - [Phase 1 LLD — Quest Engine Extensions](phase-1-quest-engine-extensions.md) (implemented)
 - [Phase 2 LLD — Quest Chain System](phase-2-quest-chain-system.md) (implemented)
 - [Chain System Backlog](../../hld/tutorial/chain-system-backlog.md)
-- [Quest OBJECTIVES.md](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md)
-- [Quest REWARDS.md](../../../src/main/java/us/eunoians/mcrpg/quest/REWARDS.md)
+- [Quest OBJECTIVES.md](../../../src/main/resources/quests/OBJECTIVES.md)
+- [Quest REWARDS.md](../../../src/main/resources/quests/REWARDS.md)
 - [GUI/UX System & Color Palette](../../hld/gui-ux-system.md)

@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.event.quest;
 
 import org.bukkit.NamespacedKey;
-import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
@@ -16,8 +15,6 @@ import us.eunoians.mcrpg.quest.impl.QuestInstance;
  * expiration).
  */
 public class QuestCancelEvent extends QuestEvent {
-
-    private static final HandlerList HANDLERS = new HandlerList();
 
     @Nullable
     private final QuestDefinition questDefinition;
@@ -103,16 +100,5 @@ public class QuestCancelEvent extends QuestEvent {
             return questDefinition.getQuestKey();
         }
         return getQuestInstance().getQuestKey();
-    }
-
-    @NotNull
-    @Override
-    public HandlerList getHandlers() {
-        return HANDLERS;
-    }
-
-    @NotNull
-    public static HandlerList getHandlerList() {
-        return HANDLERS;
     }
 }

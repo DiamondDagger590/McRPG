@@ -3199,6 +3199,6 @@ One test class per major component (see §6 for details). Approximately 26 test 
 - [HLD — Tutorial Quest System](../../hld/tutorial/tutorial-quest-system.md)
 - [Phase 1 LLD — Quest Engine Extensions](phase-1-quest-engine-extensions.md) (implemented)
 - [Chain System Backlog](../../hld/tutorial/chain-system-backlog.md) — deferred features
-- [Quest OBJECTIVES.md](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md)
-- [Quest REWARDS.md](../../../src/main/java/us/eunoians/mcrpg/quest/REWARDS.md)
+- [Quest OBJECTIVES.md](../../../src/main/resources/quests/OBJECTIVES.md)
+- [Quest REWARDS.md](../../../src/main/resources/quests/REWARDS.md)
 - [Quest System Architecture](../../hld/quest/quest-system-architecture.md)

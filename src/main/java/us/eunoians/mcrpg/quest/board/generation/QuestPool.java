@@ -86,7 +86,8 @@ public class QuestPool {
                 .filter(def -> !excludeKeys.contains(def.getQuestKey()))
                 .filter(def -> def.getBoardMetadata()
                         .filter(meta -> meta.boardEligible()
-                                && meta.supportedRarities().contains(rolledRarity)
+                                && (meta.supportedRarities().isEmpty()
+                                    || meta.supportedRarities().contains(rolledRarity))
                                 && (refreshType == null
                                     || meta.supportedRefreshTypes().isEmpty()
                                     || meta.supportedRefreshTypes().contains(refreshType)))

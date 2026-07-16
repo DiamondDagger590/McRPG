@@ -537,6 +537,40 @@ class QuestTemplateConfigLoaderTest {
         assertTrue(pool.getPools().get(0).values().contains("itemsadder:ruby_ore"));
     }
 
+    @Test
+    @DisplayName("Malformed YAML file is skipped without aborting other templates")
+    void loadTemplatesFromDirectory_skipsMalformedFile_loadsRest() throws IOException {
+        // Unclosed quote -> SnakeYAML throws an unchecked exception during document creation.
+        writeYaml("broken.yml", """
+                quest-templates:
+                  mcrpg:broken:
+                    display-name-route: "unterminated
+                """);
+        writeYaml("good.yml", """
+                quest-templates:
+                  mcrpg:good_template:
+                    display-name-route: "quests.templates.good.display-name"
+                    board-eligible: true
+                    scope: mcrpg:single_player
+                    supported-rarities: [COMMON]
+                    phases:
+                      only-phase:
+                        completion-mode: ALL
+                        stages:
+                          only-stage:
+                            objectives:
+                              break-blocks:
+                                type: mcrpg:block_break
+                                required-progress: 10
+                """);
+
+        Map<NamespacedKey, QuestTemplate> result = loader.loadTemplatesFromDirectory(tempDir.toFile());
+
+        assertNotNull(result.get(NamespacedKey.fromString("mcrpg:good_template")),
+                "a syntax error in one file must not prevent other templates from loading");
+        assertNull(result.get(NamespacedKey.fromString("mcrpg:broken")));
+    }
+
     private void writeYaml(String fileName, String content) throws IOException {
         Files.writeString(tempDir.resolve(fileName), content);
     }

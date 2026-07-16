@@ -237,7 +237,7 @@ on-start-messages:
       - "<body>Try breaking some blocks to see your Mining skill grow."
 ```
 
-Locale keys are resolved per-player; inline `messages` are used when resolution fails or no key is set. See [`OBJECTIVES.md`](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md) / Phase 1 LLD for delivery details.
+Locale keys are resolved per-player; inline `messages` are used when resolution fails or no key is set. See [`OBJECTIVES.md`](../../../src/main/resources/quests/OBJECTIVES.md) / Phase 1 LLD for delivery details.
 
 ### 4. MessageRewardType — **Implemented**
 
@@ -303,7 +303,7 @@ Auto-complete is immediate when state checks pass (no delay). On-start message s
 
 `mcrpg:combo_activate` was **not** implemented — tutorial Q6 uses `mcrpg:ability_activate` with `ability-type: ACTIVE`.
 
-Detailed YAML and behavior: [`OBJECTIVES.md`](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md).
+Detailed YAML and behavior: [`OBJECTIVES.md`](../../../src/main/resources/quests/OBJECTIVES.md).
 
 **GUI Key System:**
 
@@ -646,7 +646,7 @@ McRPG (implemented):
 - `KeyedGui` retrofit (22 GUI classes)
 - Tests (see Phase 1 LLD section 7)
 
-**Shippable value:** New objective/reward types work on any quest definition today. See [`REWARDS.md`](../../../src/main/java/us/eunoians/mcrpg/quest/REWARDS.md) and [`OBJECTIVES.md`](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md).
+**Shippable value:** New objective/reward types work on any quest definition today. See [`REWARDS.md`](../../../src/main/resources/quests/REWARDS.md) and [`OBJECTIVES.md`](../../../src/main/resources/quests/OBJECTIVES.md).
 
 ### Phase 2 — Quest Chain System — **Implemented**
 
@@ -809,7 +809,7 @@ McRPG (implemented):
 - `Loadout.java`, `LoadoutAbilityDAO.java` — private mutations; constructor-based DAO load
 - `McRPGExpansion.java`, `McRPGListenerRegistrar.java`, `LocalizationKey.java`, `en_quest.yml`
 - All 22 GUI classes — `KeyedGui` + `GUI_KEY`
-- `quest/OBJECTIVES.md`, `quest/REWARDS.md` — developer guides updated
+- `quests/OBJECTIVES.md`, `quests/REWARDS.md` — developer guides updated
 - Loadout GUI slots, `OnAbilityUnlockListener` — use `equipAbility()` / `swapAbility()`
 
 ### Modified Files -- Phase 2 + 3 (implemented)
@@ -844,8 +844,8 @@ McRPG (implemented):
 - [Phase 1 LLD — Quest Engine Extensions](../../lld/tutorial-quest-system/phase-1-quest-engine-extensions.md) (implemented)
 - [Phase 2 LLD — Quest Chain System](../../lld/tutorial-quest-system/phase-2-quest-chain-system.md) (implemented)
 - [Phase 3 LLD — Tutorial Content](../../lld/tutorial-quest-system/phase-3-tutorial-content.md) (implemented)
-- [Quest OBJECTIVES.md](../../../src/main/java/us/eunoians/mcrpg/quest/OBJECTIVES.md) — YAML reference for objective types
-- [Quest REWARDS.md](../../../src/main/java/us/eunoians/mcrpg/quest/REWARDS.md) — YAML reference for reward types
+- [Quest OBJECTIVES.md](../../../src/main/resources/quests/OBJECTIVES.md) — YAML reference for objective types
+- [Quest REWARDS.md](../../../src/main/resources/quests/REWARDS.md) — YAML reference for reward types
 - [Quest System Architecture](../quest/quest-system-architecture.md)
 - [Quest Board Feature Design](../quest/quest-board.md)
 - [Mana & Ability Activation System](../mana/mana-ability-system.md)

@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.database.transaction.FailSafeTransaction;
 import com.diamonddagger590.mccore.registry.RegistryAccess;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.task.core.CoreTask;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,16 +17,24 @@ import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.reward.PendingReward;
+import us.eunoians.mcrpg.quest.reward.QuestRewardGranter;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
+import us.eunoians.mcrpg.quest.reward.RewardGrantContext;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.player.McRPGPlayerLoadTask;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Deque;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -106,11 +115,15 @@ public class PlayerJoinListener implements Listener {
 
     /**
      * Grants each loaded pending reward in isolation and reports which rows were actually granted.
+     * Rewards are resolved and grouped per quest key, then handed to {@link QuestRewardGranter} which
+     * fires the {@link us.eunoians.mcrpg.event.quest.QuestRewardGrantEvent} interception point (context
+     * {@link RewardGrantContext#PENDING}) before granting.
      * <p>
      * A reward whose type key is not registered is retained (never granted, never marked for deletion)
      * so it survives until the owning expansion returns or the row expires. A reward whose
-     * {@code fromSerializedConfig}/{@code grant} throws is logged and skipped without aborting the loop,
-     * and is left in the database so it is not silently lost.
+     * {@code fromSerializedConfig} throws, whose {@code grant} throws, or which a listener removes or
+     * cancels is not marked for deletion, so it is left in the database and retried on the next login
+     * rather than being silently lost.
      *
      * @param mcRPG              the plugin instance
      * @param player            the player to grant rewards to
@@ -122,7 +135,14 @@ public class PlayerJoinListener implements Listener {
     Set<UUID> grantRewards(@NotNull McRPG mcRPG, @NotNull Player player,
                            @NotNull List<PendingReward> pendingRewards,
                            @NotNull QuestRewardTypeRegistry rewardTypeRegistry) {
-        Set<UUID> grantedRewardIds = new HashSet<>();
+        // Resolve each pending row to a configured reward, grouped by quest key so the grant event
+        // fires per-quest batch. An identity map ties each configured reward instance back to a queue of
+        // its row ids: multiple rows can reconstruct to the same reward instance (a type whose
+        // fromSerializedConfig returns a shared/cached instance), and each successful grant consumes one
+        // id so every granted row is deleted exactly once. A reward a listener removes/replaces (or a
+        // cancelled batch) leaves its rows retained for a later retry.
+        Map<NamespacedKey, List<QuestRewardType>> rewardsByQuest = new LinkedHashMap<>();
+        Map<QuestRewardType, Deque<UUID>> rewardToPendingIds = new IdentityHashMap<>();
         for (PendingReward pending : pendingRewards) {
             Optional<QuestRewardType> baseType = rewardTypeRegistry.get(pending.getRewardTypeKey());
             if (baseType.isEmpty()) {
@@ -133,12 +153,25 @@ public class PlayerJoinListener implements Listener {
             }
             try {
                 QuestRewardType configured = baseType.get().fromSerializedConfig(pending.getSerializedConfig());
-                configured.grant(player);
-                grantedRewardIds.add(pending.getId());
+                rewardsByQuest.computeIfAbsent(pending.getQuestKey(), key -> new ArrayList<>()).add(configured);
+                rewardToPendingIds.computeIfAbsent(configured, key -> new ArrayDeque<>()).add(pending.getId());
             } catch (RuntimeException e) {
-                mcRPG.getLogger().log(Level.SEVERE, "Failed to grant pending reward " + pending.getId() + " (type '"
+                mcRPG.getLogger().log(Level.WARNING, "Failed to reconstruct pending reward " + pending.getId() + " (type '"
                         + pending.getRewardTypeKey() + "') for player " + player.getUniqueId()
                         + ". The reward is retained and will be retried on next login.", e);
+            }
+        }
+
+        Set<UUID> grantedRewardIds = new HashSet<>();
+        QuestRewardGranter granter = new QuestRewardGranter(mcRPG);
+        for (Map.Entry<NamespacedKey, List<QuestRewardType>> entry : rewardsByQuest.entrySet()) {
+            List<QuestRewardType> granted = granter.grantToOnlinePlayer(player, entry.getValue(), entry.getKey(),
+                    null, RewardGrantContext.PENDING);
+            for (QuestRewardType grantedReward : granted) {
+                Deque<UUID> pendingIds = rewardToPendingIds.get(grantedReward);
+                if (pendingIds != null && !pendingIds.isEmpty()) {
+                    grantedRewardIds.add(pendingIds.poll());
+                }
             }
         }
         return grantedRewardIds;

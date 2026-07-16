@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.quest.board;
 
+import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
 import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;
@@ -71,6 +72,7 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -163,8 +165,8 @@ public class QuestBoardManager extends Manager<McRPG> {
         // 4. Register built-in refresh types
         RefreshTypeRegistry refreshTypeRegistry = plugin.registryAccess()
                 .registry(McRPGRegistryKey.REFRESH_TYPE);
-        DayOfWeek resetDay = DayOfWeek.valueOf(
-                boardConfig.getString(BoardConfigFile.ROTATION_WEEKLY_RESET_DAY).toUpperCase());
+        DayOfWeek resetDay = parseResetDayOrDefault(
+                boardConfig.getString(BoardConfigFile.ROTATION_WEEKLY_RESET_DAY));
         refreshTypeRegistry.register(new DailyRefreshType());
         refreshTypeRegistry.register(new WeeklyRefreshType(resetDay));
 
@@ -191,6 +193,15 @@ public class QuestBoardManager extends Manager<McRPG> {
         File primaryTemplatesDir = new File(plugin.getDataFolder(), "quest-board/templates");
         this.templateConfig = new ReloadableTemplateConfig(boardConfig, templateRegistry, conditionRegistry, primaryTemplatesDir);
         this.templateConfig.getContent();
+
+        // Register the board configs so /mcrpg admin reload re-parses rarities, categories, and
+        // templates without a restart. Without this, edits to board.yml silently no-op until restart.
+        ReloadableContentManager reloadableContentManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.RELOADABLE_CONTENT);
+        reloadableContentManager.trackReloadableContent(rarityConfig);
+        reloadableContentManager.trackReloadableContent(categoryConfig);
+        reloadableContentManager.trackReloadableContent(templateConfig);
 
         this.questPool = new QuestPool(definitionRegistry, templateRegistry, plugin().getLogger(), plugin.getTimeProvider());
 
@@ -250,6 +261,31 @@ public class QuestBoardManager extends Manager<McRPG> {
 
         plugin().getLogger().info("[QuestBoard] Initialized with " + rarityRegistry.getAll().size() + " rarities, "
                 + categoryRegistry.getAll().size() + " categories");
+    }
+
+    /**
+     * Parses the configured weekly reset day, falling back to Monday with a WARNING when the value is
+     * missing or not a valid day name. Previously an invalid {@code weekly-reset-day} threw during
+     * {@code onEnable} and disabled all of McRPG.
+     *
+     * @param rawResetDay the configured day name (e.g. {@code MONDAY})
+     * @return the parsed {@link DayOfWeek}, or {@link DayOfWeek#MONDAY} on invalid input
+     */
+    @NotNull
+    private DayOfWeek parseResetDayOrDefault(String rawResetDay) {
+        String configured = rawResetDay;
+        if (configured == null || configured.isBlank()) {
+            plugin().getLogger().warning("[QuestBoard] Missing weekly-reset-day in board.yml (expected one of"
+                    + " MONDAY-SUNDAY). Falling back to MONDAY.");
+            configured = DayOfWeek.MONDAY.name();
+        }
+        try {
+            return DayOfWeek.valueOf(configured.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException exception) {
+            plugin().getLogger().log(Level.WARNING, "[QuestBoard] Invalid weekly-reset-day '" + rawResetDay
+                    + "' in board.yml (expected one of MONDAY-SUNDAY). Falling back to MONDAY.", exception);
+            return DayOfWeek.MONDAY;
+        }
     }
 
     /**
