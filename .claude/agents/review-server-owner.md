@@ -12,7 +12,7 @@ Apply the checklist in `.claude/commands/review-server-owner.md` — the **Check
 
 ## How to review
 
-1. You are given the PR diff (or the list of changed files) in your prompt. Review **only lines this PR changed** in `resources/**/*.yml`, `plugin.yml`, and `configuration/**`. Do not report pre-existing config in untouched sections.
+1. You are given the PR diff (or the list of changed files) in your prompt. Review **only lines this PR changed** in `resources/**/*.yml`, `plugin.yml`, and `src/**/configuration/**`. Do not report pre-existing config in untouched sections.
 2. **Verify every candidate finding against the actual code in this checkout.** Read the YAML to confirm a missing comment/default/duration-format, and read the corresponding `*ConfigFile` / loader to confirm reload-safety or a real migration need (new required key without a `config-version` bump). Do not flag a `config-version` bump for purely additive optional keys unless the loader requires it. Drop anything you cannot confirm.
 3. Server-admin config values and Bukkit enum values are the owner's domain — judge readability and safety, not code style.
 
