@@ -38,7 +38,7 @@ jobs:
       github.event.pull_request.draft == false &&
       github.event.pull_request.head.repo.full_name == github.repository &&
       !contains(github.event.pull_request.title, '[skip-review]') &&
-      !contains(github.event.pull_request.labels.*.name, 'skip-review')
+      !contains(github.event.pull_request.labels.*.name, 'skip-claude-review')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -71,11 +71,12 @@ jobs:
   # (no prompt) — claude-code-action handles the sticky comment natively here.
   on-demand:
     if: >-
-      (github.event_name == 'issue_comment' &&
-       github.event.issue.pull_request != null &&
-       contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' &&
-       contains(github.event.comment.body, '@claude'))
+      ((github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request != null &&
+        contains(github.event.comment.body, '@claude')) ||
+       (github.event_name == 'pull_request_review_comment' &&
+        contains(github.event.comment.body, '@claude'))) &&
+      contains(fromJson('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association)
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
