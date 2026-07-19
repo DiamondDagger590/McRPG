@@ -30,9 +30,10 @@ This phase delivers the extensibility layer on top of the Phase 1 combat session
 - `OnCombatHealingStatListener` — healing stat tracking at `MONITOR`
 - `OnCombatSessionEndStatUpdateListener` — cumulative stat update at `MONITOR`
 - Explicit healer-attribution API: `CombatTrackerManager.reportHealing()`
-- Persistent state lifecycle hooks: pre-load on player login, save on session end, save on shutdown
+- Persistent state lifecycle hooks: pre-load during player load pipeline, save on session end, save on shutdown
 - New cumulative McCore statistics: `HEALING_DEALT`, `HEALING_RECEIVED`, `HITS_LANDED`, `HITS_RECEIVED`, `COMBAT_KILLS`
-- Modifications to `CombatSession` (state store, statistics container, mutator visibility), `CombatTrackerManager` (state type management, persistent state lifecycle, healing API, session statistic key registration), `CombatSessionEndEvent` (stat + state snapshots), `CombatConfigFile`, `McRPGStatistic`
+- Modifications to `CombatSession` (state store, statistics container, mutator visibility), `CombatTrackerManager` (state type management, persistent state lifecycle, healing API, session statistic key registration), `CombatSessionEndEvent` (stat + state snapshots), `CombatConfigFile`, `McRPGStatistic`, `PlayerLeaveListener` (combat teardown on quit), `McRPGPlayerLoadTask` (persistent state pre-load), `PlayerJoinListener` (constructor dependency)
+- Deletion of `OnCombatPlayerQuitListener` (quit-time combat cleanup moved to `PlayerLeaveListener`)
 - Configuration: `per-session-statistics.feed-to-cumulative`
 
 **Out of scope (later phases):**
@@ -317,7 +318,7 @@ classDiagram
         +registerStateType(CombatStateType) void
         +registerSessionStatisticKey(NamespacedKey, boolean) void
         +reportHealing(UUID, UUID, double) void
-        +loadPersistentStateAsync(UUID) void
+        +cachePersistentState(UUID, Map~String, String~) void
         +clearPersistentStateCache(UUID) void
         +savePersistentStateAsync(CombatSession) void
         +saveAllPersistentStateSync() void
@@ -1731,25 +1732,22 @@ public void reportHealing(@NotNull UUID healerUUID, @NotNull UUID targetUUID, do
 }
 
 /**
- * Loads all persistent combat state for an entity from the database asynchronously.
- * The loaded data is cached in-memory and applied to the entity's session on start.
- * Called on player login.
+ * Caches pre-loaded persistent combat state for a player. Called by
+ * {@link McRPGPlayerLoadTask} after the async DB load completes, during
+ * main-thread finalization — before the player is registered in the manager
+ * and before any combat session can start. See D11.
  *
- * @param entityUUID The UUID of the entity to load persistent state for.
+ * @param entityUUID      The UUID of the entity.
+ * @param persistentState The loaded persistent state map (keyed by stringified NamespacedKey).
  */
-public void loadPersistentStateAsync(@NotNull UUID entityUUID) {
-    // 1. Submit async task to McRPGDatabaseManager's executor
-    // 2. CombatPersistentStateDAO.loadPersistentState(connection, entityUUID) — returns
-    //    Map<String, String>, keyed by the NamespacedKey's string representation
-    // 3. On main thread: store the returned map directly in persistentStateCache (no
-    //    NamespacedKey parsing here — the cache is String-keyed to match the DAO's return
-    //    type; keys are resolved to NamespacedKey only when applied to a session, see
-    //    Key Flow 4.2)
+public void cachePersistentState(@NotNull UUID entityUUID, @NotNull Map<String, String> persistentState) {
+    persistentStateCache.put(entityUUID, persistentState);
 }
 
 /**
- * Clears the persistent state cache for an entity. Called on player logout after
- * persistent state has been saved.
+ * Clears the persistent state cache for an entity. Called by
+ * {@link PlayerLeaveListener} during combat teardown on player logout,
+ * after persistent state has been saved.
  *
  * @param entityUUID The UUID of the entity whose cache to clear.
  */
@@ -2021,7 +2019,7 @@ logger.log(Level.INFO, "Database Creation - Combat Persistent State DAO "
 CombatPersistentStateDAO.updateTable(connection);
 ```
 
-### 2.12 McRPGListenerRegistrar — Register New Listeners
+### 2.12 McRPGListenerRegistrar — Register New Listeners, Remove OnCombatPlayerQuitListener
 
 **File:** `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java`
 
@@ -2034,70 +2032,145 @@ Bukkit.getPluginManager().registerEvents(new OnCombatHealingStatListener(combatT
 Bukkit.getPluginManager().registerEvents(new OnCombatSessionEndStatUpdateListener(plugin, combatTrackerManager), plugin);
 ```
 
-### 2.13 OnCombatPlayerQuitListener — Persistent State Cache Cleanup
-
-**File:** `src/main/java/us/eunoians/mcrpg/listener/combat/OnCombatPlayerQuitListener.java`
-
-After the existing `endSession` and `removeParticipantFromAllSessions` calls, clear the persistent state cache:
+Remove the existing `OnCombatPlayerQuitListener` registration (its quit-time cleanup is now handled by `PlayerLeaveListener` — see §2.13):
 
 ```java
-combatTrackerManager.clearPersistentStateCache(playerUUID);
+// REMOVE this line:
+Bukkit.getPluginManager().registerEvents(new OnCombatPlayerQuitListener(combatTrackerManager), plugin);
 ```
 
-### 2.14 PlayerJoinListener — Persistent Combat State Pre-Load
+### 2.13 PlayerLeaveListener — Combat Teardown Before Unload
 
-**File:** `src/main/java/us/eunoians/mcrpg/listener/entity/player/PlayerJoinListener.java`
+**File:** `src/main/java/us/eunoians/mcrpg/listener/entity/player/PlayerLeaveListener.java`
 
-Key Flow 4.2 requires `combatTrackerManager.loadPersistentStateAsync(UUID)` to run on player login, but `PlayerJoinListener` currently has no `CombatTrackerManager` dependency at all — it is constructed with a no-arg constructor. This subsection wires the call in so the pre-load documented in 4.2 and OQ1 actually happens.
+All combat quit cleanup moves into `PlayerLeaveListener.handleQuit()`, executed **before** the `McRPGPlayerUnloadTask` is created. This guarantees that combat session end (and the downstream cumulative stat update chain it triggers) runs while the player's `McRPGPlayer` is still loaded — see D13 for rationale. `OnCombatPlayerQuitListener` is deleted entirely (see §2.13a).
 
 #### New field and constructor
 
-`PlayerJoinListener` currently has no declared fields and relies on the implicit default constructor. Add a `CombatTrackerManager` field, injected via constructor:
+`PlayerLeaveListener` currently has no declared fields and relies on the implicit default constructor. Add a `CombatTrackerManager` field, injected via constructor:
 
 ```java
 private final CombatTrackerManager combatTrackerManager;
 
 /**
- * Constructs a new {@link PlayerJoinListener}.
+ * Constructs a new {@link PlayerLeaveListener}.
  *
- * @param combatTrackerManager The {@link CombatTrackerManager} used to pre-load a joining
- *                              player's persistent combat state.
+ * @param combatTrackerManager The {@link CombatTrackerManager} used to end combat sessions
+ *                              and clean up participant/cache state on player logout.
  */
+public PlayerLeaveListener(@NotNull CombatTrackerManager combatTrackerManager) {
+    this.combatTrackerManager = combatTrackerManager;
+}
+```
+
+#### Modified method — `handleQuit(PlayerQuitEvent)`
+
+Add combat teardown as the first block in `handleQuit()`, before the `McRPGPlayerManager` lookup and unload:
+
+```java
+@EventHandler
+public void handleQuit(PlayerQuitEvent playerQuitEvent) {
+    Player player = playerQuitEvent.getPlayer();
+    UUID playerUUID = player.getUniqueId();
+
+    // Combat teardown — must run while McRPGPlayer is still loaded so the
+    // cumulative stat update chain (OnCombatSessionEndStatUpdateListener)
+    // can access player statistic data.
+    combatTrackerManager.endSession(playerUUID, CombatSessionEndReason.LOGOUT);
+    combatTrackerManager.removeParticipantFromAllSessions(playerUUID, ParticipantRemovalReason.LOGOUT);
+    combatTrackerManager.clearPersistentStateCache(playerUUID);
+
+    McRPGPlayerManager playerManager = McRPG.getInstance().registryAccess()
+            .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
+    // ... rest of method unchanged
+}
+```
+
+### 2.13a OnCombatPlayerQuitListener — Deletion
+
+**File:** `src/main/java/us/eunoians/mcrpg/listener/combat/OnCombatPlayerQuitListener.java`
+
+This class is deleted. Its sole `@EventHandler` (`onPlayerQuit`) is replaced by the combat teardown block in `PlayerLeaveListener.handleQuit()` (§2.13). The `McRPGListenerRegistrar` registration is removed (§2.12).
+
+### 2.14 McRPGPlayerLoadTask — Persistent Combat State Pre-Load
+
+**File:** `src/main/java/us/eunoians/mcrpg/task/player/McRPGPlayerLoadTask.java`
+
+Persistent combat state is loaded as part of the existing `McRPGPlayerLoadTask` async pipeline, not as a separate fire-and-forget call. This guarantees the cache is populated before the player is registered in `McRPGPlayerManager` — and therefore before any McRPG combat listener can act on the player — eliminating the race window entirely. See D11 for rationale.
+
+#### New constructor parameter
+
+Add `CombatTrackerManager` as a constructor parameter, injected from `PlayerJoinListener`:
+
+```java
+private final CombatTrackerManager combatTrackerManager;
+
+public McRPGPlayerLoadTask(@NotNull McRPG mcRPG, @NotNull McRPGPlayer mcRPGPlayer,
+                           @NotNull CombatTrackerManager combatTrackerManager) {
+    // ... existing super() call
+    this.combatTrackerManager = combatTrackerManager;
+}
+```
+
+#### Async DB phase addition
+
+In the async DB phase (where skill, ability, and other player data are loaded), add a call to load persistent combat state using the existing `Connection`:
+
+```java
+Map<String, String> persistentState = CombatPersistentStateDAO.loadPersistentState(connection, playerUUID);
+```
+
+#### Main-thread finalization addition
+
+On the main-thread callback (after the player is fully loaded but before or alongside manager registration), cache the loaded state:
+
+```java
+combatTrackerManager.cachePersistentState(playerUUID, persistentState);
+```
+
+#### CombatTrackerManager — `cachePersistentState` method
+
+Add a public method to `CombatTrackerManager` (§2.2) that allows the load task to populate the cache directly:
+
+```java
+/**
+ * Caches pre-loaded persistent combat state for a player. Called by
+ * {@link McRPGPlayerLoadTask} after the async DB load completes, before
+ * the player is registered in the manager.
+ *
+ * @param entityUUID     The UUID of the entity.
+ * @param persistentState The loaded persistent state map (keyed by stringified NamespacedKey).
+ */
+public void cachePersistentState(@NotNull UUID entityUUID, @NotNull Map<String, String> persistentState) {
+    persistentStateCache.put(entityUUID, persistentState);
+}
+```
+
+#### PlayerJoinListener wiring
+
+**File:** `src/main/java/us/eunoians/mcrpg/listener/entity/player/PlayerJoinListener.java`
+
+`PlayerJoinListener` gains a `CombatTrackerManager` field, injected via constructor, and passes it to `McRPGPlayerLoadTask`:
+
+```java
+private final CombatTrackerManager combatTrackerManager;
+
 public PlayerJoinListener(@NotNull CombatTrackerManager combatTrackerManager) {
     this.combatTrackerManager = combatTrackerManager;
 }
 ```
 
-#### Modified method — `handleJoin(PlayerJoinEvent)`
-
-Add the pre-load call as the first statement after `player` is resolved — before `McRPGPlayerLoadTask` is started — so the async DB read begins as early as possible in the login sequence, minimizing the race window described in OQ1:
+In `handleJoin()`:
 
 ```java
-@EventHandler(ignoreCancelled = true)
-public void handleJoin(@NotNull PlayerJoinEvent playerJoinEvent) {
-
-    McRPG mcRPG = McRPG.getInstance();
-    Player player = playerJoinEvent.getPlayer();
-    combatTrackerManager.loadPersistentStateAsync(player.getUniqueId());
-
-    McRPGPlayer mcRPGPlayer = new McRPGPlayer(player, mcRPG);
-    new McRPGPlayerLoadTask(mcRPG, mcRPGPlayer).runTask();
-    // ... rest of method unchanged
-}
+new McRPGPlayerLoadTask(mcRPG, mcRPGPlayer, combatTrackerManager).runTask();
 ```
 
 #### McRPGListenerRegistrar wiring
 
 **File:** `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java`
 
-`PlayerJoinListener` is currently registered with a no-arg constructor, in the `PROD`-only block near the top of `register()`, well before the `combatTrackerManager` local variable is resolved further down (alongside the other combat tracker listener registrations in §2.12):
-
-```java
-// Existing, line 108
-Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), plugin);
-```
-
-The `combatTrackerManager` lookup must move earlier — above the `PROD`-only block — so it is in scope for the `PlayerJoinListener` registration. The later lookup (currently declared right before the combat tracker listener registrations) is removed and replaced by a reference to the same, now-earlier local variable:
+The `combatTrackerManager` lookup must move earlier — above the `PROD`-only block — so it is in scope for both `PlayerJoinListener` and `PlayerLeaveListener`. The later lookup (currently declared right before the combat tracker listener registrations) is removed:
 
 ```java
 CombatTrackerManager combatTrackerManager = plugin.registryAccess()
@@ -2106,7 +2179,7 @@ CombatTrackerManager combatTrackerManager = plugin.registryAccess()
 // Player load/save
 if (context.startupProfile() == StartupProfile.PROD) {
     Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(combatTrackerManager), plugin);
-    Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(), plugin);
+    Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(combatTrackerManager), plugin);
     Bukkit.getPluginManager().registerEvents(new CorePlayerLoadListener(), plugin);
     Bukkit.getPluginManager().registerEvents(new CorePlayerUnloadListener(), plugin);
 }
@@ -2167,12 +2240,16 @@ Read-modify-write via modifyState:
 
 ```
 Player A logs in:
-  L-> PlayerJoinEvent fires
-      |-> combatTrackerManager.loadPersistentStateAsync(A.uuid)
-          |-> Async task submitted to DB executor
-          |-> CombatPersistentStateDAO.loadPersistentState(conn, A.uuid)
-          |   → Map{ "myplugin:combats_today" → "3" }
-          |-> On main thread: persistentStateCache.put(A.uuid, loadedMap)
+  L-> PlayerJoinEvent fires → PlayerJoinListener.handleJoin()
+      |-> new McRPGPlayerLoadTask(mcRPG, mcRPGPlayer, combatTrackerManager).runTask()
+          |-> Async DB phase (existing Connection):
+          |   |-> Load skill data, ability data, etc. (existing)
+          |   |-> CombatPersistentStateDAO.loadPersistentState(conn, A.uuid)
+          |   |   → Map{ "myplugin:combats_today" → "3" }
+          |-> Main-thread finalization:
+          |   |-> Register McRPGPlayer in McRPGPlayerManager (existing)
+          |   |-> combatTrackerManager.cachePersistentState(A.uuid, loadedMap)
+          |   |   (player is now "loaded" — combat listeners can find them)
 
 Player A enters combat (session created):
   L-> handleCombatInteraction → createSessionForInteraction → new CombatSession(...)
@@ -2197,10 +2274,12 @@ Player A's session ends:
       |-> Fire CombatSessionEndEvent with snapshots
 
 Player A logs out:
-  L-> OnCombatPlayerQuitListener
-      |-> endSession(A.uuid, LOGOUT) — if session exists, triggers save flow above
-      |-> removeParticipantFromAllSessions(...)
-      |-> combatTrackerManager.clearPersistentStateCache(A.uuid) — cache evicted
+  L-> PlayerLeaveListener.handleQuit() (default NORMAL priority)
+      |-> Combat teardown (runs first, while McRPGPlayer is still loaded):
+      |   |-> endSession(A.uuid, LOGOUT) — if session exists, triggers save flow above
+      |   |-> removeParticipantFromAllSessions(...)
+      |   |-> combatTrackerManager.clearPersistentStateCache(A.uuid) — cache evicted
+      |-> McRPGPlayerUnloadTask — saves and unloads player data (existing)
 
 Server shutdown:
   L-> CombatTrackerManager.shutdown()
@@ -2330,9 +2409,10 @@ Session ends with state attached (Phase 4 example — Ramping Frenzy with 5 raw 
 26. **McRPGBootstrap modifications** — registry creation
 27. **McRPGDatabase modifications** — DAO table creation and update wiring for CombatPersistentStateDAO. Depends on CombatPersistentStateDAO
 28. **McRPGListenerRegistrar modifications** — register new listeners
-29. **OnCombatPlayerQuitListener modification** — persistent state cache cleanup
-30. **PlayerJoinListener modification** — inject `CombatTrackerManager` via constructor and call `loadPersistentStateAsync(UUID)` at the start of `handleJoin`, per Key Flow 4.2 and OQ1; update the `McRPGListenerRegistrar` wiring to hoist the `combatTrackerManager` lookup above the `PROD`-only listener block. Depends on CombatTrackerManager
-31. **Unit tests** — see §6
+29. **PlayerLeaveListener modification** — inject `CombatTrackerManager` via constructor; add combat teardown (`endSession`, `removeParticipantFromAllSessions`, `clearPersistentStateCache`) at the top of `handleQuit()` before unload. Depends on CombatTrackerManager
+30. **OnCombatPlayerQuitListener deletion** — remove the class entirely; its quit-time combat cleanup is now in `PlayerLeaveListener`. Remove registration from `McRPGListenerRegistrar`
+31. **McRPGPlayerLoadTask modification** — inject `CombatTrackerManager`; add `CombatPersistentStateDAO.loadPersistentState()` to the async DB phase and `cachePersistentState()` to main-thread finalization. Update `PlayerJoinListener` to accept and forward `CombatTrackerManager`. Hoist `combatTrackerManager` lookup in `McRPGListenerRegistrar` above the `PROD`-only block. Depends on CombatTrackerManager, CombatPersistentStateDAO
+32. **Unit tests** — see §6
 
 ---
 
@@ -2460,7 +2540,7 @@ Organized into `@Nested` groups.
 - **registerSessionStatisticKey** — registered double key appears in new sessions' statistics; registered long key appears in new sessions' statistics
 - **reportHealing** — increments `healing_dealt` on healer's session; increments `healing_received` on target's session; is a no-op when neither entity has an active session; does not create sessions or add participants
 - **endSession with snapshots** — the fired `CombatSessionEndEvent` carries a non-null statistics snapshot; the fired event carries a non-null combat state snapshot; the statistics snapshot reflects accumulated stats; the state snapshot reflects stored state values
-- **Persistent state lifecycle** — `loadPersistentStateAsync` populates the cache (verify via subsequent session start); cached persistent state is applied to new sessions; `savePersistentStateAsync` is called on session end for sessions with persistent state; `clearPersistentStateCache` removes the cached data
+- **Persistent state lifecycle** — `cachePersistentState` populates the cache; cached persistent state is applied to new sessions on creation; `savePersistentStateAsync` is called on session end for sessions with persistent state; `clearPersistentStateCache` removes the cached data
 
 ### 6.15 OnCombatDamageStatListenerTest
 
@@ -2597,48 +2677,30 @@ Because the two stats measure different things (lifetime mob kills vs. combat-se
 
 **Why:** The HLD says the cumulative update should be "observable and cancellable by third parties." `CombatSessionEndEvent` is deliberately not cancellable (a session that ended cannot un-end). The cumulative update is a downstream consequence of the session ending, not the session end itself — separating them lets third parties cancel the stat update without interfering with session cleanup.
 
+### D11. Persistent State Pre-Load via McRPGPlayerLoadTask — No Race Window
+
+**Decision:** Persistent combat state is loaded inside `McRPGPlayerLoadTask`'s existing async DB phase, using the same `Connection` already open for skill/ability data. The loaded map is cached via `CombatTrackerManager.cachePersistentState()` during main-thread finalization, before the player is registered in `McRPGPlayerManager`.
+
+**Why:** The player is not discoverable by McRPG combat listeners until `McRPGPlayerManager` registration completes. By loading persistent state as part of that same pipeline, the cache is guaranteed to be populated before any combat session can start — no race window, no sync fallback, no guard in `startSession()`. The alternative (a separate `loadPersistentStateAsync()` call in `PlayerJoinListener`) creates a race between two independent async tasks (player load vs. persistent state load) where a fast combat entry can start a session before the persistent state cache is populated.
+
+**Trade-off:** `McRPGPlayerLoadTask` gains a `CombatTrackerManager` dependency. This is acceptable because the task already orchestrates multi-DAO loading for player subsystems, and `CombatTrackerManager` is injected via constructor (not a static singleton lookup).
+
+### D12. Cumulative Stat Update Uses All-or-Nothing Toggle
+
+**Decision:** The `per-session-statistics.feed-to-cumulative` config flag is a single boolean — all mapped stats are updated or none are. Per-stat-key toggles are not provided.
+
+**Why:** Per-stat toggles add configuration complexity for a marginal use case (a server that wants some combat stats but not others in cumulative totals). The all-or-nothing flag covers the primary use case. If demand emerges, per-stat config can be added in a follow-up without structural changes — it's a config read in the update listener, not an architectural decision.
+
+### D13. Combat Teardown in PlayerLeaveListener, Not a Separate Quit Listener
+
+**Decision:** All combat quit cleanup (`endSession`, `removeParticipantFromAllSessions`, `clearPersistentStateCache`) runs at the top of `PlayerLeaveListener.handleQuit()`, before the `McRPGPlayerUnloadTask` is created. `OnCombatPlayerQuitListener` is deleted.
+
+**Why:** The cumulative stat update chain triggered by `endSession()` requires the player's `McRPGPlayer` to be loaded (§1.15 step 2). The previous design had `OnCombatPlayerQuitListener` at `MONITOR` priority — strictly after `PlayerLeaveListener`'s default `NORMAL` priority, which runs the unload — so the stat update guard always failed on logout. Rather than relying on implicit Bukkit listener priority ordering (fragile and non-obvious), making the call order explicit in code is more robust. `PlayerLeaveListener` already orchestrates quest saves, Lunar Client cleanup, and other subsystem teardown in `handleQuit()` — combat teardown fits that role. Eliminating `OnCombatPlayerQuitListener` removes a class and a listener registration rather than adding priority-ordering constraints that future maintainers must understand.
+
+**Considered alternative:** Reorder `OnCombatPlayerQuitListener` to `LOW` priority so it runs before `PlayerLeaveListener`. Rejected because implicit priority ordering between two listeners in different packages is a maintenance hazard — a future change to either listener's priority could silently reintroduce the bug.
+
 ---
 
 ## 8. Open Questions / Design Decisions for Review
 
-### OQ1. Persistent State Pre-Load Timing
-
-**Question:** When should persistent combat state be loaded from the database?
-
-**Recommended:** Pre-load asynchronously on player login via `loadPersistentStateAsync(UUID)`. The loaded data is cached in-memory on the manager and applied to any session that starts for that player.
-
-**Trade-off:** There is a race window between login and cache population. If a player enters combat before the async load completes, their session starts with default values for persistent state. On the next session start (after the cache is populated), the correct values are applied.
-
-**Alternatives considered:**
-
-| Approach | Pros | Cons |
-|----------|------|------|
-| Pre-load on login (recommended) | No main-thread blocking; data ready before most combat | Race window on fast combat entry |
-| Synchronous load on session start | Always correct; no race | Blocks main thread on DB read for every combat entry |
-| Lazy load on first `getState()` for persistent type | Only loads when needed | Blocks main thread; complex lazy-init logic |
-
-**For review:** Is the race window acceptable? Persistent state is expected to be rare (the HLD example is "combats_today" — a counter). If the first combat starts before the load completes, the counter starts at its default (0) for that session, then is corrected on the next session. For a daily counter, missing one increment on a fast login is a minor accuracy issue. If this is unacceptable, a synchronous fallback (check cache, sync-load on miss) can be added at the cost of a DB read on the first session start for a player.
-
-### OQ2. Per-Stat Update Granularity
-
-**Question:** Should the cumulative stat update be configurable per-stat-key (e.g., `feed-to-cumulative.healing-dealt: true`, `feed-to-cumulative.combat-kills: false`), or is the current all-or-nothing `feed-to-cumulative: true/false` flag sufficient?
-
-**Recommended:** Start with the all-or-nothing flag. Per-stat toggles add configuration complexity for a marginal use case (a server that wants some combat stats but not others in the cumulative totals). If demand emerges, per-stat config can be added in a follow-up without structural changes — it's a config read in the update listener, not an architectural decision.
-
-**Impact of not resolving:** None — the all-or-nothing flag is safe and covers the primary use case ("track cumulative combat stats" vs "don't"). Per-stat control can be added backward-compatibly.
-
-### OQ3. Logout Priority Ordering Silently Drops Cumulative Stats for Combat-Ended Sessions
-
-**Question:** `PlayerLeaveListener` unloads `McRPGPlayer` data at the default (`NORMAL`) `PlayerQuitEvent` priority — it constructs an `McRPGPlayerUnloadTask` directly in `handleQuit()`. `OnCombatPlayerQuitListener` ends the player's combat session (`combatTrackerManager.endSession(...)`) at `MONITOR` priority, which runs strictly after `NORMAL`. `endSession()` fires `CombatSessionEndEvent` synchronously, and `OnCombatSessionEndStatUpdateListener` (§1.15) reacts to it, but its guard requires "a player with loaded statistic data" (§1.15 step 2). By the time this chain runs, the `NORMAL`-priority unload has already completed, so the guard fails and the cumulative stat update is skipped — for every session that ends by logout, not just an edge case.
-
-**Recommended:** Move `OnCombatPlayerQuitListener`'s `@EventHandler` priority from `MONITOR` to a priority that runs before `PlayerLeaveListener`'s default `NORMAL` (e.g. `LOW`). Ending the combat session — and the cumulative stat update it triggers — is teardown work that must observe the player as still loaded, the same assumption `PlayerLeaveListener` itself relies on for quest saving and Lunar Client cleanup. Nothing in `OnCombatPlayerQuitListener`'s responsibilities (`endSession`, `removeParticipantFromAllSessions`, and, per §2.12, `clearPersistentStateCache`) depends on running after any other `PlayerQuitEvent` listener, so reordering it carries no known regression risk. `OnCombatSessionEndStatUpdateListener` can remain at `MONITOR` for `CombatSessionEndEvent` — that event's dispatch is independent of `PlayerQuitEvent`'s priority queue, so once `endSession()` is invoked early enough in the quit sequence, the whole downstream chain completes before the player is unloaded.
-
-**Alternatives considered:**
-
-| Approach | Pros | Cons |
-|----------|------|------|
-| Reorder `OnCombatPlayerQuitListener` to run before `NORMAL` (recommended) | One-line fix; no new code path; preserves the "stats require loaded player data" guard as a meaningful invariant rather than working around it | Future listeners added between the new priority and `NORMAL` must not assume combat session state still exists at unload time |
-| `OnCombatSessionEndStatUpdateListener` falls back to a direct DB write when player data isn't loaded | Fixes the loss without touching listener ordering | Introduces a second write path for cumulative statistics that bypasses McCore's `Statistic`/`PlayerStatisticData` dirty-tracking; risks racing the unload task's own save; duplicates stat-key-to-column mapping outside the registered `Statistic` system |
-| Accept the loss | No code change required | Combat-logout is a routine path (deliberate combat-logging and ordinary disconnects alike), not an edge case — silently losing kill/healing/damage-taken cumulative contributions on every mid-fight logout is a systemic accuracy bug, not a minor one |
-
-**Impact of not resolving:** High — any player whose combat session ends by logout (as opposed to timeout or explicit end) loses that session's entire cumulative stat contribution. For servers that lean on cumulative combat statistics (leaderboards, quest objectives, progression), this silently undercounts a large and predictable share of sessions.
+_All open questions have been resolved. See D11–D13 in §7._
