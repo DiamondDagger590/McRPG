@@ -13,11 +13,6 @@ on:
   pull_request_review_comment:
     types: [created]
 
-# A new push or @claude mention on the same PR cancels the in-flight review.
-concurrency:
-  group: claude-review-${{ github.event.pull_request.number || github.event.issue.number }}
-  cancel-in-progress: true
-
 env:
   # Single model knob. Sonnet 5 carries $2/$10-per-MTok intro pricing through
   # 2026-08-31 (then $3/$15, and ~30% more tokens per request than the 4.6
@@ -33,6 +28,11 @@ jobs:
   # One automated review when a PR opens non-draft or leaves draft. No per-push
   # reviews — re-review on demand with an @claude comment.
   auto-review:
+    # Don't cancel an in-flight review when a second PR lifecycle event
+    # races (opened + ready_for_review can fire simultaneously).
+    concurrency:
+      group: claude-review-auto-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
     if: >-
       github.event_name == 'pull_request' &&
       github.event.pull_request.draft == false &&
@@ -47,8 +47,10 @@ jobs:
           fetch-depth: 0
       # Pin review-steering files to the base branch so a PR cannot weaken
       # its own review by modifying the orchestration prompt or agent defs.
+      # rm -rf first so PR-added files absent from the base branch are removed.
       - name: Pin review config to base branch
         run: |
+          rm -rf .github/claude-review-prompt.md .claude/agents/
           git checkout "${{ github.event.pull_request.base.sha }}" -- \
             .github/claude-review-prompt.md .claude/agents/ 2>/dev/null || true
       - uses: anthropics/claude-code-action@v1
@@ -76,6 +78,10 @@ jobs:
   # On-demand: an @claude mention in a PR comment or review comment. Tag mode
   # (no prompt) — claude-code-action handles the sticky comment natively here.
   on-demand:
+    # A new @claude mention on the same PR cancels the previous on-demand run.
+    concurrency:
+      group: claude-review-ondemand-${{ github.event.issue.number || github.event.pull_request.number }}
+      cancel-in-progress: true
     if: >-
       ((github.event_name == 'issue_comment' &&
         github.event.issue.pull_request != null &&
@@ -100,6 +106,7 @@ jobs:
           echo "is_fork=$IS_FORK" >> "$GITHUB_OUTPUT"
       # Pin review-steering files to the base branch so a PR cannot weaken
       # its own review by modifying the orchestration prompt or agent defs.
+      # rm -rf first so PR-added files absent from the base branch are removed.
       - name: Pin review config to base branch
         if: steps.fork-check.outputs.is_fork != 'true'
         env:
@@ -107,6 +114,7 @@ jobs:
         run: |
           PR_NUMBER="${{ github.event.issue.number || github.event.pull_request.number }}"
           BASE_SHA="$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json baseRefOid -q '.baseRefOid')"
+          rm -rf .github/claude-review-prompt.md .claude/agents/
           git checkout "$BASE_SHA" -- .github/claude-review-prompt.md .claude/agents/ 2>/dev/null || true
       - uses: anthropics/claude-code-action@v1
         if: steps.fork-check.outputs.is_fork != 'true'
