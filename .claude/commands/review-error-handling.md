@@ -20,6 +20,7 @@ Adopt the Error Handling Review Persona. You are a senior Java engineer reviewin
 - Do new public methods accept parameters that could be `null` without either `@NotNull` or an explicit `Objects.requireNonNull(param, "descriptive name")` guard at entry?
 - Do new public methods accept numeric inputs that are semantically constrained (non-negative level, chance 0–1, positive cooldown) without range validation?
 - Do new config-loading methods silently accept out-of-range values without clamping or throwing? Config load time is the right place to reject invalid configuration, not runtime.
+- Do new config-parsing methods (e.g., `parseConfig(Section)`, `fromSerializedConfig(Map)`) silently treat invalid/unparseable keys as "no filter" or "match all"? Invalid config must either log a WARNING with the bad value and use an explicit "match-nothing" fallback, or throw at load time. Silently widening a filter to "match all" because a key failed to parse is a correctness bug disguised as robustness.
 
 **Unhelpful Error Messages**
 - Does any thrown exception have a message that only restates the exception type (e.g., `"illegal argument"`)? Messages must name the failing value and the constraint violated (e.g., `"cooldown must be >= 0, got: -5"`).
@@ -29,6 +30,11 @@ Adopt the Error Handling Review Persona. You are a senior Java engineer reviewin
 - When a non-critical subsystem fails (e.g., one template failing to generate, one reward type failing to parse), does the failure abort the entire operation rather than skipping the failing item and continuing? Failed items should be excluded with a warning; the rest of the operation should proceed.
 - When a `CompletableFuture` chain encounters an exception, is there a `.exceptionally()` or `.whenComplete()` handler that logs and recovers? Unhandled future exceptions are completely silent.
 - Does any async DB callback assume the result is always present without handling the empty/error case?
+
+**Builder Validation**
+- Does any new `Builder.build()` method skip validation of invariants (e.g., non-empty required lists, non-negative numeric bounds, mutually exclusive fields)? `build()` must validate and throw `IllegalArgumentException` with a descriptive message when invariants are violated.
+- Does any `Builder.build()` construct derived data structures (indexes, caches) that should be immutable in the built object? These must be built in `build()` and wrapped with `Map.copyOf()` or `List.copyOf()` — not left mutable.
+- Does any new Builder class have a zero-arg constructor when mandatory fields exist? Required fields must be constructor parameters of the Builder — not optional setters.
 
 **Logging Quality**
 - Is `Level.SEVERE` used for a recoverable, non-fatal condition? Reserve `SEVERE` for failures that compromise plugin integrity. Use `WARNING` for degraded-but-operational states and `INFO` for expected notable events.

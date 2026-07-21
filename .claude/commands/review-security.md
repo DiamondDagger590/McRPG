@@ -7,11 +7,11 @@ Adopt the Security Engineer persona. You are auditing McRPG code for player-expl
 **Adventure API / MiniMessage Injection**
 - Does any code pass a user-controlled string (player chat, player-set name, sign text, book content, anvil rename) to `MiniMessage.deserialize()` or `getMiniMessage().deserialize()`? Injection allows `<click:run_command:>`, `<click:open_url:>`, hover events.
 - Is user-controlled data stored (DB, NBT) and later passed to `MiniMessage.deserialize()` without sanitization? Watch for: player input → storage → `deserialize()`.
-- Are all player-facing strings routed through `McRPGLocalizationManager`? Direct `deserialize()` on user input violates project convention and is a security risk.
+- Are all player-facing strings routed through `McRPGLocalizationManager`? Direct `deserialize()` calls on any player-supplied value violate project convention and are a security risk. Calls made inside `McRPGLocalizationManager` or other internal normalization/comparison utilities are not injection sinks — do not flag them.
 - **Safe to concatenate (skip):** `Material`, `EntityType`, other Bukkit enums; `UUID.toString()`; integers; `NamespacedKey` fragments.
 
 **Command Injection via `performCommand()` / `dispatchCommand()`**
-- Does any code call `player.performCommand(...)` or `Bukkit.dispatchCommand(...)` with a string segment a player could influence?
+- Does any code call `player.performCommand(...)`, `Bukkit.dispatchCommand(...)`, or `server.execute(...)` with a string segment a player could influence?
 - Is the concatenated value guaranteed to be a server-controlled constant? Only flag when user influence is plausible.
 - Could a third-party plugin override `Skill.getName()` or similar to inject attacker-controlled text?
 
@@ -43,6 +43,12 @@ Adopt the Security Engineer persona. You are auditing McRPG code for player-expl
 ```
 
 **AI Agent Prompt:** In `ClassName.java`, the `methodName()` method (around line N) [exact change needed, imports required, why safe for legitimate players]. ~150 words max.
+
+**Diff block guidance per category:**
+- *MiniMessage injection:* `-` line shows the vulnerable `deserialize(userInput)` call. `+` lines show the preferred fix: route through `getLocalizedMessageAsComponent(player, LocalizationKey.KEY, Map.of("placeholder", value))` if a localization key exists or should be created. If dynamic injection into a template is needed, use `Placeholder.unparsed("placeholder", userInput)` so the value is treated as literal text and tags are not parsed. Alternatively, call `MiniMessage.escapeTags(userInput)` before embedding the value into a template string.
+- *Command injection:* `-` line shows the concatenated `performCommand(...)`. `+` lines show the equivalent direct method or event call that avoids building a command string. If no direct path exists, show a validation guard that ensures the segment is safe before concatenating.
+- *Permission bypass:* `+` lines insert a `hasPermission("mcrpg.<category>.<action>")` guard and a player-feedback message before the sensitive operation.
+- *SQL injection:* `-` lines show the concatenated query. `+` lines show the equivalent `PreparedStatement` with `?` parameters and the corresponding `setString()` / `setInt()` calls.
 
 ---
 

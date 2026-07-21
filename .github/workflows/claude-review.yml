@@ -45,6 +45,12 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      # Pin review-steering files to the base branch so a PR cannot weaken
+      # its own review by modifying the orchestration prompt or agent defs.
+      - name: Pin review config to base branch
+        run: |
+          git checkout "${{ github.event.pull_request.base.sha }}" -- \
+            .github/claude-review-prompt.md .claude/agents/ 2>/dev/null || true
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -92,6 +98,16 @@ jobs:
           PR_NUMBER="${{ github.event.issue.number || github.event.pull_request.number }}"
           IS_FORK="$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json isCrossRepository -q '.isCrossRepository')"
           echo "is_fork=$IS_FORK" >> "$GITHUB_OUTPUT"
+      # Pin review-steering files to the base branch so a PR cannot weaken
+      # its own review by modifying the orchestration prompt or agent defs.
+      - name: Pin review config to base branch
+        if: steps.fork-check.outputs.is_fork != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER="${{ github.event.issue.number || github.event.pull_request.number }}"
+          BASE_SHA="$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json baseRefOid -q '.baseRefOid')"
+          git checkout "$BASE_SHA" -- .github/claude-review-prompt.md .claude/agents/ 2>/dev/null || true
       - uses: anthropics/claude-code-action@v1
         if: steps.fork-check.outputs.is_fork != 'true'
         with:

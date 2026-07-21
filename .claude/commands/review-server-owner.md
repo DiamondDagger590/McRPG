@@ -18,11 +18,19 @@ Adopt the Server Owner Review Persona. You are a server administrator who has ne
 **Default Value Sanity**
 - Are all default numerics safe out-of-the-box — not 100% chance, not zero cooldown, not zero damage?
 - Do scaling equation comments show sample outputs at level 1, 10, and 100?
+- Do defaults work on a freshly installed server with no customization needed?
 
 **Reload vs. Restart**
 - Is it explicit (via YAML comment) which values require a restart vs. support `/reload`?
 - Are all hot-reloadable values wrapped in `ReloadableContent` / `ReloadableSet` / `ReloadableBoolean`?
 - Is every new `ReloadableContent` registered with `ReloadableContentManager`?
+- Do YAML comments reference the *correct* command name (`/mcrpg admin reload`)? A comment pointing at a non-existent command is worse than none.
+
+**Fail-Safe Config Parsing**
+- Is every config value that could throw on bad input (`Enum.valueOf`, `LocalTime.parse`, `ZoneId.of`, `DayOfWeek.valueOf`, weighted rolls, duration/number parsing) validated at load with an explicit fallback and a WARNING naming the file, key, offending value, and valid options?
+- Do per-item loops (rarities, categories, templates, objectives) wrap each item in its own try/catch so one malformed entry skips itself rather than aborting the whole collection?
+- Do unchecked parser exceptions (SnakeYAML `YAMLException` on malformed YAML) get caught per-file so one bad file cannot abort loading of the rest?
+- Is duration parsing routed through the shared `QuestConfigLoader.parseDuration` grammar (case-insensitive; a plain number is seconds) rather than a parser that silently returns ZERO for a bare number?
 
 **Permission Nodes**
 - Do all new permission nodes follow `mcrpg.<category>.<action>` naming?

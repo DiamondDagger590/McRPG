@@ -56,7 +56,7 @@ You are a test engineer reviewing whether this change is adequately tested and w
 **Test Quality**
 - [ ] Does every test method have at least one assertion (`assertEquals`, `assertNotNull`, `assertTrue`, `verify()`)? A test with no assertion cannot fail.
 - [ ] Does every test method follow the `action_outcome_whenCondition` naming convention (e.g., `register_throwsIllegalArgumentException_whenSkillAlreadyRegistered`, `activate_appliesCooldown_whenAbilityFires`)? The `_whenCondition` suffix is optional when the context is obvious from the action and outcome alone. See `BaseAbilityTest` for a reference.
-- [ ] Does every test method carry a `@DisplayName` annotation written as a short descriptive label (e.g., `@DisplayName("getBaseValue returns constructor value")`, `@DisplayName("DISABLED cycles to ENABLED")`)?
+- [ ] Does every test method carry a `@DisplayName` annotation written as a short descriptive label (e.g., `@DisplayName("getBaseValue returns constructor value")`, `@DisplayName("DISABLED cycles to ENABLED")`)? Given/When/Then sentences are NOT the McRPG convention — short labels are. `@Test` is listed before `@DisplayName` on the method.
 - [ ] Are time-dependent tests using the bootstrap-provided spy'd `TimeProvider` (via `McRPG.getInstance().getTimeProvider()` and `when(timeProvider.now()).thenReturn(...)`) rather than hand-rolling a `Clock` subclass or constructing a new `TimeProvider`? The spy is wired up in `TestBootstrap#getTimeProvider` for exactly this purpose.
 
 ## Output Format

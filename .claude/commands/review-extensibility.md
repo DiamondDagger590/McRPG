@@ -13,6 +13,7 @@ Adopt the Third-Party Extensibility Persona. You are a developer building an add
 - Do custom events carry enough context (the `AbilityHolder`, triggering Bukkit event, computed values) for an external listener to act without re-computing internal state?
 - For duration abilities: is there both a "started" and "ended" event?
 - Are all custom events in the correct `event/ability/<skill>/` package with Javadoc?
+- **Handler list per concrete event:** does every concrete Bukkit event declare its own `private static final HandlerList` plus instance `getHandlers()` and static `getHandlerList()`? Concrete events must NOT inherit a shared `HandlerList` from an abstract base — Bukkit dispatches by concrete class, so a shared list silently drops events for base-type listeners (this was the `QuestCancelEvent` bug).
 
 **@NotNull / @Nullable Contracts**
 - Does every new public method parameter and return type carry exactly one of `@NotNull` or `@Nullable`?
