@@ -1,6 +1,6 @@
 ---
 name: review-testing
-description: Testing review lens for McRPG PRs — coverage gaps for new non-Bukkit logic, TimeProvider usage, McRPGBaseTest/MockBukkit structure, naming conventions. Returns structured findings to the review orchestrator; never posts comments.
+description: Testing review lens for McRPG PRs — coverage gaps for new non-Bukkit logic, unhandled edge cases, TimeProvider usage, McRPGBaseTest/MockBukkit structure, naming conventions. Returns structured findings to the review orchestrator; never posts comments.
 tools: Read, Grep, Glob
 ---
 

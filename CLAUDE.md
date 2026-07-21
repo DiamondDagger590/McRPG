@@ -668,7 +668,6 @@ Use a builder when a class meets **any** of these criteria:
 - New utility classes and non-Bukkit logic belong in `src/test/java/` (mirrors main package structure)
 - Extend `McRPGBaseTest` for any test that requires Bukkit or MockBukkit setup
 - Shared test helpers and fixtures go in `src/testFixtures/java/`
-- **Annotation ordering:** always place `@Test` before `@DisplayName` on test methods — not the reverse
 - **Filesystem helpers:** use `TestFileUtils.writeFile(Path, String, String)` and `TestFileUtils.deleteRecursively(File)` (in `src/testFixtures/`) instead of duplicating these helpers in individual test classes
 - **DAO tests:** mock the JDBC `Connection`, `PreparedStatement`, and `ResultSet` via Mockito — do not embed real database connections in unit tests
 - **The entire test suite must pass before a task is considered complete** — run `./gradlew verifiedShadowJar` (or `./gradlew test`) and verify zero failures across all test classes, not just tests related to the current change. Regressions in unrelated tests still block completion.
@@ -696,7 +695,7 @@ The extension handles `McRPGPlayerManager` registration and player cleanup after
 
 #### Test Naming Conventions
 
-- **`@DisplayName` format:** Short descriptive label — not a Given/When/Then sentence. Examples: `"getBaseValue returns constructor value"`, `"DISABLED cycles to ENABLED"`, `"fromString is case-insensitive"`
+- **`@DisplayName` format:** Descriptive label that clearly communicates the test's intent. Examples: `"Given a registered key, when getting by key, then returns the statistic"`, `"throws when the manager is already registered"`, `"DISABLED cycles to ENABLED"`
 - **Method naming:** `action_outcome_whenCondition` — the `_whenCondition` suffix is optional when the context is obvious. Examples: `getNextSetting_disabled_cyclesToEnabled`, `getBaseValue_returnsDefault`, `fromString_unknownValue_returnsEmpty`
 - **`@Nested` classes:** Use `@Nested` with `@DisplayName` to group tests by class-under-test or logical section (e.g., `@DisplayName("FlatPlayerStat")`)
 - **Parameterized tests:** Prefer `@ParameterizedTest` with `@EnumSource` over manual loops when testing all enum variants

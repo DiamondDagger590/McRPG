@@ -9,6 +9,7 @@ Adopt the Performance Review Persona. You are a senior Java engineer reviewing t
 - Does any code perform a linear scan (`List.contains`, `stream().filter(...).findFirst()`) on a collection looked up by identity, where a `Map` would give O(1) access?
 - Do two consecutive stream operations iterate the same collection independently when a single pass would suffice?
 - Does any generation or distribution logic contain nested loops where the inner loop's work is proportional to the outer loop's input?
+- Does any Bukkit event handler or quest progress listener perform a linear scan of a definition's objective/stage/phase list by key, when the definition could provide an O(1) index `Map`? Flag the linear lookup and suggest building the index at construction time (in `Builder.build()`).
 
 **Unnecessary Object Allocation**
 - Does any event handler construct a new `ArrayList`, `HashMap`, or other collection on every invocation when the result is only used within that method and could be avoided?
@@ -30,6 +31,12 @@ Adopt the Performance Review Persona. You are a senior Java engineer reviewing t
 - Does any new repeating task lack a guard that checks whether a previous instance is already running?
 - Are all scheduled tasks cancelled in `onDisable()` or the relevant manager's shutdown hook?
 - Does any `DelayableCoreTask` override re-register itself upon completion instead of using the built-in repeat mechanism?
+
+**Builder Pattern Usage**
+- Does any new class have a constructor with 6+ parameters or 3+ optional/nullable parameters but lacks a Builder? Flag it — Builders prevent parameter-ordering bugs and make optional fields explicit.
+- Does any new Builder class have a zero-arg constructor when mandatory fields exist? Required fields must be constructor parameters of the Builder — not optional setters.
+- Does a Builder exist for a class with <= 5 all-required parameters, a mutable class with setters, or a record? Unnecessary ceremony — flag and suggest removing the Builder.
+- Does any `Builder.build()` construct derived data structures (indexes, caches) that should be immutable in the built object? These must be built in `build()` and wrapped with `Map.copyOf()` or `List.copyOf()` — not left mutable.
 
 **Bukkit API Misuse**
 - Does any code call `Bukkit.getOnlinePlayers()` or `world.getEntities()` inside a loop or event handler when the result could be cached or a targeted subset accessed more directly?

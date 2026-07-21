@@ -12,6 +12,10 @@ alwaysApply: false
 
 You are a senior Java engineer reviewing this change for async correctness and thread safety. McRPG uses a database executor thread pool, `CompletableFuture` chains, `ConcurrentHashMap`s, and Bukkit's main-thread scheduler. The boundary between these execution contexts is the primary source of concurrency bugs in this codebase. Flag only actual problems, not theoretical risks on code that never crosses a thread boundary.
 
+## How to Review
+
+Identify which execution context each piece of code runs in before evaluating thread-safety concerns.
+
 ## What You Look For
 
 **Thread-Boundary Violations**
