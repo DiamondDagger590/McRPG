@@ -1,7 +1,17 @@
 package us.eunoians.mcrpg.combat;
 
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticKey;
+import us.eunoians.mcrpg.combat.stat.CombatSessionStatistics;
+import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticsSnapshot;
+import us.eunoians.mcrpg.combat.state.CombatStateResolver;
+import us.eunoians.mcrpg.combat.state.CombatStateSnapshot;
+import us.eunoians.mcrpg.combat.state.CombatStateType;
+import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
+import us.eunoians.mcrpg.event.combat.CombatStateChangeEvent;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.UnaryOperator;
+import java.util.logging.Level;
 
 /**
  * Represents an active combat session for a single entity (the "session owner"). A session
@@ -55,6 +67,8 @@ public class CombatSession {
     private final long startTimeMillis;
     private final long timeoutMillis;
     private long lastActivityMillis;
+    private final Map<NamespacedKey, Object> stateStore;
+    private final CombatSessionStatistics statistics;
 
     /**
      * Constructs a new {@link CombatSession}.
@@ -72,6 +86,8 @@ public class CombatSession {
         this.startTimeMillis = nowMillis;
         this.lastActivityMillis = nowMillis;
         this.timeoutMillis = timeoutMillis;
+        this.stateStore = new HashMap<>();
+        this.statistics = new CombatSessionStatistics();
     }
 
     /**
@@ -155,7 +171,7 @@ public class CombatSession {
      *         evicted from the FIFO map, or empty if no eviction occurred.
      */
     @NotNull
-    public Optional<CombatParticipant> addParticipant(@NotNull CombatParticipant participant) {
+    Optional<CombatParticipant> addParticipant(@NotNull CombatParticipant participant) {
         if (participant.getParticipantType() == ParticipantType.PLAYER) {
             playerParticipants.put(participant.getUUID(), participant);
             return Optional.empty();
@@ -185,7 +201,7 @@ public class CombatSession {
      * @return An {@link Optional} containing the removed participant, or empty if not found.
      */
     @NotNull
-    public Optional<CombatParticipant> removeParticipant(@NotNull UUID participantUUID) {
+    Optional<CombatParticipant> removeParticipant(@NotNull UUID participantUUID) {
         CombatParticipant removedPlayer = playerParticipants.remove(participantUUID);
         if (removedPlayer != null) {
             return Optional.of(removedPlayer);
@@ -206,7 +222,7 @@ public class CombatSession {
     /**
      * Records combat activity on this session, resetting the inactivity timeout.
      */
-    public void recordActivity() {
+    void recordActivity() {
         this.lastActivityMillis = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
     }
 
@@ -216,7 +232,7 @@ public class CombatSession {
      *
      * @param participantUUID The UUID of the participant involved in the interaction.
      */
-    public void recordParticipantInteraction(@NotNull UUID participantUUID) {
+    void recordParticipantInteraction(@NotNull UUID participantUUID) {
         long nowMillis = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
         this.lastActivityMillis = nowMillis;
         getParticipant(participantUUID).ifPresent(participant -> participant.setLastInteractionMillis(nowMillis));
@@ -293,5 +309,216 @@ public class CombatSession {
      */
     public boolean isEmpty() {
         return playerParticipants.isEmpty() && mobParticipants.isEmpty();
+    }
+
+    /**
+     * Gets the resolved value of a combat state. If the state type declares a
+     * {@link us.eunoians.mcrpg.combat.state.CombatStateResolver}, the resolver is invoked with the
+     * raw stored value and the current session to produce the effective value. If no resolver is
+     * declared, returns the raw stored value. Returns the type's default value if no value has been
+     * stored.
+     * <p>
+     * Resolvers are supplied by whoever registered the state type, so a faulty one is logged and the
+     * raw value returned rather than letting the exception escape into an unrelated caller.
+     *
+     * @param type The state type to query.
+     * @param <T>  The state value type.
+     * @return The effective (resolved) value.
+     */
+    @NotNull
+    public <T> T getState(@NotNull CombatStateType<T> type) {
+        T rawValue = getRawState(type);
+        return resolveDefensively(type, rawValue);
+    }
+
+    /**
+     * Applies a state type's resolver to a raw value, falling back to the raw value if the resolver
+     * throws. Third-party resolvers run on the combat read path, so an exception here must not
+     * propagate into an unrelated caller (a snapshot build, a session end, another plugin's read).
+     *
+     * @param type     The state type owning the value.
+     * @param rawValue The raw stored value.
+     * @param <T>      The state value type.
+     * @return The resolved value, or {@code rawValue} if no resolver is declared or the resolver threw.
+     */
+    @NotNull
+    private <T> T resolveDefensively(@NotNull CombatStateType<T> type, @NotNull T rawValue) {
+        Optional<CombatStateResolver<T>> resolver = type.getResolver();
+        if (resolver.isEmpty()) {
+            return rawValue;
+        }
+        try {
+            return resolver.get().resolve(this, rawValue);
+        } catch (Exception e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING, "Combat state type " + type.getKey()
+                    + " resolver threw while resolving state for session owner " + entityUUID
+                    + "; falling back to the raw stored value", e);
+            return rawValue;
+        }
+    }
+
+    /**
+     * Gets the raw stored value of a combat state, bypassing any resolver. Returns the
+     * type's default value if no value has been stored.
+     *
+     * @param type The state type to query.
+     * @param <T>  The state value type.
+     * @return The raw stored value, or the default value if absent.
+     */
+    @SuppressWarnings("unchecked")
+    @NotNull
+    public <T> T getRawState(@NotNull CombatStateType<T> type) {
+        Object value = stateStore.get(type.getKey());
+        return value != null ? (T) value : type.getDefaultValue();
+    }
+
+    /**
+     * Sets the raw value of a combat state. Fires {@link CombatStateChangeEvent} — if the
+     * event is cancelled, the value is not changed. If the event's new value is modified by
+     * a listener, the modified value is stored instead.
+     * <p>
+     * Resolvers are not involved in writes — the raw value is stored directly. Reads via
+     * {@link #getState(CombatStateType)} apply the resolver afterward.
+     * <p>
+     * The final value is checked against the state type's {@link CombatStateType#getType() class
+     * token} before it is stored. {@link CombatStateChangeEvent} cannot be generic, so a listener
+     * that calls {@link CombatStateChangeEvent#setNewValue(Object)} with the wrong type would
+     * otherwise corrupt the store and surface as a {@link ClassCastException} in an unrelated
+     * reader later on.
+     *
+     * @param type  The state type to write.
+     * @param value The new raw value.
+     * @param <T>   The state value type.
+     * @throws IllegalArgumentException if the value to store is not an instance of the state type's class.
+     */
+    public <T> void setState(@NotNull CombatStateType<T> type, @NotNull T value) {
+        T oldValue = getRawState(type);
+
+        CombatStateChangeEvent event = new CombatStateChangeEvent(this, type, oldValue, value);
+        Bukkit.getPluginManager().callEvent(event);
+
+        if (event.isCancelled()) {
+            return;
+        }
+
+        Object newValue = event.getNewValue();
+        if (!type.getType().isInstance(newValue)) {
+            throw new IllegalArgumentException("Combat state type " + type.getKey() + " expects a "
+                    + type.getType().getName() + " but was given a " + newValue.getClass().getName()
+                    + " — a CombatStateChangeEvent listener likely called setNewValue with the wrong type");
+        }
+        stateStore.put(type.getKey(), newValue);
+    }
+
+    /**
+     * Atomically reads the current raw value, applies a modifier function, and writes the result.
+     * Fires {@link CombatStateChangeEvent} with the old and new values — cancellation or value
+     * modification by listeners is handled identically to {@link #setState(CombatStateType, Object)}.
+     *
+     * @param type     The state type to modify.
+     * @param modifier The function to apply to the current raw value.
+     * @param <T>      The state value type.
+     */
+    public <T> void modifyState(@NotNull CombatStateType<T> type, @NotNull UnaryOperator<T> modifier) {
+        T oldValue = getRawState(type);
+        T newValue = modifier.apply(oldValue);
+        setState(type, newValue);
+    }
+
+    /**
+     * Gets the per-session statistics container. Stat-tracking listeners use this to
+     * increment damage, healing, hit, and kill counts during combat.
+     *
+     * @return The mutable {@link CombatSessionStatistics} for this session.
+     */
+    @NotNull
+    public CombatSessionStatistics getStatistics() {
+        return statistics;
+    }
+
+    /**
+     * Creates an immutable snapshot of the per-session statistics. Computes and writes
+     * {@code SESSION_DURATION} into the statistics container before snapshotting, so the
+     * snapshot includes duration alongside all other stats uniformly.
+     *
+     * @return A new {@link CombatSessionStatisticsSnapshot}.
+     */
+    @NotNull
+    public CombatSessionStatisticsSnapshot createStatisticsSnapshot() {
+        double durationSeconds = getDurationMillis() / 1000.0;
+        statistics.setDouble(CombatSessionStatisticKey.SESSION_DURATION, durationSeconds);
+        return statistics.snapshot();
+    }
+
+    /**
+     * Creates an immutable snapshot of all combat state data. Captures both raw and resolved
+     * values for every key in the state store. Resolved values are computed at snapshot time
+     * while the session still exists and resolvers can run.
+     * <p>
+     * A key whose {@link CombatStateType} is not registered in {@code stateTypeRegistry} has no
+     * resolver to apply, so its raw value is used as its resolved value.
+     *
+     * @param stateTypeRegistry The registry used to look up state types for resolver resolution.
+     * @return A new {@link CombatStateSnapshot}.
+     */
+    @NotNull
+    public CombatStateSnapshot createStateSnapshot(@NotNull CombatStateTypeRegistry stateTypeRegistry) {
+        Map<NamespacedKey, Object> rawValues = Map.copyOf(stateStore);
+        Map<NamespacedKey, Object> resolvedValues = new HashMap<>();
+        for (Map.Entry<NamespacedKey, Object> entry : stateStore.entrySet()) {
+            Optional<CombatStateType<?>> typeOpt = stateTypeRegistry.get(entry.getKey());
+            if (typeOpt.isPresent()) {
+                resolvedValues.put(entry.getKey(), resolveForSnapshot(typeOpt.get(), entry.getValue()));
+            } else {
+                resolvedValues.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return new CombatStateSnapshot(rawValues, Map.copyOf(resolvedValues));
+    }
+
+    /**
+     * Resolves a single state entry for {@link #createStateSnapshot(CombatStateTypeRegistry)},
+     * applying the type's resolver (if any) to the raw stored value. A resolver that throws is
+     * logged and the raw value used, so one faulty state type cannot abort the whole snapshot —
+     * and with it the session-end flow that builds it.
+     *
+     * @param type     The state type owning the value.
+     * @param rawValue The raw stored value.
+     * @param <T>      The state value type.
+     * @return The resolved value, or the raw value if no resolver is declared or the resolver threw.
+     */
+    @SuppressWarnings("unchecked")
+    @NotNull
+    private <T> Object resolveForSnapshot(@NotNull CombatStateType<T> type, @NotNull Object rawValue) {
+        return resolveDefensively(type, (T) rawValue);
+    }
+
+    /**
+     * Sets a raw value in the state store without firing events. Used by the manager during
+     * persistent state re-attachment on session start.
+     *
+     * @param key   The state type key.
+     * @param value The value to store.
+     */
+    void setRawState(@NotNull NamespacedKey key, @NotNull Object value) {
+        stateStore.put(key, value);
+    }
+
+    /**
+     * Gets the raw state store map. Used by the manager for persistent state save on session end.
+     *
+     * @return The mutable state store map.
+     */
+    @NotNull
+    Map<NamespacedKey, Object> getRawStateMap() {
+        return stateStore;
+    }
+
+    /**
+     * Clears all session-scoped state. Called by the manager during session end cleanup.
+     * Persistent state is saved before this call.
+     */
+    void clearSessionState() {
+        stateStore.clear();
     }
 }

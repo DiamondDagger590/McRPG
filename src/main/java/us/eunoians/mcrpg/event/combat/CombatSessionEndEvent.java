@@ -6,6 +6,8 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.combat.CombatParticipant;
 import us.eunoians.mcrpg.combat.CombatSessionEndReason;
 import us.eunoians.mcrpg.combat.CombatType;
+import us.eunoians.mcrpg.combat.state.CombatStateSnapshot;
+import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticsSnapshot;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -13,7 +15,8 @@ import java.util.UUID;
 
 /**
  * Fired when a combat session ends. Not cancellable — informational only. Carries the final
- * participant roster, the derived combat type, the end reason, and the total session duration.
+ * participant roster, the derived combat type, the end reason, the total session duration, a
+ * snapshot of per-session statistics, and a snapshot of combat state attached to the session.
  */
 public class CombatSessionEndEvent extends Event {
 
@@ -24,6 +27,8 @@ public class CombatSessionEndEvent extends Event {
     private final Collection<CombatParticipant> finalParticipants;
     private final CombatType finalCombatType;
     private final long durationMillis;
+    private final CombatSessionStatisticsSnapshot statistics;
+    private final CombatStateSnapshot combatState;
 
     /**
      * Constructs a new {@link CombatSessionEndEvent}.
@@ -33,17 +38,23 @@ public class CombatSessionEndEvent extends Event {
      * @param finalParticipants The participant roster at the time of session end.
      * @param finalCombatType   The derived combat type at the time of session end.
      * @param durationMillis    The total session duration in milliseconds.
+     * @param statistics        The per-session statistics snapshot at the time of session end.
+     * @param combatState       The combat state snapshot at the time of session end.
      */
     public CombatSessionEndEvent(@NotNull UUID entityUUID,
                                   @NotNull CombatSessionEndReason reason,
                                   @NotNull Collection<CombatParticipant> finalParticipants,
                                   @NotNull CombatType finalCombatType,
-                                  long durationMillis) {
+                                  long durationMillis,
+                                  @NotNull CombatSessionStatisticsSnapshot statistics,
+                                  @NotNull CombatStateSnapshot combatState) {
         this.entityUUID = entityUUID;
         this.reason = reason;
         this.finalParticipants = finalParticipants;
         this.finalCombatType = finalCombatType;
         this.durationMillis = durationMillis;
+        this.statistics = statistics;
+        this.combatState = combatState;
     }
 
     /**
@@ -93,6 +104,28 @@ public class CombatSessionEndEvent extends Event {
      */
     public long getDurationMillis() {
         return durationMillis;
+    }
+
+    /**
+     * Gets the per-session statistics snapshot at the time the session ended. Includes
+     * damage dealt/taken, healing, hits, kills, and session duration.
+     *
+     * @return The {@link CombatSessionStatisticsSnapshot}.
+     */
+    @NotNull
+    public CombatSessionStatisticsSnapshot getStatistics() {
+        return statistics;
+    }
+
+    /**
+     * Gets the combat state snapshot at the time the session ended. Contains both raw and
+     * resolved values for all state types that were attached to the session.
+     *
+     * @return The {@link CombatStateSnapshot}.
+     */
+    @NotNull
+    public CombatStateSnapshot getCombatState() {
+        return combatState;
     }
 
     @NotNull

@@ -2,14 +2,26 @@ package us.eunoians.mcrpg.combat;
 
 import com.diamonddagger590.mccore.util.TimeProvider;
 import com.diamonddagger590.mccore.util.item.CustomEntityWrapper;
+import org.bukkit.Bukkit;
+import org.bukkit.NamespacedKey;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.combat.state.CombatStateType;
+import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
+import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticKey;
+import us.eunoians.mcrpg.event.combat.CombatStateChangeEvent;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -19,6 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
@@ -35,6 +49,15 @@ class CombatSessionTest extends McRPGBaseTest {
     void setUp() {
         timeProvider = McRPG.getInstance().getTimeProvider();
         ownerUUID = UUID.randomUUID();
+    }
+
+    /**
+     * Unregisters {@link CombatStateChangeEvent} listeners registered by individual tests, so a
+     * cancelling/mutating listener from one test cannot leak into a later test.
+     */
+    @AfterEach
+    void cleanUpStateChangeListeners() {
+        CombatStateChangeEvent.getHandlerList().unregister(mcRPG);
     }
 
     /**
@@ -533,5 +556,273 @@ class CombatSessionTest extends McRPGBaseTest {
         when(timeProvider.now()).thenReturn(futureInstant);
 
         assertEquals(elapsedMillis, session.getDurationMillis());
+    }
+
+    @Nested
+    @DisplayName("State management")
+    class StateManagement {
+
+        private final NamespacedKey STACKS_KEY = new NamespacedKey("mcrpg", "stacks");
+        private final CombatStateType<Integer> RAW_TYPE = CombatStateType.of(STACKS_KEY, Integer.class, 0, null);
+
+        @Test
+        @DisplayName("getState returns default value when no value is stored")
+        void getState_returnsDefault_whenUnset() {
+            CombatSession session = createSession();
+
+            assertEquals(0, session.getState(RAW_TYPE));
+        }
+
+        @Test
+        @DisplayName("setState stores a value retrievable via getRawState")
+        void setState_storesValue_retrievableViaGetRawState() {
+            CombatSession session = createSession();
+
+            session.setState(RAW_TYPE, 5);
+
+            assertEquals(5, session.getRawState(RAW_TYPE));
+        }
+
+        @Test
+        @DisplayName("getState returns resolved value when a resolver is present")
+        void getState_returnsResolvedValue_whenResolverPresent() {
+            CombatStateType<Integer> resolvedType = CombatStateType.resolved(
+                    STACKS_KEY, Integer.class, 0, (session, raw) -> raw * 2, null);
+            CombatSession session = createSession();
+            session.setState(resolvedType, 3);
+
+            assertEquals(6, session.getState(resolvedType));
+        }
+
+        @Test
+        @DisplayName("getRawState bypasses the resolver and returns the stored value")
+        void getRawState_bypassesResolver() {
+            CombatStateType<Integer> resolvedType = CombatStateType.resolved(
+                    STACKS_KEY, Integer.class, 0, (session, raw) -> raw * 2, null);
+            CombatSession session = createSession();
+            session.setState(resolvedType, 3);
+
+            assertEquals(3, session.getRawState(resolvedType));
+        }
+
+        @Test
+        @DisplayName("modifyState reads, modifies, and writes atomically")
+        void modifyState_readsModifiesAndWrites() {
+            CombatSession session = createSession();
+            session.setState(RAW_TYPE, 3);
+
+            session.modifyState(RAW_TYPE, value -> value + 1);
+
+            assertEquals(4, session.getRawState(RAW_TYPE));
+        }
+
+        @Test
+        @DisplayName("setState fires CombatStateChangeEvent")
+        void setState_firesCombatStateChangeEvent() {
+            List<CombatStateChangeEvent> captured = new ArrayList<>();
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onChange(CombatStateChangeEvent event) {
+                    captured.add(event);
+                }
+            }, mcRPG);
+
+            CombatSession session = createSession();
+            session.setState(RAW_TYPE, 5);
+
+            assertFalse(captured.isEmpty());
+            assertEquals(RAW_TYPE, captured.get(0).getStateType());
+            assertEquals(0, captured.get(0).getOldValue());
+            assertEquals(5, captured.get(0).getNewValue());
+        }
+
+        @Test
+        @DisplayName("setState does not update value when event is cancelled")
+        void setState_doesNotUpdate_whenEventCancelled() {
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onChange(CombatStateChangeEvent event) {
+                    event.setCancelled(true);
+                }
+            }, mcRPG);
+
+            CombatSession session = createSession();
+            session.setState(RAW_TYPE, 5);
+
+            assertEquals(0, session.getRawState(RAW_TYPE));
+        }
+
+        @Test
+        @DisplayName("setState stores the event's modified newValue when a listener changes it")
+        void setState_storesModifiedValue_whenListenerChangesIt() {
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onChange(CombatStateChangeEvent event) {
+                    event.setNewValue(99);
+                }
+            }, mcRPG);
+
+            CombatSession session = createSession();
+            session.setState(RAW_TYPE, 5);
+
+            assertEquals(99, session.getRawState(RAW_TYPE));
+        }
+
+        @Test
+        @DisplayName("setState throws when a listener substitutes a wrongly-typed value")
+        void setState_throws_whenListenerSetsWrongType() {
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onChange(CombatStateChangeEvent event) {
+                    event.setNewValue("not an integer");
+                }
+            }, mcRPG);
+
+            CombatSession session = createSession();
+
+            // Storing the bad value would surface much later as a ClassCastException in an
+            // unrelated reader, with no trail back to the offending listener.
+            assertThrows(IllegalArgumentException.class, () -> session.setState(RAW_TYPE, 5));
+            assertEquals(0, session.getRawState(RAW_TYPE));
+        }
+
+        @Test
+        @DisplayName("getState falls back to the raw value when the resolver throws")
+        void getState_fallsBackToRawValue_whenResolverThrows() {
+            CombatStateType<Integer> throwingResolvedType = CombatStateType.resolved(
+                    STACKS_KEY, Integer.class, 0, (session, raw) -> {
+                        throw new IllegalStateException("resolver blew up");
+                    }, null);
+            CombatSession session = createSession();
+            session.setState(throwingResolvedType, 3);
+
+            assertEquals(3, session.getState(throwingResolvedType));
+        }
+
+        @Test
+        @DisplayName("modifyState fires CombatStateChangeEvent with old and computed new values")
+        void modifyState_firesEventWithOldAndComputedNewValues() {
+            List<CombatStateChangeEvent> captured = new ArrayList<>();
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onChange(CombatStateChangeEvent event) {
+                    captured.add(event);
+                }
+            }, mcRPG);
+
+            CombatSession session = createSession();
+            session.setState(RAW_TYPE, 3);
+            captured.clear();
+
+            session.modifyState(RAW_TYPE, value -> value + 2);
+
+            assertEquals(1, captured.size());
+            assertEquals(3, captured.get(0).getOldValue());
+            assertEquals(5, captured.get(0).getNewValue());
+        }
+
+        @Test
+        @DisplayName("getStatistics returns the session's statistics container")
+        void getStatistics_returnsStatisticsContainer() {
+            CombatSession session = createSession();
+
+            assertNotNull(session.getStatistics());
+            assertSame(session.getStatistics(), session.getStatistics());
+        }
+
+        @Test
+        @DisplayName("createStatisticsSnapshot includes all accumulated stats and the duration")
+        void createStatisticsSnapshot_includesAccumulatedStatsAndDuration() {
+            CombatSession session = createSession();
+            session.getStatistics().incrementLong(CombatSessionStatisticKey.KILLS, 2);
+
+            Instant futureInstant = Instant.ofEpochMilli(session.getStartTimeMillis() + 3000L);
+            when(timeProvider.now()).thenReturn(futureInstant);
+
+            var snapshot = session.createStatisticsSnapshot();
+
+            assertEquals(2L, snapshot.getLong(CombatSessionStatisticKey.KILLS));
+            assertEquals(3.0, snapshot.getDouble(CombatSessionStatisticKey.SESSION_DURATION));
+        }
+
+        @Test
+        @DisplayName("createStateSnapshot captures raw values for all stored state")
+        void createStateSnapshot_capturesRawValues() {
+            CombatSession session = createSession();
+            session.setState(RAW_TYPE, 7);
+            CombatStateTypeRegistry registry = new CombatStateTypeRegistry();
+            registry.register(RAW_TYPE);
+
+            var snapshot = session.createStateSnapshot(registry);
+
+            assertEquals(7, snapshot.getRawState(RAW_TYPE));
+        }
+
+        @Test
+        @DisplayName("createStateSnapshot captures resolved values at snapshot time")
+        void createStateSnapshot_capturesResolvedValues() {
+            CombatStateType<Integer> resolvedType = CombatStateType.resolved(
+                    STACKS_KEY, Integer.class, 0, (session, raw) -> raw * 2, null);
+            CombatSession session = createSession();
+            session.setState(resolvedType, 4);
+            CombatStateTypeRegistry registry = new CombatStateTypeRegistry();
+            registry.register(resolvedType);
+
+            var snapshot = session.createStateSnapshot(registry);
+
+            assertEquals(4, snapshot.getRawState(resolvedType));
+            assertEquals(8, snapshot.getState(resolvedType));
+        }
+
+        @Test
+        @DisplayName("createStateSnapshot falls back to the raw value when a resolver throws")
+        void createStateSnapshot_fallsBackToRawValue_whenResolverThrows() {
+            CombatStateType<Integer> throwingResolvedType = CombatStateType.resolved(
+                    STACKS_KEY, Integer.class, 0, (session, raw) -> {
+                        throw new IllegalStateException("resolver blew up");
+                    }, null);
+            CombatSession session = createSession();
+            session.setState(throwingResolvedType, 4);
+            CombatStateTypeRegistry registry = new CombatStateTypeRegistry();
+            registry.register(throwingResolvedType);
+
+            // One faulty state type must not abort the snapshot, and with it session end.
+            var snapshot = assertDoesNotThrow(() -> session.createStateSnapshot(registry));
+
+            assertEquals(4, snapshot.getRawState(throwingResolvedType));
+            assertEquals(4, snapshot.getState(throwingResolvedType));
+        }
+
+        @Test
+        @DisplayName("clearSessionState removes all state from the store")
+        void clearSessionState_removesAllState() {
+            CombatSession session = createSession();
+            session.setState(RAW_TYPE, 7);
+            CombatStateTypeRegistry registry = new CombatStateTypeRegistry();
+            registry.register(RAW_TYPE);
+
+            session.clearSessionState();
+
+            assertTrue(session.createStateSnapshot(registry).getStateKeys().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("Visibility")
+    class Visibility {
+
+        @Test
+        @DisplayName("addParticipant, removeParticipant, recordActivity, recordParticipantInteraction are not public")
+        void participantMutators_areNotPublic() throws NoSuchMethodException {
+            assertPackagePrivate(CombatSession.class.getDeclaredMethod("addParticipant", CombatParticipant.class));
+            assertPackagePrivate(CombatSession.class.getDeclaredMethod("removeParticipant", UUID.class));
+            assertPackagePrivate(CombatSession.class.getDeclaredMethod("recordActivity"));
+            assertPackagePrivate(CombatSession.class.getDeclaredMethod("recordParticipantInteraction", UUID.class));
+        }
+
+        private void assertPackagePrivate(Method method) {
+            assertFalse(Modifier.isPublic(method.getModifiers()),
+                    method.getName() + " must not be public");
+        }
     }
 }

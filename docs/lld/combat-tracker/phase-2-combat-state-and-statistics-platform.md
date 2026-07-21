@@ -315,12 +315,16 @@ classDiagram
         -Map~UUID, Map~String, String~~ persistentStateCache
         -Set~NamespacedKey~ registeredDoubleStatKeys
         -Set~NamespacedKey~ registeredLongStatKeys
+        -Map~UUID, CompletableFuture~Void~~ pendingPersistentWrites
+        -Set~NamespacedKey~ warnedUnregisteredStateKeys
         +registerStateType(CombatStateType) void
-        +registerSessionStatisticKey(NamespacedKey, boolean) void
+        +registerDoubleSessionStatisticKey(NamespacedKey) void
+        +registerLongSessionStatisticKey(NamespacedKey) void
         +reportHealing(UUID, UUID, double) void
         +cachePersistentState(UUID, Map~String, String~) void
         +clearPersistentStateCache(UUID) void
-        +savePersistentStateAsync(CombatSession) void
+        +clearPersistentStateCacheWhenWritesSettle(UUID) void
+        +savePersistentStateAsync(CombatSession) CompletableFuture~Void~
         +saveAllPersistentStateSync() void
     }
 
@@ -1327,7 +1331,7 @@ public final class CombatPersistentStateDAO {
 **Package:** `us.eunoians.mcrpg.listener.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/listener/combat/OnCombatDamageStatListener.java`
 
-Observes `EntityDamageByEntityEvent` at `MONITOR` priority (after `OnCombatDamageListener` at `HIGHEST` has created/updated sessions). Resolves the source entity (handling projectile shooters) and increments per-session damage and hit statistics on the source's and target's active sessions.
+Observes `EntityDamageByEntityEvent` at `MONITOR` priority (after `OnCombatDamageListener` at `HIGHEST` has created/updated sessions). Resolves the combatants via `CombatDamageResolution` (§1.13a) and increments per-session damage and hit statistics on the source's and target's active sessions.
 
 ```java
 public class OnCombatDamageStatListener implements Listener {
@@ -1344,20 +1348,44 @@ public class OnCombatDamageStatListener implements Listener {
     }
 
     /**
-     * Tracks per-session damage and hit statistics. Resolves the true source for projectiles.
-     * Increments {@code damage_dealt} and {@code hits_landed} on the source's session,
-     * and {@code damage_taken} and {@code hits_received} on the target's session.
+     * Tracks per-session damage and hit statistics. Increments {@code damage_dealt} and
+     * {@code hits_landed} on the source's session, and {@code damage_taken} and
+     * {@code hits_received} on the target's session.
      *
      * @param event The damage event.
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamageByEntity(@NotNull EntityDamageByEntityEvent event) {
-        // 1. Resolve damager: if Projectile, resolve via getShooter() (bail if not Entity)
+        // 1. CombatDamageResolution.resolve(event) — projectile unwrap + LivingEntity + self-damage guards
+        // 2. double damage = event.getFinalDamage()
+        // 3. If source has active session: incrementDouble(DAMAGE_DEALT, damage), incrementLong(HITS_LANDED, 1)
+        // 4. If target has active session: incrementDouble(DAMAGE_TAKEN, damage), incrementLong(HITS_RECEIVED, 1)
+        //    Each side is written independently — a session-less source must not suppress the target's stats
+    }
+}
+```
+
+### 1.13a CombatDamageResolution
+
+**Package:** `us.eunoians.mcrpg.listener.combat`
+**File:** `src/main/java/us/eunoians/mcrpg/listener/combat/CombatDamageResolution.java`
+
+Package-private helper that resolves the two combatants from an `EntityDamageByEntityEvent`: it unwraps a `Projectile` damager to its shooter, requires both resolved sides to be `LivingEntity`, and rejects self-damage. Returns `Optional<Combatants>` — a record of the two `LivingEntity` values plus their UUIDs — or empty when any guard rejects the event.
+
+Both `OnCombatDamageListener` (session management, `HIGHEST`) and `OnCombatDamageStatListener` (statistics, `MONITOR`) run on every hit and must agree on what counts as combat. Duplicating the guards across the two listeners would let them drift silently — a stat recorded for an interaction that created no session, or vice versa. One helper means one place to change if the rules ever move.
+
+```java
+final class CombatDamageResolution {
+
+    static Optional<Combatants> resolve(@NotNull EntityDamageByEntityEvent event) {
+        // 1. Resolve damager: if Projectile, resolve via getShooter() (empty if not an Entity)
         // 2. Guard: both source and target must be LivingEntity
-        // 3. Guard: source and target must not be the same entity
-        // 4. double damage = event.getFinalDamage()
-        // 5. If source has active session: incrementDouble(DAMAGE_DEALT, damage), incrementLong(HITS_LANDED, 1)
-        // 6. If target has active session: incrementDouble(DAMAGE_TAKEN, damage), incrementLong(HITS_RECEIVED, 1)
+        // 3. Guard: source and target must not be the same entity (compared by UUID)
+    }
+
+    record Combatants(@NotNull LivingEntity source, @NotNull LivingEntity target) {
+        @NotNull UUID sourceUUID() { return source.getUniqueId(); }
+        @NotNull UUID targetUUID() { return target.getUniqueId(); }
     }
 }
 ```
@@ -1413,18 +1441,14 @@ The mapping from per-session keys to cumulative statistics is defined in Design 
 public class OnCombatSessionEndStatUpdateListener implements Listener {
 
     private final McRPG mcRPG;
-    private final CombatTrackerManager combatTrackerManager;
 
     /**
      * Constructs a new {@link OnCombatSessionEndStatUpdateListener}.
      *
-     * @param mcRPG                The McRPG plugin instance.
-     * @param combatTrackerManager The {@link CombatTrackerManager} for config access.
+     * @param mcRPG The McRPG plugin instance.
      */
-    public OnCombatSessionEndStatUpdateListener(@NotNull McRPG mcRPG,
-                                               @NotNull CombatTrackerManager combatTrackerManager) {
+    public OnCombatSessionEndStatUpdateListener(@NotNull McRPG mcRPG) {
         this.mcRPG = mcRPG;
-        this.combatTrackerManager = combatTrackerManager;
     }
 
     /**
@@ -1695,59 +1719,72 @@ public void registerStateType(@NotNull CombatStateType<?> stateType) {
 }
 
 /**
- * Registers a custom per-session statistic key so it appears with its default value
- * in every new session's statistics container.
+ * Registers a double-valued custom per-session statistic key so it appears with its default
+ * value ({@code 0.0}) in every new session's statistics container.
  *
- * @param key      The custom statistic key.
- * @param isDouble {@code true} for double-valued stats, {@code false} for long-valued.
+ * @param key The custom statistic key.
  */
-public void registerSessionStatisticKey(@NotNull NamespacedKey key, boolean isDouble) {
+public void registerDoubleSessionStatisticKey(@NotNull NamespacedKey key) {
     requireMainThread();
-    if (isDouble) {
-        registeredDoubleStatKeys.add(key);
-    } else {
-        registeredLongStatKeys.add(key);
-    }
+    registeredDoubleStatKeys.add(key);
 }
 
 /**
- * Reports an attributed healing interaction. Increments {@code healing_dealt} on the
- * healer's active session and {@code healing_received} on the target's active session.
- * Does not create sessions or add participants.
+ * Registers a long-valued custom per-session statistic key so it appears with its default
+ * value ({@code 0}) in every new session's statistics container.
+ *
+ * @param key The custom statistic key.
+ */
+public void registerLongSessionStatisticKey(@NotNull NamespacedKey key) {
+    requireMainThread();
+    registeredLongStatKeys.add(key);
+}
+
+/**
+ * Reports an attributed healing interaction, incrementing {@code healing_dealt} on the healer's
+ * active session. Does not create sessions or add participants.
  * <p>
  * McRPG heal abilities and third-party plugins call this to attribute healing — Bukkit's
  * {@link org.bukkit.event.entity.EntityRegainHealthEvent} carries no healer source, so
  * attribution requires explicit reporting.
+ * <p>
+ * Deliberately does NOT write {@code healing_received}: applying a heal through the Bukkit API
+ * fires {@code EntityRegainHealthEvent}, which {@code OnCombatHealingStatListener} already
+ * credits to the healed entity's session. See D5.
  *
  * @param healerUUID The UUID of the entity that performed the healing.
- * @param targetUUID The UUID of the entity that was healed.
+ * @param targetUUID The UUID of the entity that was healed. Retained for signature stability;
+ *                   the target's {@code healing_received} is credited by the heal event listener.
  * @param amount     The amount of healing applied.
  */
 public void reportHealing(@NotNull UUID healerUUID, @NotNull UUID targetUUID, double amount) {
     requireMainThread();
     getSession(healerUUID).ifPresent(session ->
             session.getStatistics().incrementDouble(CombatSessionStatisticKey.HEALING_DEALT, amount));
-    getSession(targetUUID).ifPresent(session ->
-            session.getStatistics().incrementDouble(CombatSessionStatisticKey.HEALING_RECEIVED, amount));
 }
 
 /**
  * Caches pre-loaded persistent combat state for a player. Called by
- * {@link McRPGPlayerLoadTask} after the async DB load completes, during
- * main-thread finalization — before the player is registered in the manager
- * and before any combat session can start. See D11.
+ * {@link McRPGPlayerLoadTask} after the DB load completes, during main-thread finalization —
+ * before the player is registered in the manager and before any combat session can start.
+ * See D11.
+ * <p>
+ * Values already in the cache win over the loaded ones: a cache entry can survive a logout when
+ * the player rejoins before their logout write reaches the database, and in that window the
+ * retained in-memory value is fresher than the DB read. See D14.
  *
  * @param entityUUID      The UUID of the entity.
  * @param persistentState The loaded persistent state map (keyed by stringified NamespacedKey).
  */
 public void cachePersistentState(@NotNull UUID entityUUID, @NotNull Map<String, String> persistentState) {
-    persistentStateCache.put(entityUUID, persistentState);
+    Map<String, String> cacheEntry = persistentStateCache.computeIfAbsent(entityUUID, uuid -> new HashMap<>());
+    for (Map.Entry<String, String> entry : persistentState.entrySet()) {
+        cacheEntry.putIfAbsent(entry.getKey(), entry.getValue());
+    }
 }
 
 /**
- * Clears the persistent state cache for an entity. Called by
- * {@link PlayerLeaveListener} during combat teardown on player logout,
- * after persistent state has been saved.
+ * Clears the persistent state cache for an entity immediately.
  *
  * @param entityUUID The UUID of the entity whose cache to clear.
  */
@@ -1756,18 +1793,35 @@ public void clearPersistentStateCache(@NotNull UUID entityUUID) {
 }
 
 /**
+ * Clears an entity's persistent state cache once its outstanding database write has landed.
+ * Called by {@link PlayerLeaveListener} during combat teardown on logout. Clearing eagerly
+ * would open a fast-relog hole where the reconnect's DB read races the logout write. See D14.
+ *
+ * @param entityUUID The UUID of the entity whose cache to clear.
+ */
+public void clearPersistentStateCacheWhenWritesSettle(@NotNull UUID entityUUID) {
+    // 1. If no pending write for this entity (or it is already done), clear immediately
+    // 2. Otherwise chain onto the pending write: hop to the main thread, and clear only if the
+    //    entity is still offline (a rejoined player's cache now backs a live session)
+}
+
+/**
  * Saves dirty persistent state from a session to the database asynchronously. Called
  * during session end for sessions that contain persistent state.
  *
  * @param session The session whose persistent state to save.
+ * @return A future completing when the write has been attempted.
  */
-public void savePersistentStateAsync(@NotNull CombatSession session) {
+public CompletableFuture<Void> savePersistentStateAsync(@NotNull CombatSession session) {
     // 1. Collect persistent state entries from session.getRawStateMap() where the key
     //    matches a registered PERSISTENT type in the CombatStateTypeRegistry
-    // 2. Serialize each value using the type's serializer
+    // 2. Serialize each value using the type's serializer (a serializer that throws logs a
+    //    WARNING and drops that one entry — it must not abort the enclosing flush)
     // 3. Update the in-memory cache, keyed by stateType.getKey().toString() (persistentStateCache
     //    is String-keyed, matching CombatPersistentStateDAO's return/parameter types)
-    // 4. Submit async task: CombatPersistentStateDAO.savePersistentState for each entry
+    // 4. Chain the write onto this entity's previous pending write (so same-row writes land in
+    //    submission order), run it on the database executor, and record the resulting future in
+    //    pendingPersistentWrites so shutdown can drain it. See D14.
 }
 
 /**
@@ -1797,12 +1851,13 @@ The session is removed from `activeSessions` AFTER the snapshots are taken but B
 1. Applies cached persistent state from `persistentStateCache` to the session: for each `String` key in the entity's cached map, resolves it to a `NamespacedKey` via `NamespacedKey.fromString(key)`, looks up the corresponding `CombatStateType` in `CombatStateTypeRegistry`, deserializes the value, and sets it as raw session state (see Key Flow 4.2)
 2. Initializes registered custom stat keys in the session's `CombatSessionStatistics`
 
-**`shutdown()`** — Ordering matters here: `saveAllPersistentStateSync()` must run first, while all sessions are still in `activeSessions`, and `endSession` must not perform its own async save on top of it. Concretely:
+**`shutdown()`** — Ordering matters here: in-flight async writes must be drained first, `saveAllPersistentStateSync()` must run while all sessions are still in `activeSessions`, and `endSession` must not perform its own async save on top of it. Concretely:
 
-1. Sets `shuttingDown = true`. This is the only place the field is ever set.
-2. Calls `saveAllPersistentStateSync()` — synchronously flushes every active session's dirty persistent state to the DB while all sessions are still live in `activeSessions`.
-3. Ends every active session with `CombatSessionEndReason.PLUGIN` (unchanged loop from Phase 1). Because `shuttingDown` is now `true`, step 3 of the modified `endSession` (above) skips its `savePersistentStateAsync(session)` call for each of these — the data was already written synchronously in step 2, and no async DB task is submitted that could race the database executor's own shutdown.
-4. Cancels all condition tasks and stops the timeout task (unchanged from Phase 1).
+1. Calls `awaitPendingPersistentWrites()` — blocks (with a bounded 10-second timeout and a `WARNING` on expiry, so a wedged executor cannot hang `/stop`) until every write already submitted by `savePersistentStateAsync` has completed. `McRPGBootstrap.stop()` closes the database shortly after `shutdown()` returns, so a write still in flight at that point — a player who quit seconds before `/stop` — would hit a closed connection pool and be lost with only a logged warning.
+2. Sets `shuttingDown = true`. This is the only place the field is ever set.
+3. Calls `saveAllPersistentStateSync()` — synchronously flushes every active session's dirty persistent state to the DB while all sessions are still live in `activeSessions`.
+4. Ends every active session with `CombatSessionEndReason.PLUGIN` (unchanged loop from Phase 1). Because `shuttingDown` is now `true`, step 3 of the modified `endSession` (above) skips its `savePersistentStateAsync(session)` call for each of these — the data was already written synchronously in the previous step, and no async DB task is submitted that could race the database executor's own shutdown.
+5. Cancels all condition tasks and stops the timeout task (unchanged from Phase 1).
 
 Without the `shuttingDown` guard, every session ended in step 3 would re-trigger `savePersistentStateAsync`, producing a duplicate async write for state already flushed synchronously in step 2 — and that async write can be submitted after (or concurrently with) the database executor's own shutdown, since `saveAllPersistentStateSync` and plugin `shutdown()`/executor teardown are not coordinated with each other. The flag closes that gap by making `saveAllPersistentStateSync()` the sole persistent-state write during shutdown; `endSession` reverts to its normal async-save behavior for every other end-session path (timeout, logout, death, etc.), where `shuttingDown` remains `false`.
 
@@ -2029,7 +2084,7 @@ Add registration of the three new stat listeners alongside the existing combat l
 // Combat stat listeners
 Bukkit.getPluginManager().registerEvents(new OnCombatDamageStatListener(combatTrackerManager), plugin);
 Bukkit.getPluginManager().registerEvents(new OnCombatHealingStatListener(combatTrackerManager), plugin);
-Bukkit.getPluginManager().registerEvents(new OnCombatSessionEndStatUpdateListener(plugin, combatTrackerManager), plugin);
+Bukkit.getPluginManager().registerEvents(new OnCombatSessionEndStatUpdateListener(plugin), plugin);
 ```
 
 Remove the existing `OnCombatPlayerQuitListener` registration (its quit-time cleanup is now handled by `PlayerLeaveListener` — see §2.13):
@@ -2078,7 +2133,7 @@ public void handleQuit(PlayerQuitEvent playerQuitEvent) {
     // can access player statistic data.
     combatTrackerManager.endSession(playerUUID, CombatSessionEndReason.LOGOUT);
     combatTrackerManager.removeParticipantFromAllSessions(playerUUID, ParticipantRemovalReason.LOGOUT);
-    combatTrackerManager.clearPersistentStateCache(playerUUID);
+    combatTrackerManager.clearPersistentStateCacheWhenWritesSettle(playerUUID);
 
     McRPGPlayerManager playerManager = McRPG.getInstance().registryAccess()
             .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.PLAYER);
@@ -2278,7 +2333,8 @@ Player A logs out:
       |-> Combat teardown (runs first, while McRPGPlayer is still loaded):
       |   |-> endSession(A.uuid, LOGOUT) — if session exists, triggers save flow above
       |   |-> removeParticipantFromAllSessions(...)
-      |   |-> combatTrackerManager.clearPersistentStateCache(A.uuid) — cache evicted
+      |   |-> combatTrackerManager.clearPersistentStateCacheWhenWritesSettle(A.uuid)
+      |   |   — cache eviction deferred until the queued write lands (see D14)
       |-> McRPGPlayerUnloadTask — saves and unloads player data (existing)
 
 Server shutdown:
@@ -2316,11 +2372,15 @@ Player A hits Mob 1 with a sword, dealing 8.5 final damage:
 
 ```
 McRPG heal ability heals Player B for 5.0 HP while Player A (healer) is in combat:
+  L-> Heal ability applies the heal → EntityRegainHealthEvent fires
+      |-> OnCombatHealingStatListener.onEntityRegainHealth() [MONITOR]
+          |-> B has active session:
+          |   |-> B.session.getStatistics().incrementDouble(HEALING_RECEIVED, 5.0)
   L-> Heal ability calls combatTrackerManager.reportHealing(A.uuid, B.uuid, 5.0)
       |-> A has active session:
       |   |-> A.session.getStatistics().incrementDouble(HEALING_DEALT, 5.0)
-      |-> B has active session:
-      |   |-> B.session.getStatistics().incrementDouble(HEALING_RECEIVED, 5.0)
+      |-> B's HEALING_RECEIVED is NOT written here — the heal event above already credited it.
+          Writing it in both places would double-count every attributed heal (see D5).
 
 Vanilla regen heals Player B for 1.0 HP while B is in combat:
   L-> EntityRegainHealthEvent fires (reason: REGEN)
@@ -2402,16 +2462,16 @@ Session ends with state attached (Phase 4 example — Ramping Frenzy with 5 raw 
 19. **CombatSessionEndEvent modifications** — add statistics and state snapshot fields
 20. **CombatTrackerManager modifications** — state type management, persistent state lifecycle, reportHealing, session statistic key registration. Depends on everything above
 21. **OnCombatEntityDeathListener modification** — add kill stat tracking
-22. **OnCombatDamageStatListener** — depends on CombatTrackerManager, CombatSessionStatisticKey
+22. **CombatDamageResolution + OnCombatDamageStatListener** — extract the shared damage-resolution helper (§1.13a) and point both damage listeners at it. Depends on CombatTrackerManager, CombatSessionStatisticKey
 23. **OnCombatHealingStatListener** — depends on CombatTrackerManager, CombatSessionStatisticKey
 24. **OnCombatSessionEndStatUpdateListener** — depends on CombatSessionEndEvent, CombatCumulativeStatisticUpdateEvent, McRPGStatistic
 25. **McRPGExpansion modification** — add CombatStateTypeContentPack
 26. **McRPGBootstrap modifications** — registry creation
 27. **McRPGDatabase modifications** — DAO table creation and update wiring for CombatPersistentStateDAO. Depends on CombatPersistentStateDAO
 28. **McRPGListenerRegistrar modifications** — register new listeners
-29. **PlayerLeaveListener modification** — inject `CombatTrackerManager` via constructor; add combat teardown (`endSession`, `removeParticipantFromAllSessions`, `clearPersistentStateCache`) at the top of `handleQuit()` before unload. Depends on CombatTrackerManager
+29. **PlayerLeaveListener modification** — inject `CombatTrackerManager` via constructor; add combat teardown (`endSession`, `removeParticipantFromAllSessions`, `clearPersistentStateCacheWhenWritesSettle`) at the top of `handleQuit()` before unload. Depends on CombatTrackerManager
 30. **OnCombatPlayerQuitListener deletion** — remove the class entirely; its quit-time combat cleanup is now in `PlayerLeaveListener`. Remove registration from `McRPGListenerRegistrar`
-31. **McRPGPlayerLoadTask modification** — inject `CombatTrackerManager`; add `CombatPersistentStateDAO.loadPersistentState()` to the async DB phase and `cachePersistentState()` to main-thread finalization. Update `PlayerJoinListener` to accept and forward `CombatTrackerManager`. Hoist `combatTrackerManager` lookup in `McRPGListenerRegistrar` above the `PROD`-only block. Depends on CombatTrackerManager, CombatPersistentStateDAO
+31. **McRPGPlayerLoadTask modification** — inject `CombatTrackerManager`; add `CombatPersistentStateDAO.loadPersistentState()` to the DB-load phase and `cachePersistentState()` to main-thread finalization. Note that `PlayerJoinListener` schedules this task with `runTask()` (sync), so `RepeatableCoreTask` uses `runTaskTimer` and the read itself runs on the main thread — as it does for all six sibling loaders in that class. Update `PlayerJoinListener` to accept and forward `CombatTrackerManager`. Hoist `combatTrackerManager` lookup in `McRPGListenerRegistrar` above the `PROD`-only block. Depends on CombatTrackerManager, CombatPersistentStateDAO
 32. **Unit tests** — see §6
 
 ---
@@ -2526,6 +2586,9 @@ Organized into a `@Nested @DisplayName("State management")` group.
 - `createStatisticsSnapshot` includes all accumulated stats and the duration
 - `createStateSnapshot` captures raw values for all stored state
 - `createStateSnapshot` captures resolved values at snapshot time
+- `setState` throws `IllegalArgumentException` when a listener substitutes a wrongly-typed value
+- `getState` falls back to the raw value when the resolver throws
+- `createStateSnapshot` falls back to the raw value when a resolver throws
 - `clearSessionState` removes all state from the store
 
 ### 6.13 CombatSession Visibility Tests (additions to CombatSessionTest)
@@ -2537,20 +2600,23 @@ Organized into a `@Nested @DisplayName("State management")` group.
 Organized into `@Nested` groups.
 
 - **registerStateType** — registers the type in the CombatStateTypeRegistry; throws for duplicate registration
-- **registerSessionStatisticKey** — registered double key appears in new sessions' statistics; registered long key appears in new sessions' statistics
-- **reportHealing** — increments `healing_dealt` on healer's session; increments `healing_received` on target's session; is a no-op when neither entity has an active session; does not create sessions or add participants
+- **Session statistic key registration** — registered double key appears in new sessions' statistics; registered long key appears in new sessions' statistics; a double key is not seeded into the long statistics map
+- **reportHealing** — increments `healing_dealt` on healer's session; does NOT touch `healing_received` on the target's session (that key belongs to `OnCombatHealingStatListener` — see D5); is a no-op when neither entity has an active session; does not create sessions or add participants
 - **endSession with snapshots** — the fired `CombatSessionEndEvent` carries a non-null statistics snapshot; the fired event carries a non-null combat state snapshot; the statistics snapshot reflects accumulated stats; the state snapshot reflects stored state values
-- **Persistent state lifecycle** — `cachePersistentState` populates the cache; cached persistent state is applied to new sessions on creation; `savePersistentStateAsync` is called on session end for sessions with persistent state; `clearPersistentStateCache` removes the cached data
+- **Persistent state lifecycle** — `cachePersistentState` populates the cache; cached persistent state is applied to new sessions on creation; `savePersistentStateAsync` is called on session end for sessions with persistent state; `clearPersistentStateCache` removes the cached data; a cached value survives a later DB load that would overwrite it; a deserializer that throws leaves the state at its default without breaking session creation
+- **Persistent state writes** (against a mocked `Database`) — `savePersistentStateAsync` serializes and writes through the DAO; it updates the cache eagerly; it no-ops when the session holds no persistent state; back-to-back writes for one entity are chained so the later value lands last; a serializer that throws skips that entry instead of aborting session end; `shutdown` drains in-flight writes before returning; `saveAllPersistentStateSync` writes every active session's state and no-ops when there is none
 
 ### 6.15 OnCombatDamageStatListenerTest
 
 - Increments `damage_dealt` and `hits_landed` on the source's session
 - Increments `damage_taken` and `hits_received` on the target's session
 - Resolves projectile shooters as the source
-- Does not increment stats when the source has no session
-- Does not increment stats when the target has no session
+- Records target stats and does not throw when the source has no session
+- Records source stats and does not throw when the target has no session
 - Ignores cancelled events
 - Ignores self-damage
+
+The two session-less cases assert on the side that actually receives writes: `damage_dealt` is only ever written to the *source's* session and `damage_taken` only to the *target's*, so asserting the opposite side stays at zero would pass even with the `ifPresent` guards deleted. The behaviour worth guarding is that one side's missing session neither throws nor suppresses the other side's stats.
 
 ### 6.16 OnCombatHealingStatListenerTest
 
@@ -2567,12 +2633,13 @@ Organized into `@Nested` groups.
 - Does not apply for non-player entities
 - Maps built-in per-session stat keys to the correct cumulative statistics
 
-### 6.18 OnCombatEntityDeathListener Kill Tracking Tests (additions)
+### 6.18 OnCombatEntityDeathListenerTest
 
 - Increments `kills` on the killer's session when a player kills a mob
 - Increments `kills` on the killer's session when a player kills another player
 - Does not increment when there is no killer (`getKiller()` returns null)
 - Does not increment when the killer has no active session
+- Ends the dead entity's session and drops it from every other session's roster (the listener's pre-existing effects, so all three of `onEntityDeath`'s outcomes are covered)
 
 ### 6.19 CombatPersistentStateDAOTest
 
@@ -2624,6 +2691,8 @@ Organized into `@Nested` groups.
 
 **Why:** Bukkit's `EntityRegainHealthEvent` carries no healer/source field — there is no way to infer who performed the healing. This is a Bukkit API limitation, not an McRPG design choice. The explicit API follows the same pattern as DOT/indirect damage attribution (`reportCombatActivity(sourceUUID, targetUUID)`) — the caller that knows the source reports it. McRPG heal abilities call `reportHealing()` before or after applying the heal. Third-party heal plugins can use the same API. Vanilla regen, saturation, and beacon healing are tracked as `healing_received` only — no `healing_dealt` attribution.
 
+The division of labour is strict and each key has exactly one writer: **`reportHealing()` owns `healing_dealt`; `OnCombatHealingStatListener` owns `healing_received`.** `reportHealing()` must not also write `healing_received`, because applying a real heal through the Bukkit API is precisely what fires `EntityRegainHealthEvent` — so an ability that both applies the heal and reports attribution (the documented calling convention) would count the received side twice, and the inflated total would then flow into cumulative `McRPGStatistic.HEALING_RECEIVED`. This is the same double-counting failure mode D7 rules out for `DAMAGE_DEALT`/`DAMAGE_TAKEN`. The trade-off: a heal that bypasses `EntityRegainHealthEvent` entirely (absorption hearts, direct health mutation) is not counted as received — acceptable, and arguably more accurate, since the statistic measures health regained.
+
 ### D6. `SESSION_DURATION` Written at Snapshot Time
 
 **Decision:** `SESSION_DURATION` is a regular `CombatSessionStatisticKey` stored in the double stats map. It is computed and written by `CombatSession.createStatisticsSnapshot()` immediately before the snapshot is taken — not maintained live during the session.
@@ -2659,9 +2728,11 @@ Because the two stats measure different things (lifetime mob kills vs. combat-se
 
 ### D8. No Registration Required for Ad-Hoc Per-Session Stat Keys
 
-**Decision:** Third-party plugins can increment any `NamespacedKey` on `CombatSessionStatistics` without prior registration. The `registerSessionStatisticKey()` API pre-initializes keys in new sessions but is not a gating requirement.
+**Decision:** Third-party plugins can increment any `NamespacedKey` on `CombatSessionStatistics` without prior registration. The `registerDoubleSessionStatisticKey()` / `registerLongSessionStatisticKey()` APIs pre-initialize keys in new sessions but are not a gating requirement.
 
-**Why:** The statistics container is a simple map — any key works. Registration adds convenience (keys appear in snapshots even if never incremented) but not enforcement. This keeps the barrier to entry low for third-party stat tracking: `session.getStatistics().incrementLong(myKey, 1)` works without any setup. The "register custom per-session statistic keys via the combat tracker API" from the HLD is fulfilled by `registerSessionStatisticKey()` as an optional enhancement, not a mandatory gate.
+**Why:** The statistics container is a simple map — any key works. Registration adds convenience (keys appear in snapshots even if never incremented) but not enforcement. This keeps the barrier to entry low for third-party stat tracking: `session.getStatistics().incrementLong(myKey, 1)` works without any setup. The "register custom per-session statistic keys via the combat tracker API" from the HLD is fulfilled by these methods as an optional enhancement, not a mandatory gate.
+
+**One method per value type, not a boolean flag:** the double/long choice selects between two distinct internal stores, so a `registerSessionStatisticKey(key, isDouble)` overload would read as `registerSessionStatisticKey(key, true)` at the call site with no self-evident meaning. Distinct names match how the rest of this feature already reads (`incrementDouble`/`incrementLong`, `getDouble`/`getLong`).
 
 ### D9. State Snapshots Capture Both Raw and Resolved Values
 
@@ -2698,6 +2769,20 @@ Because the two stats measure different things (lifetime mob kills vs. combat-se
 **Why:** The cumulative stat update chain triggered by `endSession()` requires the player's `McRPGPlayer` to be loaded (§1.15 step 2). The previous design had `OnCombatPlayerQuitListener` at `MONITOR` priority — strictly after `PlayerLeaveListener`'s default `NORMAL` priority, which runs the unload — so the stat update guard always failed on logout. Rather than relying on implicit Bukkit listener priority ordering (fragile and non-obvious), making the call order explicit in code is more robust. `PlayerLeaveListener` already orchestrates quest saves, Lunar Client cleanup, and other subsystem teardown in `handleQuit()` — combat teardown fits that role. Eliminating `OnCombatPlayerQuitListener` removes a class and a listener registration rather than adding priority-ordering constraints that future maintainers must understand.
 
 **Considered alternative:** Reorder `OnCombatPlayerQuitListener` to `LOW` priority so it runs before `PlayerLeaveListener`. Rejected because implicit priority ordering between two listeners in different packages is a maintenance hazard — a future change to either listener's priority could silently reintroduce the bug.
+
+### D14. Persistent-State Writes Are Tracked, Ordered, and Drained
+
+**Decision:** `savePersistentStateAsync()` returns a `CompletableFuture<Void>` recorded in a per-entity `pendingPersistentWrites` map. Each new write for an entity chains onto that entity's previous write; `shutdown()` drains all outstanding writes before flushing synchronously; and the logout path defers its cache clear (`clearPersistentStateCacheWhenWritesSettle`) until the write lands, with `cachePersistentState()` preferring an existing in-memory entry over a DB read.
+
+**Why:** Fire-and-forget writes left three gaps, all of which silently discard state rather than failing loudly:
+
+- **Fast relog.** `PlayerLeaveListener` ended the session (queuing a write) and cleared the cache immediately. `McRPGPlayerLoadTask.loadPersistentCombatState()` reads the same row on the main thread with nothing ordering it after that queued write, so a player who reconnected quickly — network hiccup, resource-pack disconnect, deliberate quick rejoin — could be seeded from the pre-logout row and then write that stale state back at their next session end. Deferring the clear keeps the freshly-saved in-memory value authoritative for exactly as long as the DB is behind it; `cachePersistentState` preferring existing entries makes the load a no-op in that window.
+- **Session churn.** Two writes for the same row submitted back-to-back (death then immediate re-engagement, rapid timeout cycling) had no ordering guarantee against each other, so a stale write could land after a fresher one. Chaining serializes them per entity while leaving different entities fully parallel.
+- **Shutdown.** The `shuttingDown` flag only suppressed *new* writes from `shutdown()`'s own end-session loop; a write submitted moments earlier was still in flight when `McRPGBootstrap.stop()` closed the connection pool, so it failed against a closed pool and was dropped with only a `WARNING`. Draining first closes that window.
+
+**Trade-off:** `shutdown()` can now block for up to 10 seconds waiting on the database executor. The timeout is bounded and logs a `WARNING` on expiry so a wedged executor degrades to the old behaviour (state lost, loudly) rather than hanging `/stop` indefinitely.
+
+**Considered alternative:** Make the logout write fully synchronous instead. Simpler, and it closes the relog window on its own, but it leaves the session-churn ordering gap open and puts a blocking DB write on every player quit. Tracking futures fixes all three gaps with the cost confined to shutdown.
 
 ---
 

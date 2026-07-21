@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.Registry;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry;
@@ -80,4 +81,18 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
      * before unregistering) so the condition is actually polled.
      */
     RegistryKey<CombatConditionRegistry> COMBAT_CONDITION = create(CombatConditionRegistry.class);
+    /**
+     * Retrieves the {@link CombatStateTypeRegistry}, holding every registered
+     * {@link us.eunoians.mcrpg.combat.state.CombatStateType}.
+     * <p>
+     * Safe operations: {@link CombatStateTypeRegistry#register(us.eunoians.mcrpg.combat.state.CombatStateType)},
+     * {@link CombatStateTypeRegistry#unregister(org.bukkit.NamespacedKey)},
+     * {@link CombatStateTypeRegistry#get(org.bukkit.NamespacedKey)}, {@link CombatStateTypeRegistry#getAll()}.
+     * <p>
+     * Registration is what makes a type's persistence and end-of-session resolution take effect;
+     * session-scoped reads and writes work on unregistered types too. Note that
+     * {@link us.eunoians.mcrpg.event.combat.CombatStateChangeEvent} is not fired when persistent
+     * state is re-attached at session start or cleared at session end — see that event's Javadoc.
+     */
+    RegistryKey<CombatStateTypeRegistry> COMBAT_STATE_TYPE = create(CombatStateTypeRegistry.class);
 }

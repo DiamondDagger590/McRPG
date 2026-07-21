@@ -29,6 +29,7 @@ import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
+import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
 import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 
 import java.time.Clock;
@@ -91,6 +92,7 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.registry(RegistryKey.MANAGER).register(mock(QuestManager.class));
         registryAccess.register(new PlayerStatRegistry());
         registryAccess.register(new CombatConditionRegistry());
+        registryAccess.register(new CombatStateTypeRegistry());
     }
 
     /**

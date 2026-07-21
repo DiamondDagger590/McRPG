@@ -14,7 +14,7 @@ import us.eunoians.mcrpg.combat.ParticipantRemovalReason;
 /**
  * Handles entity removal from the world (despawn, chunk unload, plugin removal).
  * Removes the entity from all participant rosters. Players are handled by
- * {@link OnCombatPlayerQuitListener}.
+ * {@link us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener}'s combat teardown.
  */
 public class OnCombatEntityRemoveListener implements Listener {
 
@@ -32,7 +32,8 @@ public class OnCombatEntityRemoveListener implements Listener {
     /**
      * Handles entity removal from the world. Removes the entity from all sessions' participant
      * rosters. Fast-skips the common cases that can never be combat participants: deaths (handled by
-     * {@link OnCombatEntityDeathListener}), players (handled by {@link OnCombatPlayerQuitListener}),
+     * {@link OnCombatEntityDeathListener}), players (handled by
+     * {@link us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener}'s combat teardown),
      * and non-living entities (items, projectiles, experience orbs) — which lets the frequent
      * chunk-unload and item-despawn removals return before touching the session map.
      *

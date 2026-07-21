@@ -29,6 +29,7 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatStateTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
@@ -144,7 +145,7 @@ public final class McRPGExpansion extends ContentExpansion {
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
                 getRewardDistributionTypeContent(), getTemplateConditionContent(),
-                getCombatConditionContent());
+                getCombatConditionContent(), getCombatStateTypeContent());
     }
 
     @NotNull
@@ -484,5 +485,17 @@ public final class McRPGExpansion extends ContentExpansion {
     @NotNull
     private CombatConditionContentPack getCombatConditionContent() {
         return new CombatConditionContentPack(this);
+    }
+
+    /**
+     * Gets the native {@link CombatStateTypeContentPack} for McRPG. This pack is empty because
+     * no built-in combat state types exist yet — the extension point is available for third-party
+     * plugins and future McRPG features (e.g. Ramping Frenzy's resolved frenzy stack state).
+     *
+     * @return The native {@link CombatStateTypeContentPack} for McRPG (empty).
+     */
+    @NotNull
+    private CombatStateTypeContentPack getCombatStateTypeContent() {
+        return new CombatStateTypeContentPack(this);
     }
 }

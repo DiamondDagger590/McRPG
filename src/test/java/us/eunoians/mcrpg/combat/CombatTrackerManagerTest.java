@@ -1,50 +1,69 @@
 package us.eunoians.mcrpg.combat;
 
+import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.TimeProvider;
 import com.diamonddagger590.mccore.util.item.CustomEntityWrapper;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Zombie;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
+import org.mockito.InOrder;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.combat.condition.CombatCondition;
 import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
 import us.eunoians.mcrpg.combat.condition.CombatConditionTask;
+import us.eunoians.mcrpg.combat.state.CombatStateType;
+import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
+import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticKey;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
+import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.event.combat.CombatParticipantAddEvent;
 import us.eunoians.mcrpg.event.combat.CombatParticipantRemoveEvent;
 import us.eunoians.mcrpg.event.combat.CombatSessionEndEvent;
+import us.eunoians.mcrpg.event.combat.CombatStateChangeEvent;
 import us.eunoians.mcrpg.event.combat.CombatSessionStartEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +90,8 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
      *   <li>Combat conditions registered into the shared {@link CombatConditionRegistry} — a leaked
      *       condition would be consulted by later tests' timeout scans. McRPG ships no built-in
      *       conditions, so clearing the registry is safe.</li>
+     *   <li>Combat state types registered into the shared {@link CombatStateTypeRegistry} — a leaked
+     *       type could collide with another test's key or affect persistent-state save/load tests.</li>
      * </ul>
      */
     @AfterEach
@@ -79,11 +100,18 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
         CombatSessionEndEvent.getHandlerList().unregister(mcRPG);
         CombatParticipantAddEvent.getHandlerList().unregister(mcRPG);
         CombatParticipantRemoveEvent.getHandlerList().unregister(mcRPG);
+        CombatStateChangeEvent.getHandlerList().unregister(mcRPG);
 
         CombatConditionRegistry conditionRegistry = mcRPG.registryAccess()
                 .registry(McRPGRegistryKey.COMBAT_CONDITION);
         for (NamespacedKey key : conditionRegistry.getRegisteredKeys()) {
             conditionRegistry.unregister(key);
+        }
+
+        CombatStateTypeRegistry stateTypeRegistry = mcRPG.registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_STATE_TYPE);
+        for (NamespacedKey key : stateTypeRegistry.getRegisteredKeys()) {
+            stateTypeRegistry.unregister(key);
         }
     }
 
@@ -751,6 +779,588 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
             manager.reportConditionActivity(player.getUniqueId(), new NamespacedKey("mcrpg", "proximity"));
 
             assertFalse(manager.hasActiveSession(player.getUniqueId()));
+        }
+    }
+
+    @Nested
+    @DisplayName("registerStateType")
+    class RegisterStateType {
+
+        @Test
+        @DisplayName("registers the type in the CombatStateTypeRegistry")
+        void registersTypeInRegistry() {
+            NamespacedKey key = new NamespacedKey("mcrpg", "stacks");
+            CombatStateType<Integer> type = CombatStateType.of(key, Integer.class, 0, null);
+
+            manager.registerStateType(type);
+
+            CombatStateTypeRegistry registry = mcRPG.registryAccess().registry(McRPGRegistryKey.COMBAT_STATE_TYPE);
+            assertTrue(registry.isRegistered(key));
+        }
+
+        @Test
+        @DisplayName("throws for duplicate registration")
+        void throwsForDuplicateRegistration() {
+            NamespacedKey key = new NamespacedKey("mcrpg", "stacks");
+            manager.registerStateType(CombatStateType.of(key, Integer.class, 0, null));
+
+            assertThrows(IllegalStateException.class,
+                    () -> manager.registerStateType(CombatStateType.of(key, Integer.class, 1, null)));
+        }
+    }
+
+    @Nested
+    @DisplayName("Session statistic key registration")
+    class RegisterSessionStatisticKey {
+
+        @Test
+        @DisplayName("registered double key appears in new sessions' statistics")
+        void doubleKey_appearsInNewSessions() {
+            NamespacedKey key = new NamespacedKey("mcrpg", "custom_double");
+            manager.registerDoubleSessionStatisticKey(key);
+
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+
+            assertTrue(session.createStatisticsSnapshot().getDoubleStatistics().containsKey(key));
+        }
+
+        @Test
+        @DisplayName("registered long key appears in new sessions' statistics")
+        void longKey_appearsInNewSessions() {
+            NamespacedKey key = new NamespacedKey("mcrpg", "custom_long");
+            manager.registerLongSessionStatisticKey(key);
+
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+
+            assertTrue(session.createStatisticsSnapshot().getLongStatistics().containsKey(key));
+        }
+
+        @Test
+        @DisplayName("a double key is not seeded into the long statistics map")
+        void doubleKey_doesNotAppearInLongStatistics() {
+            NamespacedKey key = new NamespacedKey("mcrpg", "custom_double_only");
+            manager.registerDoubleSessionStatisticKey(key);
+
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+
+            assertFalse(session.createStatisticsSnapshot().getLongStatistics().containsKey(key));
+        }
+    }
+
+    @Nested
+    @DisplayName("reportHealing")
+    class ReportHealing {
+
+        @Test
+        @DisplayName("increments healing_dealt on healer's session")
+        void incrementsHealingDealtOnHealerSession() {
+            PlayerMock healer = server.addPlayer();
+            manager.handleCombatInteraction(healer.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession healerSession = manager.getSession(healer.getUniqueId()).orElseThrow();
+
+            manager.reportHealing(healer.getUniqueId(), UUID.randomUUID(), 5.0);
+
+            assertEquals(5.0, healerSession.getStatistics().getDouble(CombatSessionStatisticKey.HEALING_DEALT));
+        }
+
+        @Test
+        @DisplayName("does not touch healing_received on the target's session")
+        void doesNotIncrementHealingReceivedOnTargetSession() {
+            PlayerMock target = server.addPlayer();
+            manager.handleCombatInteraction(target.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession targetSession = manager.getSession(target.getUniqueId()).orElseThrow();
+
+            manager.reportHealing(UUID.randomUUID(), target.getUniqueId(), 4.0);
+
+            // OnCombatHealingStatListener owns healing_received; writing it here too would
+            // double-count every heal that both applies health and reports attribution.
+            assertEquals(0.0, targetSession.getStatistics().getDouble(CombatSessionStatisticKey.HEALING_RECEIVED));
+        }
+
+        @Test
+        @DisplayName("is a no-op when neither entity has an active session")
+        void noOp_whenNeitherHasSession() {
+            assertDoesNotThrow(() -> manager.reportHealing(UUID.randomUUID(), UUID.randomUUID(), 5.0));
+        }
+
+        @Test
+        @DisplayName("does not create sessions or add participants")
+        void doesNotCreateSessionsOrParticipants() {
+            UUID healerUUID = UUID.randomUUID();
+            UUID targetUUID = UUID.randomUUID();
+
+            manager.reportHealing(healerUUID, targetUUID, 5.0);
+
+            assertFalse(manager.hasActiveSession(healerUUID));
+            assertFalse(manager.hasActiveSession(targetUUID));
+        }
+    }
+
+    @Nested
+    @DisplayName("endSession with snapshots")
+    class EndSessionWithSnapshots {
+
+        @Test
+        @DisplayName("fired event carries a non-null statistics snapshot")
+        void firedEventCarriesStatisticsSnapshot() {
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+
+            List<CombatSessionEndEvent> captured = new ArrayList<>();
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onEnd(CombatSessionEndEvent event) {
+                    captured.add(event);
+                }
+            }, mcRPG);
+
+            manager.endSession(player.getUniqueId(), CombatSessionEndReason.PLUGIN);
+
+            assertEquals(1, captured.size());
+            assertNotNull(captured.get(0).getStatistics());
+        }
+
+        @Test
+        @DisplayName("fired event carries a non-null combat state snapshot")
+        void firedEventCarriesStateSnapshot() {
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+
+            List<CombatSessionEndEvent> captured = new ArrayList<>();
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onEnd(CombatSessionEndEvent event) {
+                    captured.add(event);
+                }
+            }, mcRPG);
+
+            manager.endSession(player.getUniqueId(), CombatSessionEndReason.PLUGIN);
+
+            assertEquals(1, captured.size());
+            assertNotNull(captured.get(0).getCombatState());
+        }
+
+        @Test
+        @DisplayName("statistics snapshot reflects accumulated stats")
+        void statisticsSnapshotReflectsAccumulatedStats() {
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+            session.getStatistics().incrementLong(CombatSessionStatisticKey.KILLS, 3);
+
+            List<CombatSessionEndEvent> captured = new ArrayList<>();
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onEnd(CombatSessionEndEvent event) {
+                    captured.add(event);
+                }
+            }, mcRPG);
+
+            manager.endSession(player.getUniqueId(), CombatSessionEndReason.PLUGIN);
+
+            assertEquals(3L, captured.get(0).getStatistics().getLong(CombatSessionStatisticKey.KILLS));
+        }
+
+        @Test
+        @DisplayName("state snapshot reflects stored state values")
+        void stateSnapshotReflectsStoredStateValues() {
+            NamespacedKey key = new NamespacedKey("mcrpg", "stacks");
+            CombatStateType<Integer> type = CombatStateType.of(key, Integer.class, 0, null);
+            mcRPG.registryAccess().registry(McRPGRegistryKey.COMBAT_STATE_TYPE).register(type);
+
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+            session.setState(type, 5);
+
+            List<CombatSessionEndEvent> captured = new ArrayList<>();
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onEnd(CombatSessionEndEvent event) {
+                    captured.add(event);
+                }
+            }, mcRPG);
+
+            manager.endSession(player.getUniqueId(), CombatSessionEndReason.PLUGIN);
+
+            assertEquals(5, captured.get(0).getCombatState().getRawState(type));
+        }
+    }
+
+    @Nested
+    @DisplayName("Persistent state lifecycle")
+    class PersistentStateLifecycle {
+
+        private NamespacedKey stateKey;
+        private CombatStateType<Integer> persistentType;
+
+        @BeforeEach
+        void registerPersistentType() {
+            stateKey = new NamespacedKey("mcrpg", "combats_today");
+            persistentType = CombatStateType.persistent(
+                    stateKey, Integer.class, 0, String::valueOf, Integer::parseInt, null);
+            mcRPG.registryAccess().registry(McRPGRegistryKey.COMBAT_STATE_TYPE).register(persistentType);
+        }
+
+        @Test
+        @DisplayName("cachePersistentState populates the cache, applied on the next session created via handleCombatInteraction")
+        void cachePersistentState_populatesCache() {
+            UUID uuid = UUID.randomUUID();
+            PlayerMock player = new PlayerMock(server, "CachedPlayer", uuid);
+            server.addPlayer(player);
+            manager.cachePersistentState(uuid, Map.of(stateKey.toString(), "5"));
+
+            manager.handleCombatInteraction(uuid, UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(uuid).orElseThrow();
+
+            assertEquals(5, session.getRawState(persistentType));
+        }
+
+        @Test
+        @DisplayName("cached persistent state is applied to new sessions created via reportConditionActivity")
+        void cachedPersistentState_appliedViaReportConditionActivity() {
+            UUID uuid = UUID.randomUUID();
+            PlayerMock player = new PlayerMock(server, "CachedPlayer2", uuid);
+            server.addPlayer(player);
+            manager.cachePersistentState(uuid, Map.of(stateKey.toString(), "9"));
+
+            manager.reportConditionActivity(uuid, new NamespacedKey("mcrpg", "proximity"));
+            CombatSession session = manager.getSession(uuid).orElseThrow();
+
+            assertEquals(9, session.getRawState(persistentType));
+        }
+
+        @Test
+        @DisplayName("savePersistentStateAsync is called on session end for sessions with persistent state")
+        void savePersistentStateAsync_calledOnSessionEnd() {
+            CombatTrackerManager spyManager = spy(manager);
+            doReturn(CompletableFuture.completedFuture(null)).when(spyManager).savePersistentStateAsync(any());
+
+            PlayerMock player = server.addPlayer();
+            spyManager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = spyManager.getSession(player.getUniqueId()).orElseThrow();
+            session.setState(persistentType, 3);
+
+            spyManager.endSession(player.getUniqueId(), CombatSessionEndReason.PLUGIN);
+
+            verify(spyManager).savePersistentStateAsync(session);
+        }
+
+        @Test
+        @DisplayName("clearPersistentStateCache removes the cached data")
+        void clearPersistentStateCache_removesCachedData() {
+            UUID uuid = UUID.randomUUID();
+            PlayerMock player = new PlayerMock(server, "ClearedPlayer", uuid);
+            server.addPlayer(player);
+            manager.cachePersistentState(uuid, Map.of(stateKey.toString(), "5"));
+
+            manager.clearPersistentStateCache(uuid);
+
+            manager.handleCombatInteraction(uuid, UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(uuid).orElseThrow();
+
+            assertEquals(persistentType.getDefaultValue(), session.getRawState(persistentType));
+        }
+
+        @Test
+        @DisplayName("clearPersistentStateCacheWhenWritesSettle clears immediately when no write is pending")
+        void clearPersistentStateCacheWhenWritesSettle_clearsImmediately_whenNoPendingWrite() {
+            UUID uuid = UUID.randomUUID();
+            PlayerMock player = new PlayerMock(server, "NoPendingWritePlayer", uuid);
+            server.addPlayer(player);
+            manager.cachePersistentState(uuid, Map.of(stateKey.toString(), "5"));
+
+            manager.clearPersistentStateCacheWhenWritesSettle(uuid);
+
+            manager.handleCombatInteraction(uuid, UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(uuid).orElseThrow();
+
+            assertEquals(persistentType.getDefaultValue(), session.getRawState(persistentType));
+        }
+
+        @Test
+        @DisplayName("a cached value survives a DB load that would otherwise overwrite it")
+        void cachePersistentState_keepsExistingValue_overALaterLoad() {
+            UUID uuid = UUID.randomUUID();
+            PlayerMock player = new PlayerMock(server, "RelogPlayer", uuid);
+            server.addPlayer(player);
+
+            // Freshly-saved logout state, still cached because its write has not landed yet.
+            manager.cachePersistentState(uuid, Map.of(stateKey.toString(), "12"));
+            // The relog's DB read returns the pre-logout row.
+            manager.cachePersistentState(uuid, Map.of(stateKey.toString(), "4"));
+
+            manager.handleCombatInteraction(uuid, UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(uuid).orElseThrow();
+
+            assertEquals(12, session.getRawState(persistentType));
+        }
+
+        @Test
+        @DisplayName("a deserializer that throws leaves the state at its default and does not break session creation")
+        void applyCachedPersistentState_deserializerThrows_startsSessionAtDefault() {
+            NamespacedKey throwingKey = new NamespacedKey("mcrpg", "throwing_deserializer");
+            CombatStateType<Integer> throwingType = CombatStateType.persistent(throwingKey, Integer.class, 0,
+                    String::valueOf,
+                    serialized -> {
+                        throw new IllegalStateException("corrupt row");
+                    }, null);
+            mcRPG.registryAccess().registry(McRPGRegistryKey.COMBAT_STATE_TYPE).register(throwingType);
+
+            UUID uuid = UUID.randomUUID();
+            PlayerMock player = new PlayerMock(server, "CorruptStatePlayer", uuid);
+            server.addPlayer(player);
+            manager.cachePersistentState(uuid, Map.of(throwingKey.toString(), "not-a-number"));
+
+            assertDoesNotThrow(() -> manager.handleCombatInteraction(uuid, UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE")));
+
+            CombatSession session = manager.getSession(uuid).orElseThrow();
+            assertEquals(throwingType.getDefaultValue(), session.getRawState(throwingType));
+        }
+    }
+
+    /**
+     * Exercises the actual serialize → cache → database-write path of
+     * {@link CombatTrackerManager#savePersistentStateAsync(CombatSession)} and
+     * {@link CombatTrackerManager#saveAllPersistentStateSync()} against a mocked {@link Database},
+     * rather than stubbing the write out.
+     */
+    @Nested
+    @DisplayName("Persistent state writes")
+    class PersistentStateWrites {
+
+        private NamespacedKey stateKey;
+        private CombatStateType<Integer> persistentType;
+        private PreparedStatement statement;
+        /** Runnables handed to the database executor, so tests control when writes actually run. */
+        private List<Runnable> submittedWrites;
+
+        @BeforeEach
+        void registerTypeAndMockDatabase() throws SQLException {
+            stateKey = new NamespacedKey("mcrpg", "combats_today");
+            persistentType = CombatStateType.persistent(
+                    stateKey, Integer.class, 0, String::valueOf, Integer::parseInt, null);
+            mcRPG.registryAccess().registry(McRPGRegistryKey.COMBAT_STATE_TYPE).register(persistentType);
+
+            submittedWrites = new ArrayList<>();
+            statement = mock(PreparedStatement.class);
+            Connection connection = mock(Connection.class);
+            when(connection.prepareStatement(anyString())).thenReturn(statement);
+
+            ThreadPoolExecutor executor = mock(ThreadPoolExecutor.class);
+            doAnswer(invocation -> submittedWrites.add(invocation.getArgument(0, Runnable.class)))
+                    .when(executor).execute(any(Runnable.class));
+
+            Database database = mock(Database.class);
+            when(database.getConnection()).thenReturn(connection);
+            when(database.getDatabaseExecutorService()).thenReturn(executor);
+
+            McRPGDatabaseManager databaseManager = mock(McRPGDatabaseManager.class);
+            when(databaseManager.getDatabase()).thenReturn(database);
+            mcRPG.registryAccess().registry(RegistryKey.MANAGER).register(databaseManager);
+        }
+
+        /**
+         * Creates a session for a freshly added player and sets the persistent state value on it.
+         *
+         * @param value The persistent state value to set.
+         * @return The created session.
+         */
+        @NotNull
+        private CombatSession sessionWithState(int value) {
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+            session.setState(persistentType, value);
+            return session;
+        }
+
+        /**
+         * Drains every queued database write, including writes queued by an earlier drained write.
+         */
+        private void runSubmittedWrites() {
+            for (int index = 0; index < submittedWrites.size(); index++) {
+                submittedWrites.get(index).run();
+            }
+        }
+
+        @Test
+        @DisplayName("savePersistentStateAsync serializes the value and writes it through the DAO")
+        void savePersistentStateAsync_serializesAndWrites() throws SQLException {
+            CombatSession session = sessionWithState(7);
+
+            manager.savePersistentStateAsync(session);
+            runSubmittedWrites();
+
+            verify(statement).setString(1, session.getEntityUUID().toString());
+            verify(statement).setString(2, stateKey.toString());
+            verify(statement).setString(3, "7");
+            verify(statement).executeUpdate();
+        }
+
+        @Test
+        @DisplayName("savePersistentStateAsync updates the in-memory cache before the write runs")
+        void savePersistentStateAsync_updatesCacheEagerly() {
+            CombatSession session = sessionWithState(7);
+            UUID entityUUID = session.getEntityUUID();
+
+            manager.savePersistentStateAsync(session);
+            manager.endSession(entityUUID, CombatSessionEndReason.PLUGIN);
+
+            // The cache is what seeds the next session; it must reflect the save without waiting
+            // on the database write.
+            manager.handleCombatInteraction(entityUUID, UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            assertEquals(7, manager.getSession(entityUUID).orElseThrow().getRawState(persistentType));
+        }
+
+        @Test
+        @DisplayName("savePersistentStateAsync no-ops when the session holds no persistent state")
+        void savePersistentStateAsync_noOps_whenNoPersistentState() {
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession session = manager.getSession(player.getUniqueId()).orElseThrow();
+
+            assertTrue(manager.savePersistentStateAsync(session).isDone());
+            assertTrue(submittedWrites.isEmpty());
+        }
+
+        @Test
+        @DisplayName("back-to-back writes for one entity are chained, so the later value lands last")
+        void savePersistentStateAsync_chainsWritesForTheSameEntity() throws SQLException {
+            CombatSession session = sessionWithState(1);
+
+            manager.savePersistentStateAsync(session);
+            session.setState(persistentType, 2);
+            manager.savePersistentStateAsync(session);
+
+            // The second write must not be handed to the executor until the first has completed,
+            // otherwise the two could land in either order and the stale value could win.
+            assertEquals(1, submittedWrites.size());
+            runSubmittedWrites();
+            assertEquals(2, submittedWrites.size());
+
+            InOrder writeOrder = inOrder(statement);
+            writeOrder.verify(statement).setString(3, "1");
+            writeOrder.verify(statement).setString(3, "2");
+        }
+
+        @Test
+        @DisplayName("a serializer that throws skips that entry instead of aborting the session end")
+        void serializerThrows_skipsEntryAndStillEndsSession() {
+            NamespacedKey throwingKey = new NamespacedKey("mcrpg", "throwing_serializer");
+            CombatStateType<Integer> throwingType = CombatStateType.persistent(throwingKey, Integer.class, 0,
+                    value -> {
+                        throw new IllegalStateException("cannot serialize");
+                    }, Integer::parseInt, null);
+            mcRPG.registryAccess().registry(McRPGRegistryKey.COMBAT_STATE_TYPE).register(throwingType);
+
+            CombatSession session = sessionWithState(7);
+            session.setState(throwingType, 3);
+            UUID entityUUID = session.getEntityUUID();
+
+            assertDoesNotThrow(() -> manager.endSession(entityUUID, CombatSessionEndReason.PLUGIN));
+            runSubmittedWrites();
+
+            // The session is gone rather than leaked, and the healthy type was still persisted.
+            assertFalse(manager.hasActiveSession(entityUUID));
+            assertDoesNotThrow(() -> verify(statement).setString(3, "7"));
+        }
+
+        @Test
+        @DisplayName("the persistent state cache outlives a still-pending logout write")
+        void clearPersistentStateCacheWhenWritesSettle_keepsCache_whileWriteIsPending() {
+            CombatSession session = sessionWithState(7);
+            UUID entityUUID = session.getEntityUUID();
+            manager.endSession(entityUUID, CombatSessionEndReason.PLUGIN);
+
+            manager.clearPersistentStateCacheWhenWritesSettle(entityUUID);
+
+            // The write is still queued, so the database still holds the pre-logout row. Clearing
+            // the cache now would let a fast relog be seeded from that stale row.
+            manager.handleCombatInteraction(entityUUID, UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            assertEquals(7, manager.getSession(entityUUID).orElseThrow().getRawState(persistentType));
+        }
+
+        @Test
+        @DisplayName("shutdown drains in-flight writes before returning")
+        void shutdown_drainsInFlightWrites() throws SQLException {
+            // Run writes on a background thread with a delay, so an undrained write would still be
+            // pending when shutdown returns.
+            ThreadPoolExecutor executor = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.DATABASE).getDatabase().getDatabaseExecutorService();
+            doAnswer(invocation -> {
+                Runnable write = invocation.getArgument(0, Runnable.class);
+                Thread writeThread = new Thread(() -> {
+                    try {
+                        Thread.sleep(150L);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    write.run();
+                });
+                writeThread.start();
+                return null;
+            }).when(executor).execute(any(Runnable.class));
+
+            CombatSession session = sessionWithState(7);
+            // End the session first so the synchronous shutdown flush has nothing left to write and
+            // the only write in play is the async one.
+            manager.endSession(session.getEntityUUID(), CombatSessionEndReason.PLUGIN);
+
+            manager.shutdown();
+
+            verify(statement).executeUpdate();
+        }
+
+        @Test
+        @DisplayName("saveAllPersistentStateSync writes every active session's persistent state")
+        void saveAllPersistentStateSync_writesActiveSessions() throws SQLException {
+            sessionWithState(4);
+
+            manager.saveAllPersistentStateSync();
+
+            // Synchronous — no executor involvement at all.
+            assertTrue(submittedWrites.isEmpty());
+            verify(statement).setString(2, stateKey.toString());
+            verify(statement).setString(3, "4");
+            verify(statement).executeUpdate();
+        }
+
+        @Test
+        @DisplayName("saveAllPersistentStateSync no-ops when no session holds persistent state")
+        void saveAllPersistentStateSync_noOps_whenNoPersistentState() throws SQLException {
+            PlayerMock player = server.addPlayer();
+            manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+
+            manager.saveAllPersistentStateSync();
+
+            verify(statement, never()).executeUpdate();
         }
     }
 }

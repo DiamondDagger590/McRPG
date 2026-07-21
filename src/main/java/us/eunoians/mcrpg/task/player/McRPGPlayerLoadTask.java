@@ -21,9 +21,11 @@ import us.eunoians.mcrpg.ability.Ability;
 import us.eunoians.mcrpg.ability.AbilityData;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.database.table.CombatPersistentStateDAO;
 import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.PlayerExperienceExtrasDAO;
@@ -73,8 +75,12 @@ import java.util.logging.Level;
  */
 public final class McRPGPlayerLoadTask extends PlayerLoadTask {
 
-    public McRPGPlayerLoadTask(@NotNull McRPG plugin, @NotNull McRPGPlayer mcRPGPlayer) {
+    private final CombatTrackerManager combatTrackerManager;
+
+    public McRPGPlayerLoadTask(@NotNull McRPG plugin, @NotNull McRPGPlayer mcRPGPlayer,
+                               @NotNull CombatTrackerManager combatTrackerManager) {
         super(plugin, mcRPGPlayer);
+        this.combatTrackerManager = combatTrackerManager;
     }
 
     @Override
@@ -105,6 +111,7 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
             updatePlayerDataSyncFunctions.add(loadPlayerStats(connection));
             updatePlayerDataSyncFunctions.add(awardRestedExperience(connection));
             updatePlayerDataSyncFunctions.add(loadBoardQuestCount(connection));
+            updatePlayerDataSyncFunctions.add(loadPersistentCombatState(connection));
             updatePlayerLoginTimes(connection, loginTime);
             // Jump to main thread to save the data
             new CoreTask(getPlugin()) {
@@ -482,6 +489,28 @@ public final class McRPGPlayerLoadTask extends PlayerLoadTask {
         NamespacedKey boardKey = new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "default_board");
         int count = PlayerBoardStateDAO.countActiveQuestsFromBoard(connection, getCorePlayer().getUUID(), boardKey);
         return () -> getCorePlayer().asQuestHolder().setActiveBoardQuestCount(count);
+    }
+
+    /**
+     * Loads persisted combat state ({@code PERSISTENT}-scoped {@link us.eunoians.mcrpg.combat.state.CombatStateType}
+     * values) using the existing {@link Connection} already open for this pipeline. The loaded map
+     * is cached in {@link CombatTrackerManager} on the main thread, before the player is registered
+     * in {@link us.eunoians.mcrpg.entity.McRPGPlayerManager} — guaranteeing the cache is populated
+     * before any combat session can start for this player.
+     *
+     * @param connection The {@link Connection} to use when loading persistent combat state.
+     * @return The {@link UpdatePlayerDataSyncFunction} to run on the main thread to cache the state.
+     */
+    @NotNull
+    private UpdatePlayerDataSyncFunction loadPersistentCombatState(@NotNull Connection connection) {
+        // Like every sibling loader here, the read itself runs on the main thread: PlayerJoinListener
+        // schedules this task via runTask() (sync), so RepeatableCoreTask uses runTaskTimer, not the
+        // async variant. It is therefore ordered against main-thread combat state, but NOT against
+        // writes queued on the database executor — CombatTrackerManager's persistent-state cache is
+        // what closes that gap on a fast relog.
+        UUID uuid = getCorePlayer().getUUID();
+        Map<String, String> persistentState = CombatPersistentStateDAO.loadPersistentState(connection, uuid);
+        return () -> combatTrackerManager.cachePersistentState(uuid, persistentState);
     }
 
     /**

@@ -7,8 +7,11 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import us.eunoians.mcrpg.combat.condition.CombatCondition;
 import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
+import us.eunoians.mcrpg.combat.state.CombatStateType;
+import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatStateTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestContentPack;
@@ -245,6 +248,21 @@ public enum ContentHandlerType {
             for (CombatCondition condition : combatConditionPack.getContent()) {
                 conditionRegistry.register(condition);
                 combatTrackerManager.startConditionTask(condition);
+            }
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link CombatStateTypeContentPack}s by registering
+     * each {@link CombatStateType} into the {@link CombatStateTypeRegistry}.
+     */
+    COMBAT_STATE_TYPE((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof CombatStateTypeContentPack combatStateTypePack) {
+            CombatStateTypeRegistry stateTypeRegistry = mcRPG.registryAccess()
+                    .registry(McRPGRegistryKey.COMBAT_STATE_TYPE);
+            for (CombatStateType<?> stateType : combatStateTypePack.getContent()) {
+                stateTypeRegistry.register(stateType);
             }
             return true;
         }

@@ -6,6 +6,7 @@ import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.driver.DatabaseDriverType;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.database.table.CombatPersistentStateDAO;
 import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;
@@ -127,6 +128,8 @@ public class McRPGDatabase extends Database {
                             + (BoardCooldownDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     logger.log(Level.INFO, "Database Creation - Scoped Board State DAO "
                             + (ScopedBoardStateDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Combat Persistent State DAO "
+                            + (CombatPersistentStateDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {
@@ -164,6 +167,7 @@ public class McRPGDatabase extends Database {
                     PlayerBoardStateDAO.updateTable(connection);
                     BoardCooldownDAO.updateTable(connection);
                     ScopedBoardStateDAO.updateTable(connection);
+                    CombatPersistentStateDAO.updateTable(connection);
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {

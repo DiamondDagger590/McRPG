@@ -1,5 +1,7 @@
 package us.eunoians.mcrpg.combat;
 
+import com.diamonddagger590.mccore.database.Database;
+import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.Manager;
 import com.diamonddagger590.mccore.util.item.CustomEntityWrapper;
@@ -14,9 +16,15 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.combat.condition.CombatCondition;
 import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
 import us.eunoians.mcrpg.combat.condition.CombatConditionTask;
+import us.eunoians.mcrpg.combat.state.CombatStateSnapshot;
+import us.eunoians.mcrpg.combat.state.CombatStateType;
+import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
+import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticKey;
+import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticsSnapshot;
 import us.eunoians.mcrpg.combat.task.CombatSessionTimeoutTask;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
+import us.eunoians.mcrpg.database.table.CombatPersistentStateDAO;
 import us.eunoians.mcrpg.event.combat.CombatParticipantAddEvent;
 import us.eunoians.mcrpg.event.combat.CombatParticipantRemoveEvent;
 import us.eunoians.mcrpg.event.combat.CombatSessionEndEvent;
@@ -24,12 +32,21 @@ import us.eunoians.mcrpg.event.combat.CombatSessionStartEvent;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
@@ -51,14 +68,51 @@ import java.util.logging.Level;
  * timestamp fields are plain (non-concurrent) structures and it dispatches Bukkit events, so every
  * public mutating method must be invoked on the main server thread. The mutating entry points guard
  * this with a {@link org.bukkit.Bukkit#isPrimaryThread()} check and throw
- * {@link IllegalStateException} if called from another thread.
+ * {@link IllegalStateException} if called from another thread. The sole exception is
+ * {@code pendingPersistentWrites}, which is completed from the database executor thread and is
+ * therefore concurrent.
  */
 public class CombatTrackerManager extends Manager<McRPG> {
+
+    /**
+     * How long {@link #shutdown()} waits for outstanding persistent-state writes before abandoning
+     * them. Bounded so a wedged database executor cannot hang server shutdown indefinitely.
+     */
+    private static final long PENDING_WRITE_DRAIN_TIMEOUT_SECONDS = 10L;
 
     private final Map<UUID, CombatSession> activeSessions;
     private final Map<NamespacedKey, CombatConditionTask> conditionTasks;
     @Nullable
     private CombatSessionTimeoutTask timeoutTask;
+    private final Map<UUID, Map<String, String>> persistentStateCache;
+    private final Set<NamespacedKey> registeredDoubleStatKeys;
+    private final Set<NamespacedKey> registeredLongStatKeys;
+    /**
+     * The most recently submitted persistent-state write per entity. Each new write for an entity is
+     * chained onto its predecessor so writes for the same row execute in submission order, and the
+     * map lets {@link #shutdown()} drain outstanding writes before the database closes and lets
+     * {@link #clearPersistentStateCacheWhenWritesSettle(UUID)} defer the cache clear until the
+     * logout write has landed.
+     * <p>
+     * Entries are added on the main thread and removed by the write's own completion callback,
+     * which runs on the database executor thread — hence the concurrent map.
+     */
+    private final Map<UUID, CompletableFuture<Void>> pendingPersistentWrites;
+    /**
+     * Keys encountered in a session's state store that resolve to no registered
+     * {@link CombatStateType}. Tracked purely so {@link #collectPersistentEntries(CombatSession)}
+     * warns once per key instead of on every session end.
+     */
+    private final Set<NamespacedKey> warnedUnregisteredStateKeys;
+    /**
+     * Set by {@link #shutdown()} and exists solely to let {@link #endSession(UUID, CombatSessionEndReason)}
+     * distinguish an in-progress shutdown from every other end-session path, so it can skip a redundant
+     * persistent-state save (already flushed synchronously by {@link #saveAllPersistentStateSync()}).
+     * All access is on the main thread (enforced by {@link #requireMainThread()}), so no synchronization
+     * is needed. A new {@link CombatTrackerManager} instance is created on every plugin enable, so the
+     * field always starts {@code false} for a fresh run.
+     */
+    private boolean shuttingDown;
 
     /**
      * Constructs a new {@link CombatTrackerManager}.
@@ -69,6 +123,12 @@ public class CombatTrackerManager extends Manager<McRPG> {
         super(mcRPG);
         this.activeSessions = new HashMap<>();
         this.conditionTasks = new HashMap<>();
+        this.persistentStateCache = new HashMap<>();
+        this.registeredDoubleStatKeys = new HashSet<>();
+        this.registeredLongStatKeys = new HashSet<>();
+        this.pendingPersistentWrites = new ConcurrentHashMap<>();
+        this.warnedUnregisteredStateKeys = new HashSet<>();
+        this.shuttingDown = false;
     }
 
     /**
@@ -255,28 +315,48 @@ public class CombatTrackerManager extends Manager<McRPG> {
 
         CombatSession session = new CombatSession(entityUUID, getMaxMobParticipants(), getSessionTimeoutMillis());
         activeSessions.put(entityUUID, session);
+        initializeNewSession(session);
     }
 
     /**
      * Ends the combat session for the given entity, if one exists. Fires
-     * {@link CombatSessionEndEvent} with the session's final state.
+     * {@link CombatSessionEndEvent} with the session's final state, per-session statistics
+     * snapshot, and combat state snapshot. Saves any {@code PERSISTENT}-scoped state
+     * asynchronously (skipped during shutdown — {@link #saveAllPersistentStateSync()} already
+     * flushed it synchronously) and clears session-scoped state before firing the event.
      *
      * @param entityUUID The UUID of the entity whose session to end.
      * @param reason     The {@link CombatSessionEndReason} for ending the session.
      */
     public void endSession(@NotNull UUID entityUUID, @NotNull CombatSessionEndReason reason) {
         requireMainThread();
-        CombatSession session = activeSessions.remove(entityUUID);
+        CombatSession session = activeSessions.get(entityUUID);
         if (session == null) {
             return;
         }
+
+        CombatStateTypeRegistry stateTypeRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_STATE_TYPE);
+        CombatSessionStatisticsSnapshot statisticsSnapshot = session.createStatisticsSnapshot();
+        CombatStateSnapshot stateSnapshot = session.createStateSnapshot(stateTypeRegistry);
+
+        if (!shuttingDown) {
+            savePersistentStateAsync(session);
+        }
+
+        activeSessions.remove(entityUUID);
 
         CombatSessionEndEvent endEvent = new CombatSessionEndEvent(
                 entityUUID,
                 reason,
                 session.getParticipants(),
                 session.getCombatType(),
-                session.getDurationMillis());
+                session.getDurationMillis(),
+                statisticsSnapshot,
+                stateSnapshot);
+
+        session.clearSessionState();
+
         Bukkit.getPluginManager().callEvent(endEvent);
     }
 
@@ -502,11 +582,30 @@ public class CombatTrackerManager extends Manager<McRPG> {
     }
 
     /**
-     * Shuts down the combat tracker. Ends all active sessions with
-     * {@link CombatSessionEndReason#PLUGIN}, cancels all condition tasks, and stops the
-     * timeout task.
+     * Shuts down the combat tracker. Drains outstanding async persistent-state writes, synchronously
+     * flushes all dirty persistent state while sessions are still active, ends all active sessions
+     * with {@link CombatSessionEndReason#PLUGIN}, cancels all condition tasks, and stops the timeout
+     * task.
+     * <p>
+     * The ordering is what makes "no persistent state is lost" true, so do not reorder these steps:
+     * <ol>
+     *   <li>{@link #awaitPendingPersistentWrites()} drains writes submitted before shutdown began
+     *       (a player who quit moments before {@code /stop}). {@code McRPGBootstrap.stop()} closes
+     *       the database shortly after this method returns, and a write still in flight then would
+     *       hit a closed connection pool and be lost with only a logged warning.</li>
+     *   <li>{@link #saveAllPersistentStateSync()} runs while all sessions are still in the active
+     *       session map, so it can see their state.</li>
+     *   <li>Sessions are ended with {@link #shuttingDown} {@code true}, which suppresses
+     *       {@link #endSession(UUID, CombatSessionEndReason)}'s own async save — otherwise every
+     *       session would re-submit a duplicate write for state just flushed synchronously, racing
+     *       the database executor's own shutdown.</li>
+     * </ol>
      */
     public void shutdown() {
+        awaitPendingPersistentWrites();
+        shuttingDown = true;
+        saveAllPersistentStateSync();
+
         // End all active sessions with reason PLUGIN
         List<UUID> sessionOwners = new ArrayList<>(activeSessions.keySet());
         for (UUID ownerUUID : sessionOwners) {
@@ -524,6 +623,38 @@ public class CombatTrackerManager extends Manager<McRPG> {
     }
 
     /**
+     * Blocks until every outstanding persistent-state write submitted by
+     * {@link #savePersistentStateAsync(CombatSession)} has completed, or until
+     * {@link #PENDING_WRITE_DRAIN_TIMEOUT_SECONDS} elapses. Called at the top of
+     * {@link #shutdown()} so no write is still in flight when the database closes its connection
+     * pool moments later.
+     * <p>
+     * The timeout is bounded so a wedged database executor cannot hang server shutdown; on timeout
+     * the remaining writes are abandoned with a warning rather than waited on indefinitely. Blocking
+     * the main thread here is safe — these writes only need the database executor to make progress.
+     */
+    private void awaitPendingPersistentWrites() {
+        if (pendingPersistentWrites.isEmpty()) {
+            return;
+        }
+        CompletableFuture<?>[] outstandingWrites = pendingPersistentWrites.values().toArray(CompletableFuture[]::new);
+        try {
+            CompletableFuture.allOf(outstandingWrites).get(PENDING_WRITE_DRAIN_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+        } catch (TimeoutException e) {
+            plugin().getLogger().log(Level.WARNING, "Timed out after " + PENDING_WRITE_DRAIN_TIMEOUT_SECONDS
+                    + " seconds waiting for " + outstandingWrites.length
+                    + " persistent combat state write(s) to finish; abandoning them so shutdown can continue", e);
+        } catch (ExecutionException e) {
+            plugin().getLogger().log(Level.WARNING,
+                    "A persistent combat state write failed while draining writes during shutdown", e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            plugin().getLogger().log(Level.WARNING,
+                    "Interrupted while draining persistent combat state writes during shutdown", e);
+        }
+    }
+
+    /**
      * Gets an immutable snapshot of all active sessions, keyed by session-owner UUID. The returned
      * map is a copy taken at call time, so it is safe to iterate while mutating combat state (for
      * example calling {@link #endSession(UUID, CombatSessionEndReason)} during the iteration). It
@@ -534,6 +665,250 @@ public class CombatTrackerManager extends Manager<McRPG> {
     @NotNull
     public Map<UUID, CombatSession> getActiveSessions() {
         return Map.copyOf(activeSessions);
+    }
+
+    /**
+     * Convenience wrapper over {@code registryAccess().registry(McRPGRegistryKey.COMBAT_STATE_TYPE).register(stateType)}
+     * for standalone plugins that would rather not reach for the registry directly. The manager does
+     * not own {@link CombatStateTypeRegistry} — unlike combat conditions, state types need no
+     * per-type task for the manager to coordinate, so this delegates and nothing more. Registering
+     * on the registry directly is equally valid.
+     * <p>
+     * For plugins using the expansion system, registration happens via
+     * {@link us.eunoians.mcrpg.expansion.content.CombatStateTypeContentPack} and the
+     * {@code ContentHandlerType.COMBAT_STATE_TYPE} processor — calling this method directly is not
+     * needed.
+     *
+     * @param stateType The state type to register.
+     */
+    public void registerStateType(@NotNull CombatStateType<?> stateType) {
+        requireMainThread();
+        CombatStateTypeRegistry registry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_STATE_TYPE);
+        registry.register(stateType);
+    }
+
+    /**
+     * Registers a double-valued custom per-session statistic key so it appears with its default
+     * value ({@code 0.0}) in every new session's statistics container.
+     *
+     * @param key The custom statistic key.
+     */
+    public void registerDoubleSessionStatisticKey(@NotNull NamespacedKey key) {
+        requireMainThread();
+        registeredDoubleStatKeys.add(key);
+    }
+
+    /**
+     * Registers a long-valued custom per-session statistic key so it appears with its default
+     * value ({@code 0}) in every new session's statistics container.
+     *
+     * @param key The custom statistic key.
+     */
+    public void registerLongSessionStatisticKey(@NotNull NamespacedKey key) {
+        requireMainThread();
+        registeredLongStatKeys.add(key);
+    }
+
+    /**
+     * Reports an attributed healing interaction, incrementing {@code healing_dealt} on the healer's
+     * active session. Does not create sessions or add participants.
+     * <p>
+     * McRPG heal abilities and third-party plugins call this to attribute healing — Bukkit's
+     * {@link org.bukkit.event.entity.EntityRegainHealthEvent} carries no healer source, so
+     * attribution requires explicit reporting.
+     * <p>
+     * This method deliberately does <b>not</b> write {@code healing_received}. Applying a heal
+     * through the Bukkit API fires {@link org.bukkit.event.entity.EntityRegainHealthEvent}, which
+     * {@link us.eunoians.mcrpg.listener.combat.OnCombatHealingStatListener} already credits to the
+     * healed entity's session — writing it here as well would double-count every attributed heal.
+     * A heal that bypasses that event (absorption hearts, direct health mutation) is therefore not
+     * counted as received, which matches what the statistic measures.
+     *
+     * @param healerUUID The UUID of the entity that performed the healing.
+     * @param targetUUID The UUID of the entity that was healed. Retained for a stable signature and
+     *                   so listeners of future attribution events can identify the target; the
+     *                   target's own {@code healing_received} is credited by the heal event listener.
+     * @param amount     The amount of healing applied.
+     */
+    public void reportHealing(@NotNull UUID healerUUID, @NotNull UUID targetUUID, double amount) {
+        requireMainThread();
+        getSession(healerUUID).ifPresent(session ->
+                session.getStatistics().incrementDouble(CombatSessionStatisticKey.HEALING_DEALT, amount));
+    }
+
+    /**
+     * Caches pre-loaded persistent combat state for a player. Called by
+     * {@link us.eunoians.mcrpg.task.player.McRPGPlayerLoadTask} after the DB load completes, during
+     * main-thread finalization — before the player is registered in
+     * {@link us.eunoians.mcrpg.entity.McRPGPlayerManager} and before any combat session can start.
+     * <p>
+     * Values already in the cache win over the loaded ones. A cache entry can survive a logout when
+     * the player rejoins before their logout write reaches the database (see
+     * {@link #clearPersistentStateCacheWhenWritesSettle(UUID)}); in that window the retained
+     * in-memory value is the fresher of the two and the DB read is stale by definition.
+     *
+     * @param entityUUID      The UUID of the entity.
+     * @param persistentState The loaded persistent state map (keyed by stringified NamespacedKey).
+     */
+    public void cachePersistentState(@NotNull UUID entityUUID, @NotNull Map<String, String> persistentState) {
+        Map<String, String> cacheEntry = persistentStateCache.computeIfAbsent(entityUUID, uuid -> new HashMap<>());
+        for (Map.Entry<String, String> entry : persistentState.entrySet()) {
+            cacheEntry.putIfAbsent(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * Clears the persistent state cache for an entity immediately.
+     *
+     * @param entityUUID The UUID of the entity whose cache to clear.
+     */
+    public void clearPersistentStateCache(@NotNull UUID entityUUID) {
+        persistentStateCache.remove(entityUUID);
+    }
+
+    /**
+     * Clears an entity's persistent state cache once its outstanding database write has landed.
+     * Called by {@link us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener} during combat
+     * teardown on logout, after {@link #endSession(UUID, CombatSessionEndReason)} has submitted the
+     * write.
+     * <p>
+     * Clearing eagerly would open a fast-relog hole: the write is queued on the database executor
+     * while the reconnect path reads the same row on the main thread, so a player who rejoins
+     * quickly could be seeded from a pre-logout row and then write that stale state back at their
+     * next session end. Holding the cache entry until the write completes keeps
+     * {@link #cachePersistentState(UUID, Map)} authoritative for that window. If the entity is back
+     * online by the time the write finishes, the clear is skipped so a live session's cache is not
+     * pulled out from under it.
+     *
+     * @param entityUUID The UUID of the entity whose cache to clear.
+     */
+    public void clearPersistentStateCacheWhenWritesSettle(@NotNull UUID entityUUID) {
+        requireMainThread();
+        CompletableFuture<Void> pendingWrite = pendingPersistentWrites.get(entityUUID);
+        if (pendingWrite == null || pendingWrite.isDone()) {
+            clearPersistentStateCache(entityUUID);
+            return;
+        }
+        pendingWrite.whenComplete((ignored, throwable) -> {
+            // The write completes on the database executor thread, so hop back to the main thread
+            // before touching the cache — unless the plugin is already disabling, in which case the
+            // scheduler rejects new tasks and this manager (cache included) is about to be discarded.
+            if (!plugin().isEnabled()) {
+                return;
+            }
+            Bukkit.getScheduler().runTask(plugin(), () -> {
+                // Skip the clear if the entity is back online: their cache now belongs to a live
+                // session that was seeded from it.
+                if (Bukkit.getPlayer(entityUUID) == null) {
+                    clearPersistentStateCache(entityUUID);
+                }
+            });
+        });
+    }
+
+    /**
+     * Saves dirty persistent state from a session to the database asynchronously. Called
+     * during session end for sessions that contain persistent state. No-ops (and never touches
+     * the database) when the session has no raw state matching a registered {@code PERSISTENT}
+     * type.
+     * <p>
+     * Writes for the same entity are chained so they reach the database in submission order — two
+     * session ends in quick succession (death then immediate re-engagement, rapid timeout cycling)
+     * would otherwise be free to land in either order and let a stale write overwrite a fresher one.
+     * The returned future also lets {@link #shutdown()} drain in-flight writes before the database
+     * closes and lets {@link #clearPersistentStateCacheWhenWritesSettle(UUID)} time the cache clear.
+     *
+     * @param session The session whose persistent state to save.
+     * @return A {@link CompletableFuture} completing when the write has been attempted; an
+     *         already-completed future when the session has no persistent state to write.
+     */
+    @NotNull
+    public CompletableFuture<Void> savePersistentStateAsync(@NotNull CombatSession session) {
+        requireMainThread();
+        Map<CombatStateType<?>, String> serializedEntries = collectPersistentEntries(session);
+        if (serializedEntries.isEmpty()) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        UUID entityUUID = session.getEntityUUID();
+        updatePersistentStateCache(entityUUID, serializedEntries);
+
+        Database database = plugin().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE).getDatabase();
+        CompletableFuture<Void> previousWrite = pendingPersistentWrites.getOrDefault(
+                entityUUID, CompletableFuture.completedFuture(null));
+        // exceptionally() first: a failed predecessor must not cancel this entity's next write.
+        CompletableFuture<Void> write = previousWrite
+                .exceptionally(throwable -> null)
+                .thenRunAsync(() -> writePersistentEntries(database, entityUUID, serializedEntries),
+                        database.getDatabaseExecutorService());
+        pendingPersistentWrites.put(entityUUID, write);
+        write.whenComplete((ignored, throwable) -> pendingPersistentWrites.remove(entityUUID, write));
+        return write;
+    }
+
+    /**
+     * Writes one entity's serialized persistent state to the database in a single batch. Runs on the
+     * database executor thread.
+     *
+     * @param database          The database to write through.
+     * @param entityUUID        The UUID of the entity whose state is being written.
+     * @param serializedEntries The serialized state entries to write.
+     */
+    private void writePersistentEntries(@NotNull Database database, @NotNull UUID entityUUID,
+                                        @NotNull Map<CombatStateType<?>, String> serializedEntries) {
+        try (Connection connection = database.getConnection()) {
+            BatchTransaction batch = new BatchTransaction(connection);
+            for (Map.Entry<CombatStateType<?>, String> entry : serializedEntries.entrySet()) {
+                batch.addAll(CombatPersistentStateDAO.savePersistentState(
+                        connection, entityUUID, entry.getKey().getKey().toString(), entry.getValue()));
+            }
+            batch.executeTransaction();
+        } catch (SQLException e) {
+            plugin().getLogger().log(Level.WARNING,
+                    "Failed to save persistent combat state for entity " + entityUUID, e);
+        }
+    }
+
+    /**
+     * Saves all dirty persistent state synchronously. Called during plugin shutdown to ensure
+     * no persistent state is lost. No-ops (and never touches the database) when no active session
+     * has any raw state matching a registered {@code PERSISTENT} type.
+     */
+    public void saveAllPersistentStateSync() {
+        requireMainThread();
+        Map<UUID, Map<CombatStateType<?>, String>> perEntityEntries = new HashMap<>();
+        for (CombatSession session : activeSessions.values()) {
+            Map<CombatStateType<?>, String> entries = collectPersistentEntries(session);
+            if (!entries.isEmpty()) {
+                perEntityEntries.put(session.getEntityUUID(), entries);
+            }
+        }
+        if (perEntityEntries.isEmpty()) {
+            return;
+        }
+
+        for (Map.Entry<UUID, Map<CombatStateType<?>, String>> entityEntry : perEntityEntries.entrySet()) {
+            updatePersistentStateCache(entityEntry.getKey(), entityEntry.getValue());
+        }
+
+        Database database = plugin().registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE).getDatabase();
+        try (Connection connection = database.getConnection()) {
+            BatchTransaction batch = new BatchTransaction(connection);
+            for (Map.Entry<UUID, Map<CombatStateType<?>, String>> entityEntry : perEntityEntries.entrySet()) {
+                UUID entityUUID = entityEntry.getKey();
+                for (Map.Entry<CombatStateType<?>, String> stateEntry : entityEntry.getValue().entrySet()) {
+                    batch.addAll(CombatPersistentStateDAO.savePersistentState(
+                            connection, entityUUID, stateEntry.getKey().getKey().toString(), stateEntry.getValue()));
+                }
+            }
+            batch.executeTransaction();
+        } catch (SQLException e) {
+            plugin().getLogger().log(Level.SEVERE,
+                    "Failed to synchronously save persistent combat state during shutdown", e);
+        }
     }
 
     /**
@@ -598,6 +973,186 @@ public class CombatTrackerManager extends Manager<McRPG> {
             interval = 0.25;
         }
         return interval;
+    }
+
+    /**
+     * Initializes a newly-created session with cached persistent state (if any) and the default
+     * values of any registered custom per-session statistic keys. Called by both session-creation
+     * paths ({@link #createSessionForInteraction(UUID, UUID, ParticipantType, CustomEntityWrapper)}
+     * and {@link #reportConditionActivity(UUID, NamespacedKey)}) immediately after the session is
+     * put into {@link #activeSessions}.
+     *
+     * @param session The newly-created session to initialize.
+     */
+    private void initializeNewSession(@NotNull CombatSession session) {
+        applyCachedPersistentState(session);
+        initializeRegisteredStatKeys(session);
+    }
+
+    /**
+     * Applies any cached persistent combat state for the session's owner, deserializing each
+     * cached entry via its {@link CombatStateType}'s registered deserializer and writing it into
+     * the session's raw state store without firing {@link us.eunoians.mcrpg.event.combat.CombatStateChangeEvent}.
+     * Entries whose key does not resolve to a registered state type, or whose key string is not a
+     * valid {@link NamespacedKey}, are skipped.
+     *
+     * @param session The session to apply cached persistent state to.
+     */
+    private void applyCachedPersistentState(@NotNull CombatSession session) {
+        Map<String, String> cached = persistentStateCache.get(session.getEntityUUID());
+        if (cached == null || cached.isEmpty()) {
+            return;
+        }
+
+        CombatStateTypeRegistry stateTypeRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_STATE_TYPE);
+        for (Map.Entry<String, String> entry : cached.entrySet()) {
+            NamespacedKey key = NamespacedKey.fromString(entry.getKey());
+            if (key == null) {
+                continue;
+            }
+            stateTypeRegistry.get(key).ifPresent(stateType -> applyDeserializedState(session, stateType, entry.getValue()));
+        }
+    }
+
+    /**
+     * Deserializes a single cached persistent state value and writes it into the session's raw
+     * state store. No-ops if the state type declares no deserializer.
+     * <p>
+     * The deserializer belongs to whoever registered the state type. If it throws — a corrupt or
+     * hand-edited database row, a format change between versions — the entry is skipped so the
+     * session starts that type at its default, and the failure is logged. Letting it propagate
+     * would break session creation for that entity on every subsequent hit until restart, since
+     * the offending cached value is never cleared.
+     *
+     * @param session         The session to write the deserialized value into.
+     * @param stateType       The state type owning the value.
+     * @param serializedValue The serialized value loaded from the database.
+     * @param <T>             The state value type.
+     */
+    private <T> void applyDeserializedState(@NotNull CombatSession session, @NotNull CombatStateType<T> stateType,
+                                            @NotNull String serializedValue) {
+        stateType.getDeserializer().ifPresent(deserializer -> {
+            try {
+                session.setRawState(stateType.getKey(), deserializer.apply(serializedValue));
+            } catch (Exception e) {
+                plugin().getLogger().log(Level.WARNING, "Combat state type " + stateType.getKey()
+                        + " deserializer threw for stored value \"" + serializedValue + "\" belonging to entity "
+                        + session.getEntityUUID() + "; leaving the state at its default value", e);
+            }
+        });
+    }
+
+    /**
+     * Seeds a new session's statistics container with the default value ({@code 0.0}/{@code 0}) of
+     * every custom key registered via {@link #registerDoubleSessionStatisticKey(NamespacedKey)} or
+     * {@link #registerLongSessionStatisticKey(NamespacedKey)}, so those keys appear in statistics
+     * snapshots even if never incremented during the session.
+     *
+     * @param session The newly-created session to seed.
+     */
+    private void initializeRegisteredStatKeys(@NotNull CombatSession session) {
+        for (NamespacedKey key : registeredDoubleStatKeys) {
+            session.getStatistics().setDouble(key, 0.0);
+        }
+        for (NamespacedKey key : registeredLongStatKeys) {
+            session.getStatistics().setLong(key, 0L);
+        }
+    }
+
+    /**
+     * Collects and serializes every entry in the session's raw state store whose key resolves to a
+     * registered {@link us.eunoians.mcrpg.combat.state.CombatStateLifecycle#PERSISTENT} {@link CombatStateType}.
+     * Entries whose type is unregistered, {@code SESSION}-scoped, or declares no serializer are skipped.
+     * <p>
+     * A key with no registered type is logged once (per key, per manager instance). Session-scoped
+     * state works fine without registration, but persistence and end-of-session resolution do not —
+     * so an unregistered key here is either intentional or a persistent type whose registration was
+     * forgotten, and the latter would otherwise vanish silently at session end.
+     *
+     * @param session The session to collect persistent entries from.
+     * @return A map of persistent state type to its serialized value; empty if the session has none.
+     */
+    @NotNull
+    private Map<CombatStateType<?>, String> collectPersistentEntries(@NotNull CombatSession session) {
+        CombatStateTypeRegistry stateTypeRegistry = plugin().registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_STATE_TYPE);
+        Map<CombatStateType<?>, String> serialized = new HashMap<>();
+        for (Map.Entry<NamespacedKey, Object> entry : session.getRawStateMap().entrySet()) {
+            Optional<CombatStateType<?>> typeOpt = stateTypeRegistry.get(entry.getKey());
+            if (typeOpt.isEmpty()) {
+                warnUnregisteredStateKey(entry.getKey(), session.getEntityUUID());
+                continue;
+            }
+            if (!typeOpt.get().isPersistent()) {
+                continue;
+            }
+            CombatStateType<?> stateType = typeOpt.get();
+            serializeEntry(stateType, entry.getValue()).ifPresent(serializedValue -> serialized.put(stateType, serializedValue));
+        }
+        return serialized;
+    }
+
+    /**
+     * Logs a one-time warning for a state key held by a session but absent from
+     * {@link CombatStateTypeRegistry}, so a forgotten registration is debuggable instead of silent.
+     * Subsequent encounters of the same key are ignored to keep a legitimately-unregistered
+     * session-scoped type from spamming the log on every session end.
+     *
+     * @param stateKey   The unregistered state key.
+     * @param entityUUID The UUID of the session owner holding the state.
+     */
+    private void warnUnregisteredStateKey(@NotNull NamespacedKey stateKey, @NotNull UUID entityUUID) {
+        if (!warnedUnregisteredStateKeys.add(stateKey)) {
+            return;
+        }
+        plugin().getLogger().log(Level.WARNING, "Session for entity {0} holds combat state {1}, which has no "
+                        + "registered CombatStateType. Session-scoped state works without registration, but the value "
+                        + "will not be persisted or resolved at session boundaries — register the type via "
+                        + "CombatStateTypeContentPack or CombatTrackerManager#registerStateType if that was intended. "
+                        + "This warning is logged once per state key.",
+                new Object[]{entityUUID, stateKey});
+    }
+
+    /**
+     * Serializes a single raw state value using its type's registered serializer.
+     * <p>
+     * The serializer belongs to whoever registered the state type. If it throws, that one entry is
+     * dropped rather than aborting the enclosing flush — a single faulty type must not take down
+     * the whole session-end save or the shutdown flush behind it (and, in
+     * {@link #endSession(UUID, CombatSessionEndReason)}, leak the session by unwinding before it is
+     * removed from the active map).
+     *
+     * @param type     The state type owning the value.
+     * @param rawValue The raw stored value.
+     * @param <T>      The state value type.
+     * @return An {@link Optional} containing the serialized value, or empty if no serializer is
+     *         declared or the serializer threw.
+     */
+    @SuppressWarnings("unchecked")
+    @NotNull
+    private <T> Optional<String> serializeEntry(@NotNull CombatStateType<T> type, @NotNull Object rawValue) {
+        try {
+            return type.getSerializer().map(serializer -> serializer.apply((T) rawValue));
+        } catch (Exception e) {
+            plugin().getLogger().log(Level.WARNING, "Combat state type " + type.getKey()
+                    + " serializer threw while persisting state; skipping this entry", e);
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Merges newly-serialized persistent state entries into the in-memory cache, keyed by the
+     * state type's key string (matching {@link CombatPersistentStateDAO}'s string-keyed map shape).
+     *
+     * @param entityUUID The UUID of the entity whose cache entry to update.
+     * @param entries    The newly-serialized entries to merge in.
+     */
+    private void updatePersistentStateCache(@NotNull UUID entityUUID, @NotNull Map<CombatStateType<?>, String> entries) {
+        Map<String, String> cacheEntry = persistentStateCache.computeIfAbsent(entityUUID, uuid -> new HashMap<>());
+        for (Map.Entry<CombatStateType<?>, String> entry : entries.entrySet()) {
+            cacheEntry.put(entry.getKey().getKey().toString(), entry.getValue());
+        }
     }
 
     /**
@@ -685,6 +1240,7 @@ public class CombatTrackerManager extends Manager<McRPG> {
 
         CombatSession session = new CombatSession(ownerUUID, getMaxMobParticipants(), getSessionTimeoutMillis());
         activeSessions.put(ownerUUID, session);
+        initializeNewSession(session);
 
         long nowMillis = McRPG.getInstance().getTimeProvider().now().toEpochMilli();
         CombatParticipant participant = new CombatParticipant(otherUUID, otherType, otherEntityWrapper, nowMillis);

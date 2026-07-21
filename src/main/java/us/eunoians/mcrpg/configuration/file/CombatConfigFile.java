@@ -12,7 +12,7 @@ import static com.diamonddagger590.mccore.util.Methods.toRoutePath;
  */
 public final class CombatConfigFile extends ConfigFile {
 
-    private static final int CURRENT_VERSION = 1;
+    private static final int CURRENT_VERSION = 2;
 
     // Session
     private static final String SESSION_HEADER = "session";
@@ -22,4 +22,9 @@ public final class CombatConfigFile extends ConfigFile {
             Route.fromString(toRoutePath(SESSION_HEADER, "max-mob-participants"));
     public static final Route TIMEOUT_SCAN_INTERVAL_SECONDS =
             Route.fromString(toRoutePath(SESSION_HEADER, "timeout-scan-interval-seconds"));
+
+    // Per-Session Statistics
+    private static final String PER_SESSION_STATISTICS_HEADER = "per-session-statistics";
+    public static final Route FEED_TO_CUMULATIVE =
+            Route.fromString(toRoutePath(PER_SESSION_STATISTICS_HEADER, "feed-to-cumulative"));
 }

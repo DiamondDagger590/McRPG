@@ -1,7 +1,8 @@
-config-version: 1
+config-version: 2
 
 # Combat Tracker Configuration
-# Controls per-player combat session tracking, timeout behavior, and participant management.
+# Controls per-player combat session tracking, timeout behavior, participant management, and how
+# per-session combat statistics feed into cumulative totals.
 
 session:
   # Seconds of inactivity before a combat session ends.
@@ -25,3 +26,14 @@ session:
   # Minimum: 0.25 (values below 0.25 are clamped to 0.25 and a warning is logged).
   # Reload: applied immediately by /mcrpg admin reload (the scan task is restarted).
   timeout-scan-interval-seconds: 0.5
+
+# Per-Session Statistics Configuration
+# Controls how per-session combat statistics are tracked and fed into cumulative stats.
+
+per-session-statistics:
+  # Whether to fold per-session stats into cumulative McCore statistics on session end.
+  # When true, stats like healing_dealt, hits_landed, combat_kills are added to the
+  # entity's lifetime totals. When false, per-session stats are available only on
+  # CombatSessionEndEvent but are not persisted cumulatively.
+  # Reload: applies immediately — the next session end respects the new value.
+  feed-to-cumulative: true
