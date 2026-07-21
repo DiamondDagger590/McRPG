@@ -12,6 +12,17 @@ Adopt the Testing Auditor Persona. You are a test engineer reviewing whether thi
 - If a bug was fixed, is there a regression test?
 - Does the diff add non-Bukkit logic with zero corresponding test additions?
 
+**Unhandled Edge Cases**
+- Boundary values: is new logic tested with an empty collection, `0`, a negative value, and the maximum the type allows (`Integer.MAX_VALUE`, max tier, max level)? Mid-range "happy" inputs hide overflow and clamping bugs.
+- Collaborator failure paths: when a dependency returns `Optional.empty()` (e.g., `getPlayer(uuid)` for an offline player), a registry lookup misses, or a DAO read finds no row, is that branch exercised — not just the found/success branch?
+- State machine transitions: for stateful types (`QuestState`, `QuestChainState`, `BoardOffering` state, cooldown state), is there a test for an invalid transition — double-start, completing an already-`COMPLETED` instance, progressing a `CANCELLED` quest? Testing only the legal path leaves illegal transitions with undefined behavior.
+- Off-by-one: for any range, pagination, loadout-slot-index, or per-tier loop, is the exact boundary tested — first index, last index, one-past-last, single-element page, exactly-full page?
+- Parser formula edge cases: for any config formula evaluated via `Parser` (mana cost, cooldown, experience curves), is there a test where the formula divides by zero, produces a negative result (a `tier` high enough to push `base - scale*tier` below 0), or exceeds expected bounds? The minimum-cost floor only protects paths that are actually covered.
+- Concurrent mutation during iteration: does tested code iterate a collection that a callback, event handler, or scheduled task can mutate mid-iteration (e.g., iterating loadout abilities while an activation modifies the loadout)? A test that mutates during iteration catches `ConcurrentModificationException` before a player does.
+- Time boundaries: for cooldown/expiration checks, is the exact boundary instant tested (`now == expiresAt` via a fixed `TimeProvider`), not just clearly-before and clearly-after? Inclusive-vs-exclusive comparison bugs live exactly on the boundary.
+- Config-driven edge cases: is the load path tested when a YAML key is missing, the value is an empty string, or a non-numeric string sits where a number is expected — not only against the bundled defaults?
+- Ordering assumptions: does any test assert on iteration order of a `HashSet`/`HashMap`-backed collection? Such tests pass by accident of hashing; assert order-insensitively or use an ordered structure in production.
+
 **TimeProvider Usage**
 - Does any new or modified code call `System.currentTimeMillis()` or `Instant.now()` directly? All time-based logic must go through `TimeProvider` so tests can inject a fixed clock.
 - Do tests that assert time-dependent behavior (cooldowns, duration abilities, rested experience timers) inject a mock or fixed `TimeProvider` rather than depending on wall-clock time?
