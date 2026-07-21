@@ -246,7 +246,7 @@ The `SkillNameColorConsistencyTest` enforces this for all bundled skills at CI t
 
 ## Test Naming Conventions
 
-- **`@DisplayName` format:** Short descriptive label — not Given/When/Then. Examples: `"getBaseValue returns constructor value"`, `"DISABLED cycles to ENABLED"`, `"fromString is case-insensitive"`
+- **`@DisplayName` format:** Descriptive label that clearly communicates the test's intent. Examples: `"Given a registered key, when getting by key, then returns the statistic"`, `"throws when the manager is already registered"`, `"DISABLED cycles to ENABLED"`
 - **Method naming:** `action_outcome_whenCondition` (the `_whenCondition` suffix is optional when obvious). Examples: `getNextSetting_disabled_cyclesToEnabled`, `getBaseValue_returnsDefault`, `fromString_unknownValue_returnsEmpty`
 - **`@Nested` classes:** Group tests by class-under-test or logical section with `@Nested` + `@DisplayName`
 - **Parameterized tests:** Prefer `@ParameterizedTest` + `@EnumSource` over manual loops for enum variant coverage
