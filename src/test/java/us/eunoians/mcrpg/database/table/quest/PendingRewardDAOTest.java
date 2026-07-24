@@ -223,6 +223,7 @@ class PendingRewardDAOTest extends McRPGBaseTest {
             List<PendingReward> rewards = PendingRewardDAO.loadAndCleanPendingRewards(conn, PLAYER_UUID);
 
             assertEquals(1, rewards.size());
+            verify(deleteStatement).executeUpdate();
         }
 
         @Test
@@ -285,6 +286,20 @@ class PendingRewardDAOTest extends McRPGBaseTest {
             List<PendingReward> rewards = PendingRewardDAO.loadAndCleanPendingRewards(conn, PLAYER_UUID);
 
             assertTrue(rewards.isEmpty());
+        }
+
+        @Test
+        @DisplayName("returns empty list when SELECT throws SQL exception")
+        void loadAndCleanPendingRewards_returnsEmpty_whenSelectThrowsSqlException() throws SQLException {
+            Connection conn = mock(Connection.class);
+            PreparedStatement deleteStatement = mock(PreparedStatement.class);
+            when(conn.prepareStatement(contains("DELETE"))).thenReturn(deleteStatement);
+            when(conn.prepareStatement(contains("SELECT"))).thenThrow(new SQLException("select error"));
+
+            List<PendingReward> rewards = PendingRewardDAO.loadAndCleanPendingRewards(conn, PLAYER_UUID);
+
+            assertTrue(rewards.isEmpty());
+            verify(deleteStatement).executeUpdate();
         }
     }
 

@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.OptionalLong;
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -157,8 +158,8 @@ class QuestCompletionLogDAOTest extends McRPGBaseTest {
             Connection conn = mock(Connection.class);
             when(conn.prepareStatement(anyString())).thenThrow(new SQLException("test"));
 
-            QuestCompletionLogDAO.logCompletion(
-                    conn, PLAYER_UUID, DEFINITION_KEY, UUID.randomUUID(), Instant.now());
+            assertDoesNotThrow(() -> QuestCompletionLogDAO.logCompletion(
+                    conn, PLAYER_UUID, DEFINITION_KEY, UUID.randomUUID(), Instant.now()));
         }
     }
 
