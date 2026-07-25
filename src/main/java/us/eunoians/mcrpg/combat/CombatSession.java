@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.combat;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticKey;
 import us.eunoians.mcrpg.combat.stat.CombatSessionStatistics;
@@ -11,6 +12,7 @@ import us.eunoians.mcrpg.combat.state.CombatStateResolver;
 import us.eunoians.mcrpg.combat.state.CombatStateSnapshot;
 import us.eunoians.mcrpg.combat.state.CombatStateType;
 import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
+import us.eunoians.mcrpg.combat.state.StateTypeWarningLog;
 import us.eunoians.mcrpg.event.combat.CombatStateChangeEvent;
 
 import java.util.ArrayList;
@@ -69,6 +71,12 @@ public class CombatSession {
     private long lastActivityMillis;
     private final Map<NamespacedKey, Object> stateStore;
     private final CombatSessionStatistics statistics;
+    /**
+     * Deduplicates warnings about a throwing resolver, so a resolver that fails on the hot read path
+     * is reported once per state type rather than once per read. Session-scoped, so it re-surfaces a
+     * persistent problem once each time the entity re-enters combat.
+     */
+    private final StateTypeWarningLog resolverWarnings;
 
     /**
      * Constructs a new {@link CombatSession}.
@@ -88,6 +96,7 @@ public class CombatSession {
         this.timeoutMillis = timeoutMillis;
         this.stateStore = new HashMap<>();
         this.statistics = new CombatSessionStatistics();
+        this.resolverWarnings = new StateTypeWarningLog(McRPG.getInstance().getLogger());
     }
 
     /**
@@ -333,13 +342,25 @@ public class CombatSession {
 
     /**
      * Applies a state type's resolver to a raw value, falling back to the raw value if the resolver
-     * throws. Third-party resolvers run on the combat read path, so an exception here must not
-     * propagate into an unrelated caller (a snapshot build, a session end, another plugin's read).
+     * throws or returns {@code null}. Third-party resolvers run on the combat read path, so a faulty
+     * one must not propagate into an unrelated caller (a snapshot build, a session end, another
+     * plugin's read), and one that fails on a hot read is warned about once per state type —
+     * {@link CombatStateResolver} documents itself as running on every {@code getState()} call — so
+     * the log is not flooded.
+     * <p>
+     * The {@code null} return is guarded even though {@link CombatStateResolver#resolve} is
+     * {@code @NotNull}: that annotation is a contract, not a runtime guarantee, and a resolver that
+     * violates it (a raw-typed or otherwise unchecked lambda) would send a {@code null} into
+     * {@code Map.copyOf} at {@link #createStateSnapshot(CombatStateTypeRegistry)} time, which rejects
+     * null values — throwing out of session end before the manager can unmap the session. The blast
+     * radius (a leaked session that then floods the timeout scan with the same exception) is worth
+     * defending against beyond the contract.
      *
      * @param type     The state type owning the value.
      * @param rawValue The raw stored value.
      * @param <T>      The state value type.
-     * @return The resolved value, or {@code rawValue} if no resolver is declared or the resolver threw.
+     * @return The resolved value, or {@code rawValue} if no resolver is declared, the resolver threw,
+     *         or the resolver returned {@code null}.
      */
     @NotNull
     private <T> T resolveDefensively(@NotNull CombatStateType<T> type, @NotNull T rawValue) {
@@ -348,13 +369,34 @@ public class CombatSession {
             return rawValue;
         }
         try {
-            return resolver.get().resolve(this, rawValue);
+            T resolvedValue = resolver.get().resolve(this, rawValue);
+            // resolve is @NotNull, but a misbehaving third party can still return null; see the
+            // method Javadoc for why that is defended rather than trusted.
+            //noinspection ConstantConditions
+            if (resolvedValue == null) {
+                warnFaultyResolve(type, "returned null", null);
+                return rawValue;
+            }
+            return resolvedValue;
         } catch (Exception e) {
-            McRPG.getInstance().getLogger().log(Level.WARNING, "Combat state type " + type.getKey()
-                    + " resolver threw while resolving state for session owner " + entityUUID
-                    + "; falling back to the raw stored value", e);
+            warnFaultyResolve(type, "threw", e);
             return rawValue;
         }
+    }
+
+    /**
+     * Logs a resolver misbehaviour once per state type via {@link #resolverWarnings}.
+     *
+     * @param type    The state type whose resolver misbehaved.
+     * @param problem A short description of what the resolver did, e.g. {@code "threw"}.
+     * @param cause   The exception the resolver threw, or {@code null} if it returned null instead.
+     */
+    private void warnFaultyResolve(@NotNull CombatStateType<?> type, @NotNull String problem,
+                                   @Nullable Throwable cause) {
+        resolverWarnings.warnOnce(type.getKey(), "Combat state type " + type.getKey() + " resolver "
+                + problem + " while resolving state for session owner " + entityUUID + "; falling back "
+                + "to the raw stored value. Further occurrences for this state type are not logged for "
+                + "this session.", cause);
     }
 
     /**
@@ -380,16 +422,17 @@ public class CombatSession {
      * Resolvers are not involved in writes — the raw value is stored directly. Reads via
      * {@link #getState(CombatStateType)} apply the resolver afterward.
      * <p>
-     * The final value is checked against the state type's {@link CombatStateType#getType() class
-     * token} before it is stored. {@link CombatStateChangeEvent} cannot be generic, so a listener
-     * that calls {@link CombatStateChangeEvent#setNewValue(Object)} with the wrong type would
-     * otherwise corrupt the store and surface as a {@link ClassCastException} in an unrelated
-     * reader later on.
+     * Type safety of a listener-substituted value is enforced by
+     * {@link CombatStateChangeEvent#setNewValue(Object)}, which rejects a value that does not match
+     * the state type's class token at the point the offending listener calls it — so Bukkit's event
+     * bus attributes the failure to that listener rather than to this caller. This method re-checks
+     * as a backstop and, if a wrong-typed value somehow reaches it, logs and stores the caller's
+     * original {@code value} (which is type-safe by generics) rather than corrupting the store or
+     * throwing into an unrelated caller's stack.
      *
      * @param type  The state type to write.
      * @param value The new raw value.
      * @param <T>   The state value type.
-     * @throws IllegalArgumentException if the value to store is not an instance of the state type's class.
      */
     public <T> void setState(@NotNull CombatStateType<T> type, @NotNull T value) {
         T oldValue = getRawState(type);
@@ -402,18 +445,34 @@ public class CombatSession {
         }
 
         Object newValue = event.getNewValue();
-        if (!type.getType().isInstance(newValue)) {
-            throw new IllegalArgumentException("Combat state type " + type.getKey() + " expects a "
-                    + type.getType().getName() + " but was given a " + newValue.getClass().getName()
-                    + " — a CombatStateChangeEvent listener likely called setNewValue with the wrong type");
+        if (newValue != value && !CombatStateChangeEvent.isAssignableToStateType(type, newValue)) {
+            McRPG.getInstance().getLogger().log(Level.WARNING, "Combat state type " + type.getKey()
+                    + " expects a " + type.getType().getName() + " but a CombatStateChangeEvent listener "
+                    + "substituted " + describeForLog(newValue) + "; ignoring the substitution and storing "
+                    + "the original value for session owner " + entityUUID);
+            newValue = value;
         }
         stateStore.put(type.getKey(), newValue);
+    }
+
+    /**
+     * Renders a value for a log message without dereferencing a possible {@code null}.
+     *
+     * @param value The value to describe.
+     * @return {@code "null"} or the value's class name.
+     */
+    @NotNull
+    private static String describeForLog(@Nullable Object value) {
+        return value == null ? "null" : "a " + value.getClass().getName();
     }
 
     /**
      * Atomically reads the current raw value, applies a modifier function, and writes the result.
      * Fires {@link CombatStateChangeEvent} with the old and new values — cancellation or value
      * modification by listeners is handled identically to {@link #setState(CombatStateType, Object)}.
+     * <p>
+     * The modifier belongs to the caller, so an exception it throws propagates to the caller
+     * unchanged rather than being swallowed here.
      *
      * @param type     The state type to modify.
      * @param modifier The function to apply to the current raw value.

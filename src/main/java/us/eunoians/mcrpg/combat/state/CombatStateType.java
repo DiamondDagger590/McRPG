@@ -71,6 +71,12 @@ public final class CombatStateType<T> implements McRPGContent {
     /**
      * Creates a simple session-scoped state type with no resolver. {@code getState()} returns the
      * raw value directly. State is cleared when the session ends.
+     * <p>
+     * Register the type even though session-scoped reads and writes work without it: the combat
+     * tracker logs a one-time warning for any state key it finds on a session with no registered
+     * type, since it cannot tell a deliberately-unregistered session type from a persistent type
+     * whose registration was forgotten (which would silently discard player data at every session
+     * end).
      *
      * @param key          The unique key identifying this state type.
      * @param type         The class of the state value.

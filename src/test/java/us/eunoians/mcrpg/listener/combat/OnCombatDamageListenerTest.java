@@ -26,7 +26,7 @@ class OnCombatDamageListenerTest extends McRPGBaseTest {
     @BeforeEach
     void setUp() {
         manager = mock(CombatTrackerManager.class);
-        listener = new OnCombatDamageListener(manager);
+        listener = new OnCombatDamageListener(manager, new CombatDamageResolver());
     }
 
     /**

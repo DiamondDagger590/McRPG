@@ -29,6 +29,7 @@ import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticKey;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
+import us.eunoians.mcrpg.event.combat.CombatHealingReportEvent;
 import us.eunoians.mcrpg.event.combat.CombatParticipantAddEvent;
 import us.eunoians.mcrpg.event.combat.CombatParticipantRemoveEvent;
 import us.eunoians.mcrpg.event.combat.CombatSessionEndEvent;
@@ -64,6 +65,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -101,6 +103,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
         CombatParticipantAddEvent.getHandlerList().unregister(mcRPG);
         CombatParticipantRemoveEvent.getHandlerList().unregister(mcRPG);
         CombatStateChangeEvent.getHandlerList().unregister(mcRPG);
+        CombatHealingReportEvent.getHandlerList().unregister(mcRPG);
 
         CombatConditionRegistry conditionRegistry = mcRPG.registryAccess()
                 .registry(McRPGRegistryKey.COMBAT_CONDITION);
@@ -889,6 +892,65 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
         }
 
         @Test
+        @DisplayName("fires CombatHealingReportEvent carrying healer, target, and amount")
+        void firesHealingReportEvent() {
+            List<CombatHealingReportEvent> captured = new ArrayList<>();
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onReport(CombatHealingReportEvent event) {
+                    captured.add(event);
+                }
+            }, mcRPG);
+            UUID healerUUID = UUID.randomUUID();
+            UUID targetUUID = UUID.randomUUID();
+
+            manager.reportHealing(healerUUID, targetUUID, 5.0);
+
+            assertEquals(1, captured.size());
+            assertEquals(healerUUID, captured.get(0).getHealerUUID());
+            assertEquals(targetUUID, captured.get(0).getTargetUUID());
+            assertEquals(5.0, captured.get(0).getAmount());
+        }
+
+        @Test
+        @DisplayName("credits nothing when the report event is cancelled")
+        void doesNotCredit_whenReportEventCancelled() {
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onReport(CombatHealingReportEvent event) {
+                    event.setCancelled(true);
+                }
+            }, mcRPG);
+            PlayerMock healer = server.addPlayer();
+            manager.handleCombatInteraction(healer.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession healerSession = manager.getSession(healer.getUniqueId()).orElseThrow();
+
+            manager.reportHealing(healer.getUniqueId(), UUID.randomUUID(), 5.0);
+
+            assertEquals(0.0, healerSession.getStatistics().getDouble(CombatSessionStatisticKey.HEALING_DEALT));
+        }
+
+        @Test
+        @DisplayName("credits the amount a listener substituted, not the reported one")
+        void creditsListenerAdjustedAmount() {
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onReport(CombatHealingReportEvent event) {
+                    event.setAmount(event.getAmount() * 2);
+                }
+            }, mcRPG);
+            PlayerMock healer = server.addPlayer();
+            manager.handleCombatInteraction(healer.getUniqueId(), UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            CombatSession healerSession = manager.getSession(healer.getUniqueId()).orElseThrow();
+
+            manager.reportHealing(healer.getUniqueId(), UUID.randomUUID(), 5.0);
+
+            assertEquals(10.0, healerSession.getStatistics().getDouble(CombatSessionStatisticKey.HEALING_DEALT));
+        }
+
+        @Test
         @DisplayName("is a no-op when neither entity has an active session")
         void noOp_whenNeitherHasSession() {
             assertDoesNotThrow(() -> manager.reportHealing(UUID.randomUUID(), UUID.randomUUID(), 5.0));
@@ -1153,6 +1215,8 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
         private NamespacedKey stateKey;
         private CombatStateType<Integer> persistentType;
         private PreparedStatement statement;
+        private Connection connection;
+        private Database database;
         /** Runnables handed to the database executor, so tests control when writes actually run. */
         private List<Runnable> submittedWrites;
 
@@ -1165,14 +1229,14 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
 
             submittedWrites = new ArrayList<>();
             statement = mock(PreparedStatement.class);
-            Connection connection = mock(Connection.class);
+            connection = mock(Connection.class);
             when(connection.prepareStatement(anyString())).thenReturn(statement);
 
             ThreadPoolExecutor executor = mock(ThreadPoolExecutor.class);
             doAnswer(invocation -> submittedWrites.add(invocation.getArgument(0, Runnable.class)))
                     .when(executor).execute(any(Runnable.class));
 
-            Database database = mock(Database.class);
+            database = mock(Database.class);
             when(database.getConnection()).thenReturn(connection);
             when(database.getDatabaseExecutorService()).thenReturn(executor);
 
@@ -1214,8 +1278,8 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
             manager.savePersistentStateAsync(session);
             runSubmittedWrites();
 
-            verify(statement).setString(1, session.getEntityUUID().toString());
-            verify(statement).setString(2, stateKey.toString());
+            // Parameter binding order belongs to CombatPersistentStateDAOTest; what matters here is
+            // that the manager serialized the value and the write actually ran.
             verify(statement).setString(3, "7");
             verify(statement).executeUpdate();
         }
@@ -1270,7 +1334,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
 
         @Test
         @DisplayName("a serializer that throws skips that entry instead of aborting the session end")
-        void serializerThrows_skipsEntryAndStillEndsSession() {
+        void serializerThrows_skipsEntryAndStillEndsSession() throws SQLException {
             NamespacedKey throwingKey = new NamespacedKey("mcrpg", "throwing_serializer");
             CombatStateType<Integer> throwingType = CombatStateType.persistent(throwingKey, Integer.class, 0,
                     value -> {
@@ -1287,7 +1351,7 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
 
             // The session is gone rather than leaked, and the healthy type was still persisted.
             assertFalse(manager.hasActiveSession(entityUUID));
-            assertDoesNotThrow(() -> verify(statement).setString(3, "7"));
+            verify(statement).setString(3, "7");
         }
 
         @Test
@@ -1352,15 +1416,75 @@ class CombatTrackerManagerTest extends McRPGBaseTest {
         }
 
         @Test
-        @DisplayName("saveAllPersistentStateSync no-ops when no session holds persistent state")
-        void saveAllPersistentStateSync_noOps_whenNoPersistentState() throws SQLException {
+        @DisplayName("saveAllPersistentStateSync never opens a connection when there is nothing to write")
+        void saveAllPersistentStateSync_noOps_whenNoPersistentState() {
             PlayerMock player = server.addPlayer();
             manager.handleCombatInteraction(player.getUniqueId(), UUID.randomUUID(),
                     new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
 
             manager.saveAllPersistentStateSync();
 
-            verify(statement, never()).executeUpdate();
+            // Asserting on executeUpdate would be vacuous: a BatchTransaction with zero statements
+            // commits without ever calling it, so the assertion would hold even with the early
+            // return deleted. The documented contract is "never touches the database".
+            verify(database, never()).getConnection();
+        }
+
+        @Test
+        @DisplayName("shutdown does not re-submit an async write for state it just flushed synchronously")
+        void shutdown_doesNotDoubleWrite_forActiveSessions() throws SQLException {
+            sessionWithState(4);
+
+            manager.shutdown();
+
+            // saveAllPersistentStateSync wrote it on the main thread; endSession's own async save is
+            // suppressed by the shuttingDown flag, so nothing reaches the executor.
+            assertTrue(submittedWrites.isEmpty());
+            verify(statement, times(1)).executeUpdate();
+        }
+
+        @Test
+        @DisplayName("a failed write does not cancel the next write for the same entity")
+        void savePersistentStateAsync_failedWrite_doesNotBlockTheNextOne() throws SQLException {
+            CombatSession session = sessionWithState(1);
+            // First connection acquisition blows up the way McCore's Database#getConnection does.
+            when(database.getConnection())
+                    .thenThrow(new RuntimeException("pool exhausted"))
+                    .thenReturn(connection);
+
+            CompletableFuture<Void> firstWrite = manager.savePersistentStateAsync(session);
+            session.setState(persistentType, 2);
+            CompletableFuture<Void> secondWrite = manager.savePersistentStateAsync(session);
+            runSubmittedWrites();
+
+            assertTrue(firstWrite.isCompletedExceptionally());
+            assertFalse(secondWrite.isCompletedExceptionally());
+            verify(statement).setString(3, "2");
+        }
+
+        @Test
+        @DisplayName("a failed write keeps the cache entry that is now its only copy")
+        void clearPersistentStateCacheWhenWritesSettle_keepsCache_whenWriteFailed() {
+            CombatSession session = sessionWithState(9);
+            UUID entityUUID = session.getEntityUUID();
+            when(database.getConnection()).thenThrow(new RuntimeException("pool exhausted"));
+
+            manager.savePersistentStateAsync(session);
+            manager.endSession(entityUUID, CombatSessionEndReason.LOGOUT);
+            manager.clearPersistentStateCacheWhenWritesSettle(entityUUID);
+
+            // Take the player offline before the write settles, so the deferred callback's
+            // "skip if back online" guard cannot be what saves the cache — the only thing that can
+            // is the failed-write check.
+            server.getPlayer(entityUUID).kick();
+            runSubmittedWrites();
+            server.getScheduler().performOneTick();
+
+            // The database still holds the old row, so dropping the cache would lose the new value.
+            server.addPlayer(new PlayerMock(server, "FailedWritePlayer", entityUUID));
+            manager.handleCombatInteraction(entityUUID, UUID.randomUUID(),
+                    new CustomEntityWrapper("PLAYER"), new CustomEntityWrapper("ZOMBIE"));
+            assertEquals(9, manager.getSession(entityUUID).orElseThrow().getRawState(persistentType));
         }
     }
 }

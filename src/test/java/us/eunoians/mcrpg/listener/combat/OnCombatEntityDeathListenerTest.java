@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockbukkit.mockbukkit.entity.PlayerMock;
+import org.mockito.InOrder;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.combat.CombatSession;
 import us.eunoians.mcrpg.combat.CombatSessionEndReason;
@@ -20,6 +21,8 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -41,13 +44,17 @@ class OnCombatEntityDeathListenerTest extends McRPGBaseTest {
     private EntityDeathEvent deathEvent(LivingEntity entity, Player killer) {
         EntityDeathEvent event = mock(EntityDeathEvent.class);
         when(event.getEntity()).thenReturn(entity);
-        when(entity.getKiller()).thenReturn(killer);
+        // doReturn, not when(...).thenReturn: `entity` is a spy over a real MockBukkit entity, so
+        // when() would invoke the real getKiller() first.
+        doReturn(killer).when(entity).getKiller();
         return event;
     }
 
     /**
-     * Spawns a real MockBukkit mob wrapped in a spy so {@code getKiller()} can be stubbed — the
-     * listener reads the killer off the dead entity itself.
+     * Spawns a real MockBukkit mob. {@code spawnEntity} returns it wrapped in a spy, so
+     * {@code getKiller()} can be stubbed — the listener reads the killer off the dead entity itself.
+     *
+     * @return The spawned mob.
      */
     private Zombie mob() {
         return spawnEntity(Zombie.class);
@@ -114,5 +121,24 @@ class OnCombatEntityDeathListenerTest extends McRPGBaseTest {
 
         verify(manager).endSession(mob.getUniqueId(), CombatSessionEndReason.DEATH);
         verify(manager).removeParticipantFromAllSessions(mob.getUniqueId(), ParticipantRemovalReason.DEATH);
+    }
+
+    @Test
+    @DisplayName("credits the kill before ending sessions")
+    void creditsKill_beforeEndingSessions() {
+        PlayerMock killer = server.addPlayer();
+        Zombie mob = mob();
+        CombatSession killerSession = new CombatSession(killer.getUniqueId(), 16, 8000L);
+        when(manager.getSession(killer.getUniqueId())).thenReturn(Optional.of(killerSession));
+
+        listener.onEntityDeath(deathEvent(mob, killer));
+
+        // Order is load-bearing: removeParticipantFromAllSessions can end the killer's own session
+        // when the dead entity was its last participant, and ending it snapshots the statistics. A
+        // reordered listener would silently drop the kill from that snapshot.
+        InOrder deathOrder = inOrder(manager);
+        deathOrder.verify(manager).getSession(killer.getUniqueId());
+        deathOrder.verify(manager).endSession(mob.getUniqueId(), CombatSessionEndReason.DEATH);
+        deathOrder.verify(manager).removeParticipantFromAllSessions(mob.getUniqueId(), ParticipantRemovalReason.DEATH);
     }
 }

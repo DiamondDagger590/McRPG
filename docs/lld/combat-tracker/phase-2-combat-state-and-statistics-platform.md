@@ -312,11 +312,9 @@ classDiagram
 
     class CombatTrackerManager {
         <<modified>>
-        -Map~UUID, Map~String, String~~ persistentStateCache
+        -PersistentCombatStateStore stateStore
         -Set~NamespacedKey~ registeredDoubleStatKeys
         -Set~NamespacedKey~ registeredLongStatKeys
-        -Map~UUID, CompletableFuture~Void~~ pendingPersistentWrites
-        -Set~NamespacedKey~ warnedUnregisteredStateKeys
         +registerStateType(CombatStateType) void
         +registerDoubleSessionStatisticKey(NamespacedKey) void
         +registerLongSessionStatisticKey(NamespacedKey) void
@@ -327,6 +325,42 @@ classDiagram
         +savePersistentStateAsync(CombatSession) CompletableFuture~Void~
         +saveAllPersistentStateSync() void
     }
+
+    class PersistentCombatStateStore {
+        <<new>>
+        -CombatStateCodec codec
+        -Map~UUID, Map~String, String~~ stateCache
+        -Map~UUID, CompletableFuture~Void~~ pendingWrites
+        -Set~NamespacedKey~ warnedUnregisteredKeys
+        ~cache(UUID, Map~String, String~) void
+        ~clearCache(UUID) void
+        ~clearCacheWhenWritesSettle(UUID) void
+        ~saveAsync(CombatSession) CompletableFuture~Void~
+        ~saveAllSync(Collection~CombatSession~) void
+        ~awaitPendingWrites() void
+        ~applyCachedState(CombatSession) void
+    }
+
+    class CombatStateCodec {
+        <<new>>
+        -Set~NamespacedKey~ warnedFaultySerializers
+        -Set~NamespacedKey~ warnedFaultyDeserializers
+        +encode(CombatStateType, Object, UUID) Optional~String~
+        +decode(CombatStateType, String, UUID) Optional~T~
+    }
+
+    class CombatHealingReportEvent {
+        <<new>>
+        +getHealerUUID() UUID
+        +getTargetUUID() UUID
+        +getAmount() double
+        +setAmount(double) void
+        +isCancelled() boolean
+    }
+
+    CombatTrackerManager --> PersistentCombatStateStore
+    PersistentCombatStateStore --> CombatStateCodec
+    CombatTrackerManager ..> CombatHealingReportEvent : fires
 
     OnCombatDamageStatListener --> CombatTrackerManager
     OnCombatHealingStatListener --> CombatTrackerManager
@@ -1331,20 +1365,24 @@ public final class CombatPersistentStateDAO {
 **Package:** `us.eunoians.mcrpg.listener.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/listener/combat/OnCombatDamageStatListener.java`
 
-Observes `EntityDamageByEntityEvent` at `MONITOR` priority (after `OnCombatDamageListener` at `HIGHEST` has created/updated sessions). Resolves the combatants via `CombatDamageResolution` (§1.13a) and increments per-session damage and hit statistics on the source's and target's active sessions.
+Observes `EntityDamageByEntityEvent` at `MONITOR` priority (after `OnCombatDamageListener` at `HIGHEST` has created/updated sessions). Resolves the combatants via an injected `CombatDamageResolver` (§1.13a) and increments per-session damage and hit statistics on the source's and target's active sessions.
 
 ```java
 public class OnCombatDamageStatListener implements Listener {
 
     private final CombatTrackerManager combatTrackerManager;
+    private final CombatDamageResolver combatDamageResolver;
 
     /**
      * Constructs a new {@link OnCombatDamageStatListener}.
      *
      * @param combatTrackerManager The {@link CombatTrackerManager} for session lookups.
+     * @param combatDamageResolver The resolver deciding which damage events count as combat.
      */
-    public OnCombatDamageStatListener(@NotNull CombatTrackerManager combatTrackerManager) {
+    public OnCombatDamageStatListener(@NotNull CombatTrackerManager combatTrackerManager,
+                                      @NotNull CombatDamageResolver combatDamageResolver) {
         this.combatTrackerManager = combatTrackerManager;
+        this.combatDamageResolver = combatDamageResolver;
     }
 
     /**
@@ -1356,7 +1394,7 @@ public class OnCombatDamageStatListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamageByEntity(@NotNull EntityDamageByEntityEvent event) {
-        // 1. CombatDamageResolution.resolve(event) — projectile unwrap + LivingEntity + self-damage guards
+        // 1. combatDamageResolver.resolve(event) — projectile unwrap + LivingEntity + self-damage guards
         // 2. double damage = event.getFinalDamage()
         // 3. If source has active session: incrementDouble(DAMAGE_DEALT, damage), incrementLong(HITS_LANDED, 1)
         // 4. If target has active session: incrementDouble(DAMAGE_TAKEN, damage), incrementLong(HITS_RECEIVED, 1)
@@ -1365,27 +1403,29 @@ public class OnCombatDamageStatListener implements Listener {
 }
 ```
 
-### 1.13a CombatDamageResolution
+### 1.13a CombatDamageResolver
 
 **Package:** `us.eunoians.mcrpg.listener.combat`
-**File:** `src/main/java/us/eunoians/mcrpg/listener/combat/CombatDamageResolution.java`
+**File:** `src/main/java/us/eunoians/mcrpg/listener/combat/CombatDamageResolver.java`
 
-Package-private helper that resolves the two combatants from an `EntityDamageByEntityEvent`: it unwraps a `Projectile` damager to its shooter, requires both resolved sides to be `LivingEntity`, and rejects self-damage. Returns `Optional<Combatants>` — a record of the two `LivingEntity` values plus their UUIDs — or empty when any guard rejects the event.
+Resolves the two combatants from an `EntityDamageByEntityEvent`: it unwraps a `Projectile` damager to its shooter, requires both resolved sides to be `LivingEntity`, and rejects self-damage. Returns `Optional<Combatants>` — a record of the two `LivingEntity` values plus their UUIDs — or empty when any guard rejects the event.
 
-Both `OnCombatDamageListener` (session management, `HIGHEST`) and `OnCombatDamageStatListener` (statistics, `MONITOR`) run on every hit and must agree on what counts as combat. Duplicating the guards across the two listeners would let them drift silently — a stat recorded for an interaction that created no session, or vice versa. One helper means one place to change if the rules ever move.
+Both `OnCombatDamageListener` (session management, `HIGHEST`) and `OnCombatDamageStatListener` (statistics, `MONITOR`) run on every hit and must agree on what counts as combat. Duplicating the guards across the two listeners would let them drift silently — a stat recorded for an interaction that created no session, or vice versa. One resolver means one place to change if the rules ever move.
+
+Modelled as an injected instance collaborator rather than a static utility, mirroring `QuestRewardDistributionResolver`. It is stateless today, but the guards it applies are gameplay policy: the moment any of them becomes configurable (whether projectile damage counts, whether pets are attributed to their owner), a static method would have to reach for the config globally — the hidden-dependency anti-pattern the project's own rules forbid. Constructed once in `McRPGListenerRegistrar` and shared by both listeners.
 
 ```java
-final class CombatDamageResolution {
+public class CombatDamageResolver {
 
-    static Optional<Combatants> resolve(@NotNull EntityDamageByEntityEvent event) {
+    public Optional<Combatants> resolve(@NotNull EntityDamageByEntityEvent event) {
         // 1. Resolve damager: if Projectile, resolve via getShooter() (empty if not an Entity)
         // 2. Guard: both source and target must be LivingEntity
         // 3. Guard: source and target must not be the same entity (compared by UUID)
     }
 
-    record Combatants(@NotNull LivingEntity source, @NotNull LivingEntity target) {
-        @NotNull UUID sourceUUID() { return source.getUniqueId(); }
-        @NotNull UUID targetUUID() { return target.getUniqueId(); }
+    public record Combatants(@NotNull LivingEntity source, @NotNull LivingEntity target) {
+        public UUID sourceUUID() { return source.getUniqueId(); }
+        public UUID targetUUID() { return target.getUniqueId(); }
     }
 }
 ```
@@ -1759,8 +1799,9 @@ public void registerLongSessionStatisticKey(@NotNull NamespacedKey key) {
  */
 public void reportHealing(@NotNull UUID healerUUID, @NotNull UUID targetUUID, double amount) {
     requireMainThread();
-    getSession(healerUUID).ifPresent(session ->
-            session.getStatistics().incrementDouble(CombatSessionStatisticKey.HEALING_DEALT, amount));
+    // Fires CombatHealingReportEvent (cancellable, amount modifiable) before crediting, so an
+    // anti-heal ruleset or a scaling buff can intercept. targetUUID is published on that event.
+    // Credits healing_dealt on the healer's session only — see D5.
 }
 
 /**
@@ -2462,7 +2503,7 @@ Session ends with state attached (Phase 4 example — Ramping Frenzy with 5 raw 
 19. **CombatSessionEndEvent modifications** — add statistics and state snapshot fields
 20. **CombatTrackerManager modifications** — state type management, persistent state lifecycle, reportHealing, session statistic key registration. Depends on everything above
 21. **OnCombatEntityDeathListener modification** — add kill stat tracking
-22. **CombatDamageResolution + OnCombatDamageStatListener** — extract the shared damage-resolution helper (§1.13a) and point both damage listeners at it. Depends on CombatTrackerManager, CombatSessionStatisticKey
+22. **CombatDamageResolver + OnCombatDamageStatListener** — extract the shared damage resolver (§1.13a), inject it into both damage listeners, and construct it in `McRPGListenerRegistrar`. Depends on CombatTrackerManager, CombatSessionStatisticKey
 23. **OnCombatHealingStatListener** — depends on CombatTrackerManager, CombatSessionStatisticKey
 24. **OnCombatSessionEndStatUpdateListener** — depends on CombatSessionEndEvent, CombatCumulativeStatisticUpdateEvent, McRPGStatistic
 25. **McRPGExpansion modification** — add CombatStateTypeContentPack
@@ -2586,9 +2627,10 @@ Organized into a `@Nested @DisplayName("State management")` group.
 - `createStatisticsSnapshot` includes all accumulated stats and the duration
 - `createStateSnapshot` captures raw values for all stored state
 - `createStateSnapshot` captures resolved values at snapshot time
-- `setState` throws `IllegalArgumentException` when a listener substitutes a wrongly-typed value
-- `getState` falls back to the raw value when the resolver throws
-- `createStateSnapshot` falls back to the raw value when a resolver throws
+- `setState` stores the caller's value when a wrongly-typed one reaches the store (see D15)
+- `setState` works for a state type declared with a primitive class token
+- `getState` falls back to the raw value when the resolver throws, and when it returns `null`
+- `createStateSnapshot` falls back to the raw value when a resolver throws, and survives one that returns `null`
 - `clearSessionState` removes all state from the store
 
 ### 6.13 CombatSession Visibility Tests (additions to CombatSessionTest)
@@ -2601,10 +2643,12 @@ Organized into `@Nested` groups.
 
 - **registerStateType** — registers the type in the CombatStateTypeRegistry; throws for duplicate registration
 - **Session statistic key registration** — registered double key appears in new sessions' statistics; registered long key appears in new sessions' statistics; a double key is not seeded into the long statistics map
-- **reportHealing** — increments `healing_dealt` on healer's session; does NOT touch `healing_received` on the target's session (that key belongs to `OnCombatHealingStatListener` — see D5); is a no-op when neither entity has an active session; does not create sessions or add participants
+- **reportHealing** — increments `healing_dealt` on healer's session; does NOT touch `healing_received` on the target's session (that key belongs to `OnCombatHealingStatListener` — see D5); fires `CombatHealingReportEvent` carrying healer, target, and amount; credits nothing when that event is cancelled; credits a listener-substituted amount rather than the reported one; is a no-op when neither entity has an active session; does not create sessions or add participants
 - **endSession with snapshots** — the fired `CombatSessionEndEvent` carries a non-null statistics snapshot; the fired event carries a non-null combat state snapshot; the statistics snapshot reflects accumulated stats; the state snapshot reflects stored state values
 - **Persistent state lifecycle** — `cachePersistentState` populates the cache; cached persistent state is applied to new sessions on creation; `savePersistentStateAsync` is called on session end for sessions with persistent state; `clearPersistentStateCache` removes the cached data; a cached value survives a later DB load that would overwrite it; a deserializer that throws leaves the state at its default without breaking session creation
-- **Persistent state writes** (against a mocked `Database`) — `savePersistentStateAsync` serializes and writes through the DAO; it updates the cache eagerly; it no-ops when the session holds no persistent state; back-to-back writes for one entity are chained so the later value lands last; a serializer that throws skips that entry instead of aborting session end; `shutdown` drains in-flight writes before returning; `saveAllPersistentStateSync` writes every active session's state and no-ops when there is none
+- **Persistent state writes** (against a mocked `Database`) — `savePersistentStateAsync` serializes and writes through the DAO; it updates the cache eagerly; it no-ops when the session holds no persistent state; back-to-back writes for one entity are chained so the later value lands last; a serializer that throws skips that entry instead of aborting session end; `shutdown` drains in-flight writes before returning; `shutdown` does not re-submit an async write for state it just flushed synchronously; a failed write does not cancel the next write for the same entity; a failed write keeps the cache entry that is now its only copy; the cache outlives a still-pending logout write; `saveAllPersistentStateSync` writes every active session's state and never opens a connection when there is nothing to write
+
+  Two notes on making these bite. `saveAllPersistentStateSync`'s no-op case asserts `verify(database, never()).getConnection()`, not `verify(statement, never()).executeUpdate()` — a `BatchTransaction` with zero statements commits without ever calling `executeUpdate`, so the latter would hold even with the early return deleted. The failed-write cache test takes the player offline before letting the write settle, so the deferred callback's "skip if back online" guard cannot be what saves the cache; only the failed-write check can.
 
 ### 6.15 OnCombatDamageStatListenerTest
 
@@ -2615,6 +2659,8 @@ Organized into `@Nested` groups.
 - Records source stats and does not throw when the target has no session
 - Ignores cancelled events
 - Ignores self-damage
+
+A both-sides-in-combat case covers what the session-less ones structurally cannot: with only one session present, a listener that wrote both sides to the *same* session would still pass them.
 
 The two session-less cases assert on the side that actually receives writes: `damage_dealt` is only ever written to the *source's* session and `damage_taken` only to the *target's*, so asserting the opposite side stays at zero would pass even with the `ifPresent` guards deleted. The behaviour worth guarding is that one side's missing session neither throws nor suppresses the other side's stats.
 
@@ -2640,6 +2686,7 @@ The two session-less cases assert on the side that actually receives writes: `da
 - Does not increment when there is no killer (`getKiller()` returns null)
 - Does not increment when the killer has no active session
 - Ends the dead entity's session and drops it from every other session's roster (the listener's pre-existing effects, so all three of `onEntityDeath`'s outcomes are covered)
+- Credits the kill *before* ending sessions, asserted with `InOrder` — `removeParticipantFromAllSessions` can end the killer's own session when the dead entity was its last participant, and that snapshots the statistics, so a reordered listener would silently drop the kill
 
 ### 6.19 CombatPersistentStateDAOTest
 
@@ -2782,10 +2829,30 @@ Because the two stats measure different things (lifetime mob kills vs. combat-se
 
 **Trade-off:** `shutdown()` can now block for up to 10 seconds waiting on the database executor. The timeout is bounded and logs a `WARNING` on expiry so a wedged executor degrades to the old behaviour (state lost, loudly) rather than hanging `/stop` indefinitely.
 
+**Where it lives:** all of this is owned by `PersistentCombatStateStore`, a package-private collaborator in `us.eunoians.mcrpg.combat`, which in turn delegates value marshalling to `CombatStateCodec` (`us.eunoians.mcrpg.combat.state`). Three concerns, three collaborators: `CombatPersistentStateDAO` owns the SQL, `CombatStateCodec` owns translating values to and from their stored form (and the defensive handling of faulty registrant serializers/deserializers), and the store owns the cache and the write lifecycle tying them together. `CombatTrackerManager` keeps the public methods as thin delegations so the API surface is unchanged. The split follows the code: none of the store's members ever touch `activeSessions`; they only ever receive a `CombatSession` as a parameter.
+
 **Considered alternative:** Make the logout write fully synchronous instead. Simpler, and it closes the relog window on its own, but it leaves the session-churn ordering gap open and puts a blocking DB write on every player quit. Tracking futures fixes all three gaps with the cost confined to shutdown.
+
+### D15. Type Validation Happens in `setNewValue`, Not at the Store
+
+**Decision:** `CombatStateChangeEvent.setNewValue(Object)` rejects a value that does not match the state type's class token, throwing `IllegalArgumentException` at the point the listener calls it. `CombatSession.setState` re-checks as a backstop and, if a wrong-typed value somehow reaches it, logs a `WARNING` and stores the caller's original (generically type-safe) value instead of throwing.
+
+**Why:** The event cannot be generic — Bukkit's event system does not support generic events — so the old/new values are raw `Object` and a listener can substitute anything. Validating at the store meant plugin A's `setState` call threw because plugin B's listener misbehaved, and Bukkit's "Could not pass event X to plugin A" logging pointed the server owner at the wrong plugin entirely. Validating inside `setNewValue` puts B's frame on the stack, so the event bus attributes it correctly. It also restores consistency with the rest of this feature: every other third-party callback (`isHeldOpenByCondition`, the resolver, serializer, and deserializer guards) catches, logs, and continues rather than propagating into an unrelated caller.
+
+**Primitive class tokens:** the check is `isAssignableToStateType`, not a bare `Class.isInstance`. `CombatStateType.of(key, int.class, 0, null)` compiles cleanly — `int.class` has static type `Class<Integer>` and the default value autoboxes — but `int.class.isInstance(5)` is `false`, so a naive check would have rejected every write to such a type.
+
+### D16. Registrant Callbacks Are Guarded Against `null` Returns, Not Just Throws
+
+**Decision:** every invocation of a registrant-supplied resolver, serializer, or deserializer treats a `null` return exactly like a thrown exception — log once per state type, fall back, continue.
+
+**Why:** `@NotNull` is not enforced at runtime, and returning `null` is the natural way to write "I cannot handle this value" — especially for a deserializer, whose input is a hand-editable database string. A `null` slipping through was not a cosmetic problem: `setRawState(key, null)` succeeds silently, and the next `createStateSnapshot` hits `Map.copyOf`, which rejects null values. That threw out of `endSession`, and (before the ordering fix below) left the session stranded in `activeSessions` with its end event never fired — so every subsequent timeout scan re-threw on it, forever. On the logout path it also aborted the rest of `PlayerLeaveListener.handleQuit`, skipping the player unload and quest saves.
+
+**Related ordering fix:** `endSession` now removes the session from `activeSessions` *before* taking snapshots and saving, rather than after. Nothing between the null-check and the removal reads the map, so moving it up costs nothing and makes the leak class unreachable regardless of what any callback does — including failure modes no `catch` width covers, such as a `LinkageError` from a hot-swapped plugin's lambda or a `RejectedExecutionException` from an already-shut-down database executor.
+
+**Log rate limiting:** each of these warnings is deduplicated per state key. The resolver's own Javadoc documents it as running on every `getState()` call, and a bad cached value is retried on every session start for that entity, so an unbounded warning would be a stack trace per read or several per minute per player.
 
 ---
 
 ## 8. Open Questions / Design Decisions for Review
 
-_All open questions have been resolved. See D11–D13 in §7._
+_All open questions have been resolved. See D11–D16 in §7._

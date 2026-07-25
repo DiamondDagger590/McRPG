@@ -18,11 +18,15 @@ public final class CombatSessionStatisticKey {
     /** Total damage taken during this session. Type: DOUBLE. */
     public static final NamespacedKey DAMAGE_TAKEN = McRPGMethods.parseNamespacedKey("damage_taken");
 
-    /** Total healing applied to other entities during this session. Type: DOUBLE. */
+    /** Total healing applied to other entities during this session. Populated <em>only</em> by
+     *  explicit {@code CombatTrackerManager#reportHealing} calls — Bukkit exposes no healer source,
+     *  so healing that is never reported is never credited here. Type: DOUBLE. */
     public static final NamespacedKey HEALING_DEALT = McRPGMethods.parseNamespacedKey("healing_dealt");
 
-    /** Total healing received during this session, from any source (explicit heal attribution,
-     *  vanilla regen, saturation, beacons, etc.). Type: DOUBLE. */
+    /** Total health regained during this session, from any source — vanilla regen, saturation,
+     *  potions, beacons, and ability healing alike. Credited from {@code EntityRegainHealthEvent},
+     *  never from {@code reportHealing}, so it counts everything the entity regained while
+     *  combat-tagged rather than only combat healing. Type: DOUBLE. */
     public static final NamespacedKey HEALING_RECEIVED = McRPGMethods.parseNamespacedKey("healing_received");
 
     /** Attack count during this session. Type: LONG. */

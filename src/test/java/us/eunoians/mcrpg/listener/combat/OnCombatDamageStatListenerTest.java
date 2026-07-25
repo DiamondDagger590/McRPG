@@ -30,7 +30,7 @@ class OnCombatDamageStatListenerTest extends McRPGBaseTest {
     @BeforeEach
     void setUp() {
         manager = mock(CombatTrackerManager.class);
-        listener = new OnCombatDamageStatListener(manager);
+        listener = new OnCombatDamageStatListener(manager, new CombatDamageResolver());
     }
 
     private EntityDamageByEntityEvent damageEvent(Entity damager, Entity target, double finalDamage) {
@@ -93,7 +93,7 @@ class OnCombatDamageStatListenerTest extends McRPGBaseTest {
 
     @Test
     @DisplayName("records target stats and does not throw when the source has no session")
-    void handlesSourceWithoutSession() {
+    void recordsTargetStats_whenSourceHasNoSession() {
         PlayerMock source = server.addPlayer();
         Zombie target = spawnEntity(Zombie.class);
         when(manager.getSession(source.getUniqueId())).thenReturn(Optional.empty());
@@ -109,7 +109,7 @@ class OnCombatDamageStatListenerTest extends McRPGBaseTest {
 
     @Test
     @DisplayName("records source stats and does not throw when the target has no session")
-    void handlesTargetWithoutSession() {
+    void recordsSourceStats_whenTargetHasNoSession() {
         PlayerMock source = server.addPlayer();
         Zombie target = spawnEntity(Zombie.class);
         CombatSession sourceSession = session(source.getUniqueId());
@@ -121,6 +121,28 @@ class OnCombatDamageStatListenerTest extends McRPGBaseTest {
         // The absent target session must not suppress the source's own stats.
         assertEquals(5.0, sourceSession.getStatistics().getDouble(CombatSessionStatisticKey.DAMAGE_DEALT));
         assertEquals(1L, sourceSession.getStatistics().getLong(CombatSessionStatisticKey.HITS_LANDED));
+    }
+
+    @Test
+    @DisplayName("records all four stats on the correct sessions when both sides are in combat")
+    void recordsBothSides_whenBothHaveSessions() {
+        PlayerMock source = server.addPlayer();
+        PlayerMock target = server.addPlayer();
+        CombatSession sourceSession = session(source.getUniqueId());
+        CombatSession targetSession = session(target.getUniqueId());
+        when(manager.getSession(source.getUniqueId())).thenReturn(Optional.of(sourceSession));
+        when(manager.getSession(target.getUniqueId())).thenReturn(Optional.of(targetSession));
+
+        listener.onEntityDamageByEntity(damageEvent(source, target, 6.0));
+
+        // The session-less tests above can't prove attribution: with only one session present, a
+        // listener that wrote both sides to the same session would still pass them.
+        assertEquals(6.0, sourceSession.getStatistics().getDouble(CombatSessionStatisticKey.DAMAGE_DEALT));
+        assertEquals(1L, sourceSession.getStatistics().getLong(CombatSessionStatisticKey.HITS_LANDED));
+        assertEquals(0.0, sourceSession.getStatistics().getDouble(CombatSessionStatisticKey.DAMAGE_TAKEN));
+        assertEquals(6.0, targetSession.getStatistics().getDouble(CombatSessionStatisticKey.DAMAGE_TAKEN));
+        assertEquals(1L, targetSession.getStatistics().getLong(CombatSessionStatisticKey.HITS_RECEIVED));
+        assertEquals(0.0, targetSession.getStatistics().getDouble(CombatSessionStatisticKey.DAMAGE_DEALT));
     }
 
     @Test

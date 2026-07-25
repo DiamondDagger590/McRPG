@@ -4,8 +4,11 @@ import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.combat.CombatSession;
 import us.eunoians.mcrpg.combat.state.CombatStateType;
+
+import java.util.Map;
 
 /**
  * Fired when combat state is modified via {@code setState} or {@code modifyState}. Cancellable —
@@ -30,6 +33,20 @@ import us.eunoians.mcrpg.combat.state.CombatStateType;
 public class CombatStateChangeEvent extends Event implements Cancellable {
 
     private static final HandlerList HANDLERS = new HandlerList();
+
+    /**
+     * Maps each primitive {@link Class} token to its boxed equivalent, so a state type declared with
+     * {@code int.class} accepts an {@link Integer}. See {@link #isAssignableToStateType}.
+     */
+    private static final Map<Class<?>, Class<?>> PRIMITIVE_BOX_TYPES = Map.of(
+            boolean.class, Boolean.class,
+            byte.class, Byte.class,
+            char.class, Character.class,
+            short.class, Short.class,
+            int.class, Integer.class,
+            long.class, Long.class,
+            float.class, Float.class,
+            double.class, Double.class);
 
     private final CombatSession session;
     private final CombatStateType<?> stateType;
@@ -98,11 +115,49 @@ public class CombatStateChangeEvent extends Event implements Cancellable {
     /**
      * Sets the new value. Listeners can modify the incoming value without cancelling the event
      * (e.g., a buff ability that doubles stack gains).
+     * <p>
+     * The value must be an instance of {@link #getStateType()}'s
+     * {@link CombatStateType#getType() class token}. This event cannot be generic — Bukkit's event
+     * system does not support generic events — so the check happens here, at the point of the call,
+     * rather than at the eventual store. Validating here means Bukkit's event bus attributes the
+     * resulting exception to <em>your</em> plugin; a wrong-typed value that slipped through to the
+     * store would instead surface as a {@link ClassCastException} in whichever unrelated plugin read
+     * the state next.
      *
      * @param newValue The modified new value.
+     * @throws IllegalArgumentException if {@code newValue} is not an instance of the state type's class.
      */
     public void setNewValue(@NotNull Object newValue) {
+        if (!isAssignableToStateType(stateType, newValue)) {
+            throw new IllegalArgumentException("Combat state type " + stateType.getKey() + " expects a "
+                    + stateType.getType().getName() + " but setNewValue was called with "
+                    + (newValue == null ? "null" : "a " + newValue.getClass().getName()));
+        }
         this.newValue = newValue;
+    }
+
+    /**
+     * Checks whether a value can be stored under a state type, treating a primitive class token as
+     * its boxed equivalent.
+     * <p>
+     * {@code Class.isInstance} always returns {@code false} for a primitive {@link Class} object, and
+     * {@code CombatStateType.of(key, int.class, 0, null)} compiles cleanly — {@code int.class} has
+     * static type {@code Class<Integer>} and the default value autoboxes — so a naive
+     * {@code isInstance} check would reject every write to such a type.
+     *
+     * @param stateType The state type the value would be stored under.
+     * @param value     The candidate value.
+     * @return {@code true} if the value is a non-null instance of the state type's class.
+     */
+    public static boolean isAssignableToStateType(@NotNull CombatStateType<?> stateType, @Nullable Object value) {
+        if (value == null) {
+            return false;
+        }
+        Class<?> expectedType = stateType.getType();
+        if (expectedType.isPrimitive()) {
+            expectedType = PRIMITIVE_BOX_TYPES.getOrDefault(expectedType, expectedType);
+        }
+        return expectedType.isInstance(value);
     }
 
     @Override

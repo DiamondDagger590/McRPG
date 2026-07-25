@@ -10,15 +10,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 /**
- * Resolves the two combatants involved in an {@link EntityDamageByEntityEvent} for the combat
- * tracker's damage listeners. Extracted so the session-management listener
- * ({@link OnCombatDamageListener}) and the statistics listener ({@link OnCombatDamageStatListener})
- * cannot drift apart on which events they consider valid combat.
+ * Decides which {@link EntityDamageByEntityEvent}s count as combat and resolves the two combatants
+ * involved. A single shared instance is used by both the session-management listener
+ * ({@link OnCombatDamageListener}) and the statistics listener ({@link OnCombatDamageStatListener}),
+ * so the two cannot drift apart on what qualifies as combat — a stat recorded for an interaction
+ * that started no session, or the reverse.
+ * <p>
+ * The rules it applies (unwrap projectile shooters, require both sides to be living, reject
+ * self-damage) are gameplay policy, so it is an injected instance collaborator rather than a static
+ * helper — the same shape as {@link us.eunoians.mcrpg.quest.board.distribution.QuestRewardDistributionResolver}.
+ * It is constructed once in {@code McRPGListenerRegistrar}.
  */
-final class CombatDamageResolution {
-
-    private CombatDamageResolution() {
-    }
+public class CombatDamageResolver {
 
     /**
      * Resolves the source and target combatants from a damage event. A {@link Projectile} damager is
@@ -36,7 +39,7 @@ final class CombatDamageResolution {
      * @return An {@link Optional} containing the resolved {@link Combatants}, or empty if any guard rejects the event.
      */
     @NotNull
-    static Optional<Combatants> resolve(@NotNull EntityDamageByEntityEvent event) {
+    public Optional<Combatants> resolve(@NotNull EntityDamageByEntityEvent event) {
         Entity damager = event.getDamager();
 
         if (damager instanceof Projectile projectile) {
@@ -63,7 +66,7 @@ final class CombatDamageResolution {
      * @param source The entity that dealt the damage (the shooter, for projectile damage).
      * @param target The entity that took the damage.
      */
-    record Combatants(@NotNull LivingEntity source, @NotNull LivingEntity target) {
+    public record Combatants(@NotNull LivingEntity source, @NotNull LivingEntity target) {
 
         /**
          * Gets the UUID of the damage source.
@@ -71,7 +74,7 @@ final class CombatDamageResolution {
          * @return The source entity's UUID.
          */
         @NotNull
-        UUID sourceUUID() {
+        public UUID sourceUUID() {
             return source.getUniqueId();
         }
 
@@ -81,7 +84,7 @@ final class CombatDamageResolution {
          * @return The target entity's UUID.
          */
         @NotNull
-        UUID targetUUID() {
+        public UUID targetUUID() {
             return target.getUniqueId();
         }
     }

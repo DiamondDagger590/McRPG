@@ -11,25 +11,30 @@ import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticKey;
 /**
  * Observes {@link EntityDamageByEntityEvent} at {@link EventPriority#MONITOR} priority (after
  * {@link OnCombatDamageListener} at {@link EventPriority#HIGHEST} has created/updated sessions).
- * Resolves the source entity (handling projectile shooters) and increments per-session damage and
- * hit statistics on the source's and target's active sessions.
+ * Increments per-session damage and hit statistics on the source's and target's active sessions,
+ * for events that {@link CombatDamageResolver} accepts as combat — the same guards that decided
+ * whether those sessions exist at all.
  */
 public class OnCombatDamageStatListener implements Listener {
 
     private final CombatTrackerManager combatTrackerManager;
+    private final CombatDamageResolver combatDamageResolver;
 
     /**
      * Constructs a new {@link OnCombatDamageStatListener}.
      *
      * @param combatTrackerManager The {@link CombatTrackerManager} for session lookups.
+     * @param combatDamageResolver The resolver deciding which damage events count as combat.
      */
-    public OnCombatDamageStatListener(@NotNull CombatTrackerManager combatTrackerManager) {
+    public OnCombatDamageStatListener(@NotNull CombatTrackerManager combatTrackerManager,
+                                      @NotNull CombatDamageResolver combatDamageResolver) {
         this.combatTrackerManager = combatTrackerManager;
+        this.combatDamageResolver = combatDamageResolver;
     }
 
     /**
      * Tracks per-session damage and hit statistics. Resolves the combatants via
-     * {@link CombatDamageResolution#resolve(EntityDamageByEntityEvent)} — the same guards
+     * {@link CombatDamageResolver#resolve(EntityDamageByEntityEvent)} — the same guards
      * {@link OnCombatDamageListener} applies when creating the sessions being written to here.
      * Increments {@code damage_dealt} and {@code hits_landed} on the source's session, and
      * {@code damage_taken} and {@code hits_received} on the target's session. Each side is written
@@ -39,7 +44,7 @@ public class OnCombatDamageStatListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityDamageByEntity(@NotNull EntityDamageByEntityEvent event) {
-        CombatDamageResolution.resolve(event).ifPresent(combatants -> {
+        combatDamageResolver.resolve(event).ifPresent(combatants -> {
             double damage = event.getFinalDamage();
 
             combatTrackerManager.getSession(combatants.sourceUUID()).ifPresent(session -> {

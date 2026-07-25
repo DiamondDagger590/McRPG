@@ -9,10 +9,12 @@ import us.eunoians.mcrpg.combat.state.CombatStateType;
 
 import java.util.UUID;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @DisplayName("CombatStateChangeEvent")
@@ -63,6 +65,52 @@ class CombatStateChangeEventTest extends McRPGBaseTest {
         event.setNewValue(10);
 
         assertEquals(10, event.getNewValue());
+    }
+
+    @Test
+    @DisplayName("setNewValue rejects a value of the wrong type")
+    void setNewValue_throws_whenTypeDoesNotMatch() {
+        CombatSession session = new CombatSession(UUID.randomUUID(), 16, 8000L);
+        CombatStateChangeEvent event = new CombatStateChangeEvent(session, TYPE, 1, 2);
+
+        // Validating here rather than at the store means Bukkit blames the listener that made the
+        // bad call, instead of surfacing a ClassCastException in whoever reads the state next.
+        assertThrows(IllegalArgumentException.class, () -> event.setNewValue("not an integer"));
+        assertEquals(2, event.getNewValue());
+    }
+
+    @Test
+    @DisplayName("setNewValue rejects null")
+    void setNewValue_throws_whenNull() {
+        CombatSession session = new CombatSession(UUID.randomUUID(), 16, 8000L);
+        CombatStateChangeEvent event = new CombatStateChangeEvent(session, TYPE, 1, 2);
+
+        assertThrows(IllegalArgumentException.class, () -> event.setNewValue(null));
+    }
+
+    @Test
+    @DisplayName("setNewValue accepts a boxed value for a primitive class token")
+    void setNewValue_acceptsBoxedValue_forPrimitiveToken() {
+        // CombatStateType.of(key, int.class, 0, null) compiles — int.class has static type
+        // Class<Integer> — so a plain isInstance check would reject every write to such a type.
+        CombatStateType<Integer> primitiveTokenType = CombatStateType.of(
+                new NamespacedKey("mcrpg", "primitive_stacks"), int.class, 0, null);
+        CombatSession session = new CombatSession(UUID.randomUUID(), 16, 8000L);
+        CombatStateChangeEvent event = new CombatStateChangeEvent(session, primitiveTokenType, 1, 2);
+
+        assertDoesNotThrow(() -> event.setNewValue(10));
+        assertEquals(10, event.getNewValue());
+    }
+
+    @Test
+    @DisplayName("isAssignableToStateType maps primitive tokens to their boxed types")
+    void isAssignableToStateType_handlesPrimitiveTokens() {
+        CombatStateType<Integer> primitiveTokenType = CombatStateType.of(
+                new NamespacedKey("mcrpg", "primitive_stacks"), int.class, 0, null);
+
+        assertTrue(CombatStateChangeEvent.isAssignableToStateType(primitiveTokenType, 5));
+        assertFalse(CombatStateChangeEvent.isAssignableToStateType(primitiveTokenType, "five"));
+        assertFalse(CombatStateChangeEvent.isAssignableToStateType(primitiveTokenType, null));
     }
 
     @Test

@@ -23,6 +23,7 @@ import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnBlockBreakListener;
 import us.eunoians.mcrpg.listener.ability.OnBlockDropItemListener;
+import us.eunoians.mcrpg.listener.combat.CombatDamageResolver;
 import us.eunoians.mcrpg.listener.combat.OnCombatDamageListener;
 import us.eunoians.mcrpg.listener.combat.OnCombatDamageStatListener;
 import us.eunoians.mcrpg.listener.combat.OnCombatEntityDeathListener;
@@ -222,13 +223,14 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new PlayerSafeZoneStateChangeListener(), plugin);
 
         // Combat tracker listeners
-        Bukkit.getPluginManager().registerEvents(new OnCombatDamageListener(combatTrackerManager), plugin);
+        CombatDamageResolver combatDamageResolver = new CombatDamageResolver();
+        Bukkit.getPluginManager().registerEvents(new OnCombatDamageListener(combatTrackerManager, combatDamageResolver), plugin);
         Bukkit.getPluginManager().registerEvents(new OnCombatEntityDeathListener(combatTrackerManager), plugin);
         Bukkit.getPluginManager().registerEvents(new OnCombatEntityRemoveListener(combatTrackerManager), plugin);
         Bukkit.getPluginManager().registerEvents(new OnProjectileLaunchListener(), plugin);
 
         // Combat stat listeners
-        Bukkit.getPluginManager().registerEvents(new OnCombatDamageStatListener(combatTrackerManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnCombatDamageStatListener(combatTrackerManager, combatDamageResolver), plugin);
         Bukkit.getPluginManager().registerEvents(new OnCombatHealingStatListener(combatTrackerManager), plugin);
         Bukkit.getPluginManager().registerEvents(new OnCombatSessionEndStatUpdateListener(plugin), plugin);
     }

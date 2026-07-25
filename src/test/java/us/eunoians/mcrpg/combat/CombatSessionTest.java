@@ -562,8 +562,9 @@ class CombatSessionTest extends McRPGBaseTest {
     @DisplayName("State management")
     class StateManagement {
 
-        private final NamespacedKey STACKS_KEY = new NamespacedKey("mcrpg", "stacks");
-        private final CombatStateType<Integer> RAW_TYPE = CombatStateType.of(STACKS_KEY, Integer.class, 0, null);
+        private static final NamespacedKey STACKS_KEY = new NamespacedKey("mcrpg", "stacks");
+        private static final CombatStateType<Integer> RAW_TYPE =
+                CombatStateType.of(STACKS_KEY, Integer.class, 0, null);
 
         @Test
         @DisplayName("getState returns default value when no value is stored")
@@ -669,21 +670,63 @@ class CombatSessionTest extends McRPGBaseTest {
         }
 
         @Test
-        @DisplayName("setState throws when a listener substitutes a wrongly-typed value")
-        void setState_throws_whenListenerSetsWrongType() {
-            Bukkit.getPluginManager().registerEvents(new Listener() {
-                @EventHandler
-                public void onChange(CombatStateChangeEvent event) {
-                    event.setNewValue("not an integer");
+        @DisplayName("setState stores the caller's value when a listener leaves a wrongly-typed one behind")
+        void setState_keepsCallerValue_whenSubstitutedValueHasWrongType() {
+            // CombatStateChangeEvent.setNewValue rejects wrong types outright, so the only way a bad
+            // value reaches the store is a subclass or reflection bypassing it. This pins the
+            // backstop: keep the caller's value (type-safe by generics) rather than corrupt the
+            // store or throw into the caller for a third party's mistake.
+            CombatSession session = createSession();
+            CombatStateChangeEvent event = new CombatStateChangeEvent(session, RAW_TYPE, 0, 5) {
+                @Override
+                public Object getNewValue() {
+                    return "not an integer";
                 }
-            }, mcRPG);
+            };
 
+            assertFalse(CombatStateChangeEvent.isAssignableToStateType(RAW_TYPE, event.getNewValue()));
+            assertDoesNotThrow(() -> session.setState(RAW_TYPE, 5));
+            assertEquals(5, session.getRawState(RAW_TYPE));
+        }
+
+        @Test
+        @DisplayName("setState works for a state type declared with a primitive class token")
+        void setState_storesValue_whenTypeUsesPrimitiveToken() {
+            // int.class.isInstance(5) is false, so a naive isInstance guard would reject every write.
+            CombatStateType<Integer> primitiveTokenType = CombatStateType.of(
+                    new NamespacedKey("mcrpg", "primitive_stacks"), int.class, 0, null);
             CombatSession session = createSession();
 
-            // Storing the bad value would surface much later as a ClassCastException in an
-            // unrelated reader, with no trail back to the offending listener.
-            assertThrows(IllegalArgumentException.class, () -> session.setState(RAW_TYPE, 5));
-            assertEquals(0, session.getRawState(RAW_TYPE));
+            assertDoesNotThrow(() -> session.setState(primitiveTokenType, 5));
+            assertEquals(5, session.getRawState(primitiveTokenType));
+        }
+
+        @Test
+        @DisplayName("getState falls back to the raw value when the resolver returns null")
+        void getState_fallsBackToRawValue_whenResolverReturnsNull() {
+            CombatStateType<Integer> nullResolvingType = CombatStateType.resolved(
+                    STACKS_KEY, Integer.class, 0, (session, raw) -> null, null);
+            CombatSession session = createSession();
+            session.setState(nullResolvingType, 3);
+
+            // A null would reach Map.copyOf in createStateSnapshot, which rejects null values —
+            // throwing out of session end before the manager can unmap the session.
+            assertEquals(3, session.getState(nullResolvingType));
+        }
+
+        @Test
+        @DisplayName("createStateSnapshot survives a resolver that returns null")
+        void createStateSnapshot_survivesNullReturningResolver() {
+            CombatStateType<Integer> nullResolvingType = CombatStateType.resolved(
+                    STACKS_KEY, Integer.class, 0, (session, raw) -> null, null);
+            CombatSession session = createSession();
+            session.setState(nullResolvingType, 4);
+            CombatStateTypeRegistry registry = new CombatStateTypeRegistry();
+            registry.register(nullResolvingType);
+
+            var snapshot = assertDoesNotThrow(() -> session.createStateSnapshot(registry));
+
+            assertEquals(4, snapshot.getState(nullResolvingType));
         }
 
         @Test
