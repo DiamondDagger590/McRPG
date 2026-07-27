@@ -263,8 +263,8 @@ Active abilities are balanced using a **"Slow Regen, High Stakes"** philosophy. 
 
 Mana is the primary gate — cooldowns are anti-spam only for Light abilities and buffer-overlap prevention for Medium/Heavy. **Do not balance abilities using cooldowns as the main gate** — this incentivizes loadout swapping.
 
-When designing or rebalancing abilities, load `.cursor/rules/mana-balance-philosophy.mdc` for the full cookie-cutter process, formula patterns, validation constraints, and agent workflow instructions.
+When designing or rebalancing abilities, read `.claude/skills/add-ability/references/mana-balance-philosophy.md` for the full cookie-cutter process, formula patterns, validation constraints, and agent workflow instructions.
 
 ---
 
-> **Maintenance:** If you introduce a new pattern, naming convention, or anti-pattern not described here, update this file and `CLAUDE.md` in the same PR.
+> **Maintenance:** `CLAUDE.md` and `.claude/skills/` are the canonical steering docs — update them first. This file is a convenience mirror for Cursor sessions and is synced best-effort; when it disagrees with `CLAUDE.md`, `CLAUDE.md` wins.

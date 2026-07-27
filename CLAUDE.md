@@ -468,7 +468,7 @@ Active abilities follow a **"Slow Regen, High Stakes"** balance framework. All m
 
 **Formula pattern:** All costs/cooldowns use `getString()` + Parser with `tier` variable: `"baseCost - (scaleFactor * tier)"`.
 
-**Full framework:** See `.cursor/rules/mana-balance-philosophy.mdc` for the cookie-cutter classification decision tree, per-bucket formula ranges, validation checklist, and agent workflow instructions (agents must present balance options to the user rather than choosing values autonomously).
+**Full framework:** See `.claude/skills/add-ability/references/mana-balance-philosophy.md` for the cookie-cutter classification decision tree, per-bucket formula ranges, validation checklist, and agent workflow instructions (agents must present balance options to the user rather than choosing values autonomously).
 
 ### Registering New Content
 
@@ -622,7 +622,8 @@ Use a builder when a class meets **any** of these criteria:
 - **No ability state stored on the ability object** — ability state is per-holder, stored in `AbilityData`/`AbilityAttribute`; ability objects are shared singletons
 - **Don't put McRPG-specific logic in McCore** — McCore changes affect all downstream plugins
 - **No fully-qualified type references in method bodies** — always declare a top-level `import` statement for the type; writing `org.bukkit.Location loc` inline is forbidden even when it compiles
-- **No `e.printStackTrace()`** — always use `CorePlugin.getInstance().getLogger().log(Level.SEVERE, "context message", e)` so stack traces route through the server logger and are preserved in log aggregators
+- **No `e.printStackTrace()`** — always use `McRPG.getInstance().getLogger().log(Level.SEVERE, "context message", e)` so stack traces route through the plugin logger and are preserved in log aggregators
+- **Plugin logger only** — every logger call must come through `McRPG.getInstance().getLogger()`. Do not use `player.getServer().getLogger()`, `Bukkit.getLogger()`, or `Logger.getLogger(<Class>.class.getName())` — those bypass the plugin logger prefix and any plugin-scoped log handlers
 - **No `Optional.get()` without a guard** — always use `orElse`, `orElseGet`, `orElseThrow`, or check `isPresent()` first; bare `.get()` is a guaranteed crash on the empty path
 - **No Bukkit API calls from async threads** — any world, entity, or inventory mutation must be scheduled on the main thread via `Bukkit.getScheduler().runTask(plugin, () -> { ... })`
 - **No blocking `.get()` on a `CompletableFuture` from the main thread** — this deadlocks if the future's completion path needs the main thread scheduler
@@ -802,7 +803,7 @@ Numeric values shown in localized strings, GUI placeholders, ability lore, PAPI 
 
 ### GUI Color Palette
 
-All player-facing colors follow the **Warm Fantasy RPG** palette defined in [`PALETTE.md`](PALETTE.md). Colors are **runtime-resolvable placeholders** — locale YAML files use semantic names like `<primary>`, and `McRPGLocalizationManager` replaces them with configured MiniMessage values before parsing. Server owners customize colors in `config.yml`'s `palette` section. The palette defines 11 semantic roles: `<gui-title>` (GUI inventory titles), `<primary>` (nav, values, section headers), `<hint>` (click hints — verb only), `<mana>` (mana costs), `<ability-active>`/`<ability-passive>`/`<ability-innate>` (ability type colors), `<body>` (lore text), `<positive>`/`<negative>`/`<warning>` (status). `<gold>` is deprecated — use `<primary>` instead. `<primary>` for titles is deprecated — use `<gui-title>` instead. See `PALETTE.md` for the full specification and `.cursor/rules/core.mdc` for enforcement rules.
+All player-facing colors follow the **Warm Fantasy RPG** palette defined in [`PALETTE.md`](PALETTE.md). Colors are **runtime-resolvable placeholders** — locale YAML files use semantic names like `<primary>`, and `McRPGLocalizationManager` replaces them with configured MiniMessage values before parsing. Server owners customize colors in `config.yml`'s `palette` section. The palette defines 11 semantic roles: `<gui-title>` (GUI inventory titles), `<primary>` (nav, values, section headers), `<hint>` (click hints — verb only), `<mana>` (mana costs), `<ability-active>`/`<ability-passive>`/`<ability-innate>` (ability type colors), `<body>` (lore text), `<positive>`/`<negative>`/`<warning>` (status). `<gold>` is deprecated — use `<primary>` instead. `<primary>` for titles is deprecated — use `<gui-title>` instead. See `PALETTE.md` for the full specification.
 
 **Click-hint format:** All click instructions in GUI lore use the verb-only `<hint>` format: `<hint>Left-click <body>to edit` — `<hint>` colors only the click-type verb, `<body>` covers the rest. Compound click types are hyphenated (`Left-click`, `Right-click`, `Shift-click`). Destructive actions use `<negative>` on the verb instead; acceptance/positive actions use `<positive>`. Never color the entire hint line a single tag.
 
@@ -889,33 +890,29 @@ quest/board/
 
 ## Keeping This File Current
 
-After any commit or PR that introduces one of the following, **update `CLAUDE.md` and the relevant `.cursor/rules/*.mdc` files** before or alongside the change:
+`CLAUDE.md` and `.claude/skills/` are the **canonical** steering docs. Each review concern has exactly one source of truth — `.claude/skills/review-<lens>/SKILL.md` — consumed by both interactive sessions and the CI review agents. `.cursor/rules/core.mdc` is a best-effort convenience mirror for Cursor sessions; when it disagrees with `CLAUDE.md`, `CLAUDE.md` wins.
+
+After any commit or PR that introduces one of the following, update the listed files before or alongside the change:
 
 | Change type | What to update |
 |-------------|----------------|
-| New architectural pattern established | `CLAUDE.md` Architecture Overview + relevant `.mdc` |
+| New architectural pattern established | `CLAUDE.md` Architecture Overview |
 | New domain term introduced | `CLAUDE.md` Domain Terminology table |
-| New naming convention | `CLAUDE.md` Naming Conventions table + `core.mdc` |
-| New anti-pattern discovered | `CLAUDE.md` Anti-Patterns to Avoid + `core.mdc` |
-| Build command changes | `CLAUDE.md` Build & Run table + `core.mdc` |
+| New naming convention | `CLAUDE.md` Naming Conventions table (+ `core.mdc`) |
+| New anti-pattern discovered | `CLAUDE.md` Anti-Patterns to Avoid (+ `core.mdc`) |
+| Build command changes | `CLAUDE.md` Build & Run table + `.claude/skills/verify/SKILL.md` (+ `core.mdc`) |
 | New McCore abstraction used | `CLAUDE.md` McCore Relationship section |
 | New coding standard adopted | `CLAUDE.md` Coding Standards section |
-| New ability/skill type interface added | `CLAUDE.md` + `ability-system.mdc` or `skill-system.mdc` |
-| Entity hierarchy changed (new holder type or composition) | `CLAUDE.md` Architecture Overview + `entity-system.mdc` |
+| New ability pattern, type interface, or activation mechanism | `CLAUDE.md` + `.claude/skills/add-ability/` (SKILL.md or `references/ability-patterns.md`) |
+| New skill pattern, type interface, or XP mechanism | `CLAUDE.md` + `.claude/skills/add-skill/` (SKILL.md or `references/skill-system.md`) |
+| Entity hierarchy changed (new holder type or composition) | `CLAUDE.md` Architecture Overview |
 | Localization system changed (new source type, chain order) | `CLAUDE.md` Localization System section |
 | New locale key section added | `LocalizationKey.java` + bundled locale YAMLs |
-| New GUI slot pattern or anti-pattern found | `persona-gui-ux.mdc` + `.claude/commands/review-gui-ux.md` |
-| New server owner config concern identified | `persona-server-owner.mdc` + `.claude/commands/review-server-owner.md` |
-| New public API pattern or breaking-change rule | `persona-extensibility.mdc` + `.claude/commands/review-extensibility.md` |
-| New test structural pattern or anti-pattern | `persona-testing.mdc` + `.claude/commands/review-testing.md` |
-| New structural design anti-pattern found (SRP, coupling, wrong layer) | `persona-architecture.mdc` + `.claude/commands/review-architecture.md` |
-| New error handling anti-pattern found (swallowed exception, bad logging) | `persona-error-handling.mdc` + `.claude/commands/review-error-handling.md` + `core.mdc` |
-| New performance anti-pattern found (hot path, unbounded collection, leak) | `persona-performance.mdc` + `.claude/commands/review-performance.md` |
-| New concurrency anti-pattern found (thread boundary, race, future handling) | `persona-concurrency.mdc` + `.claude/commands/review-concurrency.md` + `core.mdc` |
+| New review checklist item or false-positive suppression (any lens) | the single `.claude/skills/review-<lens>/SKILL.md` for that concern |
 | CI review routing, persona set, or signal rule changed | `.github/claude-review-prompt.md` + `.claude/agents/review-*.md` (+ `.github/workflows/claude-review.yml` for triggers/model) |
-| Quest board system changed (new condition, distribution type, template feature) | `CLAUDE.md` Quest Board System section + `quest-board-system.mdc` |
+| Quest board system changed (new condition, distribution type, template feature) | `CLAUDE.md` Quest Board System section |
 | Quest chain system changed (new trigger type, repeat mode enforced, chain event added) | `CLAUDE.md` Quest Chain System terminology + `chain-system-backlog.md` |
-| Mana balance parameters changed (pool size, regen rate, bucket ranges) | `CLAUDE.md` Mana Balance Philosophy section + `mana-balance-philosophy.mdc` + `core.mdc` |
-| GUI color palette changed (new role, hex value, usage rule) | `PALETTE.md` + `core.mdc` GUI Color Palette section + `docs/hld/gui-ux-system.md` |
+| Mana balance parameters changed (pool size, regen rate, bucket ranges) | `CLAUDE.md` Mana Balance Philosophy section + `.claude/skills/add-ability/references/mana-balance-philosophy.md` (+ `core.mdc`) |
+| GUI color palette changed (new role, hex value, usage rule) | `PALETTE.md` + `CLAUDE.md` GUI Color Palette section (+ `core.mdc`) |
 
 These files are the project's living technical contract — stale steering files produce stale AI output.

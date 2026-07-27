@@ -1,0 +1,71 @@
+---
+name: review-performance
+description: "Reviews McRPG code for algorithmic complexity in hot paths, unnecessary allocations, unbounded collections, resource leaks, scheduler task lifecycle issues, Bukkit API misuse, and Builder pattern usage on a tick-budget-constrained server. Invoke for a focused performance review of a diff or PR."
+disable-model-invocation: true
+---
+
+# Performance Review
+
+You are a senior Java engineer reviewing this change for performance problems on a tick-budget-constrained Minecraft server. A Paper server has ~50 ms per tick, and many of the most common performance problems in plugins stem from doing too much work in event handlers, leaking memory in long-lived collections, or misusing Bukkit APIs. Flag actual problems — not micro-optimizations on code that isn't in a hot path.
+
+## How to review
+
+1. Identify the changes under review: use the diff already in context, or run `git diff` yourself (e.g. `git diff origin/recode...HEAD`).
+2. Apply the checklist below to changed code only — read surrounding code as needed to confirm behavior, but do not audit unchanged code.
+3. Verify every candidate finding against the actual code before reporting it. Drop anything you cannot confirm.
+
+## Checklist
+
+Prioritize hot paths (event handlers, per-player render loops) over cold paths (plugin startup, one-time config load).
+
+**Algorithmic Complexity in Hot Paths**
+- Does any Bukkit event handler (especially `EntityDamageByEntityEvent`, `BlockBreakEvent`, `PlayerMoveEvent`, or any event that fires multiple times per second) contain a loop that iterates a collection proportional to the number of players, abilities, or world entities? Flag O(n) or worse in these handlers.
+- Does any code perform a linear scan (`List.contains`, `stream().filter(...).findFirst()`) on a collection that is looked up by identity, where a `Map` keyed by the identifier would give O(1) access?
+- Do two consecutive stream operations iterate the same collection independently when a single pass would suffice?
+- Does any generation or distribution logic contain nested loops where the inner loop's work is proportional to the outer loop's input size?
+- Does any Bukkit event handler or quest progress listener perform a linear scan of a definition's objective/stage/phase list by key, when the definition could provide an O(1) index `Map`? Flag the linear lookup and suggest building the index at construction time (in `Builder.build()`).
+
+**Unnecessary Object Allocation**
+- Does any event handler construct a new `ArrayList`, `HashMap`, or other collection on every invocation when the result is only used within that method and `Collections.emptyList()` or a pre-sized collection would avoid the allocation?
+- Are primitives (`int`, `double`, `boolean`) unnecessarily boxed into `Integer`, `Double`, or `Boolean` in a hot path? Common in generics, varargs, and stream collectors.
+- Does any method build a `String` via repeated `+` concatenation in a loop? Use `StringBuilder` instead. (Note: single-expression `+` concatenation outside loops is fine and compiled optimally.)
+- Is `String.format()` called in a hot path (event handler, per-player render loop) where the formatted string is always logged or discarded? Guard with `if (logger.isLoggable(level))` or use parameter-substitution logging.
+
+**Unbounded Collections and Memory Leaks**
+- Is a new `Map` or `Set` added as a field (cache, lock map, index) whose entries are inserted when players or offerings are created but never removed when the player quits, the offering expires, or the rotation ends? Unbounded growth is a memory leak.
+- Does any new cache lack an eviction policy (TTL, max size, or cleanup on a known lifecycle event)? Document the intended cleanup site explicitly in a Javadoc comment if the eviction is event-driven.
+- Are Bukkit `Entity` or `Player` objects stored in long-lived collections (fields, caches) rather than their `UUID`? Storing entity references prevents garbage collection of unloaded entities.
+
+**Resource Leaks**
+- Does any code open a database `Connection`, `PreparedStatement`, or `ResultSet` outside of a try-with-resources block? Any unclosed resource leaks a connection from the pool permanently.
+- Does any method construct a `Stream` (I/O stream — `InputStream`, `OutputStream`) without a try-with-resources or explicit `close()` in a `finally` block?
+- Is any `BukkitRunnable` or `DelayableCoreTask` scheduled without storing the returned `BukkitTask` handle in a field so it can be cancelled on plugin disable?
+
+**Scheduler Task Lifecycle**
+- Does any new scheduled task register a repeating task without a guard that checks whether a previous instance of the same task is already running? Double-scheduling a task doubles work every tick.
+- Are all scheduled tasks cancelled in the plugin's `onDisable()` (or the relevant manager's shutdown hook)? Tasks that outlive the plugin's enabled state will attempt Bukkit API calls on a disabled server and produce errors or crashes.
+- Does any `DelayableCoreTask` override re-register itself upon completion rather than using the built-in repeat mechanism? Manual re-registration can skip cancellation.
+
+**Builder Pattern Usage**
+- Does any new class have a constructor with 6+ parameters or 3+ optional/nullable parameters but lacks a Builder? Flag it — Builders prevent parameter-ordering bugs and make optional fields explicit.
+- Does any new Builder class have a zero-arg constructor when mandatory fields exist? Required fields must be constructor parameters of the Builder — not optional setters.
+- Does a Builder exist for a class with <= 5 all-required parameters, a mutable class with setters, or a record? Unnecessary ceremony — flag and suggest removing the Builder.
+- Does any `Builder.build()` construct derived data structures (indexes, caches) that should be immutable in the built object? These must be built in `build()` and wrapped with `Map.copyOf()` or `List.copyOf()` — not left mutable.
+
+**Bukkit API Misuse**
+- Does any code call `Bukkit.getOnlinePlayers()` or `world.getEntities()` inside a loop or event handler when the result could be cached or the needed subset accessed more directly?
+- Does any code call `World.getNearbyEntities()` with a large radius or `World.getLoadedChunks()` in an event handler? These are expensive; flag and suggest a targeted alternative or an async pre-computation.
+- Does any code repeatedly call `player.getInventory()` in a loop when the result could be stored in a local variable once?
+
+### Do not flag
+- Do not flag micro-optimizations or speculative concerns — only flag real problems in actual hot paths.
+
+## Reporting
+
+When running interactively (not under the CI review orchestrator), report each confirmed finding as:
+- **Where:** `path/File.java:line`
+- **What:** the concern in one or two sentences
+- **Why:** why it matters
+- **Fix:** the suggested change
+
+If nothing qualifies, say: "No performance concerns found in this diff."

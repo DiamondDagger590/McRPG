@@ -1,8 +1,13 @@
+---
+name: add-skill
+description: Scaffold a new McRPG skill end-to-end — config file class, FileType entry, YAML resource, levelable XP component, skill class, localization, and registration. Use when creating a new levelable skill.
+---
+
 # Add Skill
 
 Scaffold a new McRPG skill end-to-end. Follow every step in order — do not skip steps.
 
----
+See `references/skill-system.md` for the underlying mechanics (levelable components, holder data, unlock levels, `HeldItemBonusSkill`, XP modifiers).
 
 ## Step 0 — Gather inputs
 
@@ -13,8 +18,6 @@ Ask (or infer from context) before writing any code:
 3. **HeldItemBonusSkill?** — does this skill grant a bonus based on which item is held? (`yes` / `no`)
 4. **Namespace key string** — snake_case identifier (defaults to the lower-case skill name, e.g. `archery`)
 
----
-
 ## Step 1 — Read the canonical reference
 
 Before writing any code, read the full `Swords` skill implementation:
@@ -22,8 +25,6 @@ Before writing any code, read the full `Swords` skill implementation:
 - `src/main/java/us/eunoians/mcrpg/skill/impl/swords/Swords.java`
 - `src/main/java/us/eunoians/mcrpg/skill/impl/swords/SwordsLevelOnAttackComponent.java`
 - `src/main/java/us/eunoians/mcrpg/configuration/file/skill/SwordsConfigFile.java`
-
----
 
 ## Step 2 — Create the skill config file
 
@@ -63,8 +64,6 @@ public final class <Name>ConfigFile extends SkillConfigFile {
 }
 ```
 
----
-
 ## Step 3 — Add to FileType enum
 
 In `src/main/java/us/eunoians/mcrpg/configuration/FileType.java`, add a new entry:
@@ -74,8 +73,6 @@ In `src/main/java/us/eunoians/mcrpg/configuration/FileType.java`, add a new entr
 ```
 
 Import the new config file class.
-
----
 
 ## Step 4 — Create the YAML config resource
 
@@ -101,16 +98,14 @@ experience:
   sources: {}
 ```
 
----
-
-## Step 5 — Create the LevelableComponent
+## Step 5 — Create the levelable component
 
 Create `src/main/java/us/eunoians/mcrpg/skill/impl/<name>/<Name>LevelComponent.java`.
 
 Look at `SwordsLevelOnAttackComponent.java` to pick the correct parent class:
 - For attack-based XP: extend `ConfigurableOnAttackLevelableComponent`
-- For block-break XP: look at `MiningLevelOnBlockBreakComponent` as reference
-- For other events: implement `LevelableComponent` directly
+- For block-break XP: extend `ConfigurableOnBlockBreakLevelableComponent` (see `MiningLevelOnBlockBreakComponent`)
+- For other events: implement `EventLevelableComponent` directly (see `references/skill-system.md`)
 
 ```java
 package us.eunoians.mcrpg.skill.impl.<name>;
@@ -143,8 +138,6 @@ final class <Name>LevelComponent extends /* parent class */ {
     }
 }
 ```
-
----
 
 ## Step 6 — Create the skill class
 
@@ -206,8 +199,6 @@ public final class <Name> extends McRPGSkill implements ConfigurableSkill {
 }
 ```
 
----
-
 ## Step 7 — Add the LocalizationKey display item route
 
 In `src/main/java/us/eunoians/mcrpg/configuration/file/localization/LocalizationKey.java`:
@@ -222,13 +213,11 @@ private static final String <NAME_UPPER>_HEADER = toRoutePath(SKILLS_HEADER, "<n
 public static final Route <NAME_UPPER>_DISPLAY_ITEM = Route.fromString(toRoutePath(<NAME_UPPER>_HEADER, "display-item"));
 ```
 
----
-
 ## Step 8 — Add the locale file entry
 
 In `src/main/resources/localization/english/en_skills.yml` (and any other bundled locale files), add a display item section for the new skill following the existing pattern for Swords, Mining, etc.
 
----
+The skill's `name:` field must use the per-skill palette placeholder — never `<gold>`, `<primary>`, or raw hex. Add a `skill-<name_key>: "<color:#RRGGBB>"` entry to `config.yml`'s `palette:` section and use `<skill-<name_key>>` in the locale entry. `SkillNameColorConsistencyTest` enforces this at CI time.
 
 ## Step 9 — Register in McRPGExpansion
 
@@ -240,29 +229,17 @@ skillContent.addContent(new <Name>(mcRPG));
 
 Import the new skill class.
 
----
-
 ## Step 10 — Register the FileManager
 
 In the file manager (wherever `FileType` values are loaded into `YamlDocument` instances), ensure `<NAME>_CONFIG` is handled the same as the other skill configs. Check `src/main/java/us/eunoians/mcrpg/configuration/` for the `FileManager` class to see the loading pattern.
 
----
-
 ## Step 11 — Final verification
 
 ```
-./gradlew compileJava
+./gradlew verifiedShadowJar
 ```
 
-If compilation succeeds, run:
-
-```
-./gradlew test
-```
-
-Fix any failures before committing.
-
----
+The entire test suite must pass — including `SkillNameColorConsistencyTest`. Fix any failures before committing.
 
 ## Checklist
 
@@ -272,7 +249,6 @@ Fix any failures before committing.
 - [ ] `<Name>LevelComponent.java` created with correct parent
 - [ ] `<Name>.java` created extending `McRPGSkill`, implementing `ConfigurableSkill`
 - [ ] `LocalizationKey.<NAME_UPPER>_DISPLAY_ITEM` route added
-- [ ] Locale YAML entry added for display item
+- [ ] Locale YAML entry added with the `<skill-<name_key>>` palette placeholder
 - [ ] Registered in `McRPGExpansion.getSkillContent()`
-- [ ] `./gradlew compileJava` passes
-- [ ] `./gradlew test` passes
+- [ ] `./gradlew verifiedShadowJar` passes

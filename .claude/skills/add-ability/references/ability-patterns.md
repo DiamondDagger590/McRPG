@@ -1,25 +1,8 @@
----
-description: McRPG ability implementation patterns — component registration, activation lifecycle, tier configuration, attribute factory, listener authoring, and registration in McRPGExpansion
-globs: ["src/**/ability/**/*.java", "src/**/listener/ability/**/*.java"]
-alwaysApply: false
----
+# McRPG Ability System Patterns
 
-# McRPG Ability System
+Full code templates and mechanics for implementing abilities. Referenced by the `add-ability` skill.
 
-## Checklist: Creating a New Ability
-
-> **Balance:** For mana cost and cooldown values on active abilities, load `.cursor/rules/mana-balance-philosophy.mdc`. Do not pick values autonomously — classify the ability into a bucket (Light/Medium/Heavy), compute options with their gameplay implications, and present them to the user before finalizing.
-
-1. Create class in `src/main/java/us/eunoians/mcrpg/ability/impl/<skill>/`
-2. Extend `McRPGAbility`, implement relevant type interfaces (`PassiveAbility`, `ActiveAbility`, `ConfigurableSkillAbility`, etc.)
-3. Declare a `static final NamespacedKey` on the class
-4. Register components in the constructor
-5. Implement `activateAbility()`, `getSkillKey()`, `getDatabaseName()`, `getYamlDocument()`, `getAbilityEnabledRoute()`, `getDisplayItemRoute()`
-6. Create a corresponding `<AbilityName>ActivateEvent` in `event/ability/<skill>/`
-7. Register in `McRPGExpansion.getAbilityContent()`
-8. For `ActiveAbility` implementations: `getDefaultStatistics()` automatically generates an activation-count statistic via `McRPGStatistic.createAbilityActivationStatistic()`. For passive abilities, `getDefaultStatistics()` returns an empty list by default — override if custom statistics are needed.
-
-## Minimal Ability Template
+## Minimal Passive Ability Template
 
 ```java
 public final class MyAbility extends McRPGAbility implements PassiveAbility, ConfigurableSkillAbility {
@@ -198,12 +181,9 @@ public class OnSwordAttackAbilityListener implements AbilityListener {
 
 `activateAbilities()` handles: holder lookup, world restriction checks, loadout filtering, component validation, cooldown checks, optional mana checks (for passives implementing `ManaAbility`), and dispatching to `activateAbility()`.
 
-## Registering in McRPGExpansion
+## Statistics
 
-```java
-// In McRPGExpansion.getAbilityContent():
-abilityContent.addContent(new MyAbility(mcRPG));
-```
+For `ActiveAbility` implementations, `getDefaultStatistics()` automatically generates an activation-count statistic via `McRPGStatistic.createAbilityActivationStatistic()`. For passive abilities, `getDefaultStatistics()` returns an empty list by default — override if custom statistics are needed.
 
 ## Reference: Canonical Example
 
@@ -212,7 +192,3 @@ See `Bleed.java` (`ability/impl/swords/Bleed.java`) — a passive ability that:
 - Uses `ConfigurableSkillAbility` for config-driven enable/disable
 - Reads base damage and cycles from YAML via `Route` constants
 - Fires `BleedActivateEvent` and delegates to a manager on success
-
----
-
-> **Maintenance:** If you introduce a new ability pattern, interface, or activation mechanism not described here, update this file and `CLAUDE.md` in the same PR.

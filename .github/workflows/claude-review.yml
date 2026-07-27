@@ -2,8 +2,6 @@ name: Claude PR Review
 
 # Consolidated AI PR review. A single orchestrator run (claude-code-action) fans
 # out to one persona subagent per review lens, then posts ONE sticky comment.
-# Replaces the old pr-review.yml + ai-persona-review.yml pipeline, which posted a
-# fresh top-level comment per persona on every push.
 on:
   pull_request:
     types: [opened, ready_for_review]
@@ -14,9 +12,7 @@ on:
     types: [created]
 
 env:
-  # Single model knob. Sonnet 5 carries $2/$10-per-MTok intro pricing through
-  # 2026-08-31 (then $3/$15, and ~30% more tokens per request than the 4.6
-  # tokenizer) — revisit the model/cost tradeoff before September 2026.
+  # Single model knob for both review jobs.
   CLAUDE_MODEL: claude-sonnet-5
 
 permissions:
@@ -47,13 +43,13 @@ jobs:
           fetch-depth: 0
       # Pin review-steering files to the base branch so a PR cannot weaken
       # its own review by modifying the orchestration prompt, agent defs, or
-      # the command checklists the agents delegate to.
+      # the skill checklists the agents delegate to.
       # rm -rf first so PR-added files absent from the base branch are removed.
       - name: Pin review config to base branch
         run: |
-          rm -rf .github/claude-review-prompt.md .claude/agents/ .claude/commands/
+          rm -rf .github/claude-review-prompt.md .claude/agents/ .claude/skills/
           git checkout "${{ github.event.pull_request.base.sha }}" -- \
-            .github/claude-review-prompt.md .claude/agents/ .claude/commands/ 2>/dev/null || true
+            .github/claude-review-prompt.md .claude/agents/ .claude/skills/ 2>/dev/null || true
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -108,7 +104,7 @@ jobs:
           echo "is_fork=$IS_FORK" >> "$GITHUB_OUTPUT"
       # Pin review-steering files to the base branch so a PR cannot weaken
       # its own review by modifying the orchestration prompt, agent defs, or
-      # the command checklists the agents delegate to.
+      # the skill checklists the agents delegate to.
       # rm -rf first so PR-added files absent from the base branch are removed.
       - name: Pin review config to base branch
         if: steps.fork-check.outputs.is_fork != 'true'
@@ -117,8 +113,8 @@ jobs:
         run: |
           PR_NUMBER="${{ github.event.issue.number || github.event.pull_request.number }}"
           BASE_SHA="$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json baseRefOid -q '.baseRefOid')"
-          rm -rf .github/claude-review-prompt.md .claude/agents/ .claude/commands/
-          git checkout "$BASE_SHA" -- .github/claude-review-prompt.md .claude/agents/ .claude/commands/ 2>/dev/null || true
+          rm -rf .github/claude-review-prompt.md .claude/agents/ .claude/skills/
+          git checkout "$BASE_SHA" -- .github/claude-review-prompt.md .claude/agents/ .claude/skills/ 2>/dev/null || true
       - uses: anthropics/claude-code-action@v1
         if: steps.fork-check.outputs.is_fork != 'true'
         with:

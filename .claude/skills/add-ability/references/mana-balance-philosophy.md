@@ -1,10 +1,6 @@
----
-description: Mana balance philosophy and cost framework for ability design — cookie-cutter buckets, formula patterns, and validation constraints. Agents must present balance options to the user rather than choosing values autonomously.
-globs: ["src/**/ability/**/*.java", "src/**/listener/ability/**/*.java", "src/main/resources/skill_configuration/**"]
-alwaysApply: false
----
-
 # McRPG Mana Balance Philosophy
+
+The balance framework every active ability's mana cost and cooldown must be tuned against. Referenced by the `add-ability` skill.
 
 ## Philosophy: "Slow Regen, High Stakes"
 
@@ -87,13 +83,13 @@ Is this ability primarily combat-oriented?
 
 Before finalizing any ability's mana cost formula, verify these constraints hold:
 
-- [ ] T1 burst from full: Light → ~3 casts, Medium → ~2 casts, Heavy → ~1 cast
-- [ ] T5 burst from full: Light → ~6 casts, Medium → ~3 casts, Heavy → ~1-2 casts
-- [ ] Heavy utility T1: time to recover to next cast > 25s (felt across the gameplay loop)
-- [ ] Heavy utility T5: time to recover to next cast > 20s (still a real commitment)
-- [ ] If ability has a designed tandem partner: combined T1 cost > 100
-- [ ] If ability has a designed tandem partner: combined T5 cost ≈ 85-95
-- [ ] No formula produces a value below the minimum cost floor (1) at tier 5
+- T1 burst from full: Light → ~3 casts, Medium → ~2 casts, Heavy → ~1 cast
+- T5 burst from full: Light → ~6 casts, Medium → ~3 casts, Heavy → ~1-2 casts
+- Heavy utility T1: time to recover to next cast > 25s (felt across the gameplay loop)
+- Heavy utility T5: time to recover to next cast > 20s (still a real commitment)
+- If ability has a designed tandem partner: combined T1 cost > 100
+- If ability has a designed tandem partner: combined T5 cost ≈ 85-95
+- No formula produces a value below the minimum cost floor (1) at tier 5
 
 **Recovery math shortcut:** `recoveryTime = cost / 2` (2/sec regen). E.g., cost 77 → 38.5s recovery.
 
@@ -164,7 +160,7 @@ Option C — "Accessible" (lower cost, bottom of bucket range)
 
 ### Step 3 — Present Options to the User
 
-Use `AskQuestion` to present the options. Frame each option in plain gameplay language, not math. Example prompt text:
+Present the options as a question to the user (use the AskUserQuestion tool when available). Frame each option in plain gameplay language, not math. Example prompt text:
 
 > "OreScanner is a Heavy utility ability. Here are three cost options — each changes how punishing the cast feels:"
 >
@@ -196,7 +192,3 @@ Run the validation checklist above against the chosen formula. If any constraint
 | T1 heavy utility (75+) is harsh for new gatherers | Moderate | Tier 1→2 upgrade is cheap. The ability is powerful. Players adapt. |
 | 2/sec regen is sensitive to modifier buffs | Low (currently) | No regen modifiers exist yet. When designed: +1/sec = 50% increase, treat as rare/expensive |
 | Negative formula outputs at extreme overtier | None | Minimum cost floor (1) enforced after Parser evaluation |
-
----
-
-> **Maintenance:** If the base pool parameters (max mana, regen rate) or bucket ranges change, update this file alongside `CLAUDE.md` and `core.mdc`. Stale balance documentation produces incorrect agent-generated options.

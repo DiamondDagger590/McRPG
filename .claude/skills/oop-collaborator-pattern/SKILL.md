@@ -1,6 +1,6 @@
 ---
 name: oop-collaborator-pattern
-description: Prefer object collaborators over static utility helpers for domain behavior in McRPG.
+description: Prefer object collaborators over static utility helpers for McRPG domain behavior. Use when adding a helper class, extracting duplicated logic across slots/listeners/managers, or reviewing a proposed class with only static methods in non-DAO code.
 ---
 
 ## Use this skill when

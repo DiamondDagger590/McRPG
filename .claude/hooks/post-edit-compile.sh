@@ -6,7 +6,9 @@
 #   { "tool_name": "Edit", "tool_input": { "file_path": "...", ... }, ... }
 #
 # If the edited file is a .java source file the hook runs:
-#   ./gradlew compileJava --quiet
+#   ./gradlew compileTestJava --quiet
+# compileTestJava depends on compileJava and the testFixtures compilation, so
+# main, fixture, and test sources are all checked regardless of which was edited.
 # A non-zero exit feeds the compiler errors back to Claude in the same turn
 # (exit code 2), so it can fix compilation failures immediately.
 
@@ -34,11 +36,11 @@ if [[ "$file_path" != *.java ]]; then
     exit 0
 fi
 
-compile_output=$(./gradlew compileJava --quiet 2>&1)
+compile_output=$(./gradlew compileTestJava --quiet 2>&1)
 exit_code=$?
 
 if [ $exit_code -ne 0 ]; then
-    echo "compileJava failed after editing $(basename "$file_path"):"
+    echo "compileTestJava failed after editing $(basename "$file_path"):"
     echo ""
     echo "$compile_output"
     exit 2  # exit 2 signals Claude Code to surface this output in the current turn

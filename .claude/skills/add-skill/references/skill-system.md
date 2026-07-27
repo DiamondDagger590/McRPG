@@ -1,10 +1,6 @@
----
-description: McRPG skill system patterns — skill implementation, experience components, leveling, unlock levels, SkillHolder data management, and registration in McRPGExpansion
-globs: ["src/**/skill/**/*.java"]
-alwaysApply: false
----
+# McRPG Skill System Patterns
 
-# McRPG Skill System
+Skill implementation mechanics: leveling, XP components, holder data, unlock levels. Referenced by the `add-skill` skill.
 
 ## Skill vs. Ability
 
@@ -14,18 +10,6 @@ alwaysApply: false
 | **Ability** | An action or passive effect unlocked/scaled by a skill. Abilities are _registered to_ a skill via `getSkillKey()`. |
 
 Skills earn XP — abilities do the gameplay work.
-
-## Checklist: Creating a New Skill
-
-1. Create class in `src/main/java/us/eunoians/mcrpg/skill/impl/<name>/`
-2. Extend `McRPGSkill`, implement relevant type interfaces (`ConfigurableSkill`, `HeldItemBonusSkill`, etc.)
-3. Declare `static final NamespacedKey SKILL_KEY` on the class
-4. Register levelable components in the constructor (`addLevelableComponent(...)`)
-5. Implement `getYamlDocument()`, `getDatabaseName()`, `getPlugin()`, `getDisplayItemRoute()`
-6. Create a `<Name>ConfigFile` class in `configuration/file/skill/`
-7. Register in `McRPGExpansion.getSkillContent()`
-8. Create abilities that return this skill's key from `getSkillKey()`
-9. `getDefaultStatistics()` is inherited from `McRPGSkill` — it auto-generates per-skill experience and max-level statistics via `McRPGStatistic`. Override only if you need additional custom statistics.
 
 ## Minimal Skill Template
 
@@ -78,6 +62,10 @@ public class MySkillLevelOnActionComponent implements EventLevelableComponent {
 }
 ```
 
+Configurable parent classes exist for common event shapes — extend these instead of implementing `EventLevelableComponent` directly when they fit:
+- Attack-based XP: `ConfigurableOnAttackLevelableComponent` (see `SwordsLevelOnAttackComponent`)
+- Block-break XP: `ConfigurableOnBlockBreakLevelableComponent` (see `MiningLevelOnBlockBreakComponent`)
+
 ## SkillHolder Data
 
 `SkillHolder` extends `AbilityHolder` and also tracks per-skill level data:
@@ -97,7 +85,7 @@ skillData.ifPresent(data -> {
 
 Abilities within a skill have an unlock level defined in their config. The ability becomes available to the holder only when the player's skill level reaches or exceeds the unlock threshold.
 
-- Config location: `<skill>-config.yml`, route typically `abilities.<ability-name>.unlock-level`
+- Config location: the skill's configuration YAML, route typically `abilities.<ability-name>.unlock-level`
 - The unlock check runs when a player levels up or logs in
 
 ## HeldItemBonusSkill
@@ -119,12 +107,9 @@ public double getHeldItemBonus(@NotNull ItemStack... items) {
 
 XP modifiers are applied through the experience modifier registry before XP is granted. Do not apply modifiers inside the levelable component — the framework handles this automatically.
 
-## Registering in McRPGExpansion
+## Statistics
 
-```java
-// In McRPGExpansion.getSkillContent():
-skillContent.addContent(new MySkill(mcRPG));
-```
+`getDefaultStatistics()` is inherited from `McRPGSkill` — it auto-generates per-skill experience and max-level statistics via `McRPGStatistic` using `Skill.getExperienceStatisticKey()` / `getMaxLevelStatisticKey()`. Override only if you need additional custom statistics.
 
 ## Reference: Canonical Example
 
@@ -132,7 +117,3 @@ See `Swords.java` (`skill/impl/swords/Swords.java`) — a skill that:
 - Registers a single `SwordsLevelOnAttackComponent` for `EntityDamageByEntityEvent`
 - Implements `HeldItemBonusSkill` with per-material bonus caching via `CustomItemWrapper`
 - Reads all config via `SwordsConfigFile` route constants
-
----
-
-> **Maintenance:** If you introduce a new skill pattern, interface, or XP mechanism not described here, update this file and `CLAUDE.md` in the same PR.
