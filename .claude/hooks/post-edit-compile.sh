@@ -14,8 +14,10 @@ set -uo pipefail
 
 input=$(cat)
 
-# Extract tool_input.file_path from the JSON payload.
-file_path=$(python3 - <<<"$input" 2>/dev/null <<'PYEOF'
+# Extract tool_input.file_path from the JSON payload. The script must be
+# passed via -c: with `python3 -` the interpreter consumes stdin for the
+# program text, leaving sys.stdin empty for the piped payload.
+file_path=$(printf '%s' "$input" | python3 -c '
 import sys, json
 try:
     data = json.loads(sys.stdin.read())
@@ -25,8 +27,7 @@ try:
     print(tip.get("file_path", ""))
 except Exception:
     print("")
-PYEOF
-) || file_path=""
+' 2>/dev/null) || file_path=""
 
 # Only run for Java source files.
 if [[ "$file_path" != *.java ]]; then

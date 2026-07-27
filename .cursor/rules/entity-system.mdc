@@ -1,6 +1,6 @@
 ---
 description: McRPG entity and holder hierarchy — AbilityHolder, LoadoutHolder, SkillHolder, McRPGPlayer, EntityManager, and how to retrieve and type-narrow holders
-globs: ["src/**/entity/**/*.java", "src/**/holder/**/*.java"]
+globs: ["src/**/entity/**/*.java"]
 alwaysApply: false
 ---
 
