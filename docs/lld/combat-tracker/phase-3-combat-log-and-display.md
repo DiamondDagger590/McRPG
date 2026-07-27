@@ -14,18 +14,21 @@ This phase delivers the first built-in policy consumer of the combat session eng
 **In scope:**
 
 - `CombatLogMode` — enum: `DISABLED`, `PLAYERS`, `MOBS_AND_PLAYERS`, with `shouldPunish(CombatType)` matching logic
-- `CombatLogPunishmentType` — enum: `KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`
+- `CombatLogPunishmentType` — `NamespacedKey`-keyed type representing a category of punishment; built-in constants: `KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`
+- `CombatLogPunishmentTypeRegistry` — registry of all registered `CombatLogPunishmentType` instances; extensible via `CombatLogPunishmentContentPack`
+- `CombatLogPunishmentContentPack` — content pack for registering third-party punishment types via the `ContentExpansion` system
 - `PlayerCombatLogEvent` — cancellable detection event, exempts the player entirely when cancelled
 - `CombatLogPunishmentEvent` — policy event with individually togglable punishments
 - `CombatLogEntry` — immutable record for audit trail results
 - `CombatLogDAO` — static DAO for audit trail persistence (insert, paginated query, count)
 - `CombatLogEnforcer` — collaborator that evaluates combat log conditions, fires events, applies punishments, and records audit entries
-- `CombatLogCommand` — `/mcrpg combatlog <player> [page]` admin command with paginated history and clickable teleport locations
+- `CombatLogCommand` — `/mcrpg combatlog <player> [page]` admin command with paginated history and clickable teleport locations; supports offline players via Paper's async `PlayerProfile` API
 - `InCombatPlaceholder` — PAPI placeholder for `%mcrpg_in_combat%` (boolean)
 - `CombatSecondsRemainingPlaceholder` — PAPI placeholder for `%mcrpg_combat_seconds_remaining%` (live countdown)
 - `OnCombatExitMessageListener` — sends a conditional "no longer in combat" action bar message when combat ends naturally and the server's combat log mode would punish
+- `CombatLogCleanupTask` — periodic task that deletes audit trail entries older than a configurable retention period
 - `CenterContentPriority.COMBAT_EXIT_FEEDBACK` — new priority constant for combat exit HUD messages
-- Modifications to `PlayerLeaveListener` (inject `CombatLogEnforcer`, insert combat log evaluation before `endSession`), `CombatConfigFile` (combat-log and display routes), `combat_configuration.yml` (new sections), `McRPGPlaceHolderType` (COMBAT entry), `LocalizationKey` (combat section), bundled locale YAML (combat messages), `McRPGDatabase` (CombatLogDAO table creation), `McRPGListenerRegistrar` (register exit message listener, construct enforcer), `McRPGBootstrap` (register CombatLogCommand)
+- Modifications to `PlayerLeaveListener` (inject `CombatLogEnforcer`, insert combat log evaluation before `endSession`), `CombatConfigFile` (combat-log, display, and audit retention routes), `combat_configuration.yml` (new sections), `McRPGPlaceHolderType` (COMBAT entry), `LocalizationKey` (combat section), bundled locale YAML (combat messages), `McRPGDatabase` (CombatLogDAO table creation), `McRPGRegistryKey` (COMBAT_LOG_PUNISHMENT_TYPE), `McRPGListenerRegistrar` (register exit message listener, construct enforcer), `McRPGBootstrap` (register CombatLogCommand, start CombatLogCleanupTask)
 - Configuration: `combat-log.mode`, `combat-log.punishment.*`, `display.show-combat-exit-message`, `display.exit-message-duration-ticks`
 
 **Out of scope (later phases):**
@@ -75,11 +78,25 @@ classDiagram
     }
 
     class CombatLogPunishmentType {
-        <<enum>>
-        KILL_ON_LOGOUT
-        DROP_ITEMS
-        BROADCAST_MESSAGE
+        <<abstract>>
+        +KILL_ON_LOGOUT$ CombatLogPunishmentType
+        +DROP_ITEMS$ CombatLogPunishmentType
+        +BROADCAST_MESSAGE$ CombatLogPunishmentType
+        -NamespacedKey key
+        -String configKey
+        +getKey() NamespacedKey
         +getConfigKey() String
+        +getExcludes() Set~NamespacedKey~
+        +apply(Player, CombatSession, McRPG)* void
+    }
+
+    class CombatLogPunishmentTypeRegistry {
+        +register(CombatLogPunishmentType) void
+        +get(NamespacedKey) Optional~CombatLogPunishmentType~
+    }
+
+    class CombatLogPunishmentContentPack {
+        <<content pack>>
     }
 
     class CombatLogEnforcer {
@@ -140,6 +157,9 @@ classDiagram
     CombatLogEnforcer --> CombatLogDAO : records async
     CombatLogEnforcer --> CombatLogEntry : creates
     CombatLogDAO o-- CombatLogEntry : queries return
+    CombatLogDAO --> CombatLogPunishmentTypeRegistry : deserializes types
+    CombatLogPunishmentTypeRegistry o-- CombatLogPunishmentType
+    CombatLogPunishmentContentPack --|> McRPGContentPack
 ```
 
 ### Diagram 2: Events
@@ -230,7 +250,7 @@ classDiagram
         +COMBATLOG_PERMISSION$ Permission
         -PAGE_SIZE$ int
         +registerCommand()$ void
-        -sendPaginatedResults(Audience, OfflinePlayer, List, int, int)$ void
+        -sendPaginatedResults(CommandSender, String, List, int, int)$ void
     }
 
     class CombatTrackerManager {
@@ -281,8 +301,15 @@ classDiagram
         +PUNISHMENT_KILL_ON_LOGOUT$ Route
         +PUNISHMENT_DROP_ITEMS$ Route
         +PUNISHMENT_BROADCAST_MESSAGE$ Route
+        +AUDIT_RETENTION_DAYS$ Route
         +DISPLAY_SHOW_COMBAT_EXIT_MESSAGE$ Route
         +DISPLAY_EXIT_MESSAGE_DURATION_TICKS$ Route
+    }
+
+    class CombatLogCleanupTask {
+        -McRPG mcRPG
+        -ReloadableInteger retentionDays
+        #run() void
     }
 
     class McRPGPlaceHolderType {
@@ -310,6 +337,8 @@ classDiagram
 
     PlayerLeaveListener o-- CombatLogEnforcer
     PlayerLeaveListener ..> CombatTrackerManager : looks up from registry
+    CombatLogCleanupTask --> CombatLogDAO : deletes expired entries
+    CombatLogCleanupTask *-- ReloadableInteger : retention days
 ```
 
 ---
@@ -381,55 +410,261 @@ public enum CombatLogMode {
 **Package:** `us.eunoians.mcrpg.combat.log`
 **File:** `src/main/java/us/eunoians/mcrpg/combat/log/CombatLogPunishmentType.java`
 
-Enum representing the built-in punishment types for combat logging. Each constant carries its YAML config key for reading the enabled/disabled state from configuration.
+Abstract base for combat log punishment types. Each type is self-contained: it carries its own `NamespacedKey`, declares which other types it mutually excludes via `getExcludes()`, and implements its punishment behavior in `apply()`. Built-in constants are defined as anonymous subclasses with their logic inlined. Third-party plugins subclass and register additional types via `CombatLogPunishmentContentPack` so their punishments appear in the audit trail alongside built-in ones.
+
+The enforcer resolves mutual exclusions before applying: for each enabled type, any types in its `getExcludes()` set are disabled. Iteration order is insertion order (built-in types first), so `KILL_ON_LOGOUT` excludes `DROP_ITEMS` before `DROP_ITEMS` is evaluated.
 
 ```java
 package us.eunoians.mcrpg.combat.log;
 
+import net.kyori.adventure.audience.Audience;
+import net.kyori.adventure.text.Component;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.combat.CombatSession;
+import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.util.McRPGMethods;
+
+import com.diamonddagger590.mccore.registry.RegistryKey;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Built-in punishment types applied when a player combat logs. Each type maps to
- * a boolean key under {@code combat-log.punishment} in the combat configuration file.
+ * Abstract base for a punishment applied when a player combat logs. Each type
+ * carries a {@link NamespacedKey} for serialization/registry lookup, declares
+ * mutually exclusive types via {@link #getExcludes()}, and implements its
+ * punishment behavior in {@link #apply(Player, CombatSession, McRPG)}.
  * <p>
- * Third-party plugins apply custom punishments by listening to
- * {@link us.eunoians.mcrpg.event.combat.CombatLogPunishmentEvent} — they do not
- * add entries to this enum.
+ * Built-in types are defined as static constants with inlined behavior.
+ * Third-party plugins subclass this and register via
+ * {@link us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack}.
  */
-public enum CombatLogPunishmentType {
+public abstract class CombatLogPunishmentType {
 
     /**
-     * Kill the player on logout. Sets health to zero, triggering normal death mechanics
-     * (item drops via death, XP loss, death message). When enabled alongside
-     * {@link #DROP_ITEMS}, the kill handles item drops — the explicit drop is skipped.
+     * Kill the player on logout. Sets health to zero, triggering normal death
+     * mechanics (item drops, XP loss, death message). Excludes {@link #DROP_ITEMS}
+     * because death already handles item drops.
      */
-    KILL_ON_LOGOUT("kill-on-logout"),
+    public static final CombatLogPunishmentType KILL_ON_LOGOUT = new CombatLogPunishmentType(
+            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "kill_on_logout"),
+            "kill-on-logout") {
+
+        @Override
+        @NotNull
+        public Set<NamespacedKey> getExcludes() {
+            return Set.of(DROP_ITEMS.getKey());
+        }
+
+        @Override
+        public void apply(@NotNull Player player, @NotNull CombatSession session,
+                          @NotNull McRPG mcRPG) {
+            player.setHealth(0);
+        }
+    };
 
     /**
-     * Drop the player's inventory at their logout location. Only applied when
-     * {@link #KILL_ON_LOGOUT} is disabled — death already drops items.
+     * Drop the player's inventory at their logout location. Mutually excluded
+     * by {@link #KILL_ON_LOGOUT} — death already drops items.
      */
-    DROP_ITEMS("drop-items"),
+    public static final CombatLogPunishmentType DROP_ITEMS = new CombatLogPunishmentType(
+            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "drop_items"),
+            "drop-items") {
+
+        @Override
+        public void apply(@NotNull Player player, @NotNull CombatSession session,
+                          @NotNull McRPG mcRPG) {
+            Location location = player.getLocation();
+            for (ItemStack item : player.getInventory().getContents()) {
+                if (item != null && !item.getType().isAir()) {
+                    location.getWorld().dropItemNaturally(location, item);
+                }
+            }
+            player.getInventory().clear();
+        }
+    };
 
     /**
-     * Broadcast a server-wide message announcing the combat log.
+     * Announce the combat log to every online player and the console. Delegates to
+     * {@link McRPGLocalizationManager#broadcastMessage(Route, Map)} so each recipient's
+     * message is resolved against their own locale chain.
      */
-    BROADCAST_MESSAGE("broadcast-message");
+    public static final CombatLogPunishmentType BROADCAST_MESSAGE = new CombatLogPunishmentType(
+            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "broadcast_message"),
+            "broadcast-message") {
 
+        @Override
+        public void apply(@NotNull Player player, @NotNull CombatSession session,
+                          @NotNull McRPG mcRPG) {
+            var localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.LOCALIZATION);
+            Location loc = player.getLocation();
+            localizationManager.broadcastMessage(LocalizationKey.COMBAT_LOG_BROADCAST, Map.of(
+                    "player", player.getName(),
+                    "world", loc.getWorld().getName(),
+                    "x", String.valueOf((int) loc.getX()),
+                    "y", String.valueOf((int) loc.getY()),
+                    "z", String.valueOf((int) loc.getZ())
+            ));
+        }
+    };
+
+    private final NamespacedKey key;
     private final String configKey;
 
-    CombatLogPunishmentType(@NotNull String configKey) {
+    /**
+     * Constructs a new {@link CombatLogPunishmentType}.
+     *
+     * @param key       The unique key identifying this punishment type.
+     * @param configKey The YAML config key for this type's enabled/disabled state.
+     */
+    protected CombatLogPunishmentType(@NotNull NamespacedKey key, @NotNull String configKey) {
+        this.key = key;
         this.configKey = configKey;
     }
 
     /**
-     * Gets the YAML config key under {@code combat-log.punishment} for this punishment type.
+     * Gets the unique key identifying this punishment type.
+     *
+     * @return The {@link NamespacedKey}.
+     */
+    @NotNull
+    public NamespacedKey getKey() {
+        return key;
+    }
+
+    /**
+     * Gets the YAML config key for this punishment type.
      *
      * @return The config key string.
      */
     @NotNull
     public String getConfigKey() {
         return configKey;
+    }
+
+    /**
+     * Gets the set of punishment type keys that are mutually exclusive with this
+     * type. When this type is enabled, any types whose keys appear in this set
+     * are automatically disabled by the enforcer before application.
+     * <p>
+     * Default implementation returns an empty set (no exclusions).
+     *
+     * @return An unmodifiable set of excluded {@link NamespacedKey}s.
+     */
+    @NotNull
+    public Set<NamespacedKey> getExcludes() {
+        return Set.of();
+    }
+
+    /**
+     * Applies this punishment to the player. Called by the enforcer after
+     * mutual exclusion resolution — only types that survived exclusion are applied.
+     *
+     * @param player  The player being punished.
+     * @param session The player's active combat session.
+     * @param mcRPG   The plugin instance for registry access.
+     */
+    public abstract void apply(@NotNull Player player, @NotNull CombatSession session,
+                               @NotNull McRPG mcRPG);
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CombatLogPunishmentType other)) return false;
+        return key.equals(other.key);
+    }
+
+    @Override
+    public int hashCode() {
+        return key.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return key.toString();
+    }
+}
+```
+
+### 1.2a CombatLogPunishmentTypeRegistry
+
+**Package:** `us.eunoians.mcrpg.combat.log`
+**File:** `src/main/java/us/eunoians/mcrpg/combat/log/CombatLogPunishmentTypeRegistry.java`
+
+Registry for all registered `CombatLogPunishmentType` instances. Keyed by `NamespacedKey`. Built-in types are registered during `McRPGExpansion` processing; third-party types are added via `CombatLogPunishmentContentPack`.
+
+```java
+package us.eunoians.mcrpg.combat.log;
+
+import com.diamonddagger590.mccore.registry.Registry;
+import org.bukkit.NamespacedKey;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
+
+/**
+ * Registry of all registered {@link CombatLogPunishmentType} instances.
+ * Supports lookup by {@link NamespacedKey} for deserialization of audit trail entries.
+ */
+public class CombatLogPunishmentTypeRegistry extends Registry<NamespacedKey, CombatLogPunishmentType> {
+
+    /**
+     * Registers a {@link CombatLogPunishmentType}.
+     *
+     * @param punishmentType The punishment type to register.
+     */
+    public void register(@NotNull CombatLogPunishmentType punishmentType) {
+        register(punishmentType.getKey(), punishmentType);
+    }
+
+    /**
+     * Looks up a {@link CombatLogPunishmentType} by its {@link NamespacedKey}.
+     *
+     * @param key The key to look up.
+     * @return An {@link Optional} containing the type if registered.
+     */
+    @NotNull
+    public Optional<CombatLogPunishmentType> get(@NotNull NamespacedKey key) {
+        return Optional.ofNullable(getRegisteredObject(key));
+    }
+}
+```
+
+### 1.2b CombatLogPunishmentContentPack
+
+**Package:** `us.eunoians.mcrpg.expansion.content`
+**File:** `src/main/java/us/eunoians/mcrpg/expansion/content/CombatLogPunishmentContentPack.java`
+
+Content pack for registering `CombatLogPunishmentType` implementations via the `ContentExpansion` system.
+
+```java
+package us.eunoians.mcrpg.expansion.content;
+
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
+import us.eunoians.mcrpg.expansion.ContentExpansion;
+
+/**
+ * Content pack for registering {@link CombatLogPunishmentType} implementations via the
+ * {@link ContentExpansion} system.
+ */
+public class CombatLogPunishmentContentPack extends McRPGContentPack<CombatLogPunishmentType> {
+
+    /**
+     * Constructs a new {@link CombatLogPunishmentContentPack}.
+     *
+     * @param contentExpansion The {@link ContentExpansion} providing this content.
+     */
+    public CombatLogPunishmentContentPack(@NotNull ContentExpansion contentExpansion) {
+        super(contentExpansion);
     }
 }
 ```
@@ -632,15 +867,17 @@ import us.eunoians.mcrpg.combat.CombatType;
 import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Fired after {@link PlayerCombatLogEvent} passes (not cancelled). Carries the
- * punishment map — each built-in punishment type is individually togglable by
- * listeners. Third-party plugins apply custom punishments by listening to this
- * event and performing their own logic (economy penalties, temporary bans, etc.).
+ * punishment map — each registered punishment type is individually togglable by
+ * listeners. Third-party plugins can register custom punishment types via
+ * {@link us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack} and
+ * add entries to this map in a listener at {@code EventPriority.NORMAL} — the
+ * enforcer reads the final map at {@code MONITOR}.
  * <p>
  * This event is not globally cancellable. To exempt a player entirely, cancel
  * {@link PlayerCombatLogEvent} instead.
@@ -668,7 +905,7 @@ public class CombatLogPunishmentEvent extends Event {
         this.player = player;
         this.session = session;
         this.combatType = combatType;
-        this.punishments = new EnumMap<>(punishments);
+        this.punishments = new LinkedHashMap<>(punishments);
     }
 
     /**
@@ -776,11 +1013,14 @@ Static DAO for combat log audit trail persistence. Follows the same pattern as `
 package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.combat.CombatType;
 import us.eunoians.mcrpg.combat.log.CombatLogEntry;
 import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry;
+import us.eunoians.mcrpg.registry.plugin.McRPGRegistryKey;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -792,6 +1032,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -875,7 +1116,7 @@ public final class CombatLogDAO {
                 .map(UUID::toString)
                 .collect(Collectors.joining(",")));
         statement.setString(9, entry.punishmentsApplied().stream()
-                .map(CombatLogPunishmentType::name)
+                .map(type -> type.getKey().toString())
                 .collect(Collectors.joining(",")));
         return List.of(statement);
     }
@@ -955,10 +1196,15 @@ public final class CombatLogDAO {
                         .toList();
 
         String punishmentString = rs.getString("punishments_applied");
+        CombatLogPunishmentTypeRegistry punishmentRegistry = McRPG.getInstance().registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE);
         List<CombatLogPunishmentType> punishments = punishmentString.isEmpty()
                 ? Collections.emptyList()
                 : Arrays.stream(punishmentString.split(","))
-                        .map(CombatLogPunishmentType::valueOf)
+                        .map(NamespacedKey::fromString)
+                        .map(punishmentRegistry::get)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
                         .toList();
 
         return new CombatLogEntry(
@@ -973,6 +1219,128 @@ public final class CombatLogDAO {
                 participantUUIDs,
                 punishments
         );
+    }
+
+    /**
+     * Deletes combat log entries older than the given cutoff timestamp.
+     *
+     * @param connection The database connection.
+     * @param cutoff     Entries with a timestamp before this instant are deleted.
+     * @return The number of rows deleted.
+     */
+    public static int deleteOlderThan(@NotNull Connection connection, @NotNull Instant cutoff) {
+        String sql = "DELETE FROM " + TABLE_NAME + " WHERE timestamp < ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setTimestamp(1, Timestamp.from(cutoff));
+            return statement.executeUpdate();
+        }
+        catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING,
+                    "Failed to delete expired combat log entries", e);
+            return 0;
+        }
+    }
+}
+```
+
+### 1.6a CombatLogCleanupTask
+
+**Package:** `us.eunoians.mcrpg.task.combat`
+**File:** `src/main/java/us/eunoians/mcrpg/task/combat/CombatLogCleanupTask.java`
+
+Periodic task that deletes audit trail entries older than a configurable retention period. Runs on the database executor to avoid blocking the main thread. The retention duration is cached via a `ReloadableInteger` (in days). A value of `0` or negative disables cleanup entirely.
+
+Cleanup runs **once immediately at startup** (so servers that restart frequently still clean up) and then repeats every 24 hours for long-running servers.
+
+```java
+package us.eunoians.mcrpg.task.combat;
+
+import com.diamonddagger590.mccore.configuration.common.ReloadableInteger;
+import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
+import com.diamonddagger590.mccore.task.DelayableCoreTask;
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
+import us.eunoians.mcrpg.configuration.file.FileType;
+import us.eunoians.mcrpg.database.table.CombatLogDAO;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+
+import java.sql.Connection;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.Set;
+import java.util.logging.Level;
+
+/**
+ * Periodic task that deletes combat log audit trail entries older than the
+ * configured retention period. Performs an initial cleanup on startup (so
+ * servers that restart frequently still clean up), then repeats every 24 hours.
+ * A retention value of {@code 0} or negative disables cleanup.
+ */
+public class CombatLogCleanupTask extends DelayableCoreTask {
+
+    private static final long RUN_INTERVAL_SECONDS = 86400;
+
+    private final McRPG mcRPG;
+    private final ReloadableInteger retentionDays;
+
+    /**
+     * Constructs a new {@link CombatLogCleanupTask}.
+     *
+     * @param mcRPG The plugin instance.
+     */
+    public CombatLogCleanupTask(@NotNull McRPG mcRPG) {
+        super(mcRPG, RUN_INTERVAL_SECONDS);
+        this.mcRPG = mcRPG;
+        var config = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE)
+                .getFile(FileType.COMBAT_CONFIG);
+        this.retentionDays = new ReloadableInteger(config,
+                CombatConfigFile.AUDIT_RETENTION_DAYS);
+        mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(ManagerKey.RELOADABLE_CONTENT)
+                .trackReloadableContent(Set.of(retentionDays));
+    }
+
+    /**
+     * Performs the initial cleanup at startup. Called once after database
+     * initialization, before the periodic schedule begins.
+     */
+    public void runInitialCleanup() {
+        performCleanup();
+    }
+
+    @Override
+    protected void run() {
+        performCleanup();
+    }
+
+    /**
+     * Submits the retention-based delete to the database executor.
+     */
+    private void performCleanup() {
+        int days = retentionDays.getContent();
+        if (days <= 0) {
+            return;
+        }
+
+        Instant cutoff = Instant.now().minus(days, ChronoUnit.DAYS);
+        var database = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.DATABASE);
+        database.getDatabaseExecutorService().submit(() -> {
+            try (Connection conn = database.getConnection()) {
+                int deleted = CombatLogDAO.deleteOlderThan(conn, cutoff);
+                if (deleted > 0) {
+                    mcRPG.getLogger().info("Cleaned up " + deleted
+                            + " combat log entries older than " + days + " days");
+                }
+            }
+            catch (Exception e) {
+                mcRPG.getLogger().log(Level.WARNING,
+                        "Failed to clean up expired combat log entries", e);
+            }
+        });
     }
 }
 ```
@@ -989,13 +1357,13 @@ package us.eunoians.mcrpg.combat.log;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.configuration.common.ReloadableBoolean;
+import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
-import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.combat.CombatParticipant;
@@ -1003,18 +1371,16 @@ import us.eunoians.mcrpg.combat.CombatSession;
 import us.eunoians.mcrpg.combat.CombatType;
 import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
 import us.eunoians.mcrpg.configuration.file.FileType;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.database.table.CombatLogDAO;
 import us.eunoians.mcrpg.event.combat.CombatLogPunishmentEvent;
 import us.eunoians.mcrpg.event.combat.PlayerCombatLogEvent;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
-import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
-
 import java.sql.Connection;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.EnumMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1135,7 +1501,7 @@ public class CombatLogEnforcer {
      */
     @NotNull
     private Map<CombatLogPunishmentType, Boolean> buildPunishmentMap() {
-        Map<CombatLogPunishmentType, Boolean> map = new EnumMap<>(CombatLogPunishmentType.class);
+        Map<CombatLogPunishmentType, Boolean> map = new LinkedHashMap<>();
         map.put(CombatLogPunishmentType.KILL_ON_LOGOUT, killOnLogout.getContent());
         map.put(CombatLogPunishmentType.DROP_ITEMS, dropItems.getContent());
         map.put(CombatLogPunishmentType.BROADCAST_MESSAGE, broadcastMessage.getContent());
@@ -1143,7 +1509,9 @@ public class CombatLogEnforcer {
     }
 
     /**
-     * Applies the surviving punishments to the player.
+     * Resolves mutual exclusions and applies surviving punishments. For each
+     * enabled type (in insertion order), any types in its {@code getExcludes()}
+     * set are disabled. Then each remaining enabled type's {@code apply()} is called.
      *
      * @param player          The player being punished.
      * @param session         The player's active combat session.
@@ -1151,37 +1519,17 @@ public class CombatLogEnforcer {
      */
     private void applyPunishments(@NotNull Player player, @NotNull CombatSession session,
                                   @NotNull CombatLogPunishmentEvent punishmentEvent) {
-        boolean killed = false;
+        List<CombatLogPunishmentType> enabled = punishmentEvent.getEnabledPunishments();
 
-        if (punishmentEvent.isPunishmentEnabled(CombatLogPunishmentType.KILL_ON_LOGOUT)) {
-            player.setHealth(0);
-            killed = true;
+        Set<NamespacedKey> excluded = new HashSet<>();
+        for (CombatLogPunishmentType type : enabled) {
+            excluded.addAll(type.getExcludes());
         }
 
-        if (punishmentEvent.isPunishmentEnabled(CombatLogPunishmentType.DROP_ITEMS) && !killed) {
-            Location location = player.getLocation();
-            for (ItemStack item : player.getInventory().getContents()) {
-                if (item != null && !item.getType().isAir()) {
-                    location.getWorld().dropItemNaturally(location, item);
-                }
+        for (CombatLogPunishmentType type : enabled) {
+            if (!excluded.contains(type.getKey())) {
+                type.apply(player, session, mcRPG);
             }
-            player.getInventory().clear();
-        }
-
-        if (punishmentEvent.isPunishmentEnabled(CombatLogPunishmentType.BROADCAST_MESSAGE)) {
-            var localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION);
-            Location loc = player.getLocation();
-            Component message = localizationManager.getLocalizedMessageAsComponent(
-                    LocalizationKey.COMBAT_LOG_BROADCAST,
-                    Map.of(
-                            "player", player.getName(),
-                            "world", loc.getWorld().getName(),
-                            "x", String.valueOf((int) loc.getX()),
-                            "y", String.valueOf((int) loc.getY()),
-                            "z", String.valueOf((int) loc.getZ())
-                    ));
-            Bukkit.broadcast(message);
         }
     }
 
@@ -1484,23 +1832,20 @@ public class OnCombatExitMessageListener implements Listener {
 **Package:** `us.eunoians.mcrpg.command.admin`
 **File:** `src/main/java/us/eunoians/mcrpg/command/admin/CombatLogCommand.java`
 
-Admin command `/mcrpg combatlog <player> [page]` that displays a paginated history of a player's combat log incidents. Each entry shows the timestamp, combat type, and a clickable location that teleports staff to the spot. The DB query runs asynchronously with results sent back on the main thread.
+Admin command `/mcrpg combatlog <player> [page]` that displays a paginated history of a player's combat log incidents. Each entry shows the timestamp, combat type, and a clickable location that teleports staff to the spot. Accepts any player name (online or offline) — the name-to-UUID resolution uses Paper's async `PlayerProfile` API so no Mojang lookup blocks the main thread. The DB query also runs asynchronously with results sent back on the main thread.
 
 ```java
 package us.eunoians.mcrpg.command.admin;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.incendo.cloud.bukkit.data.Selector;
-import org.incendo.cloud.bukkit.parser.selector.SinglePlayerSelectorParser;
 import org.incendo.cloud.description.Description;
 import org.incendo.cloud.key.CloudKey;
-import org.incendo.cloud.paper.PaperCommandManager;
 import org.incendo.cloud.parser.standard.IntegerParser;
+import org.incendo.cloud.parser.standard.StringParser;
 import org.incendo.cloud.permission.Permission;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -1521,7 +1866,8 @@ import java.util.logging.Level;
 /**
  * Admin command that displays a paginated history of combat log incidents for a player.
  * Each entry shows the timestamp, combat type, and a clickable location that teleports
- * staff to the incident location.
+ * staff to the incident location. Supports online and offline players via Paper's async
+ * {@link PlayerProfile} API for name-to-UUID resolution.
  * <p>
  * Usage: {@code /mcrpg combatlog <player> [page]}
  */
@@ -1532,8 +1878,7 @@ public class CombatLogCommand extends McRPGCommandBase {
     private static final DateTimeFormatter TIMESTAMP_FORMATTER =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
-    private static final CloudKey<Selector<Player>> PLAYER_KEY =
-            CloudKey.of("player", Selector.class);
+    private static final CloudKey<String> PLAYER_KEY = CloudKey.of("player", String.class);
     private static final CloudKey<Integer> PAGE_KEY = CloudKey.of("page", Integer.class);
 
     /**
@@ -1546,7 +1891,7 @@ public class CombatLogCommand extends McRPGCommandBase {
 
         commandManager.command(commandManager.commandBuilder("mcrpg")
                 .literal("combatlog")
-                .required("player", SinglePlayerSelectorParser.singlePlayerSelectorParser(),
+                .required("player", StringParser.stringParser(),
                         Description.of(plugin.registryAccess().registry(RegistryKey.MANAGER)
                                 .manager(McRPGManagerKey.LOCALIZATION)
                                 .getLocalizedMessage(LocalizationKey.COMMAND_DESCRIPTION_COMBAT_LOG_PLAYER)))
@@ -1560,30 +1905,49 @@ public class CombatLogCommand extends McRPGCommandBase {
                         COMBATLOG_PERMISSION))
                 .handler(commandContext -> {
                     var sender = commandContext.sender().getSender();
-                    Selector<Player> selector = commandContext.get(PLAYER_KEY);
-                    Player targetPlayer = selector.single();
+                    String playerName = commandContext.get(PLAYER_KEY);
                     int page = commandContext.getOrDefault(PAGE_KEY, 1);
 
-                    UUID targetUUID = targetPlayer.getUniqueId();
-                    String targetName = targetPlayer.getName();
-
-                    var database = plugin.registryAccess().registry(RegistryKey.MANAGER)
-                            .manager(McRPGManagerKey.DATABASE);
-                    database.getDatabaseExecutorService().submit(() -> {
-                        try (Connection conn = database.getConnection()) {
-                            int totalEntries = CombatLogDAO.getCombatLogCount(conn, targetUUID);
-                            List<CombatLogEntry> entries =
-                                    CombatLogDAO.getCombatLogHistory(conn, targetUUID, page, PAGE_SIZE);
-
-                            Bukkit.getScheduler().runTask(plugin, () ->
-                                    sendPaginatedResults(sender, targetName, entries,
-                                            page, totalEntries));
+                    PlayerProfile profile = Bukkit.getServer().createProfile(playerName);
+                    profile.update().thenAcceptAsync(resolvedProfile -> {
+                        UUID targetUUID = resolvedProfile.getId();
+                        if (targetUUID == null) {
+                            Bukkit.getScheduler().runTask(plugin, () -> {
+                                var localizationManager = plugin.registryAccess()
+                                        .registry(RegistryKey.MANAGER)
+                                        .manager(McRPGManagerKey.LOCALIZATION);
+                                Component notFound = localizationManager
+                                        .getLocalizedMessageAsComponent(sender,
+                                                LocalizationKey.COMBAT_LOG_PLAYER_NOT_FOUND,
+                                                Map.of("player", playerName));
+                                sender.sendMessage(notFound);
+                            });
+                            return;
                         }
-                        catch (Exception e) {
-                            plugin.getLogger().log(Level.WARNING,
-                                    "Failed to query combat log for " + targetName, e);
-                        }
-                    });
+
+                        String resolvedName = resolvedProfile.getName() != null
+                                ? resolvedProfile.getName() : playerName;
+
+                        var database = plugin.registryAccess().registry(RegistryKey.MANAGER)
+                                .manager(McRPGManagerKey.DATABASE);
+                        database.getDatabaseExecutorService().submit(() -> {
+                            try (Connection conn = database.getConnection()) {
+                                int totalEntries = CombatLogDAO.getCombatLogCount(conn,
+                                        targetUUID);
+                                List<CombatLogEntry> entries =
+                                        CombatLogDAO.getCombatLogHistory(conn, targetUUID,
+                                                page, PAGE_SIZE);
+
+                                Bukkit.getScheduler().runTask(plugin, () ->
+                                        sendPaginatedResults(sender, resolvedName, entries,
+                                                page, totalEntries));
+                            }
+                            catch (Exception e) {
+                                plugin.getLogger().log(Level.WARNING,
+                                        "Failed to query combat log for " + resolvedName, e);
+                            }
+                        });
+                    }, Bukkit.getScheduler().getMainThreadExecutor(plugin));
                 }));
     }
 
@@ -1605,7 +1969,7 @@ public class CombatLogCommand extends McRPGCommandBase {
                 .manager(McRPGManagerKey.LOCALIZATION);
 
         if (entries.isEmpty()) {
-            Component noEntries = localizationManager.getLocalizedMessageAsComponent(
+            Component noEntries = localizationManager.getLocalizedMessageAsComponent(sender,
                     LocalizationKey.COMBAT_LOG_HISTORY_NO_ENTRIES,
                     Map.of("player", targetName));
             sender.sendMessage(noEntries);
@@ -1614,7 +1978,7 @@ public class CombatLogCommand extends McRPGCommandBase {
 
         int totalPages = Math.max(1, (int) Math.ceil((double) totalEntries / PAGE_SIZE));
 
-        Component header = localizationManager.getLocalizedMessageAsComponent(
+        Component header = localizationManager.getLocalizedMessageAsComponent(sender,
                 LocalizationKey.COMBAT_LOG_HISTORY_HEADER,
                 Map.of("player", targetName,
                         "page", String.valueOf(page),
@@ -1623,7 +1987,7 @@ public class CombatLogCommand extends McRPGCommandBase {
 
         for (int i = 0; i < entries.size(); i++) {
             CombatLogEntry entry = entries.get(i);
-            Component entryComponent = localizationManager.getLocalizedMessageAsComponent(
+            Component entryComponent = localizationManager.getLocalizedMessageAsComponent(sender,
                     LocalizationKey.COMBAT_LOG_HISTORY_ENTRY,
                     Map.of(
                             "index", String.valueOf((page - 1) * PAGE_SIZE + i + 1),
@@ -1634,14 +1998,14 @@ public class CombatLogCommand extends McRPGCommandBase {
                             "y", String.valueOf((int) entry.y()),
                             "z", String.valueOf((int) entry.z()),
                             "punishments", entry.punishmentsApplied().stream()
-                                    .map(CombatLogEntry::formatPunishmentName)
+                                    .map(type -> type.getKey().getKey())
                                     .reduce((a, b) -> a + ", " + b)
                                     .orElse("none")
                     ));
             sender.sendMessage(entryComponent);
         }
 
-        Component footer = localizationManager.getLocalizedMessageAsComponent(
+        Component footer = localizationManager.getLocalizedMessageAsComponent(sender,
                 LocalizationKey.COMBAT_LOG_HISTORY_FOOTER,
                 Map.of("page", String.valueOf(page),
                         "total_pages", String.valueOf(totalPages)));
@@ -1650,7 +2014,7 @@ public class CombatLogCommand extends McRPGCommandBase {
 }
 ```
 
-> **Note:** `CombatLogEntry.formatPunishmentName` is a static helper that converts enum names to display form (e.g., `KILL_ON_LOGOUT` → `Kill on Logout`). If this method does not exist on the record, the `reduce` lambda should use `CombatLogPunishmentType::name` directly and the localization template can handle display formatting via placeholders.
+> **Note:** Punishment names in command output use `getKey().getKey()` (the namespace-stripped key, e.g., `kill_on_logout`). The localization template can handle display formatting via placeholders if a more polished format is needed.
 
 ---
 
@@ -1700,7 +2064,7 @@ public void handleQuit(PlayerQuitEvent playerQuitEvent) {
 
 **File:** `src/main/java/us/eunoians/mcrpg/configuration/file/CombatConfigFile.java`
 
-Set `CURRENT_VERSION` to `1` if it isn't already. Add route constants for combat-log mode, punishment flags, and display settings.
+Set `CURRENT_VERSION` to `1` if it isn't already. Add route constants for combat-log mode, punishment flags, display settings, and audit retention.
 
 ```java
 private static final int CURRENT_VERSION = 1;
@@ -1717,6 +2081,10 @@ public static final Route PUNISHMENT_DROP_ITEMS =
         Route.fromString(toRoutePath(PUNISHMENT_HEADER, "drop-items"));
 public static final Route PUNISHMENT_BROADCAST_MESSAGE =
         Route.fromString(toRoutePath(PUNISHMENT_HEADER, "broadcast-message"));
+
+// Audit Retention
+public static final Route AUDIT_RETENTION_DAYS =
+        Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "audit-retention-days"));
 
 // Display
 private static final String DISPLAY_HEADER = "display";
@@ -1813,7 +2181,18 @@ CombatLogDAO.attemptCreateTable(connection, database);
 CombatLogDAO.updateTable(connection);
 ```
 
-### 2.7 McRPGListenerRegistrar — Register Exit Message Listener, Construct Enforcer
+### 2.7 McRPGRegistryKey — Add COMBAT_LOG_PUNISHMENT_TYPE
+
+**File:** `src/main/java/us/eunoians/mcrpg/registry/plugin/McRPGRegistryKey.java`
+
+Add a registry key for the `CombatLogPunishmentTypeRegistry`. The registry is populated during `McRPGExpansion` content pack processing (built-in types) and by third-party `CombatLogPunishmentContentPack` registrations.
+
+```java
+public static final RegistryKey<CombatLogPunishmentTypeRegistry> COMBAT_LOG_PUNISHMENT_TYPE =
+        RegistryKey.of("combat_log_punishment_type");
+```
+
+### 2.8 McRPGListenerRegistrar — Register Exit Message Listener, Construct Enforcer
 
 **File:** `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGListenerRegistrar.java`
 
@@ -1832,15 +2211,20 @@ Bukkit.getPluginManager().registerEvents(
         new OnCombatExitMessageListener(plugin, combatLogEnforcer.getMode()), plugin);
 ```
 
-### 2.8 McRPGBootstrap — Register CombatLogCommand
+### 2.9 McRPGBootstrap — Register CombatLogCommand and Start Cleanup Task
 
 **File:** `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGBootstrap.java`
 
-Add `CombatLogCommand.registerCommand()` in the PROD-only block, alongside or after the existing command registrations in `McRPGCommandRegistrar`.
+Add `CombatLogCommand.registerCommand()` in the PROD-only block, alongside or after the existing command registrations in `McRPGCommandRegistrar`. Start the `CombatLogCleanupTask` after database initialization.
 
 ```java
 // In the PROD-only block, after McRPGCommandRegistrar:
 CombatLogCommand.registerCommand();
+
+// After database initialization (alongside other periodic tasks):
+CombatLogCleanupTask cleanupTask = new CombatLogCleanupTask(plugin);
+cleanupTask.runInitialCleanup();
+cleanupTask.runTask();
 ```
 
 ---
@@ -1909,15 +2293,21 @@ combat-log:
   # Third-party plugins can modify these at runtime via CombatLogPunishmentEvent.
   punishment:
     # Kill the player on logout. Triggers normal death mechanics (item drops, XP loss).
-    # When enabled alongside drop-items, the kill handles item drops — the explicit drop is skipped.
+    # Mutually excludes drop-items — death already handles item drops.
     kill-on-logout: true
 
     # Drop the player's inventory at their logout location.
-    # Only applied when kill-on-logout is disabled — death already drops items.
+    # Automatically excluded when kill-on-logout is enabled (death handles drops).
     drop-items: true
 
     # Broadcast a server-wide message announcing the combat log.
     broadcast-message: true
+
+  # Number of days to retain combat log audit trail entries.
+  # A cleanup task runs every 24 hours and deletes entries older than this.
+  # Set to 0 to disable automatic cleanup (entries are kept forever).
+  # Reload: cached via ReloadableInteger — refreshed on /mcrpg admin reload.
+  audit-retention-days: 30
 
 # Display Configuration
 # Controls combat-related display elements shown to players.
@@ -1989,7 +2379,7 @@ Player A logs out while fighting Player B (mode=PLAYERS):
               |   |           |-> combatTrackerManager.removeParticipantFromAllSessions(A.uuid, DEATH)
               |   |               |-> Removes A from B's session roster
               |   |-> DROP_ITEMS enabled but killed=true → skipped (death handles drops)
-              |   |-> BROADCAST_MESSAGE enabled → Bukkit.broadcast("<warning>Player A combat logged at ...")
+              |   |-> BROADCAST_MESSAGE enabled → localizationManager.broadcastMessage(COMBAT_LOG_BROADCAST, {player, world, x, y, z}) (each recipient resolved to their own locale)
               |-> recordAuditEntry(playerA, session, PVP, [B], [KILL_ON_LOGOUT, BROADCAST_MESSAGE])
               |   |-> async: CombatLogDAO.insertCombatLog(conn, entry) → committed
           |-> combatTrackerManager.endSession(A.uuid, LOGOUT) → no-op (session already ended by DEATH)
@@ -2049,7 +2439,7 @@ Player A's combat session times out (no activity for 8s, mode=PLAYERS, session w
                       |-> Bukkit.getPlayer(A.uuid) → Player A (online)
                       |-> McRPGPlayerManager.getPlayer(A.uuid) → McRPGPlayer
                       |-> DisplayManager.getOrCreateActionBarHud(mcRPGPlayer) → hud
-                      |-> localizationManager.getLocalizedMessageAsComponent(COMBAT_EXIT_MESSAGE) → "You are no longer in combat."
+                      |-> localizationManager.getLocalizedMessageAsComponent(mcRPGPlayer, COMBAT_EXIT_MESSAGE) → "You are no longer in combat."
                       |-> exitMessageDurationTicks.getContent() → 60 (cached, configurable)
                       |-> hud.setSlot(COMBAT_EXIT_FEEDBACK=5, TimedCenterContent(msg, currentTick + 60))
                       |-> Player sees "You are no longer in combat." on action bar for 3 seconds
@@ -2078,17 +2468,38 @@ Scoreboard plugin requests %mcrpg_combat_seconds_remaining% for Player A:
 ```
 Admin runs /mcrpg combatlog PlayerA 2:
   L-> Cloud command handler fires
-      |-> Resolve target: PlayerA → UUID
-      |-> page = 2
+      |-> playerName = "PlayerA", page = 2
+      |-> Bukkit.getServer().createProfile("PlayerA").update() → CompletableFuture
+          |-> (async) Mojang resolves PlayerA → UUID
+          |-> (main thread callback) targetUUID resolved, resolvedName = "PlayerA"
+          |-> Submit to database executor:
+              |-> CombatLogDAO.getCombatLogCount(conn, A.uuid) → 15
+              |-> CombatLogDAO.getCombatLogHistory(conn, A.uuid, 2, 10) → [entry11, ..., entry15]
+              |-> Bukkit.getScheduler().runTask(plugin, () -> sendPaginatedResults(...))
+                  |-> Send header: "Combat log history for PlayerA (Page 2/2):"
+                  |-> For each entry:
+                  |   |-> "11. 2026-07-20 14:35:02 — PVP at <click:run_command:'/tp world 100, 64, -200'>world 100, 64, -200</click> — Punishments: kill_on_logout, broadcast_message"
+                  |   |-> (clickable location teleports admin to the spot)
+                  |-> Send footer: "Click a location to teleport. Page 2/2"
+```
+
+### 4.7 Audit Trail Cleanup — Startup + Periodic Retention
+
+```
+Server starts (after DB initialization):
+  L-> CombatLogCleanupTask constructed
+      |-> retentionDays = ReloadableInteger(AUDIT_RETENTION_DAYS)
+  L-> cleanupTask.runInitialCleanup() → performCleanup()
+      |-> retentionDays.getContent() → 30
+      |-> 30 > 0 → cleanup enabled
+      |-> cutoff = Instant.now().minus(30, DAYS)
       |-> Submit to database executor:
-          |-> CombatLogDAO.getCombatLogCount(conn, A.uuid) → 15
-          |-> CombatLogDAO.getCombatLogHistory(conn, A.uuid, 2, 10) → [entry11, ..., entry15]
-          |-> Bukkit.getScheduler().runTask(plugin, () -> sendPaginatedResults(...))
-              |-> Send header: "Combat log history for PlayerA (Page 2/2):"
-              |-> For each entry:
-              |   |-> "11. 2026-07-20 14:35:02 — PVP at <click:run_command:'/tp world 100, 64, -200'>world 100, 64, -200</click> — Punishments: Kill on Logout, Broadcast"
-              |   |-> (clickable location teleports admin to the spot)
-              |-> Send footer: "Click a location to teleport. Page 2/2"
+          |-> CombatLogDAO.deleteOlderThan(conn, cutoff) → 42
+          |-> Log: "Cleaned up 42 combat log entries older than 30 days"
+  L-> cleanupTask.runTask() → schedules periodic run every 86400 seconds
+
+24 hours later (periodic run):
+  L-> performCleanup() → same flow as above
 ```
 
 ---
@@ -2096,27 +2507,30 @@ Admin runs /mcrpg combatlog PlayerA 2:
 ## 5. Implementation Order
 
 1. **CombatLogMode enum** — no dependencies
-2. **CombatLogPunishmentType enum** — no dependencies
-3. **CombatLogEntry record** — depends on CombatType, CombatLogPunishmentType
-4. **PlayerCombatLogEvent** — depends on CombatSession, CombatParticipant, CombatType
-5. **CombatLogPunishmentEvent** — depends on CombatSession, CombatType, CombatLogPunishmentType
-6. **CombatLogDAO** — depends on CombatLogEntry, CombatType, CombatLogPunishmentType
-7. **CombatConfigFile modifications** — set version to 1 if needed, add combat-log and display routes
-8. **combat_configuration.yml update** — add combat-log and display YAML sections
-9. **LocalizationKey modifications** — add combat section route constants
-10. **Localization YAML additions** — add combat messages to bundled English locale
-11. **CombatLogEnforcer** — depends on CombatLogMode, CombatLogPunishmentType, CombatLogEntry, CombatLogDAO, PlayerCombatLogEvent, CombatLogPunishmentEvent, CombatConfigFile, LocalizationKey; registers `ReloadableContent<CombatLogMode>` + 3x `ReloadableBoolean` with `ReloadableContentManager`
-12. **PlayerLeaveListener modification** — inject CombatLogEnforcer, insert combat log evaluation before endSession
-13. **InCombatPlaceholder** — depends on CombatTrackerManager
-14. **CombatSecondsRemainingPlaceholder** — depends on CombatTrackerManager, CombatSession
-15. **McRPGPlaceHolderType modification** — add COMBAT entry
-16. **CenterContentPriority modification** — add COMBAT_EXIT_FEEDBACK constant
-17. **OnCombatExitMessageListener** — depends on CombatLogEnforcer (shared `ReloadableContent<CombatLogMode>`), CombatConfigFile, LocalizationKey, DisplayManager, CenterContentPriority; registers `ReloadableBoolean` for display flag with `ReloadableContentManager`
-18. **CombatLogCommand** — depends on CombatLogDAO, CombatLogEntry, LocalizationKey
-19. **McRPGDatabase modification** — add CombatLogDAO table creation
-20. **McRPGListenerRegistrar modification** — construct CombatLogEnforcer, update PlayerLeaveListener construction (remove CombatTrackerManager param, add CombatLogEnforcer), register exit message listener with shared `combatLogEnforcer.getMode()`
-21. **McRPGBootstrap modification** — register CombatLogCommand
-22. **Unit tests** — see §6
+2. **CombatLogPunishmentType class** — no dependencies
+3. **CombatLogPunishmentTypeRegistry** — depends on CombatLogPunishmentType
+4. **CombatLogPunishmentContentPack** — depends on CombatLogPunishmentType
+5. **CombatLogEntry record** — depends on CombatType, CombatLogPunishmentType
+6. **PlayerCombatLogEvent** — depends on CombatSession, CombatParticipant, CombatType
+7. **CombatLogPunishmentEvent** — depends on CombatSession, CombatType, CombatLogPunishmentType
+8. **CombatLogDAO** — depends on CombatLogEntry, CombatType, CombatLogPunishmentType, CombatLogPunishmentTypeRegistry
+9. **CombatConfigFile modifications** — set version to 1 if needed, add combat-log, display, and audit retention routes
+10. **combat_configuration.yml update** — add combat-log, display, and audit retention YAML sections
+11. **LocalizationKey modifications** — add combat section route constants
+12. **Localization YAML additions** — add combat messages to bundled English locale
+13. **CombatLogEnforcer** — depends on CombatLogMode, CombatLogPunishmentType, CombatLogEntry, CombatLogDAO, PlayerCombatLogEvent, CombatLogPunishmentEvent, CombatConfigFile, LocalizationKey; registers `ReloadableContent<CombatLogMode>` + 3x `ReloadableBoolean` with `ReloadableContentManager`
+14. **PlayerLeaveListener modification** — inject CombatLogEnforcer, insert combat log evaluation before endSession
+15. **InCombatPlaceholder** — depends on CombatTrackerManager
+16. **CombatSecondsRemainingPlaceholder** — depends on CombatTrackerManager, CombatSession
+17. **McRPGPlaceHolderType modification** — add COMBAT entry
+18. **CenterContentPriority modification** — add COMBAT_EXIT_FEEDBACK constant
+19. **OnCombatExitMessageListener** — depends on CombatLogEnforcer (shared `ReloadableContent<CombatLogMode>`), CombatConfigFile, LocalizationKey, DisplayManager, CenterContentPriority; registers `ReloadableBoolean` for display flag with `ReloadableContentManager`
+20. **CombatLogCommand** — depends on CombatLogDAO, CombatLogEntry, LocalizationKey
+21. **CombatLogCleanupTask** — depends on CombatLogDAO, CombatConfigFile; periodic task that deletes expired audit trail entries
+22. **McRPGDatabase modification** — add CombatLogDAO table creation
+23. **McRPGListenerRegistrar modification** — construct CombatLogEnforcer, update PlayerLeaveListener construction (remove CombatTrackerManager param, add CombatLogEnforcer), register exit message listener with shared `combatLogEnforcer.getMode()`
+24. **McRPGBootstrap modification** — register CombatLogCommand, start CombatLogCleanupTask
+25. **Unit tests** — see §6
 
 ---
 
@@ -2137,8 +2551,31 @@ Admin runs /mcrpg combatlog PlayerA 2:
 
 ### 6.2 CombatLogPunishmentTypeTest
 
-- Declares the expected values (`KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`) that round-trip through `valueOf`
-- Each value returns its corresponding config key string via `getConfigKey()`
+- Built-in constants (`KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`) have distinct `NamespacedKey`s under the `mcrpg` namespace
+- Each constant returns its corresponding config key string via `getConfigKey()`
+- `KILL_ON_LOGOUT.getExcludes()` contains `DROP_ITEMS`'s key
+- `DROP_ITEMS.getExcludes()` is empty
+- `BROADCAST_MESSAGE.getExcludes()` is empty
+- `KILL_ON_LOGOUT.apply()` sets the player's health to zero
+- `DROP_ITEMS.apply()` drops inventory items at the player's location and clears inventory
+- `BROADCAST_MESSAGE.apply()` delegates to `localizationManager.broadcastMessage(Route, Map)` which resolves each recipient's message to their own locale
+- Equality is based on `NamespacedKey` — two instances with the same key are equal
+- `toString()` returns the `NamespacedKey` string representation
+
+### 6.2a CombatLogPunishmentTypeRegistryTest
+
+- `register()` stores a type retrievable by `get(key)`
+- `get()` returns empty for an unregistered key
+- Multiple types with distinct keys coexist
+
+### 6.2b CombatLogCleanupTaskTest
+
+- `runInitialCleanup()` deletes entries older than the configured retention period
+- `runInitialCleanup()` does not delete entries within the retention window
+- Does not delete when `retentionDays` is `0`
+- Does not delete when `retentionDays` is negative
+- Periodic `run()` uses the same cleanup logic as `runInitialCleanup()`
+- Reload behavior: changing `audit-retention-days` in YAML and calling `reloadAllContent()` causes the next run to use the new value
 
 ### 6.3 CombatLogEntryTest
 
@@ -2178,6 +2615,9 @@ Admin runs /mcrpg combatlog PlayerA 2:
 - `getCombatLogCount` returns `0` for a player with no entries
 - Multiple entries for the same player are all retrievable
 - Entries for different players do not cross-contaminate
+- `deleteOlderThan` removes entries before the cutoff and keeps entries after
+- `deleteOlderThan` returns the count of deleted rows
+- `deleteOlderThan` returns `0` when no entries are older than the cutoff
 
 ### 6.7 CombatLogEnforcerTest
 
@@ -2188,9 +2628,9 @@ Organized into `@Nested` groups by concern. Requires MockBukkit for event firing
 - **Reload behavior** — changing the mode value in YAML and calling `reloadAllContent()` causes the next `evaluateAndEnforce` call to use the new mode
 - **Detection event** — fires `PlayerCombatLogEvent` with correct player, session, combat type, and participants; does not proceed to punishment when the detection event is cancelled
 - **Punishment event** — fires `CombatLogPunishmentEvent` with punishment map populated from cached `ReloadableBoolean` values; does not apply punishments when all punishments are disabled by listeners
-- **Kill punishment** — sets player health to zero when KILL_ON_LOGOUT is enabled
-- **Drop items punishment** — drops inventory items at player location when DROP_ITEMS is enabled and KILL_ON_LOGOUT is disabled; does not drop items when KILL_ON_LOGOUT is also enabled (death handles drops)
-- **Broadcast punishment** — broadcasts a localized message when BROADCAST_MESSAGE is enabled
+- **Punishment application** — calls `apply()` on each enabled type; KILL_ON_LOGOUT sets player health to zero; DROP_ITEMS drops inventory and clears it; BROADCAST_MESSAGE delegates to `localizationManager.broadcastMessage()` for per-recipient locale resolution
+- **Mutual exclusion** — when both KILL_ON_LOGOUT and DROP_ITEMS are enabled, DROP_ITEMS is excluded and its `apply()` is not called; BROADCAST_MESSAGE is not excluded by either
+- **Third-party type integration** — a custom type added to the event map via `setPunishmentEnabled()` has its `apply()` called and appears in the audit trail
 - **Audit recording** — submits an async DAO insert with correct entry data
 
 ### 6.8 InCombatPlaceholderTest
@@ -2255,11 +2695,11 @@ Organized into `@Nested` groups by concern. Requires MockBukkit for event firing
 
 **Why:** The HLD describes two distinct concerns: detection (`PlayerCombatLogEvent`, cancellable — exempts the player entirely) and policy (`CombatLogPunishmentEvent`, individually modifiable). Making the punishment event globally cancellable blurs this distinction — a plugin that wants to disable `KILL_ON_LOGOUT` while keeping `BROADCAST_MESSAGE` would need to cancel and re-fire, which is fragile. The two-event model with distinct cancellation semantics matches the HLD design intent.
 
-### D5. DROP_ITEMS Skipped When KILL_ON_LOGOUT Is Also Enabled
+### D5. DROP_ITEMS Excluded by KILL_ON_LOGOUT via Mutual Exclusion
 
-**Decision:** When both `KILL_ON_LOGOUT` and `DROP_ITEMS` are enabled, the explicit item drop is skipped. Death handles item drops via normal Minecraft death mechanics.
+**Decision:** `KILL_ON_LOGOUT.getExcludes()` returns `Set.of(DROP_ITEMS.getKey())`. When both are enabled, the enforcer's exclusion resolution disables `DROP_ITEMS` before applying punishments.
 
-**Why:** `player.setHealth(0)` triggers `EntityDeathEvent`, which drops the player's inventory and awards killer XP via Minecraft's built-in death handling. Manually dropping items *and* killing the player would result in duplicated item drops. The config default enables both, but the enforcer applies `DROP_ITEMS` only when `KILL_ON_LOGOUT` is disabled — the two are complementary options, not additive.
+**Why:** `player.setHealth(0)` triggers `EntityDeathEvent`, which drops the player's inventory and awards killer XP via Minecraft's built-in death handling. Manually dropping items *and* killing the player would result in duplicated item drops. The mutual exclusion mechanism is declarative — `KILL_ON_LOGOUT` declares that `DROP_ITEMS` is redundant when it's active, and the enforcer resolves this automatically. Third-party types can use the same mechanism for their own exclusion relationships.
 
 ### D6. Async Audit Trail Recording (Fire-and-Forget)
 
@@ -2295,11 +2735,11 @@ Organized into `@Nested` groups by concern. Requires MockBukkit for event firing
 
 **Why:** DB queries should not block the main thread. The async-query-with-sync-response pattern avoids tick lag while ensuring message delivery on the main thread (required for `CommandSender.sendMessage(Component)`). This follows the standard Bukkit async pattern and is consistent with how other DB-backed features in McRPG handle asynchronous reads.
 
-### D11. Command Targets Online Players via SinglePlayerSelectorParser
+### D11. Offline Player Support via Paper's Async PlayerProfile API
 
-**Decision:** The `/mcrpg combatlog <player>` argument uses Cloud's `SinglePlayerSelectorParser`, which resolves online players only.
+**Decision:** The `/mcrpg combatlog <player>` argument uses Cloud's `StringParser` for the player name. Name-to-UUID resolution uses Paper's `Server.createProfile(name).update()`, which returns a `CompletableFuture<PlayerProfile>` and resolves asynchronously via Mojang's API without blocking the main thread.
 
-**Why:** `Bukkit.getOfflinePlayer(String)` is deprecated and potentially performs a blocking Mojang API call on the main thread. The combat log command is most commonly used when the player is online (they just combat logged, or they're being investigated while present). For offline player lookup, a future enhancement can add a UUID argument variant. The online-only parser is safe, fast, and avoids the deprecated API. The tab-completion provided by `SinglePlayerSelectorParser` also improves admin UX.
+**Why:** Combat log history is most useful for investigating players who are offline — they combat logged and disconnected. `Bukkit.getOfflinePlayer(String)` is deprecated and performs a blocking Mojang lookup on the main thread. Paper's `PlayerProfile.update()` is the idiomatic async alternative: it creates an incomplete profile with just the name, then resolves the UUID on a worker thread. If the name doesn't resolve (no Mojang account), the handler sends a localized "player not found" message. The DB query is chained after profile resolution, keeping the entire flow non-blocking.
 
 ### D12. Config Values Cached via McCore's Reloadable Abstractions
 
@@ -2311,15 +2751,33 @@ Organized into `@Nested` groups by concern. Requires MockBukkit for event firing
 
 **Why not a `ReloadableMap<CombatLogPunishmentType, Boolean>`?** The punishment map is only 3 entries on an extremely cold path (fires only when someone actually combat logs). Three `ReloadableBoolean` fields are simpler, self-documenting (each field names the config it depends on), and use an existing McCore class. A `ReloadableMap` would be warranted for a dynamic-length config collection, but a fixed 3-element map doesn't justify a new McCore abstraction.
 
+### D13. Self-Contained Punishment Types with Mutual Exclusion
+
+**Decision:** `CombatLogPunishmentType` is an abstract class keyed by `NamespacedKey`. Each type implements `apply(Player, CombatSession, McRPG)` for its punishment behavior, `getExcludes()` for declaring mutually exclusive types, and is registered in `CombatLogPunishmentTypeRegistry` via `CombatLogPunishmentContentPack`. Built-in types are anonymous subclasses on static constants.
+
+**Why — self-contained types:** With punishment logic on the type itself, the enforcer doesn't need to know what each type does — it resolves exclusions and calls `apply()` on each survivor. Adding a new punishment (built-in or third-party) is just a subclass and a content pack entry. The enforcer never needs modification.
+
+**Why — mutual exclusion over cross-type inspection:** The original design had `DROP_ITEMS` checking whether `KILL_ON_LOGOUT` was also enabled at apply-time. This couples one type to another's identity and doesn't scale to third-party types that might have their own conflicts. Declarative exclusion via `getExcludes()` is inspectable, symmetric (either side can declare the exclusion), and the enforcer resolves all conflicts in one pass before any `apply()` call.
+
+**Why — NamespacedKey, not enum:** The audit trail serializes punishment types by `NamespacedKey`. With an enum, third-party punishments applied via `CombatLogPunishmentEvent` listeners could not appear in the audit trail — the DAO had no way to represent non-enum values. Third-party plugins register their own types (e.g., `myplugin:temp_ban`) via `CombatLogPunishmentContentPack`, add them to the event's punishment map in a listener, and the enforcer applies and records them alongside built-in types.
+
+### D14. Configurable Audit Trail Retention via Cleanup Task
+
+**Decision:** `CombatLogCleanupTask` (a `DelayableCoreTask`) performs an initial cleanup at startup via `runInitialCleanup()`, then repeats every 24 hours. It deletes `combat_log` entries older than `combat-log.audit-retention-days` (default 30 days). A value of `0` or negative disables cleanup entirely.
+
+**Why:** The `combat_log` table grows without bound on active servers. Without a cleanup mechanism, server owners must manage table size via manual SQL or external tooling — an unnecessary operational burden. A built-in configurable TTL with a periodic task is the simplest approach: it uses the existing `DelayableCoreTask` infrastructure, runs on the database executor (no main thread blocking), and the retention value is a `ReloadableInteger` refreshed on `/mcrpg admin reload`. The 24-hour interval is deliberately coarse — audit cleanup is not latency-sensitive, and a daily pass minimizes DB write contention.
+
+**Why startup + periodic:** A `DelayableCoreTask` resets its interval counter on every server restart. A server that restarts every 12 hours would never reach the 24-hour mark, so the periodic run alone would never fire. Running once at startup guarantees cleanup happens regardless of restart frequency — the periodic schedule is a fallback for long-running servers.
+
 ---
 
 ## 8. Open Items / Future Considerations
 
-1. **Offline player lookup.** The current command only supports online players via `SinglePlayerSelectorParser`. A future enhancement could add a UUID-based lookup or use Paper's async player profile API for name-to-UUID resolution of offline players.
+1. ~~**Offline player lookup.**~~ Resolved — the command uses Paper's async `PlayerProfile` API (`Server.createProfile(name).update()`) for name-to-UUID resolution, supporting both online and offline players without blocking the main thread (see D11).
 
-2. **Punishment extensibility via content pack.** Built-in punishments are a fixed enum. If server owners or third-party plugins frequently need custom punishment types that appear in the audit trail, a `CombatLogPunishmentContentPack` could be added to the `ContentExpansion` system. For now, third-party plugins apply custom punishments by listening to `CombatLogPunishmentEvent` and handle their own audit logging.
+2. ~~**Punishment extensibility via content pack.**~~ Resolved — `CombatLogPunishmentType` is a `NamespacedKey`-keyed class with a `CombatLogPunishmentTypeRegistry` and `CombatLogPunishmentContentPack`. Third-party plugins register custom types so their punishments appear in the audit trail alongside built-in ones. The `CombatLogPunishmentEvent` carries a `Map<CombatLogPunishmentType, Boolean>` that third-party listeners can extend with their registered types.
 
-3. **Audit trail retention.** The `combat_log` table grows without bound. A future phase could add a configurable retention period (e.g., "delete entries older than 30 days") via a periodic cleanup task. For now, server owners manage table size via manual SQL or external tooling.
+3. ~~**Audit trail retention.**~~ Resolved — `CombatLogCleanupTask` runs every 24 hours and deletes entries older than `combat-log.audit-retention-days` (default 30). Set to `0` to disable cleanup. The retention value is cached via `ReloadableInteger` and refreshed on `/mcrpg admin reload`.
 
 4. **Combat log cooldown.** There is currently no limit on how frequently a player can combat log. A repeated offender detection system (e.g., escalating punishments based on frequency) is outside the scope of this phase but could be built on top of the `CombatLogDAO` data.
 
