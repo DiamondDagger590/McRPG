@@ -850,6 +850,49 @@ quest/board/
 
 ---
 
+## Combat Tracker & Combat Log System
+
+Combat logging is the first built-in policy consumer of the combat session engine (`CombatTrackerManager`, `CombatSession`, `CombatType`). It punishes players who disconnect while an active session would still count as combat, records an audit trail, and surfaces combat state via PAPI and an admin command. All of it lives under `us.eunoians.mcrpg.combat.log` (model/enforcer), `us.eunoians.mcrpg.event.combat` (events), `us.eunoians.mcrpg.database.table` (`CombatLogDAO`), `us.eunoians.mcrpg.external.papi.placeholder.combat` (placeholders), `us.eunoians.mcrpg.listener.combat` (`OnCombatExitMessageListener`), `us.eunoians.mcrpg.task.combat` (`CombatLogCleanupTask`), and `us.eunoians.mcrpg.command.admin` (`CombatLogCommand`).
+
+### Detection and Punishment Flow
+
+1. `PlayerLeaveListener` calls `CombatLogEnforcer.evaluateAndEnforce(player, session)` **before** the session is ended, so the session is still queryable.
+2. `CombatLogMode.shouldPunish(CombatType)` gates the whole flow: `DISABLED` never punishes, `PLAYERS` only punishes `CombatType.PVP` sessions, `MOBS_AND_PLAYERS` punishes any active session.
+3. `PlayerCombatLogEvent` (cancellable) fires first. Cancelling it exempts the player entirely — no punishment map is built and nothing is recorded.
+4. If not cancelled, the enforcer builds a `Map<CombatLogPunishmentType, Boolean>` from the cached config flags (`killOnLogout`, `dropItems`, `broadcastMessage`) and fires `CombatLogPunishmentEvent` (not cancellable — individual entries are toggled instead).
+5. If every entry ends up disabled (`hasAnyPunishment()` is false), nothing further happens.
+6. Otherwise the enforcer resolves mutual exclusion: for each enabled type, any keys in its `getExcludes()` are removed from the applied set (`KILL_ON_LOGOUT` excludes `DROP_ITEMS` since death already drops items) — then each surviving type's `apply(Player, CombatSession, McRPG)` runs.
+7. A `CombatLogEntry` is built and inserted asynchronously via `CombatLogDAO.insertCombatLog()` inside a `BatchTransaction`, regardless of which punishments applied.
+
+This is a two-event pattern: `PlayerCombatLogEvent` is the **detection** gate (all-or-nothing exemption), `CombatLogPunishmentEvent` is the **policy** gate (per-punishment toggling). Third-party plugins that want to add a custom punishment type register it via `CombatLogPunishmentContentPack`, then add it to the `CombatLogPunishmentEvent`'s map from a listener at `EventPriority.NORMAL` (the enforcer reads the final map at `MONITOR`).
+
+### CombatLogPunishmentType
+
+Abstract class (not an enum) so third parties can subclass it — `NamespacedKey`-keyed, carries a YAML config key, and implements `apply()` directly rather than requiring a switch statement somewhere else. Built-ins (`KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`) are anonymous-subclass constants with their behavior inlined. `getExcludes()` defaults to an empty set; override it to declare mutual exclusion with another type by key. Registered in `CombatLogPunishmentTypeRegistry` (`McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE`), populated from `McRPGExpansion.getCombatLogPunishmentContent()` plus any third-party `CombatLogPunishmentContentPack`.
+
+### Audit Trail
+
+`CombatLogDAO` (table `combat_log`) stores one row per punished combat log: player UUID, timestamp, world/x/y/z, `CombatType`, comma-joined participant UUIDs, and comma-joined punishment keys. `CombatLogEntry` is the record DTO — `id` is `0` for entries not yet inserted. Retention is enforced by `CombatLogCleanupTask`, which deletes rows older than `combat-log.audit-retention-days` (see Background Task Registration above); a retention value `<= 0` disables cleanup entirely.
+
+### PAPI Placeholders
+
+Registered under `McRPGPlaceHolderType.COMBAT`:
+
+| Placeholder | Behavior |
+|---|---|
+| `%mcrpg_in_combat%` | `InCombatPlaceholder` — `"true"`/`"false"` from `CombatTrackerManager.hasActiveSession()`. |
+| `%mcrpg_combat_seconds_remaining%` | `CombatSecondsRemainingPlaceholder` — live countdown computed from the session's last-activity timestamp and timeout; `"0.0"` if no active session. |
+
+### Exit Message
+
+`OnCombatExitMessageListener` listens for `CombatSessionEndEvent` and sends a brief action-bar message (via `CenterContentPriority.COMBAT_EXIT_FEEDBACK`) telling the player it's safe to log out — but only when the session ended naturally (not `LOGOUT`, `DEATH`, or `PLUGIN`) **and** the server's combat log mode would have punished a logout during that session. It shares the same cached `ReloadableContent<CombatLogMode>` instance that `CombatLogEnforcer` owns, so both sites parse the mode exactly once per reload.
+
+### Admin Command
+
+`/mcrpg combatlog <player> [page]` (permission `mcrpg.admin.combatlog`) shows a paginated (`PAGE_SIZE = 10`) history of a player's combat log incidents — timestamp, combat type, location, and applied punishments. Resolves offline players via Paper's async `PlayerProfile.update()` API before querying `CombatLogDAO` on the database executor, then hops back to the main thread to send output.
+
+---
+
 ## Keeping This File Current
 
 After any commit or PR that introduces one of the following, **update `CLAUDE.md` and the relevant `.cursor/rules/*.mdc` files** before or alongside the change:
@@ -877,6 +920,7 @@ After any commit or PR that introduces one of the following, **update `CLAUDE.md
 | New concurrency anti-pattern found (thread boundary, race, future handling) | `persona-concurrency.mdc` + `.claude/commands/review-concurrency.md` + `core.mdc` |
 | CI review file-pattern for a new domain | `.github/workflows/pr-review.yml` detect-changes step |
 | Quest board system changed (new condition, distribution type, template feature) | `CLAUDE.md` Quest Board System section + `quest-board-system.mdc` |
+| Combat tracker system changed (new punishment type, combat log mode, session policy consumer) | `CLAUDE.md` Combat Tracker & Combat Log System section + Domain Terminology |
 | Mana balance parameters changed (pool size, regen rate, bucket ranges) | `CLAUDE.md` Mana Balance Philosophy section + `mana-balance-philosophy.mdc` + `core.mdc` |
 | GUI color palette changed (new role, hex value, usage rule) | `PALETTE.md` + `core.mdc` GUI Color Palette section + `docs/hld/gui-ux-system.md` |
 
