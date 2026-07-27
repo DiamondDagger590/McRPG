@@ -46,13 +46,14 @@ jobs:
         with:
           fetch-depth: 0
       # Pin review-steering files to the base branch so a PR cannot weaken
-      # its own review by modifying the orchestration prompt or agent defs.
+      # its own review by modifying the orchestration prompt, agent defs, or
+      # the command checklists the agents delegate to.
       # rm -rf first so PR-added files absent from the base branch are removed.
       - name: Pin review config to base branch
         run: |
-          rm -rf .github/claude-review-prompt.md .claude/agents/
+          rm -rf .github/claude-review-prompt.md .claude/agents/ .claude/commands/
           git checkout "${{ github.event.pull_request.base.sha }}" -- \
-            .github/claude-review-prompt.md .claude/agents/ 2>/dev/null || true
+            .github/claude-review-prompt.md .claude/agents/ .claude/commands/ 2>/dev/null || true
       - uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -106,7 +107,8 @@ jobs:
           IS_FORK="$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json isCrossRepository -q '.isCrossRepository')"
           echo "is_fork=$IS_FORK" >> "$GITHUB_OUTPUT"
       # Pin review-steering files to the base branch so a PR cannot weaken
-      # its own review by modifying the orchestration prompt or agent defs.
+      # its own review by modifying the orchestration prompt, agent defs, or
+      # the command checklists the agents delegate to.
       # rm -rf first so PR-added files absent from the base branch are removed.
       - name: Pin review config to base branch
         if: steps.fork-check.outputs.is_fork != 'true'
@@ -115,8 +117,8 @@ jobs:
         run: |
           PR_NUMBER="${{ github.event.issue.number || github.event.pull_request.number }}"
           BASE_SHA="$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json baseRefOid -q '.baseRefOid')"
-          rm -rf .github/claude-review-prompt.md .claude/agents/
-          git checkout "$BASE_SHA" -- .github/claude-review-prompt.md .claude/agents/ 2>/dev/null || true
+          rm -rf .github/claude-review-prompt.md .claude/agents/ .claude/commands/
+          git checkout "$BASE_SHA" -- .github/claude-review-prompt.md .claude/agents/ .claude/commands/ 2>/dev/null || true
       - uses: anthropics/claude-code-action@v1
         if: steps.fork-check.outputs.is_fork != 'true'
         with:
