@@ -29,6 +29,8 @@ import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry;
 import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
 import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 
@@ -93,6 +95,11 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new PlayerStatRegistry());
         registryAccess.register(new CombatConditionRegistry());
         registryAccess.register(new CombatStateTypeRegistry());
+        CombatLogPunishmentTypeRegistry combatLogPunishmentTypeRegistry = new CombatLogPunishmentTypeRegistry();
+        combatLogPunishmentTypeRegistry.register(CombatLogPunishmentType.KILL_ON_LOGOUT);
+        combatLogPunishmentTypeRegistry.register(CombatLogPunishmentType.DROP_ITEMS);
+        combatLogPunishmentTypeRegistry.register(CombatLogPunishmentType.BROADCAST_MESSAGE);
+        registryAccess.register(combatLogPunishmentTypeRegistry);
     }
 
     /**

@@ -27,8 +27,10 @@ import us.eunoians.mcrpg.ability.impl.woodcutting.HeavySwing;
 import us.eunoians.mcrpg.ability.impl.woodcutting.NymphsVitality;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatStateTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
@@ -145,7 +147,7 @@ public final class McRPGExpansion extends ContentExpansion {
                 getQuestObjectiveTypeContent(), getQuestRewardTypeContent(), getQuestContent(),
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
                 getRewardDistributionTypeContent(), getTemplateConditionContent(),
-                getCombatConditionContent(), getCombatStateTypeContent());
+                getCombatConditionContent(), getCombatStateTypeContent(), getCombatLogPunishmentContent());
     }
 
     @NotNull
@@ -497,5 +499,20 @@ public final class McRPGExpansion extends ContentExpansion {
     @NotNull
     private CombatStateTypeContentPack getCombatStateTypeContent() {
         return new CombatStateTypeContentPack(this);
+    }
+
+    /**
+     * Gets the native {@link CombatLogPunishmentContentPack} for McRPG, populated with the
+     * built-in punishment types (kill on logout, drop items, broadcast message).
+     *
+     * @return The native {@link CombatLogPunishmentContentPack} for McRPG.
+     */
+    @NotNull
+    private CombatLogPunishmentContentPack getCombatLogPunishmentContent() {
+        CombatLogPunishmentContentPack pack = new CombatLogPunishmentContentPack(this);
+        pack.addContent(CombatLogPunishmentType.KILL_ON_LOGOUT);
+        pack.addContent(CombatLogPunishmentType.DROP_ITEMS);
+        pack.addContent(CombatLogPunishmentType.BROADCAST_MESSAGE);
+        return pack;
     }
 }

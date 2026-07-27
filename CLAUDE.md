@@ -245,6 +245,17 @@ src/main/java/us/eunoians/mcrpg/
 | **QuestRewardType** | Extensible interface defining how a specific reward is granted (e.g., `CommandRewardType`, `ExperienceRewardType`, `AbilityUpgradeRewardType`). Registered in `QuestRewardTypeRegistry`. Extensible via `QuestRewardTypeContentPack`. |
 | **PendingReward** | A serialized reward queued for a player who was offline at the time of grant. Stored in the DB and granted at next login; expires after a configurable duration. |
 
+### Combat Log System
+
+| Term | Meaning |
+|------|---------|
+| **CombatLogMode** | Enum (`DISABLED`, `PLAYERS`, `MOBS_AND_PLAYERS`) controlling which combat session types trigger combat log detection on logout. `shouldPunish(CombatType)` encapsulates the matching logic so callers never compare mode and type manually. |
+| **CombatLogPunishmentType** | Abstract, `NamespacedKey`-keyed class representing one category of combat-log punishment. Built-ins: `KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`. Declares mutual exclusions via `getExcludes()` — `KILL_ON_LOGOUT` excludes `DROP_ITEMS` since death already drops items. Registered in `CombatLogPunishmentTypeRegistry`; extensible via `CombatLogPunishmentContentPack`. |
+| **CombatLogEnforcer** | Collaborator invoked from `PlayerLeaveListener` before the session ends. Evaluates `CombatLogMode` against the session's `CombatType`, fires `PlayerCombatLogEvent` then `CombatLogPunishmentEvent`, resolves punishment exclusions, applies survivors, and records an audit entry via `CombatLogDAO`. Owns the shared `ReloadableContent<CombatLogMode>` that `OnCombatExitMessageListener` also reads. |
+| **PlayerCombatLogEvent** | Cancellable detection event. Cancelling it exempts the player entirely — no punishment map is even built. |
+| **CombatLogPunishmentEvent** | Non-cancellable policy event fired after `PlayerCombatLogEvent` passes. Carries a `Map<CombatLogPunishmentType, Boolean>` that listeners can toggle per-type; if every entry ends up disabled, no punishment is applied. Use `PlayerCombatLogEvent` to exempt a player outright instead of disabling every punishment here. |
+| **CombatLogEntry** | Immutable record for one audit trail row: player, timestamp, location, `CombatType`, participant UUIDs, and applied punishment types. `id` is `0` for entries not yet inserted (auto-increment assigns it). |
+
 ---
 
 ## Architecture Overview
@@ -519,6 +530,39 @@ SkillDAO.saveSkillData(connection, playerUUID, skillData);
 ```
 
 Use `BatchTransaction` and `FailSafeTransaction` helpers from McCore for multi-statement operations.
+
+### Database Access Pattern
+
+`McRPGManagerKey.DATABASE` resolves to `McRPGDatabaseManager`, which only exposes `.getDatabase()` — the returned `Database` object is what has `.getDatabaseExecutorService()` and `.getConnection()`. New code doing async DB work follows this exact chain:
+
+```java
+var database = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+        .manager(McRPGManagerKey.DATABASE).getDatabase();
+database.getDatabaseExecutorService().submit(() -> {
+    try (Connection conn = database.getConnection()) {
+        // DAO calls here
+    }
+    catch (Exception e) {
+        mcRPG.getLogger().log(Level.WARNING, "context message", e);
+    }
+});
+```
+
+Forgetting the `.getDatabase()` step (calling `.getDatabaseExecutorService()` directly on the manager) is a common mistake — it does **not** compile, since the executor/connection methods live on `Database`, not `DatabaseManager`, so the error surfaces immediately rather than silently misbehaving at runtime. Chain `.getDatabase()` first, every time.
+
+### Background Task Registration
+
+Periodic background tasks that need database access are constructed and started in `McRPGBackgroundTaskRegistrar.register()`, alongside the existing `ReloadableTask<T>`-wrapped tasks. `ReloadableTask<T>` is only for tasks whose own **run frequency** is reloadable from config (the wrapper reconstructs and reschedules the task when its frequency route changes). A task whose frequency is fixed but which has other reloadable internals (e.g. a retention window) is constructed directly instead:
+
+```java
+// Combat log audit trail cleanup — fixed 24h interval; only retention days is reloadable
+// (via an internal ReloadableInteger, not the task's own frequency).
+CombatLogCleanupTask combatLogCleanupTask = new CombatLogCleanupTask(plugin);
+combatLogCleanupTask.runInitialCleanup();
+combatLogCleanupTask.runTask();
+```
+
+`CombatLogCleanupTask` extends McCore's `CancelableCoreTask` (not `DelayableCoreTask`) because it needs a repeating interval, not a single delayed execution. It runs cleanup once immediately via `runInitialCleanup()` — covering servers that restart often — then repeats every 24 hours via `onIntervalComplete()` for long-running servers. `onDelayComplete()` is intentionally a no-op so the initial-delay firing doesn't duplicate the cleanup `runInitialCleanup()` already performed.
 
 ---
 

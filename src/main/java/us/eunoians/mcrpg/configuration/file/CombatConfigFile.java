@@ -27,4 +27,28 @@ public final class CombatConfigFile extends ConfigFile {
     private static final String PER_SESSION_STATISTICS_HEADER = "per-session-statistics";
     public static final Route FEED_TO_CUMULATIVE =
             Route.fromString(toRoutePath(PER_SESSION_STATISTICS_HEADER, "feed-to-cumulative"));
+
+    // Combat Log
+    private static final String COMBAT_LOG_HEADER = "combat-log";
+    public static final Route COMBAT_LOG_MODE =
+            Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "mode"));
+
+    private static final String PUNISHMENT_HEADER = toRoutePath(COMBAT_LOG_HEADER, "punishment");
+    public static final Route PUNISHMENT_KILL_ON_LOGOUT =
+            Route.fromString(toRoutePath(PUNISHMENT_HEADER, "kill-on-logout"));
+    public static final Route PUNISHMENT_DROP_ITEMS =
+            Route.fromString(toRoutePath(PUNISHMENT_HEADER, "drop-items"));
+    public static final Route PUNISHMENT_BROADCAST_MESSAGE =
+            Route.fromString(toRoutePath(PUNISHMENT_HEADER, "broadcast-message"));
+
+    // Audit Retention
+    public static final Route AUDIT_RETENTION_DAYS =
+            Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "audit-retention-days"));
+
+    // Display
+    private static final String DISPLAY_HEADER = "display";
+    public static final Route DISPLAY_SHOW_COMBAT_EXIT_MESSAGE =
+            Route.fromString(toRoutePath(DISPLAY_HEADER, "show-combat-exit-message"));
+    public static final Route DISPLAY_EXIT_MESSAGE_DURATION_TICKS =
+            Route.fromString(toRoutePath(DISPLAY_HEADER, "exit-message-duration-ticks"));
 }

@@ -10,6 +10,7 @@ import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.task.combat.CombatLogCleanupTask;
 import us.eunoians.mcrpg.task.experience.RestedExperienceAccumulationTask;
 import us.eunoians.mcrpg.task.player.McRPGPlayerSafeZoneCheckTask;
 import us.eunoians.mcrpg.task.player.McRPGPlayerSaveTask;
@@ -67,5 +68,11 @@ final class McRPGBackgroundTaskRegistrar implements Registrar<McRPG> {
                 }, true);
         plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT)
                 .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask, questSaveTask, expiredQuestScanTask, rotationTask));
+
+        // Combat log audit trail cleanup — runs once immediately (covers servers that restart
+        // frequently) and then every 24 hours for long-running servers.
+        CombatLogCleanupTask combatLogCleanupTask = new CombatLogCleanupTask(plugin);
+        combatLogCleanupTask.runInitialCleanup();
+        combatLogCleanupTask.runTask();
     }
 }

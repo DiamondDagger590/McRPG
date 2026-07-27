@@ -7,10 +7,13 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import us.eunoians.mcrpg.combat.condition.CombatCondition;
 import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry;
 import us.eunoians.mcrpg.combat.state.CombatStateType;
 import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatStateTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
@@ -263,6 +266,21 @@ public enum ContentHandlerType {
                     .registry(McRPGRegistryKey.COMBAT_STATE_TYPE);
             for (CombatStateType<?> stateType : combatStateTypePack.getContent()) {
                 stateTypeRegistry.register(stateType);
+            }
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link CombatLogPunishmentContentPack}s by registering
+     * each {@link CombatLogPunishmentType} into the {@link CombatLogPunishmentTypeRegistry}.
+     */
+    COMBAT_LOG_PUNISHMENT_TYPE((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof CombatLogPunishmentContentPack combatLogPunishmentPack) {
+            CombatLogPunishmentTypeRegistry punishmentTypeRegistry = mcRPG.registryAccess()
+                    .registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE);
+            for (CombatLogPunishmentType punishmentType : combatLogPunishmentPack.getContent()) {
+                punishmentTypeRegistry.register(punishmentType);
             }
             return true;
         }

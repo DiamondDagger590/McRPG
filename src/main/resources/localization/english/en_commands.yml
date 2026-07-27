@@ -55,6 +55,9 @@ commands:
     statistic-reset: "<body>Reset a statistic (or all statistics) for a player."
     statistic-reset-player: "<body>The player to reset the statistic for."
     statistic-reset-statistic: "<body>The statistic to reset. If omitted, resets all."
+    combat-log: "<body>View a player's combat log history."
+    combat-log-player: "<body>The player to look up."
+    combat-log-page: "<body>Page number to view."
   # Configure messages to surrounding /mcrpg confirm
   # This command will be used to confirm important commands such as resetting a player
   confirmation:
@@ -496,6 +499,23 @@ commands:
     set-success: "<body>Set <primary><statistic-name></primary> to <primary><statistic-value></primary> for <primary><target></primary>."
     # The message shown when a statistic is reset successfully.
     reset-success: "<body>Reset <primary><statistic-name></primary> for <primary><target></primary>."
+  # Configure /mcrpg combatlog output
+  combat-log:
+    # The header shown at the top of a page of combat log history.
+    # Valid placeholders are <player>, <page> and <total_pages>
+    history-header: "<primary>Combat log history for <player> <body>(Page <page>/<total_pages>):"
+    # Each entry line in the combat log history.
+    # Valid placeholders are <index>, <timestamp>, <combat_type>, <world>, <x>, <y>, <z> and <punishments>
+    history-entry: "<body><index>. <primary><timestamp> <body>— <combat_type> at <click:run_command:'/tp <world> <x> <y> <z>'><hint><world> <x>, <y>, <z></click> <body>— Punishments: <primary><punishments>"
+    # The message shown when a player has no combat log entries.
+    # Valid placeholders are <player>
+    no-entries: "<body>No combat log entries found for <primary><player><body>."
+    # The footer shown at the bottom of a page of combat log history.
+    # Valid placeholders are <page> and <total_pages>
+    footer: "<hint>Click a location to teleport. <body>Page <primary><page>/<total_pages>"
+    # The message shown when the requested player could not be resolved to a UUID.
+    # Valid placeholders are <player>
+    player-not-found: "<negative>Player <primary><player> <negative>not found."
     # The message shown when all statistics are reset.
     reset-all-success: "<body>Reset all statistics for <primary><target></primary>."
     # The message shown while loading offline player data.

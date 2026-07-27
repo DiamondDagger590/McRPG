@@ -920,4 +920,27 @@ public final class LocalizationKey extends ConfigFile {
     public static final Route COMMAND_DESCRIPTION_STATISTIC_RESET = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-reset"));
     public static final Route COMMAND_DESCRIPTION_STATISTIC_RESET_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-reset-player"));
     public static final Route COMMAND_DESCRIPTION_STATISTIC_RESET_STATISTIC = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "statistic-reset-statistic"));
+
+    // Combat
+    private static final String COMBAT_HEADER = "combat";
+
+    private static final String COMBAT_LOG_LOCALE_HEADER = toRoutePath(COMBAT_HEADER, "combat-log");
+    /** Broadcast message announced to every online player and console when a player combat logs. Placeholders: {@code <player>}, {@code <world>}, {@code <x>}, {@code <y>}, {@code <z>}. */
+    public static final Route COMBAT_LOG_BROADCAST = Route.fromString(toRoutePath(COMBAT_LOG_LOCALE_HEADER, "broadcast"));
+
+    /** Action bar HUD message shown when a player's combat session ends naturally and combat logging would have punished a logout. */
+    public static final Route COMBAT_EXIT_MESSAGE = Route.fromString(toRoutePath(COMBAT_HEADER, "exit-message"));
+
+    // Command descriptions — combat log
+    public static final Route COMMAND_DESCRIPTION_COMBAT_LOG = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "combat-log"));
+    public static final Route COMMAND_DESCRIPTION_COMBAT_LOG_PLAYER = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "combat-log-player"));
+    public static final Route COMMAND_DESCRIPTION_COMBAT_LOG_PAGE = Route.fromString(toRoutePath(COMMAND_DESCRIPTIONS_HEADER, "combat-log-page"));
+
+    // Combat log command output
+    private static final String COMBAT_LOG_COMMAND_OUTPUT_HEADER = toRoutePath(COMMAND_HEADER, "combat-log");
+    public static final Route COMBAT_LOG_HISTORY_HEADER = Route.fromString(toRoutePath(COMBAT_LOG_COMMAND_OUTPUT_HEADER, "history-header"));
+    public static final Route COMBAT_LOG_HISTORY_ENTRY = Route.fromString(toRoutePath(COMBAT_LOG_COMMAND_OUTPUT_HEADER, "history-entry"));
+    public static final Route COMBAT_LOG_HISTORY_NO_ENTRIES = Route.fromString(toRoutePath(COMBAT_LOG_COMMAND_OUTPUT_HEADER, "no-entries"));
+    public static final Route COMBAT_LOG_HISTORY_FOOTER = Route.fromString(toRoutePath(COMBAT_LOG_COMMAND_OUTPUT_HEADER, "footer"));
+    public static final Route COMBAT_LOG_PLAYER_NOT_FOUND = Route.fromString(toRoutePath(COMBAT_LOG_COMMAND_OUTPUT_HEADER, "player-not-found"));
 }

@@ -2,8 +2,8 @@
 
 > **HLD Reference:** [Combat Tracker & Ramping Frenzy](../../hld/combat/combat-tracker-and-ramping-frenzy.md)
 > **Phase 1 Reference:** [Core Combat Session Engine](phase-1-core-combat-session-engine.md)
-> **Status:** Design — awaiting review
-> **Last Updated:** 2026-07-26
+> **Status:** Implemented
+> **Last Updated:** 2026-07-27
 
 ---
 
