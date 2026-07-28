@@ -51,25 +51,25 @@ class PlayerCombatLogEventTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("default cancelled state is false")
-    void defaultCancelled_isFalse() {
+    @DisplayName("default applyPunishment state is true")
+    void defaultApplyPunishment_isTrue() {
         var player = server.addPlayer();
         CombatSession session = new CombatSession(UUID.randomUUID(), 16, 8000L);
         PlayerCombatLogEvent event = new PlayerCombatLogEvent(player, session, CombatType.PVE, List.of());
 
-        assertFalse(event.isCancelled());
+        assertTrue(event.shouldApplyPunishment());
     }
 
     @Test
-    @DisplayName("setCancelled(true) makes isCancelled return true")
-    void setCancelled_true_makesIsCancelledTrue() {
+    @DisplayName("setApplyPunishment(false) makes shouldApplyPunishment return false")
+    void setApplyPunishment_false_makesShouldApplyPunishmentFalse() {
         var player = server.addPlayer();
         CombatSession session = new CombatSession(UUID.randomUUID(), 16, 8000L);
         PlayerCombatLogEvent event = new PlayerCombatLogEvent(player, session, CombatType.PVE, List.of());
 
-        event.setCancelled(true);
+        event.setApplyPunishment(false);
 
-        assertTrue(event.isCancelled());
+        assertFalse(event.shouldApplyPunishment());
     }
 
     @Test

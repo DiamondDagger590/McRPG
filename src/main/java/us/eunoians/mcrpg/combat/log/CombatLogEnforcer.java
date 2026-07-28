@@ -119,7 +119,7 @@ public class CombatLogEnforcer {
 
         PlayerCombatLogEvent logEvent = new PlayerCombatLogEvent(player, session, combatType, participants);
         Bukkit.getPluginManager().callEvent(logEvent);
-        if (logEvent.isCancelled()) {
+        if (!logEvent.shouldApplyPunishment()) {
             return;
         }
 

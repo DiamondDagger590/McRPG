@@ -242,8 +242,8 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
         }
 
         @Test
-        @DisplayName("does not proceed to punishment when the detection event is cancelled")
-        void doesNotProceed_whenDetectionCancelled() {
+        @DisplayName("does not proceed to punishment when applyPunishment is set to false")
+        void doesNotProceed_whenApplyPunishmentSetFalse() {
             PlayerMock player = server.addPlayer();
             CombatSession session = pvpSession(player);
             player.setHealth(20.0);
@@ -251,7 +251,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
             Bukkit.getPluginManager().registerEvents(new Listener() {
                 @EventHandler
                 public void onLog(PlayerCombatLogEvent event) {
-                    event.setCancelled(true);
+                    event.setApplyPunishment(false);
                 }
             }, mcRPG);
 

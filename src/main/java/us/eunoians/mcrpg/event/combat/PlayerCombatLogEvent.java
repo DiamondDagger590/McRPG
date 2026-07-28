@@ -1,7 +1,6 @@
 package us.eunoians.mcrpg.event.combat;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -14,10 +13,14 @@ import java.util.Collections;
 
 /**
  * Fired when a player disconnects with an active combat session and the server's
- * combat log mode matches the session's combat type. Cancelling this event
- * exempts the player entirely — no punishments are evaluated or applied.
+ * combat log mode matches the session's combat type. The logout itself already
+ * happened and cannot be undone — this event does not implement {@code Cancellable}.
+ * Instead, {@link #setApplyPunishment(boolean)} controls whether the enforcer goes on
+ * to build a punishment map and record an audit entry at all. Setting it to
+ * {@code false} exempts the player entirely, equivalent to the old "cancel" semantics
+ * without the misleading implication that the quit could be prevented.
  */
-public class PlayerCombatLogEvent extends Event implements Cancellable {
+public class PlayerCombatLogEvent extends Event {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
@@ -25,7 +28,7 @@ public class PlayerCombatLogEvent extends Event implements Cancellable {
     private final CombatSession session;
     private final CombatType combatType;
     private final Collection<CombatParticipant> participants;
-    private boolean cancelled;
+    private boolean applyPunishment;
 
     /**
      * Constructs a new {@link PlayerCombatLogEvent}.
@@ -42,7 +45,7 @@ public class PlayerCombatLogEvent extends Event implements Cancellable {
         this.session = session;
         this.combatType = combatType;
         this.participants = Collections.unmodifiableCollection(participants);
-        this.cancelled = false;
+        this.applyPunishment = true;
     }
 
     /**
@@ -85,14 +88,25 @@ public class PlayerCombatLogEvent extends Event implements Cancellable {
         return participants;
     }
 
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
+    /**
+     * Checks whether the enforcer should go on to build a punishment map and record an
+     * audit entry for this combat log.
+     *
+     * @return {@code true} if punishment should be applied (the default).
+     */
+    public boolean shouldApplyPunishment() {
+        return applyPunishment;
     }
 
-    @Override
-    public void setCancelled(boolean cancelled) {
-        this.cancelled = cancelled;
+    /**
+     * Sets whether the enforcer should go on to build a punishment map and record an
+     * audit entry for this combat log. Setting this to {@code false} exempts the player
+     * entirely — no {@link CombatLogPunishmentEvent} is fired and nothing is recorded.
+     *
+     * @param applyPunishment {@code true} to proceed with punishment, {@code false} to exempt the player.
+     */
+    public void setApplyPunishment(boolean applyPunishment) {
+        this.applyPunishment = applyPunishment;
     }
 
     @NotNull
