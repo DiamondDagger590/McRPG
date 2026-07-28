@@ -17,7 +17,7 @@ This phase delivers the first built-in policy consumer of the combat session eng
 - `CombatLogPunishmentType` — `NamespacedKey`-keyed type representing a category of punishment; built-in constants: `KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`
 - `CombatLogPunishmentTypeRegistry` — registry of all registered `CombatLogPunishmentType` instances; extensible via `CombatLogPunishmentContentPack`
 - `CombatLogPunishmentContentPack` — content pack for registering third-party punishment types via the `ContentExpansion` system
-- `PlayerCombatLogEvent` — cancellable detection event, exempts the player entirely when cancelled
+- `PlayerCombatLogEvent` — detection event carrying a mutable `applyPunishment` boolean; setting it `false` exempts the player entirely
 - `CombatLogPunishmentEvent` — policy event with individually togglable punishments
 - `CombatLogEntry` — immutable record for audit trail results
 - `CombatLogDAO` — static DAO for audit trail persistence (insert, paginated query, count)
@@ -171,11 +171,13 @@ classDiagram
         -CombatSession session
         -CombatType combatType
         -Collection~CombatParticipant~ participants
-        -boolean cancelled
+        -boolean applyPunishment
         +getPlayer() Player
         +getSession() CombatSession
         +getCombatType() CombatType
         +getParticipants() Collection~CombatParticipant~
+        +shouldApplyPunishment() boolean
+        +setApplyPunishment(boolean) void
     }
 
     class CombatLogPunishmentEvent {
@@ -196,11 +198,6 @@ classDiagram
         <<existing>>
     }
 
-    class Cancellable {
-        <<interface>>
-        <<existing>>
-    }
-
     class CombatSession {
         <<existing>>
     }
@@ -210,7 +207,6 @@ classDiagram
     }
 
     PlayerCombatLogEvent --|> Event
-    PlayerCombatLogEvent ..|> Cancellable
     PlayerCombatLogEvent o-- CombatSession
     PlayerCombatLogEvent o-- "0..*" CombatParticipant
     CombatLogPunishmentEvent --|> Event
@@ -302,6 +298,7 @@ classDiagram
         +PUNISHMENT_DROP_ITEMS$ Route
         +PUNISHMENT_BROADCAST_MESSAGE$ Route
         +AUDIT_RETENTION_DAYS$ Route
+        +CLEANUP_INTERVAL_SECONDS$ Route
         +DISPLAY_SHOW_COMBAT_EXIT_MESSAGE$ Route
         +DISPLAY_EXIT_MESSAGE_DURATION_TICKS$ Route
     }
@@ -309,7 +306,8 @@ classDiagram
     class CombatLogCleanupTask {
         -McRPG mcRPG
         -ReloadableInteger retentionDays
-        #run() void
+        +runInitialCleanup() void
+        #onIntervalComplete() void
     }
 
     class McRPGPlaceHolderType {
@@ -730,13 +728,16 @@ public record CombatLogEntry(
 **Package:** `us.eunoians.mcrpg.event.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/event/combat/PlayerCombatLogEvent.java`
 
-Cancellable Bukkit event fired when a player is detected as combat logging. Cancelling this event exempts the player from all punishment — used by vanish plugins, staff exemptions, and similar integrations.
+Bukkit event fired when a player is detected as combat logging. Not `Cancellable` — the
+logout already happened and cannot be undone. Instead it carries a mutable
+`applyPunishment` boolean (default `true`); a listener sets it `false` to exempt the
+player from all punishment — used by vanish plugins, staff exemptions, and similar
+integrations.
 
 ```java
 package us.eunoians.mcrpg.event.combat;
 
 import org.bukkit.entity.Player;
-import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
@@ -749,10 +750,14 @@ import java.util.Collections;
 
 /**
  * Fired when a player disconnects with an active combat session and the server's
- * combat log mode matches the session's combat type. Cancelling this event
- * exempts the player entirely — no punishments are evaluated or applied.
+ * combat log mode matches the session's combat type. The logout itself already
+ * happened and cannot be undone — this event does not implement {@code Cancellable}.
+ * Instead, {@link #setApplyPunishment(boolean)} controls whether the enforcer goes on
+ * to build a punishment map and record an audit entry at all. Setting it to
+ * {@code false} exempts the player entirely, equivalent to the old "cancel" semantics
+ * without the misleading implication that the quit could be prevented.
  */
-public class PlayerCombatLogEvent extends Event implements Cancellable {
+public class PlayerCombatLogEvent extends Event {
 
     private static final HandlerList HANDLER_LIST = new HandlerList();
 
@@ -760,7 +765,7 @@ public class PlayerCombatLogEvent extends Event implements Cancellable {
     private final CombatSession session;
     private final CombatType combatType;
     private final Collection<CombatParticipant> participants;
-    private boolean cancelled;
+    private boolean applyPunishment;
 
     /**
      * Constructs a new {@link PlayerCombatLogEvent}.
@@ -777,7 +782,7 @@ public class PlayerCombatLogEvent extends Event implements Cancellable {
         this.session = session;
         this.combatType = combatType;
         this.participants = Collections.unmodifiableCollection(participants);
-        this.cancelled = false;
+        this.applyPunishment = true;
     }
 
     /**
@@ -820,14 +825,25 @@ public class PlayerCombatLogEvent extends Event implements Cancellable {
         return participants;
     }
 
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
+    /**
+     * Checks whether the enforcer should go on to build a punishment map and record an
+     * audit entry for this combat log.
+     *
+     * @return {@code true} if punishment should be applied (the default).
+     */
+    public boolean shouldApplyPunishment() {
+        return applyPunishment;
     }
 
-    @Override
-    public void setCancelled(boolean cancelled) {
-        this.cancelled = cancelled;
+    /**
+     * Sets whether the enforcer should go on to build a punishment map and record an
+     * audit entry for this combat log. Setting this to {@code false} exempts the player
+     * entirely — no {@link CombatLogPunishmentEvent} is fired and nothing is recorded.
+     *
+     * @param applyPunishment {@code true} to proceed with punishment, {@code false} to exempt the player.
+     */
+    public void setApplyPunishment(boolean applyPunishment) {
+        this.applyPunishment = applyPunishment;
     }
 
     @NotNull
@@ -853,7 +869,7 @@ public class PlayerCombatLogEvent extends Event implements Cancellable {
 **Package:** `us.eunoians.mcrpg.event.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/event/combat/CombatLogPunishmentEvent.java`
 
-Bukkit event fired after combat log detection passes (not cancelled). Individual punishments can be enabled or disabled by listeners. If all punishments are disabled, no punishment is applied. The event is not globally cancellable — use `PlayerCombatLogEvent` to exempt a player entirely.
+Bukkit event fired after combat log detection passes (`shouldApplyPunishment()` is still `true`). Individual punishments can be enabled or disabled by listeners. If all punishments are disabled, no punishment is applied. Like `PlayerCombatLogEvent`, this event is not `Cancellable` — use `PlayerCombatLogEvent.setApplyPunishment(false)` to exempt a player entirely instead.
 
 ```java
 package us.eunoians.mcrpg.event.combat;
@@ -872,15 +888,16 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Fired after {@link PlayerCombatLogEvent} passes (not cancelled). Carries the
- * punishment map — each registered punishment type is individually togglable by
- * listeners. Third-party plugins can register custom punishment types via
+ * Fired after {@link PlayerCombatLogEvent} passes ({@code shouldApplyPunishment()} is
+ * still {@code true}). Carries the punishment map — each registered punishment type is
+ * individually togglable by listeners. Third-party plugins can register custom
+ * punishment types via
  * {@link us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack} and
  * add entries to this map in a listener at {@code EventPriority.NORMAL} — the
  * enforcer reads the final map at {@code MONITOR}.
  * <p>
- * This event is not globally cancellable. To exempt a player entirely, cancel
- * {@link PlayerCombatLogEvent} instead.
+ * This event is not {@code Cancellable}. To exempt a player entirely, call
+ * {@link PlayerCombatLogEvent#setApplyPunishment(boolean)} with {@code false} instead.
  */
 public class CombatLogPunishmentEvent extends Event {
 
@@ -1248,9 +1265,9 @@ public final class CombatLogDAO {
 **Package:** `us.eunoians.mcrpg.task.combat`
 **File:** `src/main/java/us/eunoians/mcrpg/task/combat/CombatLogCleanupTask.java`
 
-Periodic task that deletes audit trail entries older than a configurable retention period. Runs on the database executor to avoid blocking the main thread. The retention duration is cached via a `ReloadableInteger` (in days). A value of `0` or negative disables cleanup entirely.
+Periodic task that deletes audit trail entries older than a configurable retention period. Runs on the database executor to avoid blocking the main thread. The retention duration is cached via a `ReloadableInteger` (in days); a value of `0` or negative disables cleanup entirely. The run interval itself is also configurable (`combat-log.cleanup-interval-seconds`, default 86400) and is reloadable via the same `ReloadableTask<T>` wrapping used by the plugin's other periodic tasks (see [Background Task Registration](#23-background-task-registration-wiring) below).
 
-Cleanup runs **once immediately at startup** (so servers that restart frequently still clean up) and then repeats every 24 hours for long-running servers.
+Cleanup runs **once immediately at construction** (so servers that restart frequently still clean up) and then repeats on the configured interval for long-running servers. See [2.9 McRPGBackgroundTaskRegistrar — Register CombatLogCleanupTask](#29-mcrpgbackgroundtaskregistrar--register-combatlogcleanuptask) for how the interval is wired up as a `ReloadableTask<T>`.
 
 ```java
 package us.eunoians.mcrpg.task.combat;
@@ -1258,11 +1275,11 @@ package us.eunoians.mcrpg.task.combat;
 import com.diamonddagger590.mccore.configuration.common.ReloadableInteger;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
-import com.diamonddagger590.mccore.task.DelayableCoreTask;
+import com.diamonddagger590.mccore.task.core.CancelableCoreTask;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
-import us.eunoians.mcrpg.configuration.file.FileType;
 import us.eunoians.mcrpg.database.table.CombatLogDAO;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -1274,13 +1291,17 @@ import java.util.logging.Level;
 
 /**
  * Periodic task that deletes combat log audit trail entries older than the
- * configured retention period. Performs an initial cleanup on startup (so
- * servers that restart frequently still clean up), then repeats every 24 hours.
- * A retention value of {@code 0} or negative disables cleanup.
+ * configured retention period. {@link #runInitialCleanup()} is called once right after
+ * construction (so servers that restart frequently still clean up), and
+ * {@link #onIntervalComplete()} repeats the same cleanup on the configured interval for
+ * long-running servers. A retention value of {@code 0} or negative disables cleanup.
+ * <p>
+ * Extends {@link CancelableCoreTask} — the same repeating-task base used by
+ * {@link us.eunoians.mcrpg.combat.task.CombatSessionTimeoutTask} — rather than a
+ * one-shot {@code DelayableCoreTask}, since the periodic behavior this task needs
+ * requires an interval-based scheduler, not a single delayed execution.
  */
-public class CombatLogCleanupTask extends DelayableCoreTask {
-
-    private static final long RUN_INTERVAL_SECONDS = 86400;
+public class CombatLogCleanupTask extends CancelableCoreTask {
 
     private final McRPG mcRPG;
     private final ReloadableInteger retentionDays;
@@ -1288,10 +1309,14 @@ public class CombatLogCleanupTask extends DelayableCoreTask {
     /**
      * Constructs a new {@link CombatLogCleanupTask}.
      *
-     * @param mcRPG The plugin instance.
+     * @param mcRPG              The plugin instance.
+     * @param runIntervalSeconds Seconds between cleanup passes ({@link #onIntervalComplete()}).
+     *                           The initial delay is always {@code 0} — {@link #onDelayComplete()}
+     *                           is a no-op, so the first firing doesn't duplicate
+     *                           {@link #runInitialCleanup()}.
      */
-    public CombatLogCleanupTask(@NotNull McRPG mcRPG) {
-        super(mcRPG, RUN_INTERVAL_SECONDS);
+    public CombatLogCleanupTask(@NotNull McRPG mcRPG, double runIntervalSeconds) {
+        super(mcRPG, 0, runIntervalSeconds);
         this.mcRPG = mcRPG;
         var config = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
@@ -1304,16 +1329,57 @@ public class CombatLogCleanupTask extends DelayableCoreTask {
     }
 
     /**
-     * Performs the initial cleanup at startup. Called once after database
-     * initialization, before the periodic schedule begins.
+     * Performs the initial cleanup at startup. Called once by the bootstrap right
+     * after construction, before {@link #runTask()} schedules the periodic cadence.
      */
     public void runInitialCleanup() {
         performCleanup();
     }
 
+    /**
+     * Repeats the cleanup on the configured interval — the periodic fallback for
+     * long-running servers that don't restart often enough to rely on
+     * {@link #runInitialCleanup()} alone.
+     */
     @Override
-    protected void run() {
+    protected void onIntervalComplete() {
         performCleanup();
+    }
+
+    /**
+     * No action needed — {@link #runInitialCleanup()} already covers the startup case,
+     * so the initial delay firing here would otherwise duplicate that cleanup.
+     */
+    @Override
+    protected void onDelayComplete() {
+    }
+
+    /**
+     * Called when this task is cancelled. No cleanup is required.
+     */
+    @Override
+    protected void onCancel() {
+    }
+
+    /**
+     * Called at the start of each interval before processing begins. No action is required.
+     */
+    @Override
+    protected void onIntervalStart() {
+    }
+
+    /**
+     * Called when this task is paused. No action is required.
+     */
+    @Override
+    protected void onIntervalPause() {
+    }
+
+    /**
+     * Called when this task is resumed after being paused. No action is required.
+     */
+    @Override
+    protected void onIntervalResume() {
     }
 
     /**
@@ -1327,7 +1393,7 @@ public class CombatLogCleanupTask extends DelayableCoreTask {
 
         Instant cutoff = Instant.now().minus(days, ChronoUnit.DAYS);
         var database = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.DATABASE);
+                .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
             try (Connection conn = database.getConnection()) {
                 int deleted = CombatLogDAO.deleteOlderThan(conn, cutoff);
@@ -1472,10 +1538,10 @@ public class CombatLogEnforcer {
 
         Collection<CombatParticipant> participants = session.getParticipants();
 
-        // Detection event — cancellable
+        // Detection event — the logout already happened; applyPunishment gates what happens next
         PlayerCombatLogEvent logEvent = new PlayerCombatLogEvent(player, session, combatType, participants);
         Bukkit.getPluginManager().callEvent(logEvent);
-        if (logEvent.isCancelled()) {
+        if (!logEvent.shouldApplyPunishment()) {
             return;
         }
 
@@ -2085,6 +2151,8 @@ public static final Route PUNISHMENT_BROADCAST_MESSAGE =
 // Audit Retention
 public static final Route AUDIT_RETENTION_DAYS =
         Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "audit-retention-days"));
+public static final Route CLEANUP_INTERVAL_SECONDS =
+        Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "cleanup-interval-seconds"));
 
 // Display
 private static final String DISPLAY_HEADER = "display";
@@ -2211,20 +2279,25 @@ Bukkit.getPluginManager().registerEvents(
         new OnCombatExitMessageListener(plugin, combatLogEnforcer.getMode()), plugin);
 ```
 
-### 2.9 McRPGBootstrap — Register CombatLogCommand and Start Cleanup Task
+### 2.9 McRPGBackgroundTaskRegistrar — Register CombatLogCleanupTask
 
-**File:** `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGBootstrap.java`
+**File:** `src/main/java/us/eunoians/mcrpg/bootstrap/McRPGBackgroundTaskRegistrar.java`
 
-Add `CombatLogCommand.registerCommand()` in the PROD-only block, alongside or after the existing command registrations in `McRPGCommandRegistrar`. Start the `CombatLogCleanupTask` after database initialization.
+`CombatLogCommand.registerCommand()` is added in the PROD-only block, alongside or after the existing command registrations in `McRPGCommandRegistrar`. `CombatLogCleanupTask` is wired up in `McRPGBackgroundTaskRegistrar` as a `ReloadableTask<T>`, the same pattern used for the plugin's other periodic tasks — the wrapper reconstructs and restarts the task whenever `cleanup-interval-seconds` changes, and `runInitialCleanup()` inside the callback means every reload also performs an opportunistic cleanup pass, not just startup.
 
 ```java
 // In the PROD-only block, after McRPGCommandRegistrar:
 CombatLogCommand.registerCommand();
 
-// After database initialization (alongside other periodic tasks):
-CombatLogCleanupTask cleanupTask = new CombatLogCleanupTask(plugin);
-cleanupTask.runInitialCleanup();
-cleanupTask.runTask();
+// In McRPGBackgroundTaskRegistrar.register(), alongside the other ReloadableTask<T> wiring:
+ReloadableTask<CombatLogCleanupTask> combatLogCleanupTask = new ReloadableTask<>(
+        fileManager.getFile(FileType.COMBAT_CONFIG), CombatConfigFile.CLEANUP_INTERVAL_SECONDS,
+        (yamlDocument, route) -> {
+            double frequency = yamlDocument.getDouble(route);
+            CombatLogCleanupTask task = new CombatLogCleanupTask(plugin, frequency);
+            task.runInitialCleanup();
+            return task;
+        }, true);
 ```
 
 ---
@@ -2304,10 +2377,17 @@ combat-log:
     broadcast-message: true
 
   # Number of days to retain combat log audit trail entries.
-  # A cleanup task runs every 24 hours and deletes entries older than this.
-  # Set to 0 to disable automatic cleanup (entries are kept forever).
+  # A cleanup task runs periodically (see cleanup-interval-seconds) and deletes entries
+  # older than this. Set to 0 to disable automatic cleanup (entries are kept forever).
   # Reload: cached via ReloadableInteger — refreshed on /mcrpg admin reload.
   audit-retention-days: 30
+
+  # Seconds between combat log audit trail cleanup passes. Default is 86400 (24 hours) —
+  # there's rarely a reason to run this more often, but the interval is exposed for servers
+  # with unusual retention needs (e.g. a very short audit-retention-days).
+  # Reload: cached via ReloadableTask — the task is cancelled and restarted with the new
+  # interval on /mcrpg admin reload.
+  cleanup-interval-seconds: 86400
 
 # Display Configuration
 # Controls combat-related display elements shown to players.
@@ -2364,8 +2444,8 @@ Player A logs out while fighting Player B (mode=PLAYERS):
               |-> PLAYERS.shouldPunish(PVP) → true
               |-> session.getParticipants() → [CombatParticipant(B.uuid, PLAYER, ...)]
               |-> Fire PlayerCombatLogEvent(playerA, session, PVP, [B])
-              |   |-> VanishPlugin listener: A is not vanished → not cancelled
-              |-> logEvent.isCancelled() → false
+              |   |-> VanishPlugin listener: A is not vanished → applyPunishment left true
+              |-> logEvent.shouldApplyPunishment() → true
               |-> buildPunishmentMap() → {KILL_ON_LOGOUT: true, DROP_ITEMS: true, BROADCAST_MESSAGE: true} (cached ReloadableBooleans)
               |-> Fire CombatLogPunishmentEvent(playerA, session, PVP, map)
               |   |-> EconomyPlugin listener: setPunishmentEnabled(DROP_ITEMS, false) — keeps inventory
@@ -2405,7 +2485,7 @@ Player A logs out while fighting Mob 1 (mode=PLAYERS):
           |-> ... rest of quit flow
 ```
 
-### 4.3 Player Logout — Detection Event Cancelled (Staff Exemption)
+### 4.3 Player Logout — Detection Event Exempts the Player (Staff Exemption)
 
 ```
 Admin player A logs out while fighting Player B (mode=PLAYERS):
@@ -2415,8 +2495,8 @@ Admin player A logs out while fighting Player B (mode=PLAYERS):
           |-> combatLogEnforcer.evaluateAndEnforce(playerA, session)
               |-> PLAYERS.shouldPunish(PVP) → true
               |-> Fire PlayerCombatLogEvent(playerA, session, PVP, [B])
-              |   |-> StaffExemptionPlugin listener: A has staff permission → setCancelled(true)
-              |-> logEvent.isCancelled() → true
+              |   |-> StaffExemptionPlugin listener: A has staff permission → setApplyPunishment(false)
+              |-> logEvent.shouldApplyPunishment() → false
               |-> return — no punishment, no audit entry
           |-> combatTrackerManager.endSession(A.uuid, LOGOUT)
           |-> ... rest of quit flow
@@ -2487,19 +2567,28 @@ Admin runs /mcrpg combatlog PlayerA 2:
 
 ```
 Server starts (after DB initialization):
-  L-> CombatLogCleanupTask constructed
-      |-> retentionDays = ReloadableInteger(AUDIT_RETENTION_DAYS)
-  L-> cleanupTask.runInitialCleanup() → performCleanup()
-      |-> retentionDays.getContent() → 30
-      |-> 30 > 0 → cleanup enabled
-      |-> cutoff = Instant.now().minus(30, DAYS)
-      |-> Submit to database executor:
-          |-> CombatLogDAO.deleteOlderThan(conn, cutoff) → 42
-          |-> Log: "Cleaned up 42 combat log entries older than 30 days"
-  L-> cleanupTask.runTask() → schedules periodic run every 86400 seconds
+  L-> ReloadableTask<CombatLogCleanupTask> constructed (reloadCallback invoked once):
+      |-> frequency = yamlDocument.getDouble(CLEANUP_INTERVAL_SECONDS) → 86400
+      |-> CombatLogCleanupTask(plugin, 86400) constructed
+      |   |-> retentionDays = ReloadableInteger(AUDIT_RETENTION_DAYS)
+      |-> task.runInitialCleanup() → performCleanup()
+      |   |-> retentionDays.getContent() → 30
+      |   |-> 30 > 0 → cleanup enabled
+      |   |-> cutoff = Instant.now().minus(30, DAYS)
+      |   |-> Submit to database executor:
+      |       |-> CombatLogDAO.deleteOlderThan(conn, cutoff) → 42
+      |       |-> Log: "Cleaned up 42 combat log entries older than 30 days"
+  L-> ReloadableTask calls task.runTask(true) → schedules periodic run every 86400 seconds
 
-24 hours later (periodic run):
+86400 seconds later (periodic run):
   L-> performCleanup() → same flow as above
+
+Admin runs /mcrpg admin reload after changing cleanup-interval-seconds to 3600:
+  L-> ReloadableContentManager.reloadAllContent() → ReloadableTask.reloadContent():
+      |-> Cancels the currently-running CombatLogCleanupTask
+      |-> reloadCallback invoked again → new CombatLogCleanupTask(plugin, 3600) constructed
+      |   |-> task.runInitialCleanup() → performCleanup() (opportunistic extra pass)
+      |-> task.runTask(true) → schedules periodic run every 3600 seconds from now on
 ```
 
 ---
@@ -2529,7 +2618,7 @@ Server starts (after DB initialization):
 21. **CombatLogCleanupTask** — depends on CombatLogDAO, CombatConfigFile; periodic task that deletes expired audit trail entries
 22. **McRPGDatabase modification** — add CombatLogDAO table creation
 23. **McRPGListenerRegistrar modification** — construct CombatLogEnforcer, update PlayerLeaveListener construction (remove CombatTrackerManager param, add CombatLogEnforcer), register exit message listener with shared `combatLogEnforcer.getMode()`
-24. **McRPGBootstrap modification** — register CombatLogCommand, start CombatLogCleanupTask
+24. **McRPGBootstrap / McRPGBackgroundTaskRegistrar modification** — register CombatLogCommand, wire up CombatLogCleanupTask as a `ReloadableTask<T>`
 25. **Unit tests** — see §6
 
 ---
@@ -2574,7 +2663,7 @@ Server starts (after DB initialization):
 - `runInitialCleanup()` does not delete entries within the retention window
 - Does not delete when `retentionDays` is `0`
 - Does not delete when `retentionDays` is negative
-- Periodic `run()` uses the same cleanup logic as `runInitialCleanup()`
+- Periodic `onIntervalComplete()` uses the same cleanup logic as `runInitialCleanup()`
 - Reload behavior: changing `audit-retention-days` in YAML and calling `reloadAllContent()` causes the next run to use the new value
 
 ### 6.3 CombatLogEntryTest
@@ -2588,8 +2677,8 @@ Server starts (after DB initialization):
 
 - Constructor stores player, session, combatType, participants
 - `getParticipants()` returns an unmodifiable collection
-- Default cancelled state is `false`
-- `setCancelled(true)` makes `isCancelled()` return `true`
+- Default `applyPunishment` state is `true`
+- `setApplyPunishment(false)` makes `shouldApplyPunishment()` return `false`
 - `getHandlerList()` returns a non-null static HandlerList
 
 ### 6.5 CombatLogPunishmentEventTest
@@ -2626,7 +2715,7 @@ Organized into `@Nested` groups by concern. Requires MockBukkit for event firing
 - **Reloadable initialization** — constructor registers 4 reloadable fields with `ReloadableContentManager`; `getMode()` returns the same `ReloadableContent` instance passed to dependents
 - **Mode evaluation** — does not fire events when mode is DISABLED; does not fire events when mode is PLAYERS and session type is PVE; fires events when mode is PLAYERS and session type is PVP; fires events when mode is MOBS_AND_PLAYERS and session type is PVE; falls back to DISABLED on an unrecognized mode string
 - **Reload behavior** — changing the mode value in YAML and calling `reloadAllContent()` causes the next `evaluateAndEnforce` call to use the new mode
-- **Detection event** — fires `PlayerCombatLogEvent` with correct player, session, combat type, and participants; does not proceed to punishment when the detection event is cancelled
+- **Detection event** — fires `PlayerCombatLogEvent` with correct player, session, combat type, and participants; does not proceed to punishment when a listener sets `applyPunishment` to `false`
 - **Punishment event** — fires `CombatLogPunishmentEvent` with punishment map populated from cached `ReloadableBoolean` values; does not apply punishments when all punishments are disabled by listeners
 - **Punishment application** — calls `apply()` on each enabled type; KILL_ON_LOGOUT sets player health to zero; DROP_ITEMS drops inventory and clears it; BROADCAST_MESSAGE delegates to `localizationManager.broadcastMessage()` for per-recipient locale resolution
 - **Mutual exclusion** — when both KILL_ON_LOGOUT and DROP_ITEMS are enabled, DROP_ITEMS is excluded and its `apply()` is not called; BROADCAST_MESSAGE is not excluded by either
@@ -2693,7 +2782,13 @@ Organized into `@Nested` groups by concern. Requires MockBukkit for event firing
 
 **Decision:** `CombatLogPunishmentEvent` does not implement `Cancellable`. Individual punishments are togglable via `setPunishmentEnabled()`. If all punishments are disabled, no punishment is applied — functionally equivalent to cancellation but more granular.
 
-**Why:** The HLD describes two distinct concerns: detection (`PlayerCombatLogEvent`, cancellable — exempts the player entirely) and policy (`CombatLogPunishmentEvent`, individually modifiable). Making the punishment event globally cancellable blurs this distinction — a plugin that wants to disable `KILL_ON_LOGOUT` while keeping `BROADCAST_MESSAGE` would need to cancel and re-fire, which is fragile. The two-event model with distinct cancellation semantics matches the HLD design intent.
+**Why:** The HLD describes two distinct concerns: detection (`PlayerCombatLogEvent`, gated by a mutable `applyPunishment` boolean — exempts the player entirely) and policy (`CombatLogPunishmentEvent`, individually modifiable). Making the punishment event globally cancellable blurs this distinction — a plugin that wants to disable `KILL_ON_LOGOUT` while keeping `BROADCAST_MESSAGE` would need to cancel and re-fire, which is fragile. The two-event model, each with its own distinct exemption mechanism, matches the HLD design intent.
+
+### D4a. PlayerCombatLogEvent Is Not Cancellable — `applyPunishment` Instead
+
+**Decision:** `PlayerCombatLogEvent` does not implement `Cancellable`. It exposes a mutable `applyPunishment` boolean (default `true`) via `shouldApplyPunishment()`/`setApplyPunishment(boolean)`. The enforcer checks this flag instead of `isCancelled()` before proceeding to the punishment stage.
+
+**Why:** The event fires *after* the player has already logged out — the quit itself already happened and cannot be undone by the time this event runs. `Cancellable` implies the annotated action can be prevented, which is misleading here: nothing about calling `setCancelled(true)` would un-log the player out. `applyPunishment` names the actual thing being controlled — whether the enforcer goes on to build a punishment map and record an audit entry — without the false implication that the logout itself is being cancelled. Setting it to `false` is functionally equivalent to the old "cancel to exempt" pattern, just honestly named.
 
 ### D5. DROP_ITEMS Excluded by KILL_ON_LOGOUT via Mutual Exclusion
 
@@ -2761,13 +2856,15 @@ Organized into `@Nested` groups by concern. Requires MockBukkit for event firing
 
 **Why — NamespacedKey, not enum:** The audit trail serializes punishment types by `NamespacedKey`. With an enum, third-party punishments applied via `CombatLogPunishmentEvent` listeners could not appear in the audit trail — the DAO had no way to represent non-enum values. Third-party plugins register their own types (e.g., `myplugin:temp_ban`) via `CombatLogPunishmentContentPack`, add them to the event's punishment map in a listener, and the enforcer applies and records them alongside built-in types.
 
-### D14. Configurable Audit Trail Retention via Cleanup Task
+### D14. Configurable Audit Trail Retention and Cleanup Interval via Cleanup Task
 
-**Decision:** `CombatLogCleanupTask` (a `DelayableCoreTask`) performs an initial cleanup at startup via `runInitialCleanup()`, then repeats every 24 hours. It deletes `combat_log` entries older than `combat-log.audit-retention-days` (default 30 days). A value of `0` or negative disables cleanup entirely.
+**Decision:** `CombatLogCleanupTask` (a `CancelableCoreTask`) performs an initial cleanup right after construction via `runInitialCleanup()`, then repeats on a configurable interval via `onIntervalComplete()`. It deletes `combat_log` entries older than `combat-log.audit-retention-days` (default 30 days). A value of `0` or negative disables cleanup entirely. The interval itself is `combat-log.cleanup-interval-seconds` (default 86400 — 24 hours), wired up as a `ReloadableTask<CombatLogCleanupTask>` in `McRPGBackgroundTaskRegistrar` alongside the plugin's other periodic tasks.
 
-**Why:** The `combat_log` table grows without bound on active servers. Without a cleanup mechanism, server owners must manage table size via manual SQL or external tooling — an unnecessary operational burden. A built-in configurable TTL with a periodic task is the simplest approach: it uses the existing `DelayableCoreTask` infrastructure, runs on the database executor (no main thread blocking), and the retention value is a `ReloadableInteger` refreshed on `/mcrpg admin reload`. The 24-hour interval is deliberately coarse — audit cleanup is not latency-sensitive, and a daily pass minimizes DB write contention.
+**Why:** The `combat_log` table grows without bound on active servers. Without a cleanup mechanism, server owners must manage table size via manual SQL or external tooling — an unnecessary operational burden. A built-in configurable TTL with a periodic task is the simplest approach: it runs on the database executor (no main thread blocking), and both the retention value (`ReloadableInteger`) and the run interval (`ReloadableTask`) are refreshed on `/mcrpg admin reload`. The 86400-second (24-hour) default is deliberately coarse — audit cleanup is not latency-sensitive, and a daily pass minimizes DB write contention — but exposing the interval costs nothing and covers the unlikely case of a server owner wanting tighter cleanup alongside a very short retention window.
 
-**Why startup + periodic:** A `DelayableCoreTask` resets its interval counter on every server restart. A server that restarts every 12 hours would never reach the 24-hour mark, so the periodic run alone would never fire. Running once at startup guarantees cleanup happens regardless of restart frequency — the periodic schedule is a fallback for long-running servers.
+**Why startup + periodic:** The task's initial delay is always `0`, but `onDelayComplete()` is intentionally a no-op — `runInitialCleanup()` (called explicitly by the `ReloadableTask` construction callback) already covers that first firing, so a server that restarts more often than the configured interval still gets cleanup every time. The periodic schedule (`onIntervalComplete()`) is the fallback for long-running servers that don't restart often enough to rely on the startup pass alone.
+
+**Why reloadable interval, not fixed:** Every other periodic background task in `McRPGBackgroundTaskRegistrar` is a `ReloadableTask<T>`, and there's no correctness reason for this one to be the exception — the config route and `ReloadableTask` wiring are a few lines, and it removes a special case a future maintainer would otherwise have to remember. In practice almost no server will ever change it from the 24-hour default, but offering the option is free.
 
 ---
 
@@ -2777,7 +2874,7 @@ Organized into `@Nested` groups by concern. Requires MockBukkit for event firing
 
 2. ~~**Punishment extensibility via content pack.**~~ Resolved — `CombatLogPunishmentType` is a `NamespacedKey`-keyed class with a `CombatLogPunishmentTypeRegistry` and `CombatLogPunishmentContentPack`. Third-party plugins register custom types so their punishments appear in the audit trail alongside built-in ones. The `CombatLogPunishmentEvent` carries a `Map<CombatLogPunishmentType, Boolean>` that third-party listeners can extend with their registered types.
 
-3. ~~**Audit trail retention.**~~ Resolved — `CombatLogCleanupTask` runs every 24 hours and deletes entries older than `combat-log.audit-retention-days` (default 30). Set to `0` to disable cleanup. The retention value is cached via `ReloadableInteger` and refreshed on `/mcrpg admin reload`.
+3. ~~**Audit trail retention.**~~ Resolved — `CombatLogCleanupTask` runs on a configurable interval (`combat-log.cleanup-interval-seconds`, default 86400) and deletes entries older than `combat-log.audit-retention-days` (default 30). Set retention to `0` to disable cleanup. Both values are reloadable — retention via `ReloadableInteger`, the interval via `ReloadableTask` — and refreshed on `/mcrpg admin reload`.
 
 4. **Combat log cooldown.** There is currently no limit on how frequently a player can combat log. A repeated offender detection system (e.g., escalating punishments based on frequency) is outside the scope of this phase but could be built on top of the `CombatLogDAO` data.
 

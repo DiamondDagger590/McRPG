@@ -252,8 +252,8 @@ src/main/java/us/eunoians/mcrpg/
 | **CombatLogMode** | Enum (`DISABLED`, `PLAYERS`, `MOBS_AND_PLAYERS`) controlling which combat session types trigger combat log detection on logout. `shouldPunish(CombatType)` encapsulates the matching logic so callers never compare mode and type manually. |
 | **CombatLogPunishmentType** | Abstract, `NamespacedKey`-keyed class representing one category of combat-log punishment. Built-ins: `KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`. Declares mutual exclusions via `getExcludes()` — `KILL_ON_LOGOUT` excludes `DROP_ITEMS` since death already drops items. Registered in `CombatLogPunishmentTypeRegistry`; extensible via `CombatLogPunishmentContentPack`. |
 | **CombatLogEnforcer** | Collaborator invoked from `PlayerLeaveListener` before the session ends. Evaluates `CombatLogMode` against the session's `CombatType`, fires `PlayerCombatLogEvent` then `CombatLogPunishmentEvent`, resolves punishment exclusions, applies survivors, and records an audit entry via `CombatLogDAO`. Owns the shared `ReloadableContent<CombatLogMode>` that `OnCombatExitMessageListener` also reads. |
-| **PlayerCombatLogEvent** | Cancellable detection event. Cancelling it exempts the player entirely — no punishment map is even built. |
-| **CombatLogPunishmentEvent** | Non-cancellable policy event fired after `PlayerCombatLogEvent` passes. Carries a `Map<CombatLogPunishmentType, Boolean>` that listeners can toggle per-type; if every entry ends up disabled, no punishment is applied. Use `PlayerCombatLogEvent` to exempt a player outright instead of disabling every punishment here. |
+| **PlayerCombatLogEvent** | Detection event — not `Cancellable` (the logout already happened and can't be undone). Carries a mutable `applyPunishment` boolean (default `true`); setting it `false` exempts the player entirely — no punishment map is even built. |
+| **CombatLogPunishmentEvent** | Policy event fired after `PlayerCombatLogEvent` passes with `applyPunishment` still `true`. Carries a `Map<CombatLogPunishmentType, Boolean>` that listeners can toggle per-type; if every entry ends up disabled, no punishment is applied. Use `PlayerCombatLogEvent` to exempt a player outright instead of disabling every punishment here. |
 | **CombatLogEntry** | Immutable record for one audit trail row: player, timestamp, location, `CombatType`, participant UUIDs, and applied punishment types. `id` is `0` for entries not yet inserted (auto-increment assigns it). |
 
 ---
@@ -552,17 +552,23 @@ Forgetting the `.getDatabase()` step (calling `.getDatabaseExecutorService()` di
 
 ### Background Task Registration
 
-Periodic background tasks that need database access are constructed and started in `McRPGBackgroundTaskRegistrar.register()`, alongside the existing `ReloadableTask<T>`-wrapped tasks. `ReloadableTask<T>` is only for tasks whose own **run frequency** is reloadable from config (the wrapper reconstructs and reschedules the task when its frequency route changes). A task whose frequency is fixed but which has other reloadable internals (e.g. a retention window) is constructed directly instead:
+Periodic background tasks that need database access are constructed and started in `McRPGBackgroundTaskRegistrar.register()`, wrapped in `ReloadableTask<T>` so their run frequency is reloadable from config — the wrapper cancels and reconstructs the task (via the supplied callback) whenever its frequency route changes, then restarts it with `runTask(async)`:
 
 ```java
-// Combat log audit trail cleanup — fixed 24h interval; only retention days is reloadable
-// (via an internal ReloadableInteger, not the task's own frequency).
-CombatLogCleanupTask combatLogCleanupTask = new CombatLogCleanupTask(plugin);
-combatLogCleanupTask.runInitialCleanup();
-combatLogCleanupTask.runTask();
+// Combat log audit trail cleanup — interval is reloadable via cleanup-interval-seconds;
+// runInitialCleanup() runs once inside the callback so it fires both at startup and on
+// every reload (harmless — it's just an extra opportunistic cleanup pass).
+ReloadableTask<CombatLogCleanupTask> combatLogCleanupTask = new ReloadableTask<>(
+        fileManager.getFile(FileType.COMBAT_CONFIG), CombatConfigFile.CLEANUP_INTERVAL_SECONDS,
+        (yamlDocument, route) -> {
+            double frequency = yamlDocument.getDouble(route);
+            CombatLogCleanupTask task = new CombatLogCleanupTask(plugin, frequency);
+            task.runInitialCleanup();
+            return task;
+        }, true);
 ```
 
-`CombatLogCleanupTask` extends McCore's `CancelableCoreTask` (not `DelayableCoreTask`) because it needs a repeating interval, not a single delayed execution. It runs cleanup once immediately via `runInitialCleanup()` — covering servers that restart often — then repeats every 24 hours via `onIntervalComplete()` for long-running servers. `onDelayComplete()` is intentionally a no-op so the initial-delay firing doesn't duplicate the cleanup `runInitialCleanup()` already performed.
+`CombatLogCleanupTask` extends McCore's `CancelableCoreTask` (not `DelayableCoreTask`) because it needs a repeating interval, not a single delayed execution. Its constructor always passes an initial delay of `0` and a configurable period; `onDelayComplete()` is intentionally a no-op so that near-immediate first firing doesn't duplicate the cleanup `runInitialCleanup()` already performed in the callback. `onIntervalComplete()` repeats the same cleanup on the configured interval for long-running servers. Retention (`audit-retention-days`) is a separate, independently reloadable `ReloadableInteger` internal to the task — a task's own run frequency and its other config-driven internals don't have to share one reload mechanism.
 
 ---
 
@@ -858,13 +864,13 @@ Combat logging is the first built-in policy consumer of the combat session engin
 
 1. `PlayerLeaveListener` calls `CombatLogEnforcer.evaluateAndEnforce(player, session)` **before** the session is ended, so the session is still queryable.
 2. `CombatLogMode.shouldPunish(CombatType)` gates the whole flow: `DISABLED` never punishes, `PLAYERS` only punishes `CombatType.PVP` sessions, `MOBS_AND_PLAYERS` punishes any active session.
-3. `PlayerCombatLogEvent` (cancellable) fires first. Cancelling it exempts the player entirely — no punishment map is built and nothing is recorded.
-4. If not cancelled, the enforcer builds a `Map<CombatLogPunishmentType, Boolean>` from the cached config flags (`killOnLogout`, `dropItems`, `broadcastMessage`) and fires `CombatLogPunishmentEvent` (not cancellable — individual entries are toggled instead).
+3. `PlayerCombatLogEvent` fires first. It is not `Cancellable` — the player already disconnected, so there's no action to cancel. Instead a listener calls `setApplyPunishment(false)` to exempt the player entirely; if `shouldApplyPunishment()` is false afterward, no punishment map is built and nothing is recorded.
+4. Otherwise, the enforcer builds a `Map<CombatLogPunishmentType, Boolean>` from the cached config flags (`killOnLogout`, `dropItems`, `broadcastMessage`) and fires `CombatLogPunishmentEvent` (also not cancellable — individual entries are toggled instead).
 5. If every entry ends up disabled (`hasAnyPunishment()` is false), nothing further happens.
 6. Otherwise the enforcer resolves mutual exclusion: for each enabled type, any keys in its `getExcludes()` are removed from the applied set (`KILL_ON_LOGOUT` excludes `DROP_ITEMS` since death already drops items) — then each surviving type's `apply(Player, CombatSession, McRPG)` runs.
 7. A `CombatLogEntry` is built and inserted asynchronously via `CombatLogDAO.insertCombatLog()` inside a `BatchTransaction`, regardless of which punishments applied.
 
-This is a two-event pattern: `PlayerCombatLogEvent` is the **detection** gate (all-or-nothing exemption), `CombatLogPunishmentEvent` is the **policy** gate (per-punishment toggling). Third-party plugins that want to add a custom punishment type register it via `CombatLogPunishmentContentPack`, then add it to the `CombatLogPunishmentEvent`'s map from a listener at `EventPriority.NORMAL` (the enforcer reads the final map at `MONITOR`).
+This is a two-event pattern: `PlayerCombatLogEvent` is the **detection** gate (all-or-nothing exemption via `applyPunishment`), `CombatLogPunishmentEvent` is the **policy** gate (per-punishment toggling). Neither event is `Cancellable` — cancelling implies an action was prevented, but a combat-logging player has already logged out; both events instead expose mutable state (`applyPunishment`, the punishment map) that the enforcer reads after the event fires. Third-party plugins that want to add a custom punishment type register it via `CombatLogPunishmentContentPack`, then add it to the `CombatLogPunishmentEvent`'s map from a listener at `EventPriority.NORMAL` (the enforcer reads the final map at `MONITOR`).
 
 ### CombatLogPunishmentType
 
