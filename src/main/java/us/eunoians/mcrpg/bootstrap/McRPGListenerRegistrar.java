@@ -237,7 +237,6 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new OnCombatHealingStatListener(combatTrackerManager), plugin);
         Bukkit.getPluginManager().registerEvents(new OnCombatSessionEndStatUpdateListener(plugin), plugin);
 
-        // Combat log exit message — shares the enforcer's reloadable combat log mode
         Bukkit.getPluginManager().registerEvents(
                 new OnCombatExitMessageListener(plugin, combatLogEnforcer.getMode()), plugin);
     }
