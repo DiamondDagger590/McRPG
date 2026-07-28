@@ -172,6 +172,22 @@ class CascadeOrchestratorForceAdvanceTest extends McRPGBaseTest {
 
             assertFalse(result);
         }
+
+        @Test
+        @DisplayName("Given player's chain state is EXPIRED, when forceAdvanceChain is called, then returns false")
+        void forceAdvanceChain_returnsFalse_whenChainExpired() {
+            UUID uuid = UUID.randomUUID();
+            McRPGPlayer player = mock(McRPGPlayer.class);
+            QuestChainPlayerData chainData = new QuestChainPlayerData();
+            QuestChainPlayerState state = new QuestChainPlayerState(CHAIN_KEY, null, QuestChainState.EXPIRED, 0, null);
+            chainData.putChainState(state);
+            when(player.getChainData()).thenReturn(chainData);
+            when(mockPlayerManager.getPlayer(uuid)).thenReturn(Optional.of(player));
+
+            boolean result = orchestrator.forceAdvanceChain(uuid, CHAIN_KEY);
+
+            assertFalse(result);
+        }
     }
 
     @Nested
@@ -258,7 +274,10 @@ class CascadeOrchestratorForceAdvanceTest extends McRPGBaseTest {
                 return true;
             });
 
-            orchestrator.tryStartChain(playerMock, CHAIN_KEY);
+            boolean result = orchestrator.tryStartChain(playerMock, CHAIN_KEY);
+
+            assertTrue(result);
+            verify(mockChainManager).tryStartChain(eq(playerMock), eq(CHAIN_KEY));
         }
     }
 
@@ -277,8 +296,8 @@ class CascadeOrchestratorForceAdvanceTest extends McRPGBaseTest {
         }
 
         @Test
-        @DisplayName("Given null player (disconnected), when finalizeCascade is called, then cascade is cleaned up and event fires")
-        void finalizeCascade_cleansUpAndFiresEvent_whenPlayerNull() {
+        @DisplayName("Given a cascade completes, when finalizeCascade runs, then cascade is cleaned up and event fires")
+        void finalizeCascade_cleansUpAndFiresEvent_whenCascadeCompletes() {
             PlayerMock playerMock = server.addPlayer("FinalizeNullPlayer");
             UUID uuid = playerMock.getUniqueId();
             when(mockChainManager.tryStartChain(eq(playerMock), eq(CHAIN_KEY))).thenAnswer(invocation -> {

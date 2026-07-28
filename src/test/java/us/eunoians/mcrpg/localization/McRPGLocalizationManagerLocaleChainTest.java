@@ -106,21 +106,19 @@ class McRPGLocalizationManagerLocaleChainTest {
     class GetLocaleChain {
 
         @Test
-        @DisplayName("Given CLIENT_LOCALE setting, when getLocaleChain is called, then delegates to super (client -> server default -> english)")
-        void getLocaleChain_clientLocale_delegatesToSuper() {
+        @DisplayName("Given CLIENT_LOCALE setting, when getLocaleChain is called, then chain starts with client locale followed by server default")
+        void getLocaleChain_clientLocale_startsWithClientLocale() {
             McRPGPlayer player = mockPlayerWithSetting(LocaleSetting.CLIENT_LOCALE);
             Player bukkitPlayer = mock(Player.class);
             when(bukkitPlayer.locale()).thenReturn(CLIENT_LOCALE);
             when(player.getAsBukkitPlayer()).thenReturn(Optional.of(bukkitPlayer));
 
-            LinkedNode<Locale> superChain = new LinkedNode<>(CLIENT_LOCALE);
-            superChain.setNext(new LinkedNode<>(SERVER_DEFAULT));
-            doReturn(superChain).when(manager).getLocaleChain(player);
-
             LinkedNode<Locale> chain = manager.getLocaleChain(player);
 
             assertNotNull(chain);
             assertEquals(CLIENT_LOCALE, chain.getNodeValue());
+            assertNotNull(chain.getNextNode());
+            assertEquals(SERVER_DEFAULT, chain.getNextNode().getNodeValue());
         }
 
         @Test
@@ -171,8 +169,8 @@ class McRPGLocalizationManagerLocaleChainTest {
         }
 
         @Test
-        @DisplayName("Given no locale setting on the player, when getLocaleChain is called, then falls back to default behavior")
-        void getLocaleChain_noSetting_fallsBackToDefault() {
+        @DisplayName("Given no locale setting on the player, when getLocaleChain is called, then falls back to client locale followed by server default")
+        void getLocaleChain_noSetting_fallsBackToClientLocaleChain() {
             McRPGPlayer player = mock(McRPGPlayer.class);
             doReturn(Optional.empty()).when(player).getPlayerSetting(eq(LocalePlayerSetting.SETTING_KEY));
             Player bukkitPlayer = mock(Player.class);
@@ -182,6 +180,9 @@ class McRPGLocalizationManagerLocaleChainTest {
             LinkedNode<Locale> chain = manager.getLocaleChain(player);
 
             assertNotNull(chain);
+            assertEquals(CLIENT_LOCALE, chain.getNodeValue());
+            assertNotNull(chain.getNextNode());
+            assertEquals(SERVER_DEFAULT, chain.getNextNode().getNodeValue());
         }
     }
 
