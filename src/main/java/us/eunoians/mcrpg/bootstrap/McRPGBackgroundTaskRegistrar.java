@@ -8,6 +8,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.task.combat.CombatLogCleanupTask;
@@ -66,13 +67,20 @@ final class McRPGBackgroundTaskRegistrar implements Registrar<McRPG> {
                     String tz = yamlDocument.getString(BoardConfigFile.ROTATION_TIMEZONE);
                     return new QuestBoardRotationTask(plugin, frequency, frequency, time, tz);
                 }, true);
+        // Combat log audit trail cleanup — runInitialCleanup() covers servers that restart
+        // frequently; onIntervalComplete() repeats on cleanup-interval-seconds for long-running
+        // servers. Reconstructed (and re-run once) whenever the interval is reloaded, same as
+        // every other ReloadableTask here.
+        ReloadableTask<CombatLogCleanupTask> combatLogCleanupTask = new ReloadableTask<>(fileManager.getFile(FileType.COMBAT_CONFIG),
+                CombatConfigFile.CLEANUP_INTERVAL_SECONDS,
+                (yamlDocument, route) -> {
+                    double frequency = yamlDocument.getDouble(route);
+                    CombatLogCleanupTask task = new CombatLogCleanupTask(plugin, frequency);
+                    task.runInitialCleanup();
+                    return task;
+                }, true);
         plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT)
-                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask, questSaveTask, expiredQuestScanTask, rotationTask));
-
-        // Combat log audit trail cleanup — runs once immediately (covers servers that restart
-        // frequently) and then every 24 hours for long-running servers.
-        CombatLogCleanupTask combatLogCleanupTask = new CombatLogCleanupTask(plugin);
-        combatLogCleanupTask.runInitialCleanup();
-        combatLogCleanupTask.runTask();
+                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask,
+                        questSaveTask, expiredQuestScanTask, rotationTask, combatLogCleanupTask));
     }
 }

@@ -19,9 +19,9 @@ import java.util.logging.Level;
 
 /**
  * Periodic task that deletes combat log audit trail entries older than the
- * configured retention period. {@link #runInitialCleanup()} is called once by the
- * bootstrap right after construction (so servers that restart frequently still clean
- * up), and {@link #onIntervalComplete()} repeats the same cleanup every 24 hours for
+ * configured retention period. {@link #runInitialCleanup()} is called once right after
+ * construction (so servers that restart frequently still clean up), and
+ * {@link #onIntervalComplete()} repeats the same cleanup on the configured interval for
  * long-running servers. A retention value of {@code 0} or negative disables cleanup.
  * <p>
  * Extends {@link CancelableCoreTask} — the same repeating-task base used by
@@ -31,18 +31,20 @@ import java.util.logging.Level;
  */
 public class CombatLogCleanupTask extends CancelableCoreTask {
 
-    private static final double RUN_INTERVAL_SECONDS = 86400;
-
     private final McRPG mcRPG;
     private final ReloadableInteger retentionDays;
 
     /**
      * Constructs a new {@link CombatLogCleanupTask}.
      *
-     * @param mcRPG The plugin instance.
+     * @param mcRPG              The plugin instance.
+     * @param runIntervalSeconds Seconds between cleanup passes ({@link #onIntervalComplete()}).
+     *                           The initial delay is always {@code 0} — {@link #onDelayComplete()}
+     *                           is a no-op, so the first firing doesn't duplicate
+     *                           {@link #runInitialCleanup()}.
      */
-    public CombatLogCleanupTask(@NotNull McRPG mcRPG) {
-        super(mcRPG, 0, RUN_INTERVAL_SECONDS);
+    public CombatLogCleanupTask(@NotNull McRPG mcRPG, double runIntervalSeconds) {
+        super(mcRPG, 0, runIntervalSeconds);
         this.mcRPG = mcRPG;
         var config = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
@@ -63,8 +65,8 @@ public class CombatLogCleanupTask extends CancelableCoreTask {
     }
 
     /**
-     * Repeats the cleanup every {@value #RUN_INTERVAL_SECONDS} seconds — the periodic
-     * fallback for long-running servers that don't restart often enough to rely on
+     * Repeats the cleanup on the configured interval — the periodic fallback for
+     * long-running servers that don't restart often enough to rely on
      * {@link #runInitialCleanup()} alone.
      */
     @Override

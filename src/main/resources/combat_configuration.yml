@@ -65,10 +65,23 @@ combat-log:
     broadcast-message: true
 
   # Number of days to retain combat log audit trail entries.
-  # A cleanup task runs every 24 hours and deletes entries older than this.
-  # Set to 0 to disable automatic cleanup (entries are kept forever).
+  # A cleanup task runs periodically (see cleanup-interval-seconds) and deletes entries
+  # older than this. Set to 0 to disable automatic cleanup (entries are kept forever).
   # Reload: cached via ReloadableInteger — refreshed on /mcrpg admin reload.
   audit-retention-days: 30
+
+  # Seconds between combat log audit trail cleanup passes. Default is 86400 (24 hours) —
+  # there's rarely a reason to run this more often, but the interval is exposed for servers
+  # with unusual retention needs (e.g. a very short audit-retention-days).
+  # Reload: cached via ReloadableTask — the task is cancelled and restarted with the new
+  # interval on /mcrpg admin reload.
+  cleanup-interval-seconds: 86400
+
+  # java.time.format.DateTimeFormatter pattern used to render timestamps in
+  # /mcrpg combatlog output. Rendered in the server's local time zone. Falls back to
+  # the default pattern shown here (with a warning) if the configured pattern is invalid.
+  # Reload: read fresh on every command invocation — no restart or /mcrpg admin reload needed.
+  history-timestamp-format: "yyyy-MM-dd HH:mm:ss"
 
 # Display Configuration
 # Controls combat-related display elements shown to players.

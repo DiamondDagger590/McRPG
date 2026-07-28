@@ -68,7 +68,7 @@ class CombatLogCleanupTaskTest extends McRPGBaseTest {
 
     private CombatLogCleanupTask taskWithRetention(int days) {
         lenient().when(combatConfig.getInt(CombatConfigFile.AUDIT_RETENTION_DAYS)).thenReturn(days);
-        return new CombatLogCleanupTask(mcRPG);
+        return new CombatLogCleanupTask(mcRPG, 86400);
     }
 
     @Test

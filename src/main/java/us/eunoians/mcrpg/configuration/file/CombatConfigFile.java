@@ -44,6 +44,12 @@ public final class CombatConfigFile extends ConfigFile {
     // Audit Retention
     public static final Route AUDIT_RETENTION_DAYS =
             Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "audit-retention-days"));
+    public static final Route CLEANUP_INTERVAL_SECONDS =
+            Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "cleanup-interval-seconds"));
+
+    // Admin command output
+    public static final Route COMBAT_LOG_HISTORY_TIMESTAMP_FORMAT =
+            Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "history-timestamp-format"));
 
     // Display
     private static final String DISPLAY_HEADER = "display";

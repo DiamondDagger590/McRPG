@@ -16,6 +16,8 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.combat.log.CombatLogEntry;
 import us.eunoians.mcrpg.command.McRPGCommandBase;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.database.table.CombatLogDAO;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
@@ -41,8 +43,7 @@ public class CombatLogCommand extends McRPGCommandBase {
 
     public static final Permission COMBATLOG_PERMISSION = Permission.of("mcrpg.admin.combatlog");
     private static final int PAGE_SIZE = 10;
-    private static final DateTimeFormatter TIMESTAMP_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
+    private static final String DEFAULT_TIMESTAMP_PATTERN = "yyyy-MM-dd HH:mm:ss";
 
     private static final CloudKey<String> PLAYER_KEY = CloudKey.of("player", String.class);
     private static final CloudKey<Integer> PAGE_KEY = CloudKey.of("page", Integer.class);
@@ -129,6 +130,7 @@ public class CombatLogCommand extends McRPGCommandBase {
         McRPG plugin = McRPG.getInstance();
         McRPGLocalizationManager localizationManager = plugin.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
+        DateTimeFormatter timestampFormatter = resolveTimestampFormatter(plugin);
 
         if (entries.isEmpty()) {
             Component noEntries = localizationManager.getLocalizedMessageAsComponent(sender,
@@ -153,7 +155,7 @@ public class CombatLogCommand extends McRPGCommandBase {
                     LocalizationKey.COMBAT_LOG_HISTORY_ENTRY,
                     Map.of(
                             "index", String.valueOf((page - 1) * PAGE_SIZE + i + 1),
-                            "timestamp", TIMESTAMP_FORMATTER.format(entry.timestamp()),
+                            "timestamp", timestampFormatter.format(entry.timestamp()),
                             "combat_type", entry.combatType().name(),
                             "world", entry.world(),
                             "x", String.valueOf((int) entry.x()),
@@ -172,5 +174,31 @@ public class CombatLogCommand extends McRPGCommandBase {
                 Map.of("page", String.valueOf(page),
                         "total_pages", String.valueOf(totalPages)));
         sender.sendMessage(footer);
+    }
+
+    /**
+     * Resolves the configured {@code combat-log.history-timestamp-format} pattern into a
+     * {@link DateTimeFormatter}, rendered in the server's local time zone. Read fresh on every
+     * invocation rather than cached — this command runs infrequently enough that re-parsing the
+     * pattern string each time costs nothing, and it means a config change takes effect on the
+     * very next run with no explicit reload wiring. Falls back to {@link #DEFAULT_TIMESTAMP_PATTERN}
+     * and logs a warning if the configured pattern is not a valid {@link DateTimeFormatter} pattern.
+     *
+     * @param plugin The plugin instance for config access and logging.
+     * @return The resolved {@link DateTimeFormatter}.
+     */
+    @NotNull
+    private static DateTimeFormatter resolveTimestampFormatter(@NotNull McRPG plugin) {
+        String pattern = plugin.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBAT_CONFIG)
+                .getString(CombatConfigFile.COMBAT_LOG_HISTORY_TIMESTAMP_FORMAT, DEFAULT_TIMESTAMP_PATTERN);
+        try {
+            return DateTimeFormatter.ofPattern(pattern).withZone(ZoneId.systemDefault());
+        }
+        catch (IllegalArgumentException e) {
+            plugin.getLogger().log(Level.WARNING, "Invalid combat-log.history-timestamp-format pattern '"
+                    + pattern + "', falling back to '" + DEFAULT_TIMESTAMP_PATTERN + "'", e);
+            return DateTimeFormatter.ofPattern(DEFAULT_TIMESTAMP_PATTERN).withZone(ZoneId.systemDefault());
+        }
     }
 }
