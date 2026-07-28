@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -33,7 +34,7 @@ import java.util.stream.Collectors;
 public final class CombatLogDAO {
 
     public static final String TABLE_NAME = "combat_log";
-    private static final int CURRENT_TABLE_VERSION = 1;
+    private static final int CURRENT_TABLE_VERSION = 2;
 
     private CombatLogDAO() {
     }
@@ -60,7 +61,7 @@ public final class CombatLogDAO {
                         "`z` DOUBLE NOT NULL, " +
                         "`combat_type` VARCHAR(16) NOT NULL, " +
                         "`participant_uuids` TEXT NOT NULL, " +
-                        "`punishments_applied` VARCHAR(255) NOT NULL" +
+                        "`punishments_applied` TEXT NOT NULL" +
                         ");")) {
             statement.executeUpdate();
             return true;
@@ -82,17 +83,33 @@ public final class CombatLogDAO {
         if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
             return;
         }
-        if (lastStoredVersion == 0) {
-            try (PreparedStatement statement = connection.prepareStatement(
-                    "CREATE INDEX IF NOT EXISTS idx_combat_log_player_time ON " + TABLE_NAME
-                            + " (player_uuid, timestamp)")) {
-                statement.executeUpdate();
-            }
-            catch (SQLException e) {
-                McRPG.getInstance().getLogger().log(Level.SEVERE,
-                        "[CombatLogDAO] Failed to create index on " + TABLE_NAME, e);
-            }
-            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, CURRENT_TABLE_VERSION);
+        if (lastStoredVersion < 1) {
+            createIndex(connection, "idx_combat_log_player_time", "(player_uuid, timestamp)");
+        }
+        if (lastStoredVersion < 2) {
+            // Serves deleteOlderThan's `WHERE timestamp < ?` retention sweep — the composite
+            // index above can't be used for a range scan that doesn't lead with player_uuid.
+            createIndex(connection, "idx_combat_log_timestamp", "(timestamp)");
+        }
+        TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, CURRENT_TABLE_VERSION);
+    }
+
+    /**
+     * Creates an index on {@link #TABLE_NAME} if it does not already exist.
+     *
+     * @param connection  The database connection.
+     * @param indexName   The name of the index to create.
+     * @param columnsExpr The parenthesized column list for the index, e.g. {@code "(timestamp)"}.
+     */
+    private static void createIndex(@NotNull Connection connection, @NotNull String indexName,
+                                    @NotNull String columnsExpr) {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "CREATE INDEX IF NOT EXISTS " + indexName + " ON " + TABLE_NAME + " " + columnsExpr)) {
+            statement.executeUpdate();
+        }
+        catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.SEVERE,
+                    "[CombatLogDAO] Failed to create index " + indexName + " on " + TABLE_NAME, e);
         }
     }
 
@@ -150,7 +167,15 @@ public final class CombatLogDAO {
             statement.setInt(3, (page - 1) * pageSize);
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
-                    entries.add(parseEntry(rs));
+                    // Isolated per row: a single corrupted/unparsable row (bad enum literal, malformed
+                    // UUID) must not blank out the rest of an otherwise-valid page for the admin.
+                    try {
+                        entries.add(parseEntry(rs));
+                    }
+                    catch (RuntimeException e) {
+                        McRPG.getInstance().getLogger().log(Level.WARNING,
+                                "[CombatLogDAO] Skipping unparsable combat log row for " + playerUUID, e);
+                    }
                 }
             }
         }
@@ -228,6 +253,7 @@ public final class CombatLogDAO {
                 ? Collections.emptyList()
                 : Arrays.stream(punishmentString.split(","))
                         .map(NamespacedKey::fromString)
+                        .filter(Objects::nonNull)
                         .map(punishmentRegistry::get)
                         .filter(Optional::isPresent)
                         .map(Optional::get)
