@@ -98,7 +98,7 @@ public class CombatLogCommand extends McRPGCommandBase {
                                 .manager(McRPGManagerKey.DATABASE).getDatabase();
                         database.getDatabaseExecutorService().submit(() -> {
                             try (Connection conn = database.getConnection()) {
-                                int totalEntries = CombatLogDAO.getCombatLogCount(conn, targetUUID);
+                                int totalEntries = CombatLogDAO.getCombatLogCount(conn, targetUUID).orElse(0);
                                 List<CombatLogEntry> entries =
                                         CombatLogDAO.getCombatLogHistory(conn, targetUUID, page, PAGE_SIZE);
 

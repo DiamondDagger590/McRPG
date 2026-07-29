@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -33,8 +34,8 @@ import java.util.stream.Collectors;
  */
 public final class CombatLogDAO {
 
-    public static final String TABLE_NAME = "combat_log";
-    private static final int CURRENT_TABLE_VERSION = 2;
+    public static final String TABLE_NAME = "mcrpg_combat_log";
+    private static final int CURRENT_TABLE_VERSION = 1;
 
     private CombatLogDAO() {
     }
@@ -83,33 +84,24 @@ public final class CombatLogDAO {
         if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
             return;
         }
-        if (lastStoredVersion < 1) {
-            createIndex(connection, "idx_combat_log_player_time", "(player_uuid, timestamp)");
-        }
-        if (lastStoredVersion < 2) {
-            // Serves deleteOlderThan's `WHERE timestamp < ?` retention sweep — the composite
-            // index above can't be used for a range scan that doesn't lead with player_uuid.
-            createIndex(connection, "idx_combat_log_timestamp", "(timestamp)");
-        }
-        TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, CURRENT_TABLE_VERSION);
-    }
-
-    /**
-     * Creates an index on {@link #TABLE_NAME} if it does not already exist.
-     *
-     * @param connection  The database connection.
-     * @param indexName   The name of the index to create.
-     * @param columnsExpr The parenthesized column list for the index, e.g. {@code "(timestamp)"}.
-     */
-    private static void createIndex(@NotNull Connection connection, @NotNull String indexName,
-                                    @NotNull String columnsExpr) {
-        try (PreparedStatement statement = connection.prepareStatement(
-                "CREATE INDEX IF NOT EXISTS " + indexName + " ON " + TABLE_NAME + " " + columnsExpr)) {
-            statement.executeUpdate();
-        }
-        catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.SEVERE,
-                    "[CombatLogDAO] Failed to create index " + indexName + " on " + TABLE_NAME, e);
+        if (lastStoredVersion == 0) {
+            // idx_combat_log_timestamp serves deleteOlderThan's `WHERE timestamp < ?` retention
+            // sweep — the composite index above can't be used for a range scan that doesn't lead
+            // with player_uuid.
+            String[] indexes = {
+                    "CREATE INDEX IF NOT EXISTS idx_combat_log_player_time ON " + TABLE_NAME + " (player_uuid, timestamp)",
+                    "CREATE INDEX IF NOT EXISTS idx_combat_log_timestamp ON " + TABLE_NAME + " (timestamp)"
+            };
+            for (String sql : indexes) {
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.executeUpdate();
+                }
+                catch (SQLException e) {
+                    McRPG.getInstance().getLogger().log(Level.SEVERE,
+                            "[CombatLogDAO] Failed to create index during migration", e);
+                }
+            }
+            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, CURRENT_TABLE_VERSION);
         }
     }
 
@@ -191,23 +183,26 @@ public final class CombatLogDAO {
      *
      * @param connection The database connection.
      * @param playerUUID The UUID of the player to count.
-     * @return The total entry count.
+     * @return The total entry count, or {@link OptionalInt#empty()} if the query failed — distinct
+     * from an empty result set, which is a genuine count of {@code 0}.
      */
-    public static int getCombatLogCount(@NotNull Connection connection, @NotNull UUID playerUUID) {
+    @NotNull
+    public static OptionalInt getCombatLogCount(@NotNull Connection connection, @NotNull UUID playerUUID) {
         String sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE player_uuid = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, playerUUID.toString());
             try (ResultSet rs = statement.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    return OptionalInt.of(rs.getInt(1));
                 }
             }
         }
         catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING,
                     "[CombatLogDAO] Failed to count combat log entries for " + playerUUID, e);
+            return OptionalInt.empty();
         }
-        return 0;
+        return OptionalInt.of(0);
     }
 
     /**

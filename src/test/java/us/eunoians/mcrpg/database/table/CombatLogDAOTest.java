@@ -15,6 +15,7 @@ import java.sql.SQLException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.OptionalInt;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -164,9 +165,9 @@ class CombatLogDAOTest extends McRPGBaseTest {
         when(mockResultSet.next()).thenReturn(true);
         when(mockResultSet.getInt(1)).thenReturn(15);
 
-        int count = CombatLogDAO.getCombatLogCount(mockConnection, PLAYER_UUID);
+        OptionalInt count = CombatLogDAO.getCombatLogCount(mockConnection, PLAYER_UUID);
 
-        assertEquals(15, count);
+        assertEquals(15, count.orElseThrow());
     }
 
     @Test
@@ -179,9 +180,22 @@ class CombatLogDAOTest extends McRPGBaseTest {
         when(mockStatement.executeQuery()).thenReturn(mockResultSet);
         when(mockResultSet.next()).thenReturn(false);
 
-        int count = CombatLogDAO.getCombatLogCount(mockConnection, PLAYER_UUID);
+        OptionalInt count = CombatLogDAO.getCombatLogCount(mockConnection, PLAYER_UUID);
 
-        assertEquals(0, count);
+        assertEquals(0, count.orElseThrow());
+    }
+
+    @Test
+    @DisplayName("getCombatLogCount returns empty when the query fails")
+    void getCombatLogCount_returnsEmpty_whenQueryFails() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenThrow(new SQLException("boom"));
+
+        OptionalInt count = CombatLogDAO.getCombatLogCount(mockConnection, PLAYER_UUID);
+
+        assertTrue(count.isEmpty());
     }
 
     @Test

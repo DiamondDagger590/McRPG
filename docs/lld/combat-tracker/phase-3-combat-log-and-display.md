@@ -141,7 +141,8 @@ classDiagram
         +updateTable(Connection)$ void
         +insertCombatLog(Connection, CombatLogEntry)$ List~PreparedStatement~
         +getCombatLogHistory(Connection, UUID, int, int)$ List~CombatLogEntry~
-        +getCombatLogCount(Connection, UUID)$ int
+        +getCombatLogCount(Connection, UUID)$ OptionalInt
+        +deleteOlderThan(Connection, Instant)$ int
     }
 
     class CombatType {
@@ -1024,12 +1025,13 @@ public class CombatLogPunishmentEvent extends Event {
 **Package:** `us.eunoians.mcrpg.database.table`
 **File:** `src/main/java/us/eunoians/mcrpg/database/table/CombatLogDAO.java`
 
-Static DAO for combat log audit trail persistence. Follows the same pattern as `CombatPersistentStateDAO` — `final` class, private constructor, static methods, `Connection` as first argument.
+Static DAO for combat log audit trail persistence. Follows the same pattern as `CombatPersistentStateDAO` — `final` class, private constructor, static methods, `Connection` as first argument. `TABLE_NAME` carries the `mcrpg_` prefix used by every other DAO in the codebase (`CombatPersistentStateDAO`'s `combat_persistent_state` table picked up the same prefix alongside this one — see D14a below). `getCombatLogCount` returns `OptionalInt` rather than a bare `int` so callers can distinguish "zero entries" from "the query failed" (see D14b).
 
 ```java
 package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
+import com.diamonddagger590.mccore.database.table.impl.TableVersionHistoryDAO;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
@@ -1037,19 +1039,20 @@ import us.eunoians.mcrpg.combat.CombatType;
 import us.eunoians.mcrpg.combat.log.CombatLogEntry;
 import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
 import us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry;
-import us.eunoians.mcrpg.registry.plugin.McRPGRegistryKey;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -1061,7 +1064,7 @@ import java.util.stream.Collectors;
  */
 public final class CombatLogDAO {
 
-    public static final String TABLE_NAME = "combat_log";
+    public static final String TABLE_NAME = "mcrpg_combat_log";
     private static final int CURRENT_TABLE_VERSION = 1;
 
     private CombatLogDAO() {
@@ -1071,40 +1074,65 @@ public final class CombatLogDAO {
      * Creates the combat log table if it does not exist.
      *
      * @param connection The database connection.
-     * @param database   The database instance for driver-specific SQL.
-     * @return {@code true} if the table was created or already existed.
+     * @param database   The database instance for existence checks.
+     * @return {@code true} if the table was newly created, {@code false} if it already existed.
      */
     public static boolean attemptCreateTable(@NotNull Connection connection, @NotNull Database database) {
-        String sql = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " ("
-                + "id BIGINT AUTO_INCREMENT PRIMARY KEY, "
-                + "player_uuid VARCHAR(36) NOT NULL, "
-                + "timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, "
-                + "world VARCHAR(64) NOT NULL, "
-                + "x DOUBLE NOT NULL, "
-                + "y DOUBLE NOT NULL, "
-                + "z DOUBLE NOT NULL, "
-                + "combat_type VARCHAR(16) NOT NULL, "
-                + "participant_uuids TEXT NOT NULL, "
-                + "punishments_applied VARCHAR(255) NOT NULL"
-                + ")";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+        if (database.tableExists(connection, TABLE_NAME)) {
+            return false;
+        }
+        try (PreparedStatement statement = connection.prepareStatement(
+                "CREATE TABLE `" + TABLE_NAME + "` (" +
+                        "`id` INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                        "`player_uuid` VARCHAR(36) NOT NULL, " +
+                        "`timestamp` BIGINT NOT NULL, " +
+                        "`world` VARCHAR(64) NOT NULL, " +
+                        "`x` DOUBLE NOT NULL, " +
+                        "`y` DOUBLE NOT NULL, " +
+                        "`z` DOUBLE NOT NULL, " +
+                        "`combat_type` VARCHAR(16) NOT NULL, " +
+                        "`participant_uuids` TEXT NOT NULL, " +
+                        "`punishments_applied` TEXT NOT NULL" +
+                        ");")) {
             statement.executeUpdate();
             return true;
         }
         catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.SEVERE,
-                    "Failed to create " + TABLE_NAME + " table", e);
+                    "[CombatLogDAO] Failed to create table " + TABLE_NAME, e);
             return false;
         }
     }
 
     /**
-     * Updates the combat log table schema if needed. No-op for version 1.
+     * Applies any pending schema migrations for this table.
      *
      * @param connection The database connection.
      */
     public static void updateTable(@NotNull Connection connection) {
-        // No updates needed for version 1
+        int lastStoredVersion = TableVersionHistoryDAO.getLatestVersion(connection, TABLE_NAME);
+        if (lastStoredVersion >= CURRENT_TABLE_VERSION) {
+            return;
+        }
+        if (lastStoredVersion == 0) {
+            // idx_combat_log_timestamp serves deleteOlderThan's `WHERE timestamp < ?` retention
+            // sweep — the composite index above can't be used for a range scan that doesn't lead
+            // with player_uuid.
+            String[] indexes = {
+                    "CREATE INDEX IF NOT EXISTS idx_combat_log_player_time ON " + TABLE_NAME + " (player_uuid, timestamp)",
+                    "CREATE INDEX IF NOT EXISTS idx_combat_log_timestamp ON " + TABLE_NAME + " (timestamp)"
+            };
+            for (String sql : indexes) {
+                try (PreparedStatement statement = connection.prepareStatement(sql)) {
+                    statement.executeUpdate();
+                }
+                catch (SQLException e) {
+                    McRPG.getInstance().getLogger().log(Level.SEVERE,
+                            "[CombatLogDAO] Failed to create index during migration", e);
+                }
+            }
+            TableVersionHistoryDAO.setTableVersion(connection, TABLE_NAME, CURRENT_TABLE_VERSION);
+        }
     }
 
     /**
@@ -1118,12 +1146,12 @@ public final class CombatLogDAO {
     @NotNull
     public static List<PreparedStatement> insertCombatLog(@NotNull Connection connection,
                                                           @NotNull CombatLogEntry entry) throws SQLException {
-        String sql = "INSERT INTO " + TABLE_NAME
-                + " (player_uuid, timestamp, world, x, y, z, combat_type, participant_uuids, punishments_applied)"
-                + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        PreparedStatement statement = connection.prepareStatement(sql);
+        PreparedStatement statement = connection.prepareStatement(
+                "INSERT INTO " + TABLE_NAME
+                        + " (player_uuid, timestamp, world, x, y, z, combat_type, participant_uuids, punishments_applied)"
+                        + " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
         statement.setString(1, entry.playerUUID().toString());
-        statement.setTimestamp(2, Timestamp.from(entry.timestamp()));
+        statement.setLong(2, entry.timestamp().toEpochMilli());
         statement.setString(3, entry.world());
         statement.setDouble(4, entry.x());
         statement.setDouble(5, entry.y());
@@ -1161,13 +1189,21 @@ public final class CombatLogDAO {
             statement.setInt(3, (page - 1) * pageSize);
             try (ResultSet rs = statement.executeQuery()) {
                 while (rs.next()) {
-                    entries.add(parseEntry(rs));
+                    // Isolated per row: a single corrupted/unparsable row (bad enum literal, malformed
+                    // UUID) must not blank out the rest of an otherwise-valid page for the admin.
+                    try {
+                        entries.add(parseEntry(rs));
+                    }
+                    catch (RuntimeException e) {
+                        McRPG.getInstance().getLogger().log(Level.WARNING,
+                                "[CombatLogDAO] Skipping unparsable combat log row for " + playerUUID, e);
+                    }
                 }
             }
         }
         catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING,
-                    "Failed to query combat log history for " + playerUUID, e);
+                    "[CombatLogDAO] Failed to query combat log history for " + playerUUID, e);
         }
         return entries;
     }
@@ -1177,23 +1213,46 @@ public final class CombatLogDAO {
      *
      * @param connection The database connection.
      * @param playerUUID The UUID of the player to count.
-     * @return The total entry count.
+     * @return The total entry count, or {@link OptionalInt#empty()} if the query failed — distinct
+     * from an empty result set, which is a genuine count of {@code 0}.
      */
-    public static int getCombatLogCount(@NotNull Connection connection, @NotNull UUID playerUUID) {
+    @NotNull
+    public static OptionalInt getCombatLogCount(@NotNull Connection connection, @NotNull UUID playerUUID) {
         String sql = "SELECT COUNT(*) FROM " + TABLE_NAME + " WHERE player_uuid = ?";
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, playerUUID.toString());
             try (ResultSet rs = statement.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    return OptionalInt.of(rs.getInt(1));
                 }
             }
         }
         catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING,
-                    "Failed to count combat log entries for " + playerUUID, e);
+                    "[CombatLogDAO] Failed to count combat log entries for " + playerUUID, e);
+            return OptionalInt.empty();
         }
-        return 0;
+        return OptionalInt.of(0);
+    }
+
+    /**
+     * Deletes combat log entries older than the given cutoff timestamp.
+     *
+     * @param connection The database connection.
+     * @param cutoff     Entries with a timestamp before this instant are deleted.
+     * @return The number of rows deleted.
+     */
+    public static int deleteOlderThan(@NotNull Connection connection, @NotNull Instant cutoff) {
+        String sql = "DELETE FROM " + TABLE_NAME + " WHERE timestamp < ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setLong(1, cutoff.toEpochMilli());
+            return statement.executeUpdate();
+        }
+        catch (SQLException e) {
+            McRPG.getInstance().getLogger().log(Level.WARNING,
+                    "[CombatLogDAO] Failed to delete expired combat log entries", e);
+            return 0;
+        }
     }
 
     /**
@@ -1219,6 +1278,7 @@ public final class CombatLogDAO {
                 ? Collections.emptyList()
                 : Arrays.stream(punishmentString.split(","))
                         .map(NamespacedKey::fromString)
+                        .filter(Objects::nonNull)
                         .map(punishmentRegistry::get)
                         .filter(Optional::isPresent)
                         .map(Optional::get)
@@ -1227,7 +1287,7 @@ public final class CombatLogDAO {
         return new CombatLogEntry(
                 rs.getLong("id"),
                 UUID.fromString(rs.getString("player_uuid")),
-                rs.getTimestamp("timestamp").toInstant(),
+                Instant.ofEpochMilli(rs.getLong("timestamp")),
                 rs.getString("world"),
                 rs.getDouble("x"),
                 rs.getDouble("y"),
@@ -1236,26 +1296,6 @@ public final class CombatLogDAO {
                 participantUUIDs,
                 punishments
         );
-    }
-
-    /**
-     * Deletes combat log entries older than the given cutoff timestamp.
-     *
-     * @param connection The database connection.
-     * @param cutoff     Entries with a timestamp before this instant are deleted.
-     * @return The number of rows deleted.
-     */
-    public static int deleteOlderThan(@NotNull Connection connection, @NotNull Instant cutoff) {
-        String sql = "DELETE FROM " + TABLE_NAME + " WHERE timestamp < ?";
-        try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setTimestamp(1, Timestamp.from(cutoff));
-            return statement.executeUpdate();
-        }
-        catch (SQLException e) {
-            McRPG.getInstance().getLogger().log(Level.WARNING,
-                    "Failed to delete expired combat log entries", e);
-            return 0;
-        }
     }
 }
 ```
@@ -1999,7 +2039,7 @@ public class CombatLogCommand extends McRPGCommandBase {
                         database.getDatabaseExecutorService().submit(() -> {
                             try (Connection conn = database.getConnection()) {
                                 int totalEntries = CombatLogDAO.getCombatLogCount(conn,
-                                        targetUUID);
+                                        targetUUID).orElse(0);
                                 List<CombatLogEntry> entries =
                                         CombatLogDAO.getCombatLogHistory(conn, targetUUID,
                                                 page, PAGE_SIZE);
@@ -2553,7 +2593,7 @@ Admin runs /mcrpg combatlog PlayerA 2:
           |-> (async) Mojang resolves PlayerA → UUID
           |-> (main thread callback) targetUUID resolved, resolvedName = "PlayerA"
           |-> Submit to database executor:
-              |-> CombatLogDAO.getCombatLogCount(conn, A.uuid) → 15
+              |-> CombatLogDAO.getCombatLogCount(conn, A.uuid) → OptionalInt.of(15)
               |-> CombatLogDAO.getCombatLogHistory(conn, A.uuid, 2, 10) → [entry11, ..., entry15]
               |-> Bukkit.getScheduler().runTask(plugin, () -> sendPaginatedResults(...))
                   |-> Send header: "Combat log history for PlayerA (Page 2/2):"
@@ -2702,6 +2742,7 @@ Admin runs /mcrpg admin reload after changing cleanup-interval-seconds to 3600:
 - `getCombatLogHistory` returns an empty list when page exceeds total pages
 - `getCombatLogCount` returns the correct total for a player with entries
 - `getCombatLogCount` returns `0` for a player with no entries
+- `getCombatLogCount` returns an empty `OptionalInt` when the query fails
 - Multiple entries for the same player are all retrievable
 - Entries for different players do not cross-contaminate
 - `deleteOlderThan` removes entries before the cutoff and keeps entries after
@@ -2858,13 +2899,25 @@ Organized into `@Nested` groups by concern. Requires MockBukkit for event firing
 
 ### D14. Configurable Audit Trail Retention and Cleanup Interval via Cleanup Task
 
-**Decision:** `CombatLogCleanupTask` (a `CancelableCoreTask`) performs an initial cleanup right after construction via `runInitialCleanup()`, then repeats on a configurable interval via `onIntervalComplete()`. It deletes `combat_log` entries older than `combat-log.audit-retention-days` (default 30 days). A value of `0` or negative disables cleanup entirely. The interval itself is `combat-log.cleanup-interval-seconds` (default 86400 — 24 hours), wired up as a `ReloadableTask<CombatLogCleanupTask>` in `McRPGBackgroundTaskRegistrar` alongside the plugin's other periodic tasks.
+**Decision:** `CombatLogCleanupTask` (a `CancelableCoreTask`) performs an initial cleanup right after construction via `runInitialCleanup()`, then repeats on a configurable interval via `onIntervalComplete()`. It deletes `mcrpg_combat_log` entries older than `combat-log.audit-retention-days` (default 30 days). A value of `0` or negative disables cleanup entirely. The interval itself is `combat-log.cleanup-interval-seconds` (default 86400 — 24 hours), wired up as a `ReloadableTask<CombatLogCleanupTask>` in `McRPGBackgroundTaskRegistrar` alongside the plugin's other periodic tasks.
 
-**Why:** The `combat_log` table grows without bound on active servers. Without a cleanup mechanism, server owners must manage table size via manual SQL or external tooling — an unnecessary operational burden. A built-in configurable TTL with a periodic task is the simplest approach: it runs on the database executor (no main thread blocking), and both the retention value (`ReloadableInteger`) and the run interval (`ReloadableTask`) are refreshed on `/mcrpg admin reload`. The 86400-second (24-hour) default is deliberately coarse — audit cleanup is not latency-sensitive, and a daily pass minimizes DB write contention — but exposing the interval costs nothing and covers the unlikely case of a server owner wanting tighter cleanup alongside a very short retention window.
+**Why:** The `mcrpg_combat_log` table grows without bound on active servers. Without a cleanup mechanism, server owners must manage table size via manual SQL or external tooling — an unnecessary operational burden. A built-in configurable TTL with a periodic task is the simplest approach: it runs on the database executor (no main thread blocking), and both the retention value (`ReloadableInteger`) and the run interval (`ReloadableTask`) are refreshed on `/mcrpg admin reload`. The 86400-second (24-hour) default is deliberately coarse — audit cleanup is not latency-sensitive, and a daily pass minimizes DB write contention — but exposing the interval costs nothing and covers the unlikely case of a server owner wanting tighter cleanup alongside a very short retention window.
 
 **Why startup + periodic:** The task's initial delay is always `0`, but `onDelayComplete()` is intentionally a no-op — `runInitialCleanup()` (called explicitly by the `ReloadableTask` construction callback) already covers that first firing, so a server that restarts more often than the configured interval still gets cleanup every time. The periodic schedule (`onIntervalComplete()`) is the fallback for long-running servers that don't restart often enough to rely on the startup pass alone.
 
 **Why reloadable interval, not fixed:** Every other periodic background task in `McRPGBackgroundTaskRegistrar` is a `ReloadableTask<T>`, and there's no correctness reason for this one to be the exception — the config route and `ReloadableTask` wiring are a few lines, and it removes a special case a future maintainer would otherwise have to remember. In practice almost no server will ever change it from the 24-hour default, but offering the option is free.
+
+### D14a. mcrpg_ Table Name Prefix
+
+**Decision:** `CombatLogDAO`'s table is `mcrpg_combat_log`, and `CombatPersistentStateDAO`'s table (introduced in phase 2) is `mcrpg_combat_persistent_state` — both carry the `mcrpg_` prefix used by every other table in the codebase (`mcrpg_skill_data`, `mcrpg_quest_instances`, `mcrpg_board_offering`, etc.).
+
+**Why:** A database audit of the new DAOs flagged that these two combat-tracker tables were the only ones in the entire schema without the prefix — an inconsistency with no corresponding benefit. Neither table had shipped to a deployed database at the time of the fix (the whole combat-tracker feature, phases 1–3, lives only on this feature branch), so renaming was a zero-risk, zero-migration change — a straight constant edit, not a `RENAME TABLE` migration. Had either table already been deployed, the rename would have needed a genuine migration path instead of a one-line fix.
+
+### D14b. getCombatLogCount Returns OptionalInt
+
+**Decision:** `getCombatLogCount` returns `OptionalInt` instead of a bare `int`. It returns `OptionalInt.of(0)` for a player with zero entries, and `OptionalInt.empty()` when the count query itself fails.
+
+**Why:** The previous `int`-returning version had no way to distinguish "this player has no combat log history" from "the database query failed" — both returned `0`. That's a real ambiguity for a caller like `CombatLogCommand`, which uses the count for pagination math; silently treating a failed count as zero could under-report a player's total page count without any signal that something went wrong. `OptionalInt` makes the failure path explicit at the type level. `CombatLogCommand` currently collapses it back to `0` via `.orElse(0)` (its pagination math has no better fallback today), but the DAO no longer forces every caller to conflate the two cases.
 
 ---
 
