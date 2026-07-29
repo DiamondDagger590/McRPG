@@ -5,7 +5,6 @@ import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.item.CustomEntityWrapper;
 import dev.dejvokep.boostedyaml.YamlDocument;
-import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.event.EventHandler;
@@ -58,7 +57,6 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
     void setUp() throws Exception {
         combatConfig = CombatTestSupport.mockCombatConfig(mcRPG, 8.0, 16, 0.5);
         lenient().when(combatConfig.getString(CombatConfigFile.COMBAT_LOG_MODE, "DISABLED")).thenReturn("PLAYERS");
-        lenient().when(combatConfig.getBoolean(any(Route.class))).thenReturn(true);
 
         Connection connection = mock(Connection.class);
         statement = mock(PreparedStatement.class);

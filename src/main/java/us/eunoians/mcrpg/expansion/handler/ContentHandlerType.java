@@ -3,6 +3,8 @@ package us.eunoians.mcrpg.expansion.handler;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.statistic.StatisticRegistry;
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import us.eunoians.mcrpg.combat.condition.CombatCondition;
@@ -11,6 +13,8 @@ import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
 import us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry;
 import us.eunoians.mcrpg.combat.state.CombatStateType;
 import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
+import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack;
@@ -273,14 +277,23 @@ public enum ContentHandlerType {
     }),
     /**
      * This processor handles processing {@link CombatLogPunishmentContentPack}s by registering
-     * each {@link CombatLogPunishmentType} into the {@link CombatLogPunishmentTypeRegistry}.
+     * each {@link CombatLogPunishmentType} into the {@link CombatLogPunishmentTypeRegistry}
+     * and initializing its config-driven enabled state via
+     * {@link CombatLogPunishmentType#initializeEnabledState(dev.dejvokep.boostedyaml.YamlDocument, dev.dejvokep.boostedyaml.route.Route, us.eunoians.mcrpg.McRPG)}.
      */
     COMBAT_LOG_PUNISHMENT_TYPE((mcRPG, mcRPGContent) -> {
         if (mcRPGContent instanceof CombatLogPunishmentContentPack combatLogPunishmentPack) {
             CombatLogPunishmentTypeRegistry punishmentTypeRegistry = mcRPG.registryAccess()
                     .registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE);
+            YamlDocument combatConfig = mcRPG.registryAccess()
+                    .registry(RegistryKey.MANAGER)
+                    .manager(McRPGManagerKey.FILE)
+                    .getFile(FileType.COMBAT_CONFIG);
             for (CombatLogPunishmentType punishmentType : combatLogPunishmentPack.getContent()) {
                 punishmentTypeRegistry.register(punishmentType);
+                Route enabledRoute = Route.fromString(
+                        CombatConfigFile.PUNISHMENT_HEADER + "." + punishmentType.getConfigKey());
+                punishmentType.initializeEnabledState(combatConfig, enabledRoute, mcRPG);
             }
             return true;
         }

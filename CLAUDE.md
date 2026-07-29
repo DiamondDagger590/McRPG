@@ -250,7 +250,7 @@ src/main/java/us/eunoians/mcrpg/
 | Term | Meaning |
 |------|---------|
 | **CombatLogMode** | Enum (`DISABLED`, `PLAYERS`, `MOBS_AND_PLAYERS`) controlling which combat session types trigger combat log detection on logout. `shouldPunish(CombatType)` encapsulates the matching logic so callers never compare mode and type manually. |
-| **CombatLogPunishmentType** | Abstract, `NamespacedKey`-keyed class representing one category of combat-log punishment. Each type owns its own `ReloadableBoolean` enabled state (`isEnabled()` defaults to `true` when uninitialized). Built-ins: `KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`. Declares mutual exclusions via `getExcludes()` — `KILL_ON_LOGOUT` excludes `DROP_ITEMS` since death already drops items. Registered in `CombatLogPunishmentTypeRegistry`; extensible via `CombatLogPunishmentContentPack`. |
+| **CombatLogPunishmentType** | Abstract, `NamespacedKey`-keyed class representing one category of combat-log punishment. Each type owns its own `ReloadableBoolean` enabled state, initialized by the `COMBAT_LOG_PUNISHMENT_TYPE` content handler during expansion registration and self-registered with `ReloadableContentManager` (`isEnabled()` defaults to `true` when uninitialized). Built-ins: `KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`. Declares mutual exclusions via `getExcludes()` — `KILL_ON_LOGOUT` excludes `DROP_ITEMS` since death already drops items. Registered in `CombatLogPunishmentTypeRegistry`; extensible via `CombatLogPunishmentContentPack`. |
 | **CombatLogEnforcer** | Collaborator invoked from `PlayerLeaveListener` before the session ends. Evaluates `CombatLogMode` against the session's `CombatType`, fires `PlayerCombatLogEvent` then `CombatLogPunishmentEvent`, resolves punishment exclusions, applies survivors, and records an audit entry via `CombatLogDAO`. Owns the shared `ReloadableContent<CombatLogMode>` that `OnCombatExitMessageListener` also reads. |
 | **PlayerCombatLogEvent** | Detection event — not `Cancellable` (the logout already happened and can't be undone). Carries a mutable `applyPunishment` boolean (default `true`); setting it `false` exempts the player entirely — no punishment map is even built. |
 | **CombatLogPunishmentEvent** | Policy event fired after `PlayerCombatLogEvent` passes with `applyPunishment` still `true`. Carries a `Map<CombatLogPunishmentType, Boolean>` that listeners can toggle per-type; if every entry ends up disabled, no punishment is applied. Use `PlayerCombatLogEvent` to exempt a player outright instead of disabling every punishment here. |
@@ -556,19 +556,18 @@ Periodic background tasks that need database access are constructed and started 
 
 ```java
 // Combat log audit trail cleanup — interval is reloadable via cleanup-interval-seconds;
-// runInitialCleanup() runs once inside the callback so it fires both at startup and on
-// every reload (harmless — it's just an extra opportunistic cleanup pass).
+// runInitialCleanup() is called once after construction (outside the callback) so it only
+// fires at startup, not on every config reload.
 ReloadableTask<CombatLogCleanupTask> combatLogCleanupTask = new ReloadableTask<>(
         fileManager.getFile(FileType.COMBAT_CONFIG), CombatConfigFile.CLEANUP_INTERVAL_SECONDS,
         (yamlDocument, route) -> {
             double frequency = yamlDocument.getDouble(route);
-            CombatLogCleanupTask task = new CombatLogCleanupTask(plugin, frequency);
-            task.runInitialCleanup();
-            return task;
+            return new CombatLogCleanupTask(plugin, frequency);
         }, true);
+combatLogCleanupTask.getContent().runInitialCleanup();
 ```
 
-`CombatLogCleanupTask` extends McCore's `CancelableCoreTask` (not `DelayableCoreTask`) because it needs a repeating interval, not a single delayed execution. Its constructor always passes an initial delay of `0` and a configurable period; `onDelayComplete()` is intentionally a no-op so that near-immediate first firing doesn't duplicate the cleanup `runInitialCleanup()` already performed in the callback. `onIntervalComplete()` repeats the same cleanup on the configured interval for long-running servers. Retention (`audit-retention-days`) is a separate, independently reloadable `ReloadableInteger` internal to the task — a task's own run frequency and its other config-driven internals don't have to share one reload mechanism.
+`CombatLogCleanupTask` extends McCore's `CancelableCoreTask` (not `DelayableCoreTask`) because it needs a repeating interval, not a single delayed execution. Its constructor always passes an initial delay of `0` and a configurable period; `onDelayComplete()` is intentionally a no-op so that near-immediate first firing doesn't duplicate the one-time `runInitialCleanup()` call. `onIntervalComplete()` repeats the same cleanup on the configured interval for long-running servers. Retention (`audit-retention-days`) is a separate, independently reloadable `ReloadableInteger` internal to the task — a task's own run frequency and its other config-driven internals don't have to share one reload mechanism.
 
 ---
 
@@ -874,7 +873,7 @@ This is a two-event pattern: `PlayerCombatLogEvent` is the **detection** gate (a
 
 ### CombatLogPunishmentType
 
-Abstract class (not an enum) so third parties can subclass it — `NamespacedKey`-keyed, carries a YAML config key, and implements `apply()` directly rather than requiring a switch statement somewhere else. Each type owns its own `ReloadableBoolean` enabled state, initialized by the enforcer via `initializeEnabledState(config, route)` — `isEnabled()` defaults to `true` when uninitialized, so third-party types registered after the enforcer's construction are enabled by default unless they opt into config-driven toggling. Built-ins (`KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`) are anonymous-subclass constants with their behavior inlined. `getExcludes()` defaults to an empty set; override it to declare mutual exclusion with another type by key. Registered in `CombatLogPunishmentTypeRegistry` (`McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE`), populated from `McRPGExpansion.getCombatLogPunishmentContent()` plus any third-party `CombatLogPunishmentContentPack`.
+Abstract class (not an enum) so third parties can subclass it — `NamespacedKey`-keyed, carries a YAML config key, and implements `apply()` directly rather than requiring a switch statement somewhere else. Each type owns its own `ReloadableBoolean` enabled state, initialized by the `COMBAT_LOG_PUNISHMENT_TYPE` content handler via `initializeEnabledState(config, route, mcRPG)` during expansion registration — `isEnabled()` defaults to `true` when uninitialized, so third-party types that don't use config-driven toggling are enabled by default. The `initializeEnabledState` method self-registers the `ReloadableBoolean` with the `ReloadableContentManager`, following the same pattern as `PLAYER_STAT`. Built-ins (`KILL_ON_LOGOUT`, `DROP_ITEMS`, `BROADCAST_MESSAGE`) are anonymous-subclass constants with their behavior inlined. `getExcludes()` defaults to an empty set; override it to declare mutual exclusion with another type by key. Registered in `CombatLogPunishmentTypeRegistry` (`McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE`), populated from `McRPGExpansion.getCombatLogPunishmentContent()` plus any third-party `CombatLogPunishmentContentPack`.
 
 ### Audit Trail
 

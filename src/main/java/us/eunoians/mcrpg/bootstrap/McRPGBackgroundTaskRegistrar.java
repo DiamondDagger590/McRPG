@@ -71,10 +71,9 @@ final class McRPGBackgroundTaskRegistrar implements Registrar<McRPG> {
                 CombatConfigFile.CLEANUP_INTERVAL_SECONDS,
                 (yamlDocument, route) -> {
                     double frequency = yamlDocument.getDouble(route);
-                    CombatLogCleanupTask task = new CombatLogCleanupTask(plugin, frequency);
-                    task.runInitialCleanup();
-                    return task;
+                    return new CombatLogCleanupTask(plugin, frequency);
                 }, true);
+        combatLogCleanupTask.getContent().runInitialCleanup();
         plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT)
                 .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask,
                         questSaveTask, expiredQuestScanTask, rotationTask, combatLogCleanupTask));

@@ -80,10 +80,7 @@ public class CombatLogCommand extends McRPGCommandBase {
                         UUID targetUUID = resolvedProfile.getId();
                         if (targetUUID == null) {
                             Bukkit.getScheduler().runTask(plugin, () -> {
-                                McRPGLocalizationManager lm = plugin.registryAccess()
-                                        .registry(RegistryKey.MANAGER)
-                                        .manager(McRPGManagerKey.LOCALIZATION);
-                                Component notFound = lm.getLocalizedMessageAsComponent(sender,
+                                Component notFound = localizationManager.getLocalizedMessageAsComponent(sender,
                                         LocalizationKey.COMBAT_LOG_PLAYER_NOT_FOUND,
                                         Map.of("player", playerName));
                                 sender.sendMessage(notFound);

@@ -1,12 +1,10 @@
 package us.eunoians.mcrpg.combat.log;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
-import com.diamonddagger590.mccore.configuration.common.ReloadableBoolean;
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
-import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -41,23 +39,23 @@ import java.util.stream.Collectors;
  * configured punishments. Called from {@link us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener}
  * before the session is ended, so the session is still alive and queryable.
  * <p>
- * All configuration reads are cached via {@link ReloadableContent} / {@link ReloadableBoolean}
- * and refreshed automatically when {@code /mcrpg admin reload} calls
+ * All configuration reads are cached via {@link ReloadableContent} and refreshed automatically
+ * when {@code /mcrpg admin reload} calls
  * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager#reloadAllContent()}.
  */
 public class CombatLogEnforcer {
-
-    private static final String PUNISHMENT_ROUTE_PREFIX = "combat-log.punishment.";
 
     private final McRPG mcRPG;
     private final ReloadableContent<CombatLogMode> mode;
 
     /**
      * Constructs a new {@link CombatLogEnforcer}. Initializes the reloadable combat log
-     * mode and walks the {@link CombatLogPunishmentTypeRegistry} to initialize each
-     * registered type's enabled state from the combat configuration. Each type's
-     * {@link ReloadableBoolean} is tracked with the {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}
-     * for automatic refresh on {@code /mcrpg admin reload}.
+     * mode from the combat configuration and tracks it with the
+     * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager} for
+     * automatic refresh on {@code /mcrpg admin reload}. Per-punishment-type enabled states
+     * are initialized separately by the
+     * {@link us.eunoians.mcrpg.expansion.handler.ContentHandlerType#COMBAT_LOG_PUNISHMENT_TYPE}
+     * content handler during expansion registration.
      *
      * @param mcRPG The plugin instance for config access, localization, and database access.
      */
@@ -81,23 +79,9 @@ public class CombatLogEnforcer {
                     }
                 });
 
-        Set<ReloadableContent<?>> reloadables = new HashSet<>();
-        reloadables.add(mode);
-
-        CombatLogPunishmentTypeRegistry punishmentRegistry = mcRPG.registryAccess()
-                .registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE);
-        for (CombatLogPunishmentType type : punishmentRegistry.getRegisteredPunishmentTypes()) {
-            Route enabledRoute = Route.fromString(PUNISHMENT_ROUTE_PREFIX + type.getConfigKey());
-            type.initializeEnabledState(config, enabledRoute);
-            ReloadableBoolean reloadable = type.getEnabledReloadable();
-            if (reloadable != null) {
-                reloadables.add(reloadable);
-            }
-        }
-
         mcRPG.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(ManagerKey.RELOADABLE_CONTENT)
-                .trackReloadableContent(reloadables);
+                .trackReloadableContent(mode);
     }
 
     /**

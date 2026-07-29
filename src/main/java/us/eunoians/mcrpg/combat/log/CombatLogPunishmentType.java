@@ -1,7 +1,9 @@
 package us.eunoians.mcrpg.combat.log;
 
+import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
 import com.diamonddagger590.mccore.configuration.common.ReloadableBoolean;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Location;
@@ -146,14 +148,22 @@ public abstract class CombatLogPunishmentType implements McRPGContent {
     }
 
     /**
-     * Initializes this type's enabled state from the given config document and route.
-     * Called once by the {@link CombatLogEnforcer} after all punishment types are registered.
+     * Initializes this type's enabled state from the given config document and route,
+     * and registers the resulting {@link ReloadableBoolean} with the
+     * {@link ReloadableContentManager} so it refreshes on {@code /mcrpg admin reload}.
+     * Called by the {@link us.eunoians.mcrpg.expansion.handler.ContentHandlerType#COMBAT_LOG_PUNISHMENT_TYPE}
+     * content handler during expansion registration.
      *
      * @param config       The combat config YAML document.
      * @param enabledRoute The route to this type's enabled boolean (e.g. {@code combat-log.punishment.kill-on-logout}).
+     * @param mcRPG        The plugin instance for registry access.
      */
-    public void initializeEnabledState(@NotNull YamlDocument config, @NotNull Route enabledRoute) {
+    public void initializeEnabledState(@NotNull YamlDocument config, @NotNull Route enabledRoute,
+                                       @NotNull McRPG mcRPG) {
         this.enabled = new ReloadableBoolean(config, enabledRoute);
+        mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(ManagerKey.RELOADABLE_CONTENT)
+                .trackReloadableContent(this.enabled);
     }
 
     /**
@@ -165,17 +175,6 @@ public abstract class CombatLogPunishmentType implements McRPGContent {
      */
     public boolean isEnabled() {
         return enabled == null || enabled.getContent();
-    }
-
-    /**
-     * Gets the {@link ReloadableBoolean} backing this type's enabled state, for registration
-     * with {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}.
-     *
-     * @return The reloadable, or {@code null} if {@link #initializeEnabledState} has not been called.
-     */
-    @Nullable
-    public ReloadableBoolean getEnabledReloadable() {
-        return enabled;
     }
 
     /**
