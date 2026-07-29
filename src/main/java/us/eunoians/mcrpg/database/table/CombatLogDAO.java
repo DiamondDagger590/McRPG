@@ -205,24 +205,36 @@ public final class CombatLogDAO {
         return OptionalInt.of(0);
     }
 
+    private static final int DELETE_BATCH_SIZE = 500;
+
     /**
-     * Deletes combat log entries older than the given cutoff timestamp.
+     * Deletes combat log entries older than the given cutoff timestamp in batches
+     * to avoid holding a long-lived lock on the database.
      *
      * @param connection The database connection.
      * @param cutoff     Entries with a timestamp before this instant are deleted.
-     * @return The number of rows deleted.
+     * @return The total number of rows deleted across all batches.
      */
     public static int deleteOlderThan(@NotNull Connection connection, @NotNull Instant cutoff) {
-        String sql = "DELETE FROM " + TABLE_NAME + " WHERE timestamp < ?";
+        String sql = "DELETE FROM " + TABLE_NAME + " WHERE id IN "
+                + "(SELECT id FROM " + TABLE_NAME + " WHERE timestamp < ? LIMIT ?)";
+        int totalDeleted = 0;
         try (PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setLong(1, cutoff.toEpochMilli());
-            return statement.executeUpdate();
+            int deleted;
+            do {
+                statement.setLong(1, cutoff.toEpochMilli());
+                statement.setInt(2, DELETE_BATCH_SIZE);
+                deleted = statement.executeUpdate();
+                totalDeleted += deleted;
+                statement.clearParameters();
+            }
+            while (deleted > 0);
         }
         catch (SQLException e) {
             McRPG.getInstance().getLogger().log(Level.WARNING,
                     "[CombatLogDAO] Failed to delete expired combat log entries", e);
-            return 0;
         }
+        return totalDeleted;
     }
 
     /**
@@ -244,15 +256,30 @@ public final class CombatLogDAO {
         String punishmentString = rs.getString("punishments_applied");
         CombatLogPunishmentTypeRegistry punishmentRegistry = McRPG.getInstance().registryAccess()
                 .registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE);
-        List<CombatLogPunishmentType> punishments = punishmentString.isEmpty()
-                ? Collections.emptyList()
-                : Arrays.stream(punishmentString.split(","))
-                        .map(NamespacedKey::fromString)
-                        .filter(Objects::nonNull)
-                        .map(punishmentRegistry::get)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .toList();
+        List<CombatLogPunishmentType> punishments;
+        if (punishmentString.isEmpty()) {
+            punishments = Collections.emptyList();
+        }
+        else {
+            List<CombatLogPunishmentType> resolved = new ArrayList<>();
+            for (String keyString : punishmentString.split(",")) {
+                NamespacedKey key = NamespacedKey.fromString(keyString);
+                if (key == null) {
+                    McRPG.getInstance().getLogger().warning(
+                            "[CombatLogDAO] Malformed punishment key '" + keyString + "' in audit row, skipping");
+                    continue;
+                }
+                Optional<CombatLogPunishmentType> type = punishmentRegistry.get(key);
+                if (type.isPresent()) {
+                    resolved.add(type.get());
+                }
+                else {
+                    McRPG.getInstance().getLogger().warning(
+                            "[CombatLogDAO] Unregistered punishment key '" + key + "' in audit row, skipping");
+                }
+            }
+            punishments = Collections.unmodifiableList(resolved);
+        }
 
         return new CombatLogEntry(
                 rs.getLong("id"),

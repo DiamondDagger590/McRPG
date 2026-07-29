@@ -23,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -200,19 +201,19 @@ class CombatLogDAOTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("deleteOlderThan binds the cutoff timestamp and returns the deleted row count")
-    void deleteOlderThan_bindsCutoffAndReturnsCount() throws SQLException {
+    @DisplayName("deleteOlderThan sums across batches until a batch returns 0")
+    void deleteOlderThan_sumsAcrossBatches() throws SQLException {
         Connection mockConnection = mock(Connection.class);
         PreparedStatement mockStatement = mock(PreparedStatement.class);
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
-        when(mockStatement.executeUpdate()).thenReturn(5);
+        when(mockStatement.executeUpdate()).thenReturn(500, 200, 0);
 
         Instant cutoff = Instant.now().minus(30, ChronoUnit.DAYS);
         int deleted = CombatLogDAO.deleteOlderThan(mockConnection, cutoff);
 
-        assertEquals(5, deleted);
+        assertEquals(700, deleted);
         verify(mockConnection).prepareStatement(contains("DELETE FROM"));
-        verify(mockStatement).setLong(1, cutoff.toEpochMilli());
+        verify(mockStatement, atLeastOnce()).setLong(1, cutoff.toEpochMilli());
     }
 
     @Test
@@ -226,5 +227,37 @@ class CombatLogDAOTest extends McRPGBaseTest {
         int deleted = CombatLogDAO.deleteOlderThan(mockConnection, Instant.now());
 
         assertEquals(0, deleted);
+    }
+
+    @Test
+    @DisplayName("getCombatLogHistory skips unparsable rows and returns remaining valid entries")
+    void getCombatLogHistory_skipsUnparsableRows() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        ResultSet mockResultSet = mock(ResultSet.class);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+        when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+        when(mockResultSet.next()).thenReturn(true, true, false);
+
+        UUID participantUUID = UUID.randomUUID();
+        long timestampMillis = Instant.now().toEpochMilli();
+
+        when(mockResultSet.getLong("id")).thenReturn(1L, 2L);
+        when(mockResultSet.getString("player_uuid")).thenReturn(PLAYER_UUID.toString(), PLAYER_UUID.toString());
+        when(mockResultSet.getLong("timestamp")).thenReturn(timestampMillis, timestampMillis);
+        when(mockResultSet.getString("world")).thenReturn("world", "world");
+        when(mockResultSet.getDouble("x")).thenReturn(1.0, 1.0);
+        when(mockResultSet.getDouble("y")).thenReturn(2.0, 2.0);
+        when(mockResultSet.getDouble("z")).thenReturn(3.0, 3.0);
+        when(mockResultSet.getString("participant_uuids")).thenReturn(participantUUID.toString(), participantUUID.toString());
+        when(mockResultSet.getString("punishments_applied"))
+                .thenReturn(KillOnLogoutPunishment.KEY.toString(), KillOnLogoutPunishment.KEY.toString());
+        when(mockResultSet.getString("combat_type")).thenReturn("INVALID_ENUM", "PVP");
+
+        List<CombatLogEntry> result = CombatLogDAO.getCombatLogHistory(mockConnection, PLAYER_UUID, 1, 10);
+
+        assertEquals(1, result.size());
+        assertEquals(2L, result.get(0).id());
+        assertEquals(CombatType.PVP, result.get(0).combatType());
     }
 }

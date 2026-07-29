@@ -28,6 +28,9 @@ public class CombatLogPunishmentTypeRegistry implements Registry<CombatLogPunish
      */
     @Override
     public void register(@NotNull CombatLogPunishmentType punishmentType) {
+        if (punishmentTypes.containsKey(punishmentType.getKey())) {
+            throw new IllegalStateException("Duplicate CombatLogPunishmentType key: " + punishmentType.getKey());
+        }
         punishmentTypes.put(punishmentType.getKey(), punishmentType);
     }
 

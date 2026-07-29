@@ -39,7 +39,7 @@ import java.util.Set;
  * combat logging has no consequences.
  * <p>
  * The combat log mode is read from the shared {@link ReloadableContent} owned by
- * {@link us.eunoians.mcrpg.combat.log.CombatLogEnforcer} — both sites use a single
+ * {@link us.eunoians.mcrpg.combat.log.CombatLogManager} — both sites use a single
  * cached parse. The display flag and duration are {@link ReloadableBoolean} /
  * {@link ReloadableInteger} fields owned by this listener.
  */
@@ -56,7 +56,7 @@ public class OnCombatExitMessageListener implements Listener {
      * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}.
      *
      * @param mcRPG The plugin instance for localization and display access.
-     * @param mode  The shared reloadable combat log mode, owned by {@link us.eunoians.mcrpg.combat.log.CombatLogEnforcer}.
+     * @param mode  The shared reloadable combat log mode, owned by {@link us.eunoians.mcrpg.combat.log.CombatLogManager}.
      */
     public OnCombatExitMessageListener(@NotNull McRPG mcRPG,
                                        @NotNull ReloadableContent<CombatLogMode> mode) {

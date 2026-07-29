@@ -107,7 +107,18 @@ public class CombatLogCommand extends McRPGCommandBase {
                                         "Failed to query combat log for " + resolvedName, e);
                             }
                         });
-                    }, Bukkit.getScheduler().getMainThreadExecutor(plugin));
+                    }, Bukkit.getScheduler().getMainThreadExecutor(plugin))
+                    .exceptionally(throwable -> {
+                        plugin.getLogger().log(Level.WARNING,
+                                "Failed to resolve player profile for '" + playerName + "'", throwable);
+                        Bukkit.getScheduler().runTask(plugin, () -> {
+                            Component error = localizationManager.getLocalizedMessageAsComponent(sender,
+                                    LocalizationKey.COMBAT_LOG_PLAYER_NOT_FOUND,
+                                    Map.of("player", playerName));
+                            sender.sendMessage(error);
+                        });
+                        return null;
+                    });
                 }));
     }
 

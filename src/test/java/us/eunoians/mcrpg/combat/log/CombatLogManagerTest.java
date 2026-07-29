@@ -38,6 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -46,12 +47,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@DisplayName("CombatLogEnforcer")
-class CombatLogEnforcerTest extends McRPGBaseTest {
+@DisplayName("CombatLogManager")
+class CombatLogManagerTest extends McRPGBaseTest {
 
     private YamlDocument combatConfig;
     private CombatTrackerManager combatTrackerManager;
-    private CombatLogEnforcer enforcer;
+    private CombatLogManager manager;
     private PreparedStatement statement;
 
     @BeforeEach
@@ -81,7 +82,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
         mcRPG.registryAccess().registry(RegistryKey.MANAGER).register(new ReloadableContentManager(mcRPG));
 
         combatTrackerManager = new CombatTrackerManager(mcRPG);
-        enforcer = new CombatLogEnforcer(mcRPG);
+        manager = new CombatLogManager(mcRPG);
     }
 
     @AfterEach
@@ -110,7 +111,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
         @Test
         @DisplayName("getMode returns the cached mode parsed from configuration")
         void getMode_returnsCachedMode() {
-            assertEquals(CombatLogMode.PLAYERS, enforcer.getMode().getContent());
+            assertEquals(CombatLogMode.PLAYERS, manager.getMode().getContent());
         }
 
         @Test
@@ -118,9 +119,23 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
         void unrecognizedModeString_fallsBackToDisabled() {
             lenient().when(combatConfig.getString(CombatConfigFile.COMBAT_LOG_MODE, "DISABLED")).thenReturn("GARBAGE");
 
-            CombatLogEnforcer garbageEnforcer = new CombatLogEnforcer(mcRPG);
+            CombatLogManager garbageManager = new CombatLogManager(mcRPG);
 
-            assertEquals(CombatLogMode.DISABLED, garbageEnforcer.getMode().getContent());
+            assertEquals(CombatLogMode.DISABLED, garbageManager.getMode().getContent());
+        }
+
+        @Test
+        @DisplayName("getMode updates after reloadAllContent")
+        void getMode_updatesAfterReload() {
+            assertEquals(CombatLogMode.PLAYERS, manager.getMode().getContent());
+
+            when(combatConfig.getString(CombatConfigFile.COMBAT_LOG_MODE, "DISABLED")).thenReturn("MOBS_AND_PLAYERS");
+
+            ReloadableContentManager reloadableContentManager = mcRPG.registryAccess()
+                    .registry(RegistryKey.MANAGER).manager(com.diamonddagger590.mccore.registry.manager.ManagerKey.RELOADABLE_CONTENT);
+            reloadableContentManager.reloadAllContent();
+
+            assertEquals(CombatLogMode.MOBS_AND_PLAYERS, manager.getMode().getContent());
         }
     }
 
@@ -129,13 +144,14 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
     class ModeEvaluation {
 
         @Test
-        @DisplayName("does not fire events when mode is DISABLED")
-        void doesNotFireEvents_whenModeDisabled() {
+        @DisplayName("fires detection event but does not punish when mode is DISABLED")
+        void firesDetectionEvent_doesNotPunish_whenModeDisabled() {
             lenient().when(combatConfig.getString(CombatConfigFile.COMBAT_LOG_MODE, "DISABLED")).thenReturn("DISABLED");
-            CombatLogEnforcer disabledEnforcer = new CombatLogEnforcer(mcRPG);
+            CombatLogManager disabledManager = new CombatLogManager(mcRPG);
 
             PlayerMock player = server.addPlayer();
             CombatSession session = pvpSession(player);
+            player.setHealth(20.0);
 
             List<PlayerCombatLogEvent> captured = new ArrayList<>();
             Bukkit.getPluginManager().registerEvents(new Listener() {
@@ -145,16 +161,18 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
-            disabledEnforcer.evaluateAndEnforce(player, session);
+            disabledManager.evaluateAndEnforce(player, session);
 
-            assertTrue(captured.isEmpty());
+            assertEquals(1, captured.size());
+            assertEquals(20.0, player.getHealth());
         }
 
         @Test
-        @DisplayName("does not fire events when mode is PLAYERS and session type is PVE")
-        void doesNotFireEvents_whenPlayersModeAndPve() {
+        @DisplayName("fires detection event but does not punish when mode is PLAYERS and session type is PVE")
+        void firesDetectionEvent_doesNotPunish_whenPlayersModeAndPve() {
             PlayerMock player = server.addPlayer();
             CombatSession session = pveSession(player);
+            player.setHealth(20.0);
 
             List<PlayerCombatLogEvent> captured = new ArrayList<>();
             Bukkit.getPluginManager().registerEvents(new Listener() {
@@ -164,9 +182,10 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
-            enforcer.evaluateAndEnforce(player, session);
+            manager.evaluateAndEnforce(player, session);
 
-            assertTrue(captured.isEmpty());
+            assertEquals(1, captured.size());
+            assertEquals(20.0, player.getHealth());
         }
 
         @Test
@@ -183,7 +202,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
-            enforcer.evaluateAndEnforce(player, session);
+            manager.evaluateAndEnforce(player, session);
 
             assertEquals(1, captured.size());
         }
@@ -192,7 +211,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
         @DisplayName("fires events when mode is MOBS_AND_PLAYERS and session type is PVE")
         void firesEvents_whenMobsAndPlayersModeAndPve() {
             lenient().when(combatConfig.getString(CombatConfigFile.COMBAT_LOG_MODE, "DISABLED")).thenReturn("MOBS_AND_PLAYERS");
-            CombatLogEnforcer mobsEnforcer = new CombatLogEnforcer(mcRPG);
+            CombatLogManager mobsManager = new CombatLogManager(mcRPG);
 
             PlayerMock player = server.addPlayer();
             CombatSession session = pveSession(player);
@@ -205,9 +224,29 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
-            mobsEnforcer.evaluateAndEnforce(player, session);
+            mobsManager.evaluateAndEnforce(player, session);
 
             assertEquals(1, captured.size());
+        }
+    }
+
+    @Nested
+    @DisplayName("Thread safety")
+    class ThreadSafety {
+
+        @Test
+        @DisplayName("evaluateAndEnforce throws when called off the main thread")
+        void evaluateAndEnforce_throwsOffMainThread() throws Exception {
+            PlayerMock player = server.addPlayer();
+            CombatSession session = pvpSession(player);
+
+            Thread offThread = new Thread(() -> {
+                IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                        () -> manager.evaluateAndEnforce(player, session));
+                assertTrue(thrown.getMessage().contains("main server thread"));
+            });
+            offThread.start();
+            offThread.join(5000);
         }
     }
 
@@ -229,7 +268,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
-            enforcer.evaluateAndEnforce(player, session);
+            manager.evaluateAndEnforce(player, session);
 
             assertEquals(1, captured.size());
             PlayerCombatLogEvent event = captured.get(0);
@@ -253,7 +292,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
-            enforcer.evaluateAndEnforce(player, session);
+            manager.evaluateAndEnforce(player, session);
 
             assertEquals(20.0, player.getHealth());
         }
@@ -277,7 +316,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
-            enforcer.evaluateAndEnforce(player, session);
+            manager.evaluateAndEnforce(player, session);
 
             assertEquals(1, captured.size());
             assertTrue(captured.get(0).isPunishmentEnabled(
@@ -307,7 +346,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
-            enforcer.evaluateAndEnforce(player, session);
+            manager.evaluateAndEnforce(player, session);
 
             assertEquals(20.0, player.getHealth());
         }
@@ -319,9 +358,54 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
             CombatSession session = pvpSession(player);
             player.setHealth(20.0);
 
-            enforcer.evaluateAndEnforce(player, session);
+            manager.evaluateAndEnforce(player, session);
 
             assertEquals(0.0, player.getHealth());
+        }
+
+        @Test
+        @DisplayName("a failing punishment type does not prevent other types from applying")
+        void failingPunishment_doesNotBlockOthers() {
+            PlayerMock player = server.addPlayer();
+            CombatSession session = pvpSession(player);
+
+            boolean[] secondApplied = {false};
+            CombatLogPunishmentType failingType = new CombatLogPunishmentType(
+                    new NamespacedKey("thirdparty", "failing_type"), "failing", null) {
+                @Override
+                public boolean isEnabled() {
+                    return true;
+                }
+
+                @Override
+                public void apply(org.bukkit.entity.Player p, CombatSession s, us.eunoians.mcrpg.McRPG plugin) {
+                    throw new RuntimeException("intentional test failure");
+                }
+            };
+            CombatLogPunishmentType survivingType = new CombatLogPunishmentType(
+                    new NamespacedKey("thirdparty", "surviving_type"), "surviving", null) {
+                @Override
+                public boolean isEnabled() {
+                    return true;
+                }
+
+                @Override
+                public void apply(org.bukkit.entity.Player p, CombatSession s, us.eunoians.mcrpg.McRPG plugin) {
+                    secondApplied[0] = true;
+                }
+            };
+
+            Bukkit.getPluginManager().registerEvents(new Listener() {
+                @EventHandler
+                public void onPunishment(CombatLogPunishmentEvent event) {
+                    event.setPunishmentEnabled(failingType, true);
+                    event.setPunishmentEnabled(survivingType, true);
+                }
+            }, mcRPG);
+
+            manager.evaluateAndEnforce(player, session);
+
+            assertTrue(secondApplied[0], "The surviving type should still apply after the first type threw");
         }
 
         @Test
@@ -371,7 +455,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
-            enforcer.evaluateAndEnforce(player, session);
+            manager.evaluateAndEnforce(player, session);
 
             assertTrue(excludingApplied[0], "The excluding type should still be applied");
             assertFalse(excludedApplied[0], "The excluded type must not be applied when its excluder is enabled");
@@ -383,7 +467,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
             PlayerMock player = server.addPlayer();
             CombatSession session = pvpSession(player);
 
-            enforcer.evaluateAndEnforce(player, session);
+            manager.evaluateAndEnforce(player, session);
 
             verify(statement).setString(1, player.getUniqueId().toString());
             verify(statement).executeUpdate();
@@ -421,7 +505,7 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
                 }
             }, mcRPG);
 
-            enforcer.evaluateAndEnforce(player, session);
+            manager.evaluateAndEnforce(player, session);
 
             assertTrue(applied[0]);
         }

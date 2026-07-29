@@ -13,6 +13,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
+import us.eunoians.mcrpg.combat.log.CombatLogManager;
 import us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry;
 import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
@@ -101,6 +102,7 @@ public class McRPGBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new CombatStateTypeRegistry());
         registryAccess.register(new CombatLogPunishmentTypeRegistry());
         registryAccess.registry(RegistryKey.MANAGER).register(new CombatTrackerManager(mcRPG));
+        registryAccess.registry(RegistryKey.MANAGER).register(new CombatLogManager(mcRPG));
         new McRPGExpansionRegistrar().register(bootstrapContext);
         registryAccess.registry(RegistryKey.MANAGER).manager(McRPGManagerKey.QUEST).loadQuestDefinitions();
         registryAccess.registry(RegistryKey.MANAGER).register(new GlowingManager(mcRPG));

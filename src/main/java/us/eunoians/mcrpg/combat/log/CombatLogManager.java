@@ -3,6 +3,7 @@ package us.eunoians.mcrpg.combat.log;
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.Manager;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
@@ -37,22 +38,25 @@ import java.util.stream.Collectors;
  * Evaluates whether a player's logout qualifies as a combat log and applies the
  * configured punishments. The session must still be alive and queryable when
  * this is invoked — it is called before the session is ended.
+ * <p>
+ * Registered as a {@link Manager} in the {@link com.diamonddagger590.mccore.registry.manager.ManagerRegistry}
+ * under {@link McRPGManagerKey#COMBAT_LOG} so that listeners and other collaborators
+ * can retrieve it from the registry rather than requiring constructor injection.
  */
-public class CombatLogEnforcer {
+public class CombatLogManager extends Manager<McRPG> {
 
-    private final McRPG mcRPG;
     private final ReloadableContent<CombatLogMode> mode;
 
     /**
-     * Constructs a new {@link CombatLogEnforcer}. Initializes the reloadable combat log
+     * Constructs a new {@link CombatLogManager}. Initializes the reloadable combat log
      * mode from the combat configuration and tracks it with the
      * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager} for
      * automatic refresh on {@code /mcrpg admin reload}.
      *
      * @param mcRPG The plugin instance for config access, localization, and database access.
      */
-    public CombatLogEnforcer(@NotNull McRPG mcRPG) {
-        this.mcRPG = mcRPG;
+    public CombatLogManager(@NotNull McRPG mcRPG) {
+        super(mcRPG);
 
         YamlDocument config = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
@@ -91,6 +95,11 @@ public class CombatLogEnforcer {
      * a combat log, and if so, fires the detection and punishment events, applies
      * surviving punishments, and records an audit trail entry.
      * <p>
+     * The {@link PlayerCombatLogEvent} is always fired regardless of the current
+     * {@link CombatLogMode}, so third-party listeners can observe every
+     * logout-during-combat. Punishment is gated on both the mode policy and the
+     * event's {@code shouldApplyPunishment()} flag.
+     * <p>
      * Must be called on the main thread while the session is still active (before
      * {@code endSession}).
      *
@@ -106,16 +115,12 @@ public class CombatLogEnforcer {
 
         CombatLogMode currentMode = mode.getContent();
         CombatType combatType = session.getCombatType();
-
-        if (!currentMode.shouldPunish(combatType)) {
-            return;
-        }
-
         Collection<CombatParticipant> participants = session.getParticipants();
 
         PlayerCombatLogEvent logEvent = new PlayerCombatLogEvent(player, session, combatType, participants);
         Bukkit.getPluginManager().callEvent(logEvent);
-        if (!logEvent.shouldApplyPunishment()) {
+
+        if (!currentMode.shouldPunish(combatType) || !logEvent.shouldApplyPunishment()) {
             return;
         }
 
@@ -141,7 +146,7 @@ public class CombatLogEnforcer {
      */
     @NotNull
     private Map<CombatLogPunishmentType, Boolean> buildPunishmentMap() {
-        CombatLogPunishmentTypeRegistry punishmentRegistry = mcRPG.registryAccess()
+        CombatLogPunishmentTypeRegistry punishmentRegistry = plugin().registryAccess()
                 .registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE);
         Map<CombatLogPunishmentType, Boolean> map = new LinkedHashMap<>();
         for (CombatLogPunishmentType type : punishmentRegistry.getRegisteredPunishmentTypes()) {
@@ -154,6 +159,8 @@ public class CombatLogEnforcer {
      * Resolves mutual exclusions and applies surviving punishments. For each
      * enabled type (in insertion order), any types in its {@code getExcludes()}
      * set are disabled. Then each remaining enabled type's {@code apply()} is called.
+     * Each type is isolated — a failure in one type does not prevent subsequent types
+     * from running.
      *
      * @param player          The player being punished.
      * @param session         The player's active combat session.
@@ -170,7 +177,14 @@ public class CombatLogEnforcer {
 
         for (CombatLogPunishmentType type : enabled) {
             if (!excluded.contains(type.getKey())) {
-                type.apply(player, session, mcRPG);
+                try {
+                    type.apply(player, session, plugin());
+                }
+                catch (Exception e) {
+                    plugin().getLogger().log(Level.WARNING,
+                            "[CombatLogManager] Punishment type " + type.getKey()
+                                    + " threw during apply for " + player.getName(), e);
+                }
             }
         }
     }
@@ -196,7 +210,7 @@ public class CombatLogEnforcer {
         CombatLogEntry entry = new CombatLogEntry(
                 0,
                 player.getUniqueId(),
-                mcRPG.getTimeProvider().now(),
+                plugin().getTimeProvider().now(),
                 loc.getWorld().getName(),
                 loc.getX(), loc.getY(), loc.getZ(),
                 combatType,
@@ -204,7 +218,7 @@ public class CombatLogEnforcer {
                 appliedPunishments
         );
 
-        var database = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+        var database = plugin().registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {
             try (Connection conn = database.getConnection()) {
@@ -213,7 +227,7 @@ public class CombatLogEnforcer {
                 transaction.executeTransaction();
             }
             catch (Exception e) {
-                mcRPG.getLogger().log(Level.WARNING,
+                plugin().getLogger().log(Level.WARNING,
                         "Failed to record combat log entry for " + player.getName(), e);
             }
         });

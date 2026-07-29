@@ -251,7 +251,7 @@ src/main/java/us/eunoians/mcrpg/
 |------|---------|
 | **CombatLogMode** | Enum (`DISABLED`, `PLAYERS`, `MOBS_AND_PLAYERS`) controlling which combat session types trigger combat log detection on logout. `shouldPunish(CombatType)` encapsulates the matching logic so callers never compare mode and type manually. |
 | **CombatLogPunishmentType** | Abstract, `NamespacedKey`-keyed class representing one category of combat-log punishment. Each concrete type manages its own enabled state internally (e.g. via `ReloadableBoolean`) and self-registers any reloadable content with `ReloadableContentManager`. `isEnabled()` is abstract — concrete types define how they track their enabled state. Built-ins: `KillOnLogoutPunishment`, `DropItemsPunishment`, `BroadcastMessagePunishment`. Declares mutual exclusions via `getExcludes()` — `KillOnLogoutPunishment` excludes `DropItemsPunishment` since death already drops items. Registered in `CombatLogPunishmentTypeRegistry`; extensible via `CombatLogPunishmentContentPack`. |
-| **CombatLogEnforcer** | Collaborator invoked from `PlayerLeaveListener` before the session ends. Evaluates `CombatLogMode` against the session's `CombatType`, fires `PlayerCombatLogEvent` then `CombatLogPunishmentEvent`, resolves punishment exclusions, applies survivors, and records an audit entry via `CombatLogDAO`. Owns the shared `ReloadableContent<CombatLogMode>` that `OnCombatExitMessageListener` also reads. |
+| **CombatLogManager** | Manager (extends `Manager<McRPG>`) invoked from `PlayerLeaveListener` before the session ends. Evaluates `CombatLogMode` against the session's `CombatType`, fires `PlayerCombatLogEvent` then `CombatLogPunishmentEvent`, resolves punishment exclusions, applies survivors, and records an audit entry via `CombatLogDAO`. Owns the shared `ReloadableContent<CombatLogMode>` that `OnCombatExitMessageListener` also reads. Registered under `McRPGManagerKey.COMBAT_LOG`. |
 | **PlayerCombatLogEvent** | Detection event — not `Cancellable` (the logout already happened and can't be undone). Carries a mutable `applyPunishment` boolean (default `true`); setting it `false` exempts the player entirely — no punishment map is even built. |
 | **CombatLogPunishmentEvent** | Policy event fired after `PlayerCombatLogEvent` passes with `applyPunishment` still `true`. Carries a `Map<CombatLogPunishmentType, Boolean>` that listeners can toggle per-type; if every entry ends up disabled, no punishment is applied. Use `PlayerCombatLogEvent` to exempt a player outright instead of disabling every punishment here. |
 | **CombatLogEntry** | Immutable record for one audit trail row: player, timestamp, location, `CombatType`, participant UUIDs, and applied punishment types. `id` is `0` for entries not yet inserted (auto-increment assigns it). |
@@ -861,7 +861,7 @@ Combat logging is the first built-in policy consumer of the combat session engin
 
 ### Detection and Punishment Flow
 
-1. `PlayerLeaveListener` calls `CombatLogEnforcer.evaluateAndEnforce(player, session)` **before** the session is ended, so the session is still queryable.
+1. `PlayerLeaveListener` calls `CombatLogManager.evaluateAndEnforce(player, session)` **before** the session is ended, so the session is still queryable.
 2. `CombatLogMode.shouldPunish(CombatType)` gates the whole flow: `DISABLED` never punishes, `PLAYERS` only punishes `CombatType.PVP` sessions, `MOBS_AND_PLAYERS` punishes any active session.
 3. `PlayerCombatLogEvent` fires first. It is not `Cancellable` — the player already disconnected, so there's no action to cancel. Instead a listener calls `setApplyPunishment(false)` to exempt the player entirely; if `shouldApplyPunishment()` is false afterward, no punishment map is built and nothing is recorded.
 4. Otherwise, the enforcer iterates the `CombatLogPunishmentTypeRegistry` and builds a `Map<CombatLogPunishmentType, Boolean>` by calling `isEnabled()` on each registered type, then fires `CombatLogPunishmentEvent` (also not cancellable — individual entries are toggled instead).
@@ -890,7 +890,7 @@ Registered under `McRPGPlaceHolderType.COMBAT`:
 
 ### Exit Message
 
-`OnCombatExitMessageListener` listens for `CombatSessionEndEvent` and sends a brief action-bar message (via `CenterContentPriority.COMBAT_EXIT_FEEDBACK`) telling the player it's safe to log out — but only when the session ended naturally (not `LOGOUT`, `DEATH`, or `PLUGIN`) **and** the server's combat log mode would have punished a logout during that session. It shares the same cached `ReloadableContent<CombatLogMode>` instance that `CombatLogEnforcer` owns, so both sites parse the mode exactly once per reload.
+`OnCombatExitMessageListener` listens for `CombatSessionEndEvent` and sends a brief action-bar message (via `CenterContentPriority.COMBAT_EXIT_FEEDBACK`) telling the player it's safe to log out — but only when the session ended naturally (not `LOGOUT`, `DEATH`, or `PLUGIN`) **and** the server's combat log mode would have punished a logout during that session. It shares the same cached `ReloadableContent<CombatLogMode>` instance that `CombatLogManager` owns, so both sites parse the mode exactly once per reload.
 
 ### Admin Command
 

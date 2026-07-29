@@ -11,7 +11,7 @@ import us.eunoians.mcrpg.combat.CombatSession;
 import us.eunoians.mcrpg.combat.CombatSessionEndReason;
 import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import us.eunoians.mcrpg.combat.ParticipantRemovalReason;
-import us.eunoians.mcrpg.combat.log.CombatLogEnforcer;
+import us.eunoians.mcrpg.combat.log.CombatLogManager;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.quest.QuestManager;
@@ -28,16 +28,16 @@ import java.util.UUID;
  */
 public class PlayerLeaveListener implements Listener {
 
-    private final CombatLogEnforcer combatLogEnforcer;
+    private final CombatLogManager combatLogManager;
 
     /**
      * Constructs a new {@link PlayerLeaveListener}.
      *
-     * @param combatLogEnforcer The {@link CombatLogEnforcer} used to evaluate and apply combat
+     * @param combatLogManager The {@link CombatLogManager} used to evaluate and apply combat
      *                          log punishment before the player's combat session is torn down.
      */
-    public PlayerLeaveListener(@NotNull CombatLogEnforcer combatLogEnforcer) {
-        this.combatLogEnforcer = combatLogEnforcer;
+    public PlayerLeaveListener(@NotNull CombatLogManager combatLogManager) {
+        this.combatLogManager = combatLogManager;
     }
 
     @EventHandler
@@ -51,7 +51,7 @@ public class PlayerLeaveListener implements Listener {
         // Combat log detection — must run while the session is still alive so the enforcer
         // can evaluate combat type and participant roster.
         Optional<CombatSession> session = combatTrackerManager.getSession(playerUUID);
-        session.ifPresent(combatSession -> combatLogEnforcer.evaluateAndEnforce(player, combatSession));
+        session.ifPresent(combatSession -> combatLogManager.evaluateAndEnforce(player, combatSession));
 
         // Combat teardown — must run while McRPGPlayer is still loaded so the
         // cumulative stat update chain (OnCombatSessionEndStatUpdateListener)

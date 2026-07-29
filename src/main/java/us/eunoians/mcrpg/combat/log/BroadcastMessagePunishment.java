@@ -18,6 +18,8 @@ import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
+import net.kyori.adventure.text.minimessage.MiniMessage;
+
 import java.util.Map;
 
 /**
@@ -72,9 +74,11 @@ public class BroadcastMessagePunishment extends CombatLogPunishmentType {
         var localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
         Location loc = player.getLocation();
+        String safeName = MiniMessage.miniMessage().escapeTags(player.getName());
+        String safeWorld = MiniMessage.miniMessage().escapeTags(loc.getWorld().getName());
         localizationManager.broadcastMessage(LocalizationKey.COMBAT_LOG_BROADCAST, Map.of(
-                "player", player.getName(),
-                "world", loc.getWorld().getName(),
+                "player", safeName,
+                "world", safeWorld,
                 "x", String.valueOf((int) loc.getX()),
                 "y", String.valueOf((int) loc.getY()),
                 "z", String.valueOf((int) loc.getZ())

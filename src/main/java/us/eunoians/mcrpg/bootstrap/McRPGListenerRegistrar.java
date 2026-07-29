@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.combat.CombatTrackerManager;
-import us.eunoians.mcrpg.combat.log.CombatLogEnforcer;
+import us.eunoians.mcrpg.combat.log.CombatLogManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
 import us.eunoians.mcrpg.display.hud.ActionBarHudTask;
@@ -111,12 +111,13 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         CombatTrackerManager combatTrackerManager = plugin.registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_TRACKER);
-        CombatLogEnforcer combatLogEnforcer = new CombatLogEnforcer(plugin);
+        CombatLogManager combatLogManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_LOG);
 
         // Player load/save
         if (context.startupProfile() == StartupProfile.PROD) {
             Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(combatTrackerManager), plugin);
-            Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(combatLogEnforcer), plugin);
+            Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(combatLogManager), plugin);
             Bukkit.getPluginManager().registerEvents(new CorePlayerLoadListener(), plugin);
             Bukkit.getPluginManager().registerEvents(new CorePlayerUnloadListener(), plugin);
         }
@@ -238,6 +239,6 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new OnCombatSessionEndStatUpdateListener(plugin), plugin);
 
         Bukkit.getPluginManager().registerEvents(
-                new OnCombatExitMessageListener(plugin, combatLogEnforcer.getMode()), plugin);
+                new OnCombatExitMessageListener(plugin, combatLogManager.getMode()), plugin);
     }
 }
