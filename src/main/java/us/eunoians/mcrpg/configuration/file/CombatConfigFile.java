@@ -33,13 +33,7 @@ public final class CombatConfigFile extends ConfigFile {
     public static final Route COMBAT_LOG_MODE =
             Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "mode"));
 
-    private static final String PUNISHMENT_HEADER = toRoutePath(COMBAT_LOG_HEADER, "punishment");
-    public static final Route PUNISHMENT_KILL_ON_LOGOUT =
-            Route.fromString(toRoutePath(PUNISHMENT_HEADER, "kill-on-logout"));
-    public static final Route PUNISHMENT_DROP_ITEMS =
-            Route.fromString(toRoutePath(PUNISHMENT_HEADER, "drop-items"));
-    public static final Route PUNISHMENT_BROADCAST_MESSAGE =
-            Route.fromString(toRoutePath(PUNISHMENT_HEADER, "broadcast-message"));
+    public static final String PUNISHMENT_HEADER = toRoutePath(COMBAT_LOG_HEADER, "punishment");
 
     // Audit Retention
     public static final Route AUDIT_RETENTION_DAYS =

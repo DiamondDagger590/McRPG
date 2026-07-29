@@ -4,6 +4,8 @@ import com.diamonddagger590.mccore.registry.Registry;
 import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -38,6 +40,16 @@ public class CombatLogPunishmentTypeRegistry implements Registry<CombatLogPunish
     @NotNull
     public Optional<CombatLogPunishmentType> get(@NotNull NamespacedKey key) {
         return Optional.ofNullable(punishmentTypes.get(key));
+    }
+
+    /**
+     * Returns all registered punishment types in registration order.
+     *
+     * @return An unmodifiable collection of all registered {@link CombatLogPunishmentType}s.
+     */
+    @NotNull
+    public Collection<CombatLogPunishmentType> getRegisteredPunishmentTypes() {
+        return Collections.unmodifiableCollection(punishmentTypes.values());
     }
 
     /**

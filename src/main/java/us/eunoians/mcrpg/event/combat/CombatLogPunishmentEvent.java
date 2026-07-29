@@ -15,14 +15,14 @@ import java.util.Map;
 
 /**
  * Fired after {@link PlayerCombatLogEvent} passes (not cancelled). Carries the
- * punishment map — each registered punishment type is individually togglable by
- * listeners. Third-party plugins can register custom punishment types via
- * {@link us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack} and
- * add entries to this map in a listener at {@code EventPriority.NORMAL} — the
- * enforcer reads the final map at {@code MONITOR}.
+ * punishment map — every type registered in
+ * {@link us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry} is
+ * automatically included with its current {@link us.eunoians.mcrpg.combat.log.CombatLogPunishmentType#isEnabled()}
+ * state. Listeners can toggle individual entries; the enforcer reads the final
+ * map after all listeners have run.
  * <p>
- * This event is not globally cancellable. To exempt a player entirely, cancel
- * {@link PlayerCombatLogEvent} instead.
+ * This event is not globally cancellable. To exempt a player entirely, set
+ * {@link PlayerCombatLogEvent#setApplyPunishment(boolean)} to {@code false} instead.
  */
 public class CombatLogPunishmentEvent extends Event {
 

@@ -5,6 +5,8 @@ import com.diamonddagger590.mccore.configuration.common.ReloadableBoolean;
 import com.diamonddagger590.mccore.database.transaction.BatchTransaction;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
+import dev.dejvokep.boostedyaml.YamlDocument;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
@@ -19,6 +21,7 @@ import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
 import us.eunoians.mcrpg.database.table.CombatLogDAO;
 import us.eunoians.mcrpg.event.combat.CombatLogPunishmentEvent;
 import us.eunoians.mcrpg.event.combat.PlayerCombatLogEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
@@ -44,22 +47,24 @@ import java.util.stream.Collectors;
  */
 public class CombatLogEnforcer {
 
+    private static final String PUNISHMENT_ROUTE_PREFIX = "combat-log.punishment.";
+
     private final McRPG mcRPG;
     private final ReloadableContent<CombatLogMode> mode;
-    private final ReloadableBoolean killOnLogout;
-    private final ReloadableBoolean dropItems;
-    private final ReloadableBoolean broadcastMessage;
 
     /**
-     * Constructs a new {@link CombatLogEnforcer}. Initializes reloadable config
-     * fields and registers them with the {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}.
+     * Constructs a new {@link CombatLogEnforcer}. Initializes the reloadable combat log
+     * mode and walks the {@link CombatLogPunishmentTypeRegistry} to initialize each
+     * registered type's enabled state from the combat configuration. Each type's
+     * {@link ReloadableBoolean} is tracked with the {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}
+     * for automatic refresh on {@code /mcrpg admin reload}.
      *
      * @param mcRPG The plugin instance for config access, localization, and database access.
      */
     public CombatLogEnforcer(@NotNull McRPG mcRPG) {
         this.mcRPG = mcRPG;
 
-        var config = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+        YamlDocument config = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.FILE)
                 .getFile(FileType.COMBAT_CONFIG);
 
@@ -75,13 +80,24 @@ public class CombatLogEnforcer {
                         return CombatLogMode.DISABLED;
                     }
                 });
-        this.killOnLogout = new ReloadableBoolean(config, CombatConfigFile.PUNISHMENT_KILL_ON_LOGOUT);
-        this.dropItems = new ReloadableBoolean(config, CombatConfigFile.PUNISHMENT_DROP_ITEMS);
-        this.broadcastMessage = new ReloadableBoolean(config, CombatConfigFile.PUNISHMENT_BROADCAST_MESSAGE);
+
+        Set<ReloadableContent<?>> reloadables = new HashSet<>();
+        reloadables.add(mode);
+
+        CombatLogPunishmentTypeRegistry punishmentRegistry = mcRPG.registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE);
+        for (CombatLogPunishmentType type : punishmentRegistry.getRegisteredPunishmentTypes()) {
+            Route enabledRoute = Route.fromString(PUNISHMENT_ROUTE_PREFIX + type.getConfigKey());
+            type.initializeEnabledState(config, enabledRoute);
+            ReloadableBoolean reloadable = type.getEnabledReloadable();
+            if (reloadable != null) {
+                reloadables.add(reloadable);
+            }
+        }
 
         mcRPG.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(ManagerKey.RELOADABLE_CONTENT)
-                .trackReloadableContent(Set.of(mode, killOnLogout, dropItems, broadcastMessage));
+                .trackReloadableContent(reloadables);
     }
 
     /**
@@ -138,16 +154,19 @@ public class CombatLogEnforcer {
     }
 
     /**
-     * Builds the initial punishment map from cached reloadable config fields.
+     * Builds the initial punishment map by querying each registered
+     * {@link CombatLogPunishmentType} for its enabled state.
      *
-     * @return A map of punishment types to their configured enabled state.
+     * @return A map of punishment types to their current enabled state.
      */
     @NotNull
     private Map<CombatLogPunishmentType, Boolean> buildPunishmentMap() {
+        CombatLogPunishmentTypeRegistry punishmentRegistry = mcRPG.registryAccess()
+                .registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE);
         Map<CombatLogPunishmentType, Boolean> map = new LinkedHashMap<>();
-        map.put(CombatLogPunishmentType.KILL_ON_LOGOUT, killOnLogout.getContent());
-        map.put(CombatLogPunishmentType.DROP_ITEMS, dropItems.getContent());
-        map.put(CombatLogPunishmentType.BROADCAST_MESSAGE, broadcastMessage.getContent());
+        for (CombatLogPunishmentType type : punishmentRegistry.getRegisteredPunishmentTypes()) {
+            map.put(type, type.isEnabled());
+        }
         return map;
     }
 

@@ -67,10 +67,6 @@ final class McRPGBackgroundTaskRegistrar implements Registrar<McRPG> {
                     String tz = yamlDocument.getString(BoardConfigFile.ROTATION_TIMEZONE);
                     return new QuestBoardRotationTask(plugin, frequency, frequency, time, tz);
                 }, true);
-        // Combat log audit trail cleanup — runInitialCleanup() covers servers that restart
-        // frequently; onIntervalComplete() repeats on cleanup-interval-seconds for long-running
-        // servers. Reconstructed (and re-run once) whenever the interval is reloaded, same as
-        // every other ReloadableTask here.
         ReloadableTask<CombatLogCleanupTask> combatLogCleanupTask = new ReloadableTask<>(fileManager.getFile(FileType.COMBAT_CONFIG),
                 CombatConfigFile.CLEANUP_INTERVAL_SECONDS,
                 (yamlDocument, route) -> {
