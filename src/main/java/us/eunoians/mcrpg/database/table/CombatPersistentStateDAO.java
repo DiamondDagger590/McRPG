@@ -25,7 +25,7 @@ import java.util.logging.Level;
  */
 public final class CombatPersistentStateDAO {
 
-    public static final String TABLE_NAME = "combat_persistent_state";
+    public static final String TABLE_NAME = "mcrpg_combat_persistent_state";
     private static final int CURRENT_TABLE_VERSION = 1;
 
     private CombatPersistentStateDAO() { }

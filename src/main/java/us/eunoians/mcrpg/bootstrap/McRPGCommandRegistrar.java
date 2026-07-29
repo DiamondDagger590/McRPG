@@ -27,6 +27,7 @@ import us.eunoians.mcrpg.command.admin.board.BoardAdminRewardsCommand;
 import us.eunoians.mcrpg.command.admin.board.BoardAdminRotateCommand;
 import us.eunoians.mcrpg.command.admin.board.BoardAdminScopedCommand;
 import us.eunoians.mcrpg.command.ability.AbilityGuiCommand;
+import us.eunoians.mcrpg.command.admin.CombatLogCommand;
 import us.eunoians.mcrpg.command.admin.DebugCommand;
 import us.eunoians.mcrpg.command.admin.ReloadPluginCommand;
 import us.eunoians.mcrpg.command.loadout.LoadoutCopyCommand;
@@ -94,6 +95,9 @@ final class McRPGCommandRegistrar implements Registrar<McRPG> {
 
         // Debug Command
         DebugCommand.registerCommand();
+
+        // Combat log command
+        CombatLogCommand.registerCommand();
 
         // Quest Commands
         QuestStartCommand.registerCommand();

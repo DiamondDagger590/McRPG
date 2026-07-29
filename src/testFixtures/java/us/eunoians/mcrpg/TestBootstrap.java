@@ -7,6 +7,7 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.util.TimeProvider;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
 import dev.dejvokep.boostedyaml.route.Route;
+import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.gui.McRPGGuiManager;
@@ -29,6 +30,10 @@ import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
+import us.eunoians.mcrpg.combat.log.BroadcastMessagePunishment;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry;
+import us.eunoians.mcrpg.combat.log.DropItemsPunishment;
+import us.eunoians.mcrpg.combat.log.KillOnLogoutPunishment;
 import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
 import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 
@@ -93,6 +98,11 @@ public class TestBootstrap extends CoreBootstrap<McRPG> {
         registryAccess.register(new PlayerStatRegistry());
         registryAccess.register(new CombatConditionRegistry());
         registryAccess.register(new CombatStateTypeRegistry());
+        CombatLogPunishmentTypeRegistry combatLogPunishmentTypeRegistry = new CombatLogPunishmentTypeRegistry();
+        combatLogPunishmentTypeRegistry.register(new KillOnLogoutPunishment((NamespacedKey) null));
+        combatLogPunishmentTypeRegistry.register(new DropItemsPunishment((NamespacedKey) null));
+        combatLogPunishmentTypeRegistry.register(new BroadcastMessagePunishment((NamespacedKey) null));
+        registryAccess.register(combatLogPunishmentTypeRegistry);
     }
 
     /**

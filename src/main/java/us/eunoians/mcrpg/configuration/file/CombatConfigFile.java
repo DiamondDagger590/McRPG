@@ -27,4 +27,28 @@ public final class CombatConfigFile extends ConfigFile {
     private static final String PER_SESSION_STATISTICS_HEADER = "per-session-statistics";
     public static final Route FEED_TO_CUMULATIVE =
             Route.fromString(toRoutePath(PER_SESSION_STATISTICS_HEADER, "feed-to-cumulative"));
+
+    // Combat Log
+    private static final String COMBAT_LOG_HEADER = "combat-log";
+    public static final Route COMBAT_LOG_MODE =
+            Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "mode"));
+
+    public static final String PUNISHMENT_HEADER = toRoutePath(COMBAT_LOG_HEADER, "punishment");
+
+    // Audit Retention
+    public static final Route AUDIT_RETENTION_DAYS =
+            Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "audit-retention-days"));
+    public static final Route CLEANUP_INTERVAL_SECONDS =
+            Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "cleanup-interval-seconds"));
+
+    // Admin command output
+    public static final Route COMBAT_LOG_HISTORY_TIMESTAMP_FORMAT =
+            Route.fromString(toRoutePath(COMBAT_LOG_HEADER, "history-timestamp-format"));
+
+    // Display
+    private static final String DISPLAY_HEADER = "display";
+    public static final Route DISPLAY_SHOW_COMBAT_EXIT_MESSAGE =
+            Route.fromString(toRoutePath(DISPLAY_HEADER, "show-combat-exit-message"));
+    public static final Route DISPLAY_EXIT_MESSAGE_DURATION_TICKS =
+            Route.fromString(toRoutePath(DISPLAY_HEADER, "exit-message-duration-ticks"));
 }

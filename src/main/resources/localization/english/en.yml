@@ -48,3 +48,12 @@ experience:
     # The message to send to display as the boss bar's name when sent to a player.
     # Valid placeholders are <skill>, <level>, <current-experience>, <required-experience-to-level-up> and <remaining-experience-to-level-up>
     boss-bar-display-message: "<skill> <body>Lv. <primary><level> <body>- Remaining Exp <primary><remaining-experience-to-level-up>"
+# Configure combat log and display messages
+combat:
+  combat-log:
+    # The message broadcast to every online player and the console when a player combat logs.
+    # Valid placeholders are <player>, <world>, <x>, <y> and <z>
+    broadcast: "<warning><player> <body>combat logged at <primary><world> <x>, <y>, <z>"
+  # The action bar message shown when a player's combat session ends naturally (timeout or all
+  # participants gone) and the server's combat log mode would have punished a logout.
+  exit-message: "<positive>You are no longer in combat."

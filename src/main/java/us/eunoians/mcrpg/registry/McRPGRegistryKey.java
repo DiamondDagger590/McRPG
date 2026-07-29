@@ -4,6 +4,7 @@ import com.diamonddagger590.mccore.registry.Registry;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry;
 import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
@@ -95,4 +96,9 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
      * state is re-attached at session start or cleared at session end — see that event's Javadoc.
      */
     RegistryKey<CombatStateTypeRegistry> COMBAT_STATE_TYPE = create(CombatStateTypeRegistry.class);
+    /**
+     * Retrieves the {@link CombatLogPunishmentTypeRegistry}, holding every registered
+     * {@link us.eunoians.mcrpg.combat.log.CombatLogPunishmentType}.
+     */
+    RegistryKey<CombatLogPunishmentTypeRegistry> COMBAT_LOG_PUNISHMENT_TYPE = create(CombatLogPunishmentTypeRegistry.class);
 }

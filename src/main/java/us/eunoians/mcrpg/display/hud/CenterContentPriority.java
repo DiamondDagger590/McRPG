@@ -23,6 +23,13 @@ package us.eunoians.mcrpg.display.hud;
 public final class CenterContentPriority {
 
     /**
+     * Combat exit notification — the lowest-priority center content. Shown when combat
+     * ends naturally and the server's combat log mode would have punished a logout.
+     * Overridden by any other center content.
+     */
+    public static final int COMBAT_EXIT_FEEDBACK = 5;
+
+    /**
      * Low-importance ambient feedback such as XP gain text. Always suppressed
      * while any higher-priority slot is populated.
      */

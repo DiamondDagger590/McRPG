@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.combat.CombatTrackerManager;
+import us.eunoians.mcrpg.combat.log.CombatLogManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
 import us.eunoians.mcrpg.display.hud.ActionBarHudTask;
@@ -28,6 +29,7 @@ import us.eunoians.mcrpg.listener.combat.OnCombatDamageListener;
 import us.eunoians.mcrpg.listener.combat.OnCombatDamageStatListener;
 import us.eunoians.mcrpg.listener.combat.OnCombatEntityDeathListener;
 import us.eunoians.mcrpg.listener.combat.OnCombatEntityRemoveListener;
+import us.eunoians.mcrpg.listener.combat.OnCombatExitMessageListener;
 import us.eunoians.mcrpg.listener.combat.OnCombatHealingStatListener;
 import us.eunoians.mcrpg.listener.combat.OnCombatSessionEndStatUpdateListener;
 import us.eunoians.mcrpg.listener.combat.OnProjectileLaunchListener;
@@ -109,11 +111,13 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         CombatTrackerManager combatTrackerManager = plugin.registryAccess()
                 .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_TRACKER);
+        CombatLogManager combatLogManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_LOG);
 
         // Player load/save
         if (context.startupProfile() == StartupProfile.PROD) {
             Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(combatTrackerManager), plugin);
-            Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(combatTrackerManager), plugin);
+            Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(combatLogManager), plugin);
             Bukkit.getPluginManager().registerEvents(new CorePlayerLoadListener(), plugin);
             Bukkit.getPluginManager().registerEvents(new CorePlayerUnloadListener(), plugin);
         }
@@ -233,5 +237,8 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
         Bukkit.getPluginManager().registerEvents(new OnCombatDamageStatListener(combatTrackerManager, combatDamageResolver), plugin);
         Bukkit.getPluginManager().registerEvents(new OnCombatHealingStatListener(combatTrackerManager), plugin);
         Bukkit.getPluginManager().registerEvents(new OnCombatSessionEndStatUpdateListener(plugin), plugin);
+
+        Bukkit.getPluginManager().registerEvents(
+                new OnCombatExitMessageListener(plugin, combatLogManager.getMode()), plugin);
     }
 }

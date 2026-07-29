@@ -37,3 +37,64 @@ per-session-statistics:
   # CombatSessionEndEvent but are not persisted cumulatively.
   # Reload: applies immediately — the next session end respects the new value.
   feed-to-cumulative: true
+
+# Combat Log Configuration
+# Controls what happens when a player logs out during an active combat session.
+
+combat-log:
+  # Detection mode — determines which combat types trigger punishment on logout.
+  #   DISABLED          — no combat log detection or punishment
+  #   PLAYERS           — only punish if the session includes at least one player participant (PvP)
+  #   MOBS_AND_PLAYERS  — punish for any active combat session regardless of participant types
+  # Reload: cached via ReloadableContent — refreshed automatically on /mcrpg admin reload.
+  mode: PLAYERS
+
+  # Built-in punishments applied when combat logging is detected.
+  # Each punishment can be independently enabled or disabled.
+  # Third-party plugins can modify these at runtime via CombatLogPunishmentEvent.
+  punishment:
+    # Kill the player on logout. Triggers normal death mechanics (item drops, XP loss).
+    # Mutually excludes drop-items — death already handles item drops.
+    kill-on-logout: true
+
+    # Drop the player's inventory at their logout location.
+    # Automatically excluded when kill-on-logout is enabled (death handles drops).
+    drop-items: true
+
+    # Broadcast a server-wide message announcing the combat log.
+    broadcast-message: true
+
+  # Number of days to retain combat log audit trail entries.
+  # A cleanup task runs periodically (see cleanup-interval-seconds) and deletes entries
+  # older than this. Set to 0 to disable automatic cleanup (entries are kept forever).
+  # Reload: cached via ReloadableInteger — refreshed on /mcrpg admin reload.
+  audit-retention-days: 30
+
+  # Seconds between combat log audit trail cleanup passes. Default is 86400 (24 hours) —
+  # there's rarely a reason to run this more often, but the interval is exposed for servers
+  # with unusual retention needs (e.g. a very short audit-retention-days).
+  # Reload: cached via ReloadableTask — the task is cancelled and restarted with the new
+  # interval on /mcrpg admin reload.
+  cleanup-interval-seconds: 86400
+
+  # java.time.format.DateTimeFormatter pattern used to render timestamps in
+  # /mcrpg combatlog output. Rendered in the server's local time zone. Falls back to
+  # the default pattern shown here (with a warning) if the configured pattern is invalid.
+  # Reload: read fresh on every command invocation — no restart or /mcrpg admin reload needed.
+  history-timestamp-format: "yyyy-MM-dd HH:mm:ss"
+
+# Display Configuration
+# Controls combat-related display elements shown to players.
+
+display:
+  # Whether to send a brief "no longer in combat" action bar message when a player's
+  # combat session ends naturally. Only sent when the combat-log mode would have
+  # punished a logout during that session — no noise on servers where combat logging
+  # has no consequences.
+  # Reload: cached via ReloadableBoolean — refreshed on /mcrpg admin reload.
+  show-combat-exit-message: true
+
+  # How long (in ticks) the "no longer in combat" action bar message is displayed.
+  # 20 ticks = 1 second. Default 60 = 3 seconds.
+  # Reload: cached via ReloadableInteger — refreshed on /mcrpg admin reload.
+  exit-message-duration-ticks: 60

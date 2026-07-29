@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.listener.combat;
 
+import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.statistic.PlayerStatisticData;
 import dev.dejvokep.boostedyaml.YamlDocument;
 import org.bukkit.Bukkit;
@@ -54,7 +56,9 @@ class OnCombatSessionEndStatUpdateListenerTest extends McRPGBaseTest {
         combatConfig = mock(YamlDocument.class);
         when(mcRPG.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.FILE)
                 .getFile(FileType.COMBAT_CONFIG)).thenReturn(combatConfig);
-        when(combatConfig.getBoolean(CombatConfigFile.FEED_TO_CUMULATIVE, true)).thenReturn(true);
+        when(combatConfig.getBoolean(CombatConfigFile.FEED_TO_CUMULATIVE)).thenReturn(true);
+
+        mcRPG.registryAccess().registry(RegistryKey.MANAGER).register(new ReloadableContentManager(mcRPG));
 
         listener = new OnCombatSessionEndStatUpdateListener(mcRPG);
     }
@@ -96,7 +100,10 @@ class OnCombatSessionEndStatUpdateListenerTest extends McRPGBaseTest {
     @Test
     @DisplayName("does not apply when feed-to-cumulative config is false")
     void doesNotApply_whenConfigDisabled() {
-        when(combatConfig.getBoolean(CombatConfigFile.FEED_TO_CUMULATIVE, true)).thenReturn(false);
+        when(combatConfig.getBoolean(CombatConfigFile.FEED_TO_CUMULATIVE)).thenReturn(false);
+        mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(ManagerKey.RELOADABLE_CONTENT)
+                .reloadAllContent();
         UUID uuid = UUID.randomUUID();
         mockLoadedPlayer(uuid);
 

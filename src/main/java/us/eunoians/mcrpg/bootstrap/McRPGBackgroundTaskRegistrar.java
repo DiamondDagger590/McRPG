@@ -8,8 +8,10 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
+import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
+import us.eunoians.mcrpg.task.combat.CombatLogCleanupTask;
 import us.eunoians.mcrpg.task.experience.RestedExperienceAccumulationTask;
 import us.eunoians.mcrpg.task.player.McRPGPlayerSafeZoneCheckTask;
 import us.eunoians.mcrpg.task.player.McRPGPlayerSaveTask;
@@ -65,7 +67,15 @@ final class McRPGBackgroundTaskRegistrar implements Registrar<McRPG> {
                     String tz = yamlDocument.getString(BoardConfigFile.ROTATION_TIMEZONE);
                     return new QuestBoardRotationTask(plugin, frequency, frequency, time, tz);
                 }, true);
+        ReloadableTask<CombatLogCleanupTask> combatLogCleanupTask = new ReloadableTask<>(fileManager.getFile(FileType.COMBAT_CONFIG),
+                CombatConfigFile.CLEANUP_INTERVAL_SECONDS,
+                (yamlDocument, route) -> {
+                    double frequency = yamlDocument.getDouble(route);
+                    return new CombatLogCleanupTask(plugin, frequency);
+                }, true);
+        combatLogCleanupTask.getContent().runInitialCleanup();
         plugin.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.RELOADABLE_CONTENT)
-                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask, questSaveTask, expiredQuestScanTask, rotationTask));
+                .trackReloadableContent(Set.of(saveTask, restedExperienceAccumulationTask, safeZoneCheckTask,
+                        questSaveTask, expiredQuestScanTask, rotationTask, combatLogCleanupTask));
     }
 }

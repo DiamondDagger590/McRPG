@@ -1,6 +1,8 @@
 package us.eunoians.mcrpg.listener.combat;
 
+import com.diamonddagger590.mccore.configuration.common.ReloadableBoolean;
 import com.diamonddagger590.mccore.registry.RegistryKey;
+import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -34,6 +36,7 @@ import java.util.UUID;
 public class OnCombatSessionEndStatUpdateListener implements Listener {
 
     private final McRPG mcRPG;
+    private final ReloadableBoolean feedToCumulative;
 
     /**
      * Constructs a new {@link OnCombatSessionEndStatUpdateListener}.
@@ -42,6 +45,12 @@ public class OnCombatSessionEndStatUpdateListener implements Listener {
      */
     public OnCombatSessionEndStatUpdateListener(@NotNull McRPG mcRPG) {
         this.mcRPG = mcRPG;
+        var config = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBAT_CONFIG);
+        this.feedToCumulative = new ReloadableBoolean(config, CombatConfigFile.FEED_TO_CUMULATIVE);
+        mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+                .manager(ManagerKey.RELOADABLE_CONTENT)
+                .trackReloadableContent(feedToCumulative);
     }
 
     /**
@@ -53,10 +62,7 @@ public class OnCombatSessionEndStatUpdateListener implements Listener {
      */
     @EventHandler(priority = EventPriority.MONITOR)
     public void onCombatSessionEnd(@NotNull CombatSessionEndEvent event) {
-        boolean feedToCumulative = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(McRPGManagerKey.FILE).getFile(FileType.COMBAT_CONFIG)
-                .getBoolean(CombatConfigFile.FEED_TO_CUMULATIVE, true);
-        if (!feedToCumulative) {
+        if (!feedToCumulative.getContent()) {
             return;
         }
 

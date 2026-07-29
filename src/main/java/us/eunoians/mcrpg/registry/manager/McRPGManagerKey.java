@@ -5,6 +5,7 @@ import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
 import us.eunoians.mcrpg.combat.CombatTrackerManager;
+import us.eunoians.mcrpg.combat.log.CombatLogManager;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.display.DisplayManager;
@@ -56,4 +57,10 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
      * registry and then call {@link CombatTrackerManager#startConditionTask} so it is polled.
      */
     ManagerKey<CombatTrackerManager> COMBAT_TRACKER = create(CombatTrackerManager.class);
+    /**
+     * Retrieves the {@link CombatLogManager}, which evaluates combat log detection, applies
+     * punishments, and owns the shared {@link com.diamonddagger590.mccore.configuration.ReloadableContent}
+     * for the combat log mode.
+     */
+    ManagerKey<CombatLogManager> COMBAT_LOG = create(CombatLogManager.class);
 }
