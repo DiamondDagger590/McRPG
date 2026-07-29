@@ -1,25 +1,13 @@
 package us.eunoians.mcrpg.combat.log;
 
-import com.diamonddagger590.mccore.configuration.ReloadableContentManager;
-import com.diamonddagger590.mccore.configuration.common.ReloadableBoolean;
-import com.diamonddagger590.mccore.registry.RegistryKey;
-import com.diamonddagger590.mccore.registry.manager.ManagerKey;
-import dev.dejvokep.boostedyaml.YamlDocument;
-import dev.dejvokep.boostedyaml.route.Route;
-import org.bukkit.Location;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.combat.CombatSession;
-import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
-import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
-import us.eunoians.mcrpg.util.McRPGMethods;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,88 +17,15 @@ import java.util.Set;
  * mutually exclusive types via {@link #getExcludes()}, and implements its
  * punishment behavior in {@link #apply(Player, CombatSession, McRPG)}.
  * <p>
- * Built-in types are defined as static constants with inlined behavior.
  * Third-party plugins subclass this and register via
  * {@link us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack}.
- * <p>
- * Implements {@link McRPGContent} for {@code ContentPack} registration — required by the
- * {@code McRPGContentPack<T extends McRPGContent>} bound that {@code CombatLogPunishmentContentPack}
- * is built on. A {@code null} expansion key is valid for punishment types not tied to a specific
- * expansion.
  */
 public abstract class CombatLogPunishmentType implements McRPGContent {
-
-    /**
-     * Kill the player on logout. Sets health to zero, triggering normal death
-     * mechanics (item drops, XP loss, death message). Excludes {@link #DROP_ITEMS}
-     * because death already handles item drops.
-     */
-    public static final CombatLogPunishmentType KILL_ON_LOGOUT = new CombatLogPunishmentType(
-            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "kill_on_logout"), "kill-on-logout", null) {
-
-        @Override
-        @NotNull
-        public Set<NamespacedKey> getExcludes() {
-            return Set.of(DROP_ITEMS.getKey());
-        }
-
-        @Override
-        public void apply(@NotNull Player player, @NotNull CombatSession session,
-                          @NotNull McRPG mcRPG) {
-            player.setHealth(0);
-        }
-    };
-
-    /**
-     * Drop the player's inventory at their logout location. Mutually excluded
-     * by {@link #KILL_ON_LOGOUT} — death already drops items.
-     */
-    public static final CombatLogPunishmentType DROP_ITEMS = new CombatLogPunishmentType(
-            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "drop_items"), "drop-items", null) {
-
-        @Override
-        public void apply(@NotNull Player player, @NotNull CombatSession session,
-                          @NotNull McRPG mcRPG) {
-            Location location = player.getLocation();
-            for (ItemStack item : player.getInventory().getContents()) {
-                if (item != null && !item.getType().isAir()) {
-                    location.getWorld().dropItemNaturally(location, item);
-                }
-            }
-            player.getInventory().clear();
-        }
-    };
-
-    /**
-     * Announce the combat log to every online player and the console. Delegates to the
-     * {@code McRPGLocalizationManager}'s {@code broadcastMessage(Route, Map)} so each recipient's
-     * message is resolved against their own locale chain.
-     */
-    public static final CombatLogPunishmentType BROADCAST_MESSAGE = new CombatLogPunishmentType(
-            new NamespacedKey(McRPGMethods.getMcRPGNamespace(), "broadcast_message"), "broadcast-message", null) {
-
-        @Override
-        public void apply(@NotNull Player player, @NotNull CombatSession session,
-                          @NotNull McRPG mcRPG) {
-            var localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
-                    .manager(McRPGManagerKey.LOCALIZATION);
-            Location loc = player.getLocation();
-            localizationManager.broadcastMessage(LocalizationKey.COMBAT_LOG_BROADCAST, Map.of(
-                    "player", player.getName(),
-                    "world", loc.getWorld().getName(),
-                    "x", String.valueOf((int) loc.getX()),
-                    "y", String.valueOf((int) loc.getY()),
-                    "z", String.valueOf((int) loc.getZ())
-            ));
-        }
-    };
 
     private final NamespacedKey key;
     private final String configKey;
     @Nullable
     private final NamespacedKey expansionKey;
-    @Nullable
-    private ReloadableBoolean enabled;
 
     /**
      * Constructs a new {@link CombatLogPunishmentType}.
@@ -148,34 +63,11 @@ public abstract class CombatLogPunishmentType implements McRPGContent {
     }
 
     /**
-     * Initializes this type's enabled state from the given config document and route,
-     * and registers the resulting {@link ReloadableBoolean} with the
-     * {@link ReloadableContentManager} so it refreshes on {@code /mcrpg admin reload}.
-     * Called by the {@link us.eunoians.mcrpg.expansion.handler.ContentHandlerType#COMBAT_LOG_PUNISHMENT_TYPE}
-     * content handler during expansion registration.
-     *
-     * @param config       The combat config YAML document.
-     * @param enabledRoute The route to this type's enabled boolean (e.g. {@code combat-log.punishment.kill-on-logout}).
-     * @param mcRPG        The plugin instance for registry access.
-     */
-    public void initializeEnabledState(@NotNull YamlDocument config, @NotNull Route enabledRoute,
-                                       @NotNull McRPG mcRPG) {
-        this.enabled = new ReloadableBoolean(config, enabledRoute);
-        mcRPG.registryAccess().registry(RegistryKey.MANAGER)
-                .manager(ManagerKey.RELOADABLE_CONTENT)
-                .trackReloadableContent(this.enabled);
-    }
-
-    /**
-     * Returns whether this punishment type is currently enabled. If
-     * {@link #initializeEnabledState} has not been called (e.g. a third-party type
-     * that does not use config-driven toggling), defaults to {@code true}.
+     * Returns whether this punishment type is currently enabled.
      *
      * @return {@code true} if this type is enabled.
      */
-    public boolean isEnabled() {
-        return enabled == null || enabled.getContent();
-    }
+    public abstract boolean isEnabled();
 
     /**
      * Gets the set of punishment type keys that are mutually exclusive with this

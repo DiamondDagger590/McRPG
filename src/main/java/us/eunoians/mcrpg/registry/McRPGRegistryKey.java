@@ -99,11 +99,6 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
     /**
      * Retrieves the {@link CombatLogPunishmentTypeRegistry}, holding every registered
      * {@link us.eunoians.mcrpg.combat.log.CombatLogPunishmentType}.
-     * <p>
-     * Built-in types ({@code KILL_ON_LOGOUT}, {@code DROP_ITEMS}, {@code BROADCAST_MESSAGE}) are
-     * registered during {@code McRPGExpansion} content pack processing. Third-party plugins
-     * register additional types via
-     * {@link us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack}.
      */
     RegistryKey<CombatLogPunishmentTypeRegistry> COMBAT_LOG_PUNISHMENT_TYPE = create(CombatLogPunishmentTypeRegistry.class);
 }

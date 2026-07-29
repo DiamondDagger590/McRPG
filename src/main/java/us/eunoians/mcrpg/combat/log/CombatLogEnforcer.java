@@ -23,7 +23,6 @@ import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -36,12 +35,8 @@ import java.util.stream.Collectors;
 
 /**
  * Evaluates whether a player's logout qualifies as a combat log and applies the
- * configured punishments. Called from {@link us.eunoians.mcrpg.listener.entity.player.PlayerLeaveListener}
- * before the session is ended, so the session is still alive and queryable.
- * <p>
- * All configuration reads are cached via {@link ReloadableContent} and refreshed automatically
- * when {@code /mcrpg admin reload} calls
- * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager#reloadAllContent()}.
+ * configured punishments. The session must still be alive and queryable when
+ * this is invoked — it is called before the session is ended.
  */
 public class CombatLogEnforcer {
 
@@ -52,10 +47,7 @@ public class CombatLogEnforcer {
      * Constructs a new {@link CombatLogEnforcer}. Initializes the reloadable combat log
      * mode from the combat configuration and tracks it with the
      * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager} for
-     * automatic refresh on {@code /mcrpg admin reload}. Per-punishment-type enabled states
-     * are initialized separately by the
-     * {@link us.eunoians.mcrpg.expansion.handler.ContentHandlerType#COMBAT_LOG_PUNISHMENT_TYPE}
-     * content handler during expansion registration.
+     * automatic refresh on {@code /mcrpg admin reload}.
      *
      * @param mcRPG The plugin instance for config access, localization, and database access.
      */
@@ -85,9 +77,7 @@ public class CombatLogEnforcer {
     }
 
     /**
-     * Gets the shared {@link ReloadableContent} for the combat log mode. Exposed so
-     * that {@link us.eunoians.mcrpg.listener.combat.OnCombatExitMessageListener}
-     * can read the same cached mode without duplicating the parse logic.
+     * Gets the shared {@link ReloadableContent} for the combat log mode.
      *
      * @return The reloadable combat log mode.
      */
@@ -106,8 +96,14 @@ public class CombatLogEnforcer {
      *
      * @param player  The player who is logging out.
      * @param session The player's active combat session.
+     * @throws IllegalStateException if called from any thread other than the main server thread.
      */
     public void evaluateAndEnforce(@NotNull Player player, @NotNull CombatSession session) {
+        if (!Bukkit.isPrimaryThread()) {
+            throw new IllegalStateException("evaluateAndEnforce must be called from the main server thread, "
+                    + "but was called from thread: " + Thread.currentThread().getName());
+        }
+
         CombatLogMode currentMode = mode.getContent();
         CombatType combatType = session.getCombatType();
 
@@ -200,7 +196,7 @@ public class CombatLogEnforcer {
         CombatLogEntry entry = new CombatLogEntry(
                 0,
                 player.getUniqueId(),
-                Instant.now(),
+                mcRPG.getTimeProvider().now(),
                 loc.getWorld().getName(),
                 loc.getX(), loc.getY(), loc.getZ(),
                 combatType,

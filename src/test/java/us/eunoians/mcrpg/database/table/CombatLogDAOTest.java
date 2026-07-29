@@ -1,12 +1,13 @@
 package us.eunoians.mcrpg.database.table;
 
 import com.diamonddagger590.mccore.database.Database;
+import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.combat.CombatType;
 import us.eunoians.mcrpg.combat.log.CombatLogEntry;
-import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
+import us.eunoians.mcrpg.combat.log.KillOnLogoutPunishment;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -37,7 +38,7 @@ class CombatLogDAOTest extends McRPGBaseTest {
 
     private CombatLogEntry entry(long id, Instant timestamp) {
         return new CombatLogEntry(id, PLAYER_UUID, timestamp, "world", 1.0, 2.0, 3.0,
-                CombatType.PVP, List.of(UUID.randomUUID()), List.of(CombatLogPunishmentType.KILL_ON_LOGOUT));
+                CombatType.PVP, List.of(UUID.randomUUID()), List.of(new KillOnLogoutPunishment((NamespacedKey) null)));
     }
 
     @Test
@@ -125,7 +126,7 @@ class CombatLogDAOTest extends McRPGBaseTest {
         when(mockResultSet.getString("combat_type")).thenReturn("PVP");
         when(mockResultSet.getString("participant_uuids")).thenReturn(participantUUID.toString());
         when(mockResultSet.getString("punishments_applied"))
-                .thenReturn(CombatLogPunishmentType.KILL_ON_LOGOUT.getKey().toString());
+                .thenReturn(KillOnLogoutPunishment.KEY.toString());
 
         List<CombatLogEntry> result = CombatLogDAO.getCombatLogHistory(mockConnection, PLAYER_UUID, 1, 10);
 
@@ -135,7 +136,7 @@ class CombatLogDAOTest extends McRPGBaseTest {
         assertEquals(PLAYER_UUID, parsed.playerUUID());
         assertEquals(CombatType.PVP, parsed.combatType());
         assertEquals(List.of(participantUUID), parsed.participantUUIDs());
-        assertEquals(List.of(CombatLogPunishmentType.KILL_ON_LOGOUT), parsed.punishmentsApplied());
+        assertEquals(List.of(new KillOnLogoutPunishment((NamespacedKey) null)), parsed.punishmentsApplied());
     }
 
     @Test

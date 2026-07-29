@@ -13,19 +13,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CombatLogPunishmentTypeRegistryTest {
 
     private CombatLogPunishmentTypeRegistry registry;
+    private KillOnLogoutPunishment killOnLogout;
+    private DropItemsPunishment dropItems;
+    private BroadcastMessagePunishment broadcastMessage;
 
     @BeforeEach
     void setUp() {
         registry = new CombatLogPunishmentTypeRegistry();
+        killOnLogout = new KillOnLogoutPunishment((NamespacedKey) null);
+        dropItems = new DropItemsPunishment((NamespacedKey) null);
+        broadcastMessage = new BroadcastMessagePunishment((NamespacedKey) null);
     }
 
     @Test
     @DisplayName("register then get returns the same type")
     void register_getReturnsType() {
-        registry.register(CombatLogPunishmentType.KILL_ON_LOGOUT);
+        registry.register(killOnLogout);
 
-        assertSame(CombatLogPunishmentType.KILL_ON_LOGOUT,
-                registry.get(CombatLogPunishmentType.KILL_ON_LOGOUT.getKey()).orElse(null));
+        assertSame(killOnLogout,
+                registry.get(KillOnLogoutPunishment.KEY).orElse(null));
     }
 
     @Test
@@ -37,25 +43,25 @@ class CombatLogPunishmentTypeRegistryTest {
     @Test
     @DisplayName("multiple types with distinct keys coexist")
     void multipleTypes_coexist() {
-        registry.register(CombatLogPunishmentType.KILL_ON_LOGOUT);
-        registry.register(CombatLogPunishmentType.DROP_ITEMS);
-        registry.register(CombatLogPunishmentType.BROADCAST_MESSAGE);
+        registry.register(killOnLogout);
+        registry.register(dropItems);
+        registry.register(broadcastMessage);
 
-        assertSame(CombatLogPunishmentType.KILL_ON_LOGOUT,
-                registry.get(CombatLogPunishmentType.KILL_ON_LOGOUT.getKey()).orElse(null));
-        assertSame(CombatLogPunishmentType.DROP_ITEMS,
-                registry.get(CombatLogPunishmentType.DROP_ITEMS.getKey()).orElse(null));
-        assertSame(CombatLogPunishmentType.BROADCAST_MESSAGE,
-                registry.get(CombatLogPunishmentType.BROADCAST_MESSAGE.getKey()).orElse(null));
+        assertSame(killOnLogout,
+                registry.get(KillOnLogoutPunishment.KEY).orElse(null));
+        assertSame(dropItems,
+                registry.get(DropItemsPunishment.KEY).orElse(null));
+        assertSame(broadcastMessage,
+                registry.get(BroadcastMessagePunishment.KEY).orElse(null));
     }
 
     @Test
     @DisplayName("registered reflects registration state by key")
     void registered_reflectsRegistrationState() {
-        assertFalse(registry.registered(CombatLogPunishmentType.KILL_ON_LOGOUT));
+        assertFalse(registry.registered(killOnLogout));
 
-        registry.register(CombatLogPunishmentType.KILL_ON_LOGOUT);
+        registry.register(killOnLogout);
 
-        assertTrue(registry.registered(CombatLogPunishmentType.KILL_ON_LOGOUT));
+        assertTrue(registry.registered(killOnLogout));
     }
 }

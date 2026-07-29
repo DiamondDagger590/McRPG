@@ -23,11 +23,6 @@ import java.util.logging.Level;
  * construction (so servers that restart frequently still clean up), and
  * {@link #onIntervalComplete()} repeats the same cleanup on the configured interval for
  * long-running servers. A retention value of {@code 0} or negative disables cleanup.
- * <p>
- * Extends {@link CancelableCoreTask} — the same repeating-task base used by
- * {@link us.eunoians.mcrpg.combat.task.CombatSessionTimeoutTask} — rather than a
- * one-shot {@code DelayableCoreTask}, since the periodic behavior this task needs
- * requires an interval-based scheduler, not a single delayed execution.
  */
 public class CombatLogCleanupTask extends CancelableCoreTask {
 
@@ -74,38 +69,22 @@ public class CombatLogCleanupTask extends CancelableCoreTask {
         performCleanup();
     }
 
-    /**
-     * No action needed — {@link #runInitialCleanup()} already covers the startup case,
-     * so the initial delay firing here would otherwise duplicate that cleanup.
-     */
     @Override
     protected void onDelayComplete() {
     }
 
-    /**
-     * Called when this task is cancelled. No cleanup is required.
-     */
     @Override
     protected void onCancel() {
     }
 
-    /**
-     * Called at the start of each interval before processing begins. No action is required.
-     */
     @Override
     protected void onIntervalStart() {
     }
 
-    /**
-     * Called when this task is paused. No action is required.
-     */
     @Override
     protected void onIntervalPause() {
     }
 
-    /**
-     * Called when this task is resumed after being paused. No action is required.
-     */
     @Override
     protected void onIntervalResume() {
     }
@@ -119,7 +98,7 @@ public class CombatLogCleanupTask extends CancelableCoreTask {
             return;
         }
 
-        Instant cutoff = Instant.now().minus(days, ChronoUnit.DAYS);
+        Instant cutoff = mcRPG.getTimeProvider().now().minus(days, ChronoUnit.DAYS);
         var database = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.DATABASE).getDatabase();
         database.getDatabaseExecutorService().submit(() -> {

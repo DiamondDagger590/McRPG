@@ -23,6 +23,7 @@ import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.event.combat.CombatLogPunishmentEvent;
 import us.eunoians.mcrpg.event.combat.PlayerCombatLogEvent;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
@@ -279,9 +280,15 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
             enforcer.evaluateAndEnforce(player, session);
 
             assertEquals(1, captured.size());
-            assertTrue(captured.get(0).isPunishmentEnabled(CombatLogPunishmentType.KILL_ON_LOGOUT));
-            assertTrue(captured.get(0).isPunishmentEnabled(CombatLogPunishmentType.DROP_ITEMS));
-            assertTrue(captured.get(0).isPunishmentEnabled(CombatLogPunishmentType.BROADCAST_MESSAGE));
+            assertTrue(captured.get(0).isPunishmentEnabled(
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE)
+                            .get(KillOnLogoutPunishment.KEY).orElseThrow()));
+            assertTrue(captured.get(0).isPunishmentEnabled(
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE)
+                            .get(DropItemsPunishment.KEY).orElseThrow()));
+            assertTrue(captured.get(0).isPunishmentEnabled(
+                    mcRPG.registryAccess().registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE)
+                            .get(BroadcastMessagePunishment.KEY).orElseThrow()));
         }
 
         @Test
@@ -328,12 +335,22 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
             CombatLogPunishmentType excludedType = new CombatLogPunishmentType(
                     new NamespacedKey("thirdparty", "excluded_type"), "excluded", null) {
                 @Override
+                public boolean isEnabled() {
+                    return true;
+                }
+
+                @Override
                 public void apply(org.bukkit.entity.Player p, CombatSession s, us.eunoians.mcrpg.McRPG plugin) {
                     excludedApplied[0] = true;
                 }
             };
             CombatLogPunishmentType excludingType = new CombatLogPunishmentType(
                     new NamespacedKey("thirdparty", "excluding_type"), "excluding", null) {
+                @Override
+                public boolean isEnabled() {
+                    return true;
+                }
+
                 @Override
                 @org.jetbrains.annotations.NotNull
                 public java.util.Set<NamespacedKey> getExcludes() {
@@ -386,6 +403,11 @@ class CombatLogEnforcerTest extends McRPGBaseTest {
             boolean[] applied = {false};
             CombatLogPunishmentType customType = new CombatLogPunishmentType(
                     new NamespacedKey("thirdparty", "custom_punishment"), "custom", null) {
+                @Override
+                public boolean isEnabled() {
+                    return true;
+                }
+
                 @Override
                 public void apply(org.bukkit.entity.Player p, CombatSession s, us.eunoians.mcrpg.McRPG plugin) {
                     applied[0] = true;

@@ -27,7 +27,9 @@ import us.eunoians.mcrpg.ability.impl.woodcutting.HeavySwing;
 import us.eunoians.mcrpg.ability.impl.woodcutting.NymphsVitality;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
-import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
+import us.eunoians.mcrpg.combat.log.BroadcastMessagePunishment;
+import us.eunoians.mcrpg.combat.log.DropItemsPunishment;
+import us.eunoians.mcrpg.combat.log.KillOnLogoutPunishment;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
 import us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack;
@@ -510,9 +512,9 @@ public final class McRPGExpansion extends ContentExpansion {
     @NotNull
     private CombatLogPunishmentContentPack getCombatLogPunishmentContent() {
         CombatLogPunishmentContentPack pack = new CombatLogPunishmentContentPack(this);
-        pack.addContent(CombatLogPunishmentType.KILL_ON_LOGOUT);
-        pack.addContent(CombatLogPunishmentType.DROP_ITEMS);
-        pack.addContent(CombatLogPunishmentType.BROADCAST_MESSAGE);
+        pack.addContent(new KillOnLogoutPunishment(mcRPG));
+        pack.addContent(new DropItemsPunishment(mcRPG));
+        pack.addContent(new BroadcastMessagePunishment(mcRPG));
         return pack;
     }
 }

@@ -1,11 +1,15 @@
 package us.eunoians.mcrpg.event.combat;
 
+import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.combat.CombatSession;
 import us.eunoians.mcrpg.combat.CombatType;
+import us.eunoians.mcrpg.combat.log.BroadcastMessagePunishment;
 import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
+import us.eunoians.mcrpg.combat.log.DropItemsPunishment;
+import us.eunoians.mcrpg.combat.log.KillOnLogoutPunishment;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,15 +25,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @DisplayName("CombatLogPunishmentEvent")
 class CombatLogPunishmentEventTest extends McRPGBaseTest {
 
+    private final KillOnLogoutPunishment killOnLogout = new KillOnLogoutPunishment((NamespacedKey) null);
+    private final DropItemsPunishment dropItems = new DropItemsPunishment((NamespacedKey) null);
+    private final BroadcastMessagePunishment broadcastMessage = new BroadcastMessagePunishment((NamespacedKey) null);
+
     private CombatSession session() {
         return new CombatSession(UUID.randomUUID(), 16, 8000L);
     }
 
     private Map<CombatLogPunishmentType, Boolean> defaultMap() {
         Map<CombatLogPunishmentType, Boolean> map = new LinkedHashMap<>();
-        map.put(CombatLogPunishmentType.KILL_ON_LOGOUT, true);
-        map.put(CombatLogPunishmentType.DROP_ITEMS, true);
-        map.put(CombatLogPunishmentType.BROADCAST_MESSAGE, false);
+        map.put(killOnLogout, true);
+        map.put(dropItems, true);
+        map.put(broadcastMessage, false);
         return map;
     }
 
@@ -44,9 +52,9 @@ class CombatLogPunishmentEventTest extends McRPGBaseTest {
         assertSame(player, event.getPlayer());
         assertSame(session, event.getSession());
         assertEquals(CombatType.PVP, event.getCombatType());
-        assertTrue(event.isPunishmentEnabled(CombatLogPunishmentType.KILL_ON_LOGOUT));
-        assertTrue(event.isPunishmentEnabled(CombatLogPunishmentType.DROP_ITEMS));
-        assertFalse(event.isPunishmentEnabled(CombatLogPunishmentType.BROADCAST_MESSAGE));
+        assertTrue(event.isPunishmentEnabled(killOnLogout));
+        assertTrue(event.isPunishmentEnabled(dropItems));
+        assertFalse(event.isPunishmentEnabled(broadcastMessage));
     }
 
     @Test
@@ -55,9 +63,9 @@ class CombatLogPunishmentEventTest extends McRPGBaseTest {
         var player = server.addPlayer();
         CombatLogPunishmentEvent event = new CombatLogPunishmentEvent(player, session(), CombatType.PVP, defaultMap());
 
-        event.setPunishmentEnabled(CombatLogPunishmentType.DROP_ITEMS, false);
+        event.setPunishmentEnabled(dropItems, false);
 
-        assertFalse(event.isPunishmentEnabled(CombatLogPunishmentType.DROP_ITEMS));
+        assertFalse(event.isPunishmentEnabled(dropItems));
     }
 
     @Test
@@ -69,9 +77,9 @@ class CombatLogPunishmentEventTest extends McRPGBaseTest {
         List<CombatLogPunishmentType> enabled = event.getEnabledPunishments();
 
         assertEquals(2, enabled.size());
-        assertTrue(enabled.contains(CombatLogPunishmentType.KILL_ON_LOGOUT));
-        assertTrue(enabled.contains(CombatLogPunishmentType.DROP_ITEMS));
-        assertFalse(enabled.contains(CombatLogPunishmentType.BROADCAST_MESSAGE));
+        assertTrue(enabled.contains(killOnLogout));
+        assertTrue(enabled.contains(dropItems));
+        assertFalse(enabled.contains(broadcastMessage));
     }
 
     @Test
@@ -88,9 +96,9 @@ class CombatLogPunishmentEventTest extends McRPGBaseTest {
     void hasAnyPunishment_false_whenAllDisabled() {
         var player = server.addPlayer();
         Map<CombatLogPunishmentType, Boolean> allDisabled = new LinkedHashMap<>();
-        allDisabled.put(CombatLogPunishmentType.KILL_ON_LOGOUT, false);
-        allDisabled.put(CombatLogPunishmentType.DROP_ITEMS, false);
-        allDisabled.put(CombatLogPunishmentType.BROADCAST_MESSAGE, false);
+        allDisabled.put(killOnLogout, false);
+        allDisabled.put(dropItems, false);
+        allDisabled.put(broadcastMessage, false);
         CombatLogPunishmentEvent event = new CombatLogPunishmentEvent(player, session(), CombatType.PVP, allDisabled);
 
         assertFalse(event.hasAnyPunishment());
@@ -103,9 +111,9 @@ class CombatLogPunishmentEventTest extends McRPGBaseTest {
         Map<CombatLogPunishmentType, Boolean> map = defaultMap();
         CombatLogPunishmentEvent event = new CombatLogPunishmentEvent(player, session(), CombatType.PVP, map);
 
-        map.put(CombatLogPunishmentType.BROADCAST_MESSAGE, true);
+        map.put(broadcastMessage, true);
 
-        assertFalse(event.isPunishmentEnabled(CombatLogPunishmentType.BROADCAST_MESSAGE));
+        assertFalse(event.isPunishmentEnabled(broadcastMessage));
     }
 
     @Test

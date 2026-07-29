@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.combat.log;
 
+import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.combat.CombatType;
@@ -22,7 +23,7 @@ class CombatLogEntryTest {
         Instant timestamp = Instant.now();
         UUID participantUUID = UUID.randomUUID();
         List<UUID> participants = List.of(participantUUID);
-        List<CombatLogPunishmentType> punishments = List.of(CombatLogPunishmentType.KILL_ON_LOGOUT);
+        List<CombatLogPunishmentType> punishments = List.of(new KillOnLogoutPunishment((NamespacedKey) null));
 
         CombatLogEntry entry = new CombatLogEntry(1L, playerUUID, timestamp, "world", 1.0, 2.0, 3.0,
                 CombatType.PVP, participants, punishments);
@@ -54,12 +55,12 @@ class CombatLogEntryTest {
     @DisplayName("punishmentsApplied returns an immutable list")
     void punishmentsApplied_isImmutable() {
         List<CombatLogPunishmentType> mutableList = new ArrayList<>();
-        mutableList.add(CombatLogPunishmentType.DROP_ITEMS);
+        mutableList.add(new DropItemsPunishment((NamespacedKey) null));
         CombatLogEntry entry = new CombatLogEntry(0, UUID.randomUUID(), Instant.now(), "world",
                 0, 0, 0, CombatType.PVE, List.of(), mutableList);
 
         assertThrows(UnsupportedOperationException.class,
-                () -> entry.punishmentsApplied().add(CombatLogPunishmentType.KILL_ON_LOGOUT));
+                () -> entry.punishmentsApplied().add(new KillOnLogoutPunishment((NamespacedKey) null)));
     }
 
     @Test

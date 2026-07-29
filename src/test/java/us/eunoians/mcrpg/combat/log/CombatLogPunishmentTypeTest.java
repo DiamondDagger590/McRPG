@@ -27,67 +27,71 @@ import static org.mockito.Mockito.verify;
 @DisplayName("CombatLogPunishmentType")
 class CombatLogPunishmentTypeTest extends McRPGBaseTest {
 
+    private final KillOnLogoutPunishment killOnLogout = new KillOnLogoutPunishment((NamespacedKey) null);
+    private final DropItemsPunishment dropItems = new DropItemsPunishment((NamespacedKey) null);
+    private final BroadcastMessagePunishment broadcastMessage = new BroadcastMessagePunishment((NamespacedKey) null);
+
     private CombatSession session() {
         return new CombatSession(UUID.randomUUID(), 16, 8000L);
     }
 
     @Test
-    @DisplayName("built-in constants have distinct NamespacedKeys under the mcrpg namespace")
-    void builtInConstants_haveDistinctKeys() {
-        assertEquals("mcrpg", CombatLogPunishmentType.KILL_ON_LOGOUT.getKey().getNamespace());
-        assertEquals("mcrpg", CombatLogPunishmentType.DROP_ITEMS.getKey().getNamespace());
-        assertEquals("mcrpg", CombatLogPunishmentType.BROADCAST_MESSAGE.getKey().getNamespace());
+    @DisplayName("built-in types have distinct NamespacedKeys under the mcrpg namespace")
+    void builtInTypes_haveDistinctKeys() {
+        assertEquals("mcrpg", killOnLogout.getKey().getNamespace());
+        assertEquals("mcrpg", dropItems.getKey().getNamespace());
+        assertEquals("mcrpg", broadcastMessage.getKey().getNamespace());
 
-        assertNotEquals(CombatLogPunishmentType.KILL_ON_LOGOUT.getKey(), CombatLogPunishmentType.DROP_ITEMS.getKey());
-        assertNotEquals(CombatLogPunishmentType.KILL_ON_LOGOUT.getKey(), CombatLogPunishmentType.BROADCAST_MESSAGE.getKey());
-        assertNotEquals(CombatLogPunishmentType.DROP_ITEMS.getKey(), CombatLogPunishmentType.BROADCAST_MESSAGE.getKey());
+        assertNotEquals(killOnLogout.getKey(), dropItems.getKey());
+        assertNotEquals(killOnLogout.getKey(), broadcastMessage.getKey());
+        assertNotEquals(dropItems.getKey(), broadcastMessage.getKey());
     }
 
     @Test
-    @DisplayName("each constant returns its corresponding config key string")
-    void constants_returnConfigKeys() {
-        assertEquals("kill-on-logout", CombatLogPunishmentType.KILL_ON_LOGOUT.getConfigKey());
-        assertEquals("drop-items", CombatLogPunishmentType.DROP_ITEMS.getConfigKey());
-        assertEquals("broadcast-message", CombatLogPunishmentType.BROADCAST_MESSAGE.getConfigKey());
+    @DisplayName("each type returns its corresponding config key string")
+    void types_returnConfigKeys() {
+        assertEquals("kill-on-logout", killOnLogout.getConfigKey());
+        assertEquals("drop-items", dropItems.getConfigKey());
+        assertEquals("broadcast-message", broadcastMessage.getConfigKey());
     }
 
     @Test
-    @DisplayName("KILL_ON_LOGOUT excludes DROP_ITEMS")
+    @DisplayName("KillOnLogoutPunishment excludes DropItemsPunishment")
     void killOnLogout_excludesDropItems() {
-        assertTrue(CombatLogPunishmentType.KILL_ON_LOGOUT.getExcludes().contains(CombatLogPunishmentType.DROP_ITEMS.getKey()));
+        assertTrue(killOnLogout.getExcludes().contains(DropItemsPunishment.KEY));
     }
 
     @Test
-    @DisplayName("DROP_ITEMS has no exclusions")
+    @DisplayName("DropItemsPunishment has no exclusions")
     void dropItems_hasNoExclusions() {
-        assertTrue(CombatLogPunishmentType.DROP_ITEMS.getExcludes().isEmpty());
+        assertTrue(dropItems.getExcludes().isEmpty());
     }
 
     @Test
-    @DisplayName("BROADCAST_MESSAGE has no exclusions")
+    @DisplayName("BroadcastMessagePunishment has no exclusions")
     void broadcastMessage_hasNoExclusions() {
-        assertTrue(CombatLogPunishmentType.BROADCAST_MESSAGE.getExcludes().isEmpty());
+        assertTrue(broadcastMessage.getExcludes().isEmpty());
     }
 
     @Test
-    @DisplayName("KILL_ON_LOGOUT.apply sets the player's health to zero")
+    @DisplayName("KillOnLogoutPunishment.apply sets the player's health to zero")
     void killOnLogout_apply_setsHealthToZero() {
         PlayerMock player = server.addPlayer();
         player.setHealth(20.0);
 
-        CombatLogPunishmentType.KILL_ON_LOGOUT.apply(player, session(), mcRPG);
+        killOnLogout.apply(player, session(), mcRPG);
 
         assertEquals(0.0, player.getHealth());
     }
 
     @Test
-    @DisplayName("DROP_ITEMS.apply drops inventory items at the player's location and clears inventory")
+    @DisplayName("DropItemsPunishment.apply drops inventory items at the player's location and clears inventory")
     void dropItems_apply_dropsAndClearsInventory() {
         PlayerMock player = server.addPlayer();
         player.getInventory().addItem(new ItemStack(Material.DIAMOND, 3));
         int initialItemsInWorld = player.getWorld().getEntitiesByClass(Item.class).size();
 
-        CombatLogPunishmentType.DROP_ITEMS.apply(player, session(), mcRPG);
+        dropItems.apply(player, session(), mcRPG);
 
         boolean allAir = true;
         for (ItemStack item : player.getInventory().getContents()) {
@@ -101,13 +105,13 @@ class CombatLogPunishmentTypeTest extends McRPGBaseTest {
     }
 
     @Test
-    @DisplayName("BROADCAST_MESSAGE.apply delegates to localizationManager.broadcastMessage with the player's location")
+    @DisplayName("BroadcastMessagePunishment.apply delegates to localizationManager.broadcastMessage with the player's location")
     void broadcastMessage_apply_delegatesToLocalizationManager() {
         PlayerMock player = server.addPlayer();
         var localizationManager = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.LOCALIZATION);
 
-        CombatLogPunishmentType.BROADCAST_MESSAGE.apply(player, session(), mcRPG);
+        broadcastMessage.apply(player, session(), mcRPG);
 
         verify(localizationManager).broadcastMessage(
                 eq(LocalizationKey.COMBAT_LOG_BROADCAST),
@@ -117,16 +121,16 @@ class CombatLogPunishmentTypeTest extends McRPGBaseTest {
     @Test
     @DisplayName("equality is based on NamespacedKey")
     void equality_isBasedOnKey() {
-        CombatLogPunishmentType anotherKillOnLogoutReference = CombatLogPunishmentType.KILL_ON_LOGOUT;
-        assertEquals(CombatLogPunishmentType.KILL_ON_LOGOUT, anotherKillOnLogoutReference);
-        assertNotEquals(CombatLogPunishmentType.KILL_ON_LOGOUT, CombatLogPunishmentType.DROP_ITEMS);
+        KillOnLogoutPunishment anotherKillOnLogout = new KillOnLogoutPunishment((NamespacedKey) null);
+        assertEquals(killOnLogout, anotherKillOnLogout);
+        assertNotEquals(killOnLogout, dropItems);
     }
 
     @Test
     @DisplayName("toString returns the NamespacedKey string representation")
     void toString_returnsKeyString() {
-        NamespacedKey key = CombatLogPunishmentType.KILL_ON_LOGOUT.getKey();
-        assertEquals(key.toString(), CombatLogPunishmentType.KILL_ON_LOGOUT.toString());
+        NamespacedKey key = killOnLogout.getKey();
+        assertEquals(key.toString(), killOnLogout.toString());
     }
 
     @Test
@@ -135,13 +139,25 @@ class CombatLogPunishmentTypeTest extends McRPGBaseTest {
         CombatLogPunishmentType custom = new CombatLogPunishmentType(
                 new NamespacedKey("test", "custom"), "custom", null) {
             @Override
+            public boolean isEnabled() {
+                return true;
+            }
+
+            @Override
             public void apply(@org.jetbrains.annotations.NotNull Player player,
                               @org.jetbrains.annotations.NotNull CombatSession session,
                               @org.jetbrains.annotations.NotNull McRPG mcRPG) {
-                // no-op for this test
             }
         };
 
         assertTrue(custom.getExpansionKey().isEmpty());
+    }
+
+    @Test
+    @DisplayName("isEnabled returns true by default when no config is initialized")
+    void isEnabled_returnsTrue_whenNoConfig() {
+        assertTrue(killOnLogout.isEnabled());
+        assertTrue(dropItems.isEnabled());
+        assertTrue(broadcastMessage.isEnabled());
     }
 }
