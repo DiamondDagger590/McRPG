@@ -263,6 +263,33 @@ class PlayerBoardStateDAOTest extends McRPGBaseTest {
         }
 
         @Test
+        @DisplayName("Returns multiple entries when multiple rows exist")
+        void loadAcceptedForPlayer_returnsMultipleEntries() throws SQLException {
+            Connection mockConnection = mock(Connection.class);
+            PreparedStatement mockStatement = mock(PreparedStatement.class);
+            ResultSet mockResultSet = mock(ResultSet.class);
+            when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+            when(mockStatement.executeQuery()).thenReturn(mockResultSet);
+
+            UUID offeringId1 = UUID.randomUUID();
+            UUID questUUID1 = UUID.randomUUID();
+            UUID offeringId2 = UUID.randomUUID();
+            UUID questUUID2 = UUID.randomUUID();
+            when(mockResultSet.next()).thenReturn(true, true, false);
+            when(mockResultSet.getString("offering_id"))
+                    .thenReturn(offeringId1.toString(), offeringId2.toString());
+            when(mockResultSet.getString("quest_instance_uuid"))
+                    .thenReturn(questUUID1.toString(), questUUID2.toString());
+
+            List<PlayerBoardStateDAO.AcceptedBoardEntry> entries =
+                    PlayerBoardStateDAO.loadAcceptedForPlayer(mockConnection, PLAYER_UUID);
+
+            assertEquals(2, entries.size());
+            assertEquals(offeringId1, entries.get(0).offeringId());
+            assertEquals(offeringId2, entries.get(1).offeringId());
+        }
+
+        @Test
         @DisplayName("Returns empty list when no accepted entries exist")
         void loadAcceptedForPlayer_returnsEmptyList_whenNoEntries() throws SQLException {
             Connection mockConnection = mock(Connection.class);

@@ -387,7 +387,7 @@ class LoadoutDisplayDAOTest extends McRPGBaseTest {
 
             List<PreparedStatement> result = LoadoutDisplayDAO.saveAllLoadoutDisplays(mockConnection, mockHolder);
 
-            assertFalse(result.isEmpty());
+            assertEquals(4, result.size());
         }
 
         @Test

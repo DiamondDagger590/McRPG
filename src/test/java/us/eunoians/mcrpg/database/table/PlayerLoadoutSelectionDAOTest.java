@@ -207,7 +207,7 @@ class PlayerLoadoutSelectionDAOTest extends McRPGBaseTest {
         }
 
         @Test
-        @DisplayName("returns 1 when no row exists")
+        @DisplayName("returns 1 when no row exists and getInt throws after empty result set")
         void getActiveLoadout_returnsOne_whenNoRowExists() throws SQLException {
             Connection mockConnection = mock(Connection.class);
             PreparedStatement mockStatement = mock(PreparedStatement.class);
@@ -215,7 +215,8 @@ class PlayerLoadoutSelectionDAOTest extends McRPGBaseTest {
             when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
             when(mockStatement.executeQuery()).thenReturn(mockResultSet);
             when(mockResultSet.next()).thenReturn(false);
-            when(mockResultSet.getInt("active_loadout_id")).thenReturn(0);
+            when(mockResultSet.getInt("active_loadout_id"))
+                    .thenThrow(new SQLException("ResultSet is empty"));
 
             int result = PlayerLoadoutSelectionDAO.getActiveLoadout(mockConnection, PLAYER_UUID);
 
