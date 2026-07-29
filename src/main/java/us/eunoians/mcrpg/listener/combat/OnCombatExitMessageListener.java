@@ -37,11 +37,6 @@ import java.util.Set;
  * combat log configuration would have punished a logout during that session. This
  * tells the player "it is now safe to log out" without adding noise on servers where
  * combat logging has no consequences.
- * <p>
- * The combat log mode is read from the shared {@link ReloadableContent} owned by
- * {@link us.eunoians.mcrpg.combat.log.CombatLogManager} — both sites use a single
- * cached parse. The display flag and duration are {@link ReloadableBoolean} /
- * {@link ReloadableInteger} fields owned by this listener.
  */
 public class OnCombatExitMessageListener implements Listener {
 
@@ -51,12 +46,10 @@ public class OnCombatExitMessageListener implements Listener {
     private final ReloadableInteger exitMessageDurationTicks;
 
     /**
-     * Constructs a new {@link OnCombatExitMessageListener}. Creates and registers
-     * the reloadable config fields with the
-     * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager}.
+     * Constructs a new {@link OnCombatExitMessageListener}.
      *
-     * @param mcRPG The plugin instance for localization and display access.
-     * @param mode  The shared reloadable combat log mode, owned by {@link us.eunoians.mcrpg.combat.log.CombatLogManager}.
+     * @param mcRPG The plugin instance.
+     * @param mode  The reloadable combat log mode.
      */
     public OnCombatExitMessageListener(@NotNull McRPG mcRPG,
                                        @NotNull ReloadableContent<CombatLogMode> mode) {
@@ -113,7 +106,6 @@ public class OnCombatExitMessageListener implements Listener {
 
     /**
      * Determines whether the exit message should be sent for this session end event.
-     * Reads from cached reloadable fields — no per-call config parsing.
      *
      * @param event The combat session end event.
      * @return {@code true} if the exit message should be sent.

@@ -38,22 +38,15 @@ import java.util.stream.Collectors;
  * Evaluates whether a player's logout qualifies as a combat log and applies the
  * configured punishments. The session must still be alive and queryable when
  * this is invoked — it is called before the session is ended.
- * <p>
- * Registered as a {@link Manager} in the {@link com.diamonddagger590.mccore.registry.manager.ManagerRegistry}
- * under {@link McRPGManagerKey#COMBAT_LOG} so that listeners and other collaborators
- * can retrieve it from the registry rather than requiring constructor injection.
  */
 public class CombatLogManager extends Manager<McRPG> {
 
     private final ReloadableContent<CombatLogMode> mode;
 
     /**
-     * Constructs a new {@link CombatLogManager}. Initializes the reloadable combat log
-     * mode from the combat configuration and tracks it with the
-     * {@link com.diamonddagger590.mccore.configuration.ReloadableContentManager} for
-     * automatic refresh on {@code /mcrpg admin reload}.
+     * Constructs a new {@link CombatLogManager}.
      *
-     * @param mcRPG The plugin instance for config access, localization, and database access.
+     * @param mcRPG The plugin instance.
      */
     public CombatLogManager(@NotNull McRPG mcRPG) {
         super(mcRPG);
