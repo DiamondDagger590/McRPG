@@ -45,6 +45,8 @@ Ranked by how much they actually matter. Compelling is a *feeling* — you itera
 
 Mark which cells the current kit occupies before generating — the empty columns are where the un-obvious ideas live.
 
+Axis values live at **player-describable granularity** — if a player would name two triggers with the same phrase, they're one value. Cuts from an axis must be derivable from the axis question itself, never from imagined ability quality ("nothing good triggers on X" is a convergence judgment, and the values you can't imagine being good mark exactly where your imagination hasn't been). When unsure, include: a useless value costs two minutes of sketching, a wrongly excluded value costs an unexplored column. *(Mentor wording — designer to rewrite.)*
+
 ### Divergence rules
 
 The skill of divergence is suppressing self-judgment, nothing more. When generating:
