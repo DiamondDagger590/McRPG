@@ -17,6 +17,7 @@ A kill-test is a one-sentence question that reliably kills a whole *class* of ba
 | 3 | **Potion** | Could a consumable do this? An ability whose payoff a potion can replicate is a consumable with extra steps. | Surging Rush — consumed Haste to grant literal Speed + Strength effects | — |
 | 4 | **Feelability** | Is the payoff visible in a vanilla feedback channel — hearts, particles, the potion HUD, sound? Percentages under ~15% on Minecraft's damage scale are spreadsheet numbers, not payoffs. | Crescendo v2 — +5% damage is +0.35 on a diamond sword hit; imperceptible | — |
 | 5 | **Decision** | Does using it ask *when*, or only *whether you can*? An ability that's always correct to press when available is a rotation, not a decision. | Surging Rush (partial) | Deliberate comfort picks are legitimate — some players want rhythmic, low-decision playstyles, and a kit should include one or two *on purpose*. The test's job is ensuring low-decision is chosen, not accidental. |
+| 6 | **Dead-letter** | Does the trigger occur often enough for the ability to exist in practice? A payoff gated on a once-per-hundred-fights event is never experienced, no matter how good it is. *(Mentor wording — designer to rewrite.)* | "Equipment break → instant max stacks" — equipment breaking mid-fight is vanishingly rare under netherite + Unbreaking + Mending | — |
 
 ### Maintaining the tests
 
