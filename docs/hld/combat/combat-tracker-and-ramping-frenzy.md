@@ -1,7 +1,7 @@
 # Combat Tracker & Ramping Frenzy
 
-> **Last Updated:** 2026-06-16
-> **Status:** HLD — not yet implemented
+> **Last Updated:** 2026-07-31
+> **Status:** Phases 1–3 implemented. Phase 4 (Ramping Frenzy ability) superseded — see the note on Phase 4 below.
 > **Scope:** Per-entity combat session tracking, extensible combat state platform, combat log system, Ramping Frenzy ability
 
 ---
@@ -739,6 +739,18 @@ The first built-in policy consumer. Defines what happens when a player logs out 
 
 ### Phase 4: Ramping Frenzy Ability
 
+> **Status: superseded — no longer in scope for this HLD.** After Phases 1–3 shipped, the design
+> direction for Swords changed: Bleed and its dependent ability family (Enhanced Bleed, Deeper
+> Wound, Vampire, Serrated Strikes) are being removed rather than coexisting with Ramping Frenzy,
+> and the ramping Haste engine is becoming the core identity of the Swords skill — with the Haste
+> effect itself serving as a cross-skill resource that consume abilities in any skill can spend.
+> That is a full kit rework, not a single-ability addition, and its scope (per-skill identity,
+> cross-skill consume service, replacement passives and actives) exceeds what this document's §7
+> describes. The rework is being designed through the ability design workshop process instead —
+> see `docs/design-principles/` (pillars, rubric, `/design-workshop`) and
+> `docs/design/swords-kit-workbench.md` for current state. §7 below is retained as historical
+> reference for the stack/shed/resolver mechanics, parts of which carry forward.
+>
 > **Depends on:** Phase 1 + Phase 2
 > **LLD scope:** Ramping Frenzy ability class, resolved frenzy stack state, shed task, Haste application, consume pattern contract
 
