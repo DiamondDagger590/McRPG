@@ -32,7 +32,7 @@ Modern vanilla combat is axes, crits, and shields — and shields render every o
 
 Things McRPG combat never becomes, regardless of how well-designed the ability proposing them is:
 
-- **No combat style reducible to a single "perfect" macro press.** Resource engines (Haste bands, mana) exist partly to keep optimal play state-dependent — a rotation must branch on game state a macro can't read.
+- **No combat style reducible to a single "perfect" macro press.** Resource engines (Haste bands, mana) exist partly to keep optimal play state-dependent — a rotation must branch on game state a macro can't read. This is about *full automation of a style*, not macro-assistability of an element: a design isn't banned just because one input in it could be timed by a macro, so long as perfect execution still requires human aim, targeting, and movement ("you can't click one macro to have perfect automated execution — you still have to hit the target"). Bare autoclicker abuse is an anticheat concern, not a design constraint.
 - **No one-shotting a player in full diamond/netherite.** Hard ceiling on burst scaling.
 - **No invisible CC.** Any control effect on a player requires a visual indicator (no freezing a player in place with nothing on screen).
 - **No stale meta.** Steer away from designs that collapse loadout variety into one dominant answer. (Pillar 5 is this red line's first enforcement.)
