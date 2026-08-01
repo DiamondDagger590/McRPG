@@ -4,6 +4,8 @@ import com.diamonddagger590.mccore.registry.Registry;
 import com.diamonddagger590.mccore.registry.RegistryKey;
 import us.eunoians.mcrpg.ability.AbilityRegistry;
 import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry;
+import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
 import us.eunoians.mcrpg.quest.board.category.BoardSlotCategoryRegistry;
 import us.eunoians.mcrpg.quest.board.rarity.QuestRarityRegistry;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionTypeRegistry;
@@ -22,6 +24,7 @@ import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
 import us.eunoians.mcrpg.quest.source.QuestSourceRegistry;
 import us.eunoians.mcrpg.skill.SkillRegistry;
 import us.eunoians.mcrpg.skill.experience.ExperienceModifierRegistry;
+import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
 import us.eunoians.mcrpg.stat.PlayerStatRegistry;
 
 import static com.diamonddagger590.mccore.registry.RegistryKeyImpl.create;
@@ -109,4 +112,42 @@ public interface McRPGRegistryKey extends RegistryKey<Registry<?>> {
      * {@link us.eunoians.mcrpg.expansion.ContentExpansion}.
      */
     RegistryKey<QuestChainStartConditionTypeRegistry> QUEST_CHAIN_CONDITION_TYPE = create(QuestChainStartConditionTypeRegistry.class);
+
+    /**
+     * Retrieves the {@link CombatConditionRegistry}, holding every registered
+     * {@link us.eunoians.mcrpg.combat.condition.CombatCondition}.
+     * <p>
+     * Safe operations: {@link CombatConditionRegistry#register(us.eunoians.mcrpg.combat.condition.CombatCondition)},
+     * {@link CombatConditionRegistry#unregister(org.bukkit.NamespacedKey)},
+     * {@link CombatConditionRegistry#get(org.bukkit.NamespacedKey)}, {@link CombatConditionRegistry#getAll()}.
+     * <p>
+     * Registering a condition here only adds it to the registry — it does not begin evaluating it.
+     * Third-party expansions that register conditions via a
+     * {@link us.eunoians.mcrpg.expansion.content.CombatConditionContentPack} have the periodic
+     * evaluation task started automatically by the content processor. Code that registers a condition
+     * directly at runtime must also call
+     * {@link us.eunoians.mcrpg.combat.CombatTrackerManager#startConditionTask(us.eunoians.mcrpg.combat.condition.CombatCondition)}
+     * (and {@link us.eunoians.mcrpg.combat.CombatTrackerManager#stopConditionTask(org.bukkit.NamespacedKey)}
+     * before unregistering) so the condition is actually polled.
+     */
+    RegistryKey<CombatConditionRegistry> COMBAT_CONDITION = create(CombatConditionRegistry.class);
+    /**
+     * Retrieves the {@link CombatStateTypeRegistry}, holding every registered
+     * {@link us.eunoians.mcrpg.combat.state.CombatStateType}.
+     * <p>
+     * Safe operations: {@link CombatStateTypeRegistry#register(us.eunoians.mcrpg.combat.state.CombatStateType)},
+     * {@link CombatStateTypeRegistry#unregister(org.bukkit.NamespacedKey)},
+     * {@link CombatStateTypeRegistry#get(org.bukkit.NamespacedKey)}, {@link CombatStateTypeRegistry#getAll()}.
+     * <p>
+     * Registration is what makes a type's persistence and end-of-session resolution take effect;
+     * session-scoped reads and writes work on unregistered types too. Note that
+     * {@link us.eunoians.mcrpg.event.combat.CombatStateChangeEvent} is not fired when persistent
+     * state is re-attached at session start or cleared at session end — see that event's Javadoc.
+     */
+    RegistryKey<CombatStateTypeRegistry> COMBAT_STATE_TYPE = create(CombatStateTypeRegistry.class);
+    /**
+     * Retrieves the {@link CombatLogPunishmentTypeRegistry}, holding every registered
+     * {@link us.eunoians.mcrpg.combat.log.CombatLogPunishmentType}.
+     */
+    RegistryKey<CombatLogPunishmentTypeRegistry> COMBAT_LOG_PUNISHMENT_TYPE = create(CombatLogPunishmentTypeRegistry.class);
 }

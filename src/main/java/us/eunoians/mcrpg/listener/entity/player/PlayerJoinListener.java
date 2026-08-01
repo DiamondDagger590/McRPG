@@ -12,6 +12,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import us.eunoians.mcrpg.database.table.quest.PendingRewardDAO;
 import us.eunoians.mcrpg.entity.McRPGPlayerManager;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
@@ -46,13 +47,25 @@ import java.util.logging.Level;
  */
 public class PlayerJoinListener implements Listener {
 
+    private final CombatTrackerManager combatTrackerManager;
+
+    /**
+     * Constructs a new {@link PlayerJoinListener}.
+     *
+     * @param combatTrackerManager The {@link CombatTrackerManager} used to pre-load and cache
+     *                              persistent combat state for the joining player.
+     */
+    public PlayerJoinListener(@NotNull CombatTrackerManager combatTrackerManager) {
+        this.combatTrackerManager = combatTrackerManager;
+    }
+
     @EventHandler(ignoreCancelled = true)
     public void handleJoin(@NotNull PlayerJoinEvent playerJoinEvent) {
 
         McRPG mcRPG = McRPG.getInstance();
         Player player = playerJoinEvent.getPlayer();
         McRPGPlayer mcRPGPlayer = new McRPGPlayer(player, mcRPG);
-        new McRPGPlayerLoadTask(mcRPG, mcRPGPlayer).runTask();
+        new McRPGPlayerLoadTask(mcRPG, mcRPGPlayer, combatTrackerManager).runTask();
 
         QuestManager questManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER)
                 .manager(McRPGManagerKey.QUEST);

@@ -4,6 +4,8 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
 import us.eunoians.mcrpg.ability.impl.swords.bleed.BleedManager;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
+import us.eunoians.mcrpg.combat.log.CombatLogManager;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
 import us.eunoians.mcrpg.display.DisplayManager;
@@ -16,6 +18,7 @@ import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.QuestManager;
 import us.eunoians.mcrpg.quest.board.QuestBoardManager;
 import us.eunoians.mcrpg.quest.chain.QuestChainManager;
+import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.experience.rested.RestedExperienceManager;
 import us.eunoians.mcrpg.statistic.McRPGStatisticCacheManager;
 import us.eunoians.mcrpg.world.WorldManager;
@@ -56,4 +59,17 @@ public interface McRPGManagerKey<M> extends ManagerKey<M> {
      * executor thread and deliver results back to the main thread via the Bukkit scheduler.
      */
     ManagerKey<QuestChainManager> QUEST_CHAIN = create(QuestChainManager.class);
+    /**
+     * Retrieves the {@link CombatTrackerManager}, which owns active combat sessions and the public
+     * combat API. All of its mutating methods must be called from the main server thread. To register
+     * a combat condition at runtime, register it in the {@link McRPGRegistryKey#COMBAT_CONDITION}
+     * registry and then call {@link CombatTrackerManager#startConditionTask} so it is polled.
+     */
+    ManagerKey<CombatTrackerManager> COMBAT_TRACKER = create(CombatTrackerManager.class);
+    /**
+     * Retrieves the {@link CombatLogManager}, which evaluates combat log detection, applies
+     * punishments, and owns the shared {@link com.diamonddagger590.mccore.configuration.ReloadableContent}
+     * for the combat log mode.
+     */
+    ManagerKey<CombatLogManager> COMBAT_LOG = create(CombatLogManager.class);
 }

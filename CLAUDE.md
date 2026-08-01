@@ -280,6 +280,17 @@ src/main/java/us/eunoians/mcrpg/
 | **QuestChainStartEvent** | Fired when a chain starts for a player and the first step quest is launched. |
 | **QuestChainStepAdvanceEvent** | Fired when a chain advances from one step to the next (intermediate completion). |
 
+### Combat Log System
+
+| Term | Meaning |
+|------|---------|
+| **CombatLogMode** | Enum (`DISABLED`, `PLAYERS`, `MOBS_AND_PLAYERS`) controlling which combat session types trigger combat log detection on logout. `shouldPunish(CombatType)` encapsulates the matching logic so callers never compare mode and type manually. |
+| **CombatLogPunishmentType** | Abstract, `NamespacedKey`-keyed class representing one category of combat-log punishment. Each concrete type manages its own enabled state internally (e.g. via `ReloadableBoolean`) and self-registers any reloadable content with `ReloadableContentManager`. `isEnabled()` is abstract — concrete types define how they track their enabled state. Built-ins: `KillOnLogoutPunishment`, `DropItemsPunishment`, `BroadcastMessagePunishment`. Declares mutual exclusions via `getExcludes()` — `KillOnLogoutPunishment` excludes `DropItemsPunishment` since death already drops items. Registered in `CombatLogPunishmentTypeRegistry`; extensible via `CombatLogPunishmentContentPack`. |
+| **CombatLogManager** | Manager (extends `Manager<McRPG>`) invoked from `PlayerLeaveListener` before the session ends. Evaluates `CombatLogMode` against the session's `CombatType`, fires `PlayerCombatLogEvent` then `CombatLogPunishmentEvent`, resolves punishment exclusions, applies survivors, and records an audit entry via `CombatLogDAO`. Owns the shared `ReloadableContent<CombatLogMode>` that `OnCombatExitMessageListener` also reads. Registered under `McRPGManagerKey.COMBAT_LOG`. |
+| **PlayerCombatLogEvent** | Detection event — not `Cancellable` (the logout already happened and can't be undone). Carries a mutable `applyPunishment` boolean (default `true`); setting it `false` exempts the player entirely — no punishment map is even built. |
+| **CombatLogPunishmentEvent** | Policy event fired after `PlayerCombatLogEvent` passes with `applyPunishment` still `true`. Carries a `Map<CombatLogPunishmentType, Boolean>` that listeners can toggle per-type; if every entry ends up disabled, no punishment is applied. Use `PlayerCombatLogEvent` to exempt a player outright instead of disabling every punishment here. |
+| **CombatLogEntry** | Immutable record for one audit trail row: player, timestamp, location, `CombatType`, participant UUIDs, and applied punishment types. `id` is `0` for entries not yet inserted (auto-increment assigns it). |
+
 ---
 
 ## Architecture Overview
@@ -554,6 +565,44 @@ SkillDAO.saveSkillData(connection, playerUUID, skillData);
 ```
 
 Use `BatchTransaction` and `FailSafeTransaction` helpers from McCore for multi-statement operations.
+
+### Database Access Pattern
+
+`McRPGManagerKey.DATABASE` resolves to `McRPGDatabaseManager`, which only exposes `.getDatabase()` — the returned `Database` object is what has `.getDatabaseExecutorService()` and `.getConnection()`. New code doing async DB work follows this exact chain:
+
+```java
+var database = mcRPG.registryAccess().registry(RegistryKey.MANAGER)
+        .manager(McRPGManagerKey.DATABASE).getDatabase();
+database.getDatabaseExecutorService().submit(() -> {
+    try (Connection conn = database.getConnection()) {
+        // DAO calls here
+    }
+    catch (Exception e) {
+        mcRPG.getLogger().log(Level.WARNING, "context message", e);
+    }
+});
+```
+
+Forgetting the `.getDatabase()` step (calling `.getDatabaseExecutorService()` directly on the manager) is a common mistake — it does **not** compile, since the executor/connection methods live on `Database`, not `DatabaseManager`, so the error surfaces immediately rather than silently misbehaving at runtime. Chain `.getDatabase()` first, every time.
+
+### Background Task Registration
+
+Periodic background tasks that need database access are constructed and started in `McRPGBackgroundTaskRegistrar.register()`, wrapped in `ReloadableTask<T>` so their run frequency is reloadable from config — the wrapper cancels and reconstructs the task (via the supplied callback) whenever its frequency route changes, then restarts it with `runTask(async)`:
+
+```java
+// Combat log audit trail cleanup — interval is reloadable via cleanup-interval-seconds;
+// runInitialCleanup() is called once after construction (outside the callback) so it only
+// fires at startup, not on every config reload.
+ReloadableTask<CombatLogCleanupTask> combatLogCleanupTask = new ReloadableTask<>(
+        fileManager.getFile(FileType.COMBAT_CONFIG), CombatConfigFile.CLEANUP_INTERVAL_SECONDS,
+        (yamlDocument, route) -> {
+            double frequency = yamlDocument.getDouble(route);
+            return new CombatLogCleanupTask(plugin, frequency);
+        }, true);
+combatLogCleanupTask.getContent().runInitialCleanup();
+```
+
+`CombatLogCleanupTask` extends McCore's `CancelableCoreTask` (not `DelayableCoreTask`) because it needs a repeating interval, not a single delayed execution. Its constructor always passes an initial delay of `0` and a configurable period; `onDelayComplete()` is intentionally a no-op so that near-immediate first firing doesn't duplicate the one-time `runInitialCleanup()` call. `onIntervalComplete()` repeats the same cleanup on the configured interval for long-running servers. Retention (`audit-retention-days`) is a separate, independently reloadable `ReloadableInteger` internal to the task — a task's own run frequency and its other config-driven internals don't have to share one reload mechanism.
 
 ---
 
@@ -887,6 +936,49 @@ quest/board/
 
 ---
 
+## Combat Tracker & Combat Log System
+
+Combat logging is the first built-in policy consumer of the combat session engine (`CombatTrackerManager`, `CombatSession`, `CombatType`). It punishes players who disconnect while an active session would still count as combat, records an audit trail, and surfaces combat state via PAPI and an admin command. All of it lives under `us.eunoians.mcrpg.combat.log` (model/enforcer), `us.eunoians.mcrpg.event.combat` (events), `us.eunoians.mcrpg.database.table` (`CombatLogDAO`), `us.eunoians.mcrpg.external.papi.placeholder.combat` (placeholders), `us.eunoians.mcrpg.listener.combat` (`OnCombatExitMessageListener`), `us.eunoians.mcrpg.task.combat` (`CombatLogCleanupTask`), and `us.eunoians.mcrpg.command.admin` (`CombatLogCommand`).
+
+### Detection and Punishment Flow
+
+1. `PlayerLeaveListener` calls `CombatLogManager.evaluateAndEnforce(player, session)` **before** the session is ended, so the session is still queryable.
+2. `CombatLogMode.shouldPunish(CombatType)` gates the whole flow: `DISABLED` never punishes, `PLAYERS` only punishes `CombatType.PVP` sessions, `MOBS_AND_PLAYERS` punishes any active session.
+3. `PlayerCombatLogEvent` fires first. It is not `Cancellable` — the player already disconnected, so there's no action to cancel. Instead a listener calls `setApplyPunishment(false)` to exempt the player entirely; if `shouldApplyPunishment()` is false afterward, no punishment map is built and nothing is recorded.
+4. Otherwise, the enforcer iterates the `CombatLogPunishmentTypeRegistry` and builds a `Map<CombatLogPunishmentType, Boolean>` by calling `isEnabled()` on each registered type, then fires `CombatLogPunishmentEvent` (also not cancellable — individual entries are toggled instead).
+5. If every entry ends up disabled (`hasAnyPunishment()` is false), nothing further happens.
+6. Otherwise the enforcer resolves mutual exclusion: for each enabled type, any keys in its `getExcludes()` are removed from the applied set (`KILL_ON_LOGOUT` excludes `DROP_ITEMS` since death already drops items) — then each surviving type's `apply(Player, CombatSession, McRPG)` runs.
+7. A `CombatLogEntry` is built and inserted asynchronously via `CombatLogDAO.insertCombatLog()` inside a `BatchTransaction`, regardless of which punishments applied.
+
+This is a two-event pattern: `PlayerCombatLogEvent` is the **detection** gate (all-or-nothing exemption via `applyPunishment`), `CombatLogPunishmentEvent` is the **policy** gate (per-punishment toggling). Neither event is `Cancellable` — cancelling implies an action was prevented, but a combat-logging player has already logged out; both events instead expose mutable state (`applyPunishment`, the punishment map) that the enforcer reads after the event fires. Third-party plugins register custom punishment types via `CombatLogPunishmentContentPack`; every registered type is automatically included in the `CombatLogPunishmentEvent`'s map (with its `isEnabled()` state) and can be toggled per-incident by listeners.
+
+### CombatLogPunishmentType
+
+Abstract class (not an enum) so third parties can subclass it — `NamespacedKey`-keyed, carries a YAML config key, and implements `apply()` directly rather than requiring a switch statement somewhere else. `isEnabled()` is abstract; each concrete type manages its own enabled state internally — built-ins use `ReloadableBoolean` and self-register with `ReloadableContentManager` in their constructor, but third-party types are free to use any mechanism. Built-ins (`KillOnLogoutPunishment`, `DropItemsPunishment`, `BroadcastMessagePunishment`) are separate class files under `combat.log`. `getExcludes()` defaults to an empty set; override it to declare mutual exclusion with another type by key. Registered in `CombatLogPunishmentTypeRegistry` (`McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE`), populated from `McRPGExpansion.getCombatLogPunishmentContent()` plus any third-party `CombatLogPunishmentContentPack`. The `COMBAT_LOG_PUNISHMENT_TYPE` content handler only registers types in the registry — it does not initialize enabled state.
+
+### Audit Trail
+
+`CombatLogDAO` (table `combat_log`) stores one row per punished combat log: player UUID, timestamp, world/x/y/z, `CombatType`, comma-joined participant UUIDs, and comma-joined punishment keys. `CombatLogEntry` is the record DTO — `id` is `0` for entries not yet inserted. Retention is enforced by `CombatLogCleanupTask`, which deletes rows older than `combat-log.audit-retention-days` (see Background Task Registration above); a retention value `<= 0` disables cleanup entirely.
+
+### PAPI Placeholders
+
+Registered under `McRPGPlaceHolderType.COMBAT`:
+
+| Placeholder | Behavior |
+|---|---|
+| `%mcrpg_in_combat%` | `InCombatPlaceholder` — `"true"`/`"false"` from `CombatTrackerManager.hasActiveSession()`. |
+| `%mcrpg_combat_seconds_remaining%` | `CombatSecondsRemainingPlaceholder` — live countdown computed from the session's last-activity timestamp and timeout; `"0.0"` if no active session. |
+
+### Exit Message
+
+`OnCombatExitMessageListener` listens for `CombatSessionEndEvent` and sends a brief action-bar message (via `CenterContentPriority.COMBAT_EXIT_FEEDBACK`) telling the player it's safe to log out — but only when the session ended naturally (not `LOGOUT`, `DEATH`, or `PLUGIN`) **and** the server's combat log mode would have punished a logout during that session. It shares the same cached `ReloadableContent<CombatLogMode>` instance that `CombatLogManager` owns, so both sites parse the mode exactly once per reload.
+
+### Admin Command
+
+`/mcrpg combatlog <player> [page]` (permission `mcrpg.admin.combatlog`) shows a paginated (`PAGE_SIZE = 10`) history of a player's combat log incidents — timestamp, combat type, location, and applied punishments. Resolves offline players via Paper's async `PlayerProfile.update()` API before querying `CombatLogDAO` on the database executor, then hops back to the main thread to send output.
+
+---
+
 ## Keeping This File Current
 
 After any commit or PR that introduces one of the following, **update `CLAUDE.md` and the relevant `.cursor/rules/*.mdc` files** before or alongside the change:
@@ -915,6 +1007,7 @@ After any commit or PR that introduces one of the following, **update `CLAUDE.md
 | CI review routing, persona set, or signal rule changed | `.github/claude-review-prompt.md` + `.claude/agents/review-*.md` (+ `.github/workflows/claude-review.yml` for triggers/model) |
 | Quest board system changed (new condition, distribution type, template feature) | `CLAUDE.md` Quest Board System section + `quest-board-system.mdc` |
 | Quest chain system changed (new trigger type, repeat mode enforced, chain event added) | `CLAUDE.md` Quest Chain System terminology + `chain-system-backlog.md` |
+| Combat tracker system changed (new punishment type, combat log mode, session policy consumer) | `CLAUDE.md` Combat Tracker & Combat Log System section + Domain Terminology |
 | Mana balance parameters changed (pool size, regen rate, bucket ranges) | `CLAUDE.md` Mana Balance Philosophy section + `mana-balance-philosophy.mdc` + `core.mdc` |
 | GUI color palette changed (new role, hex value, usage rule) | `PALETTE.md` + `core.mdc` GUI Color Palette section + `docs/hld/gui-ux-system.md` |
 

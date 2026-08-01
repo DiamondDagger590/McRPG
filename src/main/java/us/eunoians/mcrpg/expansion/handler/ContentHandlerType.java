@@ -4,8 +4,18 @@ import com.diamonddagger590.mccore.registry.RegistryKey;
 import com.diamonddagger590.mccore.registry.manager.ManagerKey;
 import com.diamonddagger590.mccore.statistic.StatisticRegistry;
 import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
+import us.eunoians.mcrpg.combat.condition.CombatCondition;
+import us.eunoians.mcrpg.combat.condition.CombatConditionRegistry;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentType;
+import us.eunoians.mcrpg.combat.log.CombatLogPunishmentTypeRegistry;
+import us.eunoians.mcrpg.combat.state.CombatStateType;
+import us.eunoians.mcrpg.combat.state.CombatStateTypeRegistry;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.ChainAutoStartTriggerContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatStateTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.PlayerSettingContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestChainContentPack;
@@ -281,6 +291,57 @@ public enum ContentHandlerType {
                                 .manager(ManagerKey.RELOADABLE_CONTENT)
                                 .trackReloadableContent(reloadable));
             });
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link CombatConditionContentPack}s by registering
+     * each {@link us.eunoians.mcrpg.combat.condition.CombatCondition} into the
+     * {@link CombatConditionRegistry} and starting its periodic evaluation task. Starting the task
+     * here (rather than relying solely on the bootstrap-time bulk start) is what lets a third-party
+     * expansion register combat conditions after McRPG's own startup and have them actually polled.
+     */
+    COMBAT_CONDITION((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof CombatConditionContentPack combatConditionPack) {
+            CombatConditionRegistry conditionRegistry = mcRPG.registryAccess()
+                    .registry(McRPGRegistryKey.COMBAT_CONDITION);
+            CombatTrackerManager combatTrackerManager = mcRPG.registryAccess()
+                    .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_TRACKER);
+            for (CombatCondition condition : combatConditionPack.getContent()) {
+                conditionRegistry.register(condition);
+                combatTrackerManager.startConditionTask(condition);
+            }
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link CombatStateTypeContentPack}s by registering
+     * each {@link CombatStateType} into the {@link CombatStateTypeRegistry}.
+     */
+    COMBAT_STATE_TYPE((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof CombatStateTypeContentPack combatStateTypePack) {
+            CombatStateTypeRegistry stateTypeRegistry = mcRPG.registryAccess()
+                    .registry(McRPGRegistryKey.COMBAT_STATE_TYPE);
+            for (CombatStateType<?> stateType : combatStateTypePack.getContent()) {
+                stateTypeRegistry.register(stateType);
+            }
+            return true;
+        }
+        return false;
+    }),
+    /**
+     * This processor handles processing {@link CombatLogPunishmentContentPack}s by registering
+     * each {@link CombatLogPunishmentType} into the {@link CombatLogPunishmentTypeRegistry}.
+     */
+    COMBAT_LOG_PUNISHMENT_TYPE((mcRPG, mcRPGContent) -> {
+        if (mcRPGContent instanceof CombatLogPunishmentContentPack combatLogPunishmentPack) {
+            CombatLogPunishmentTypeRegistry punishmentTypeRegistry = mcRPG.registryAccess()
+                    .registry(McRPGRegistryKey.COMBAT_LOG_PUNISHMENT_TYPE);
+            for (CombatLogPunishmentType punishmentType : combatLogPunishmentPack.getContent()) {
+                punishmentTypeRegistry.register(punishmentType);
+            }
             return true;
         }
         return false;

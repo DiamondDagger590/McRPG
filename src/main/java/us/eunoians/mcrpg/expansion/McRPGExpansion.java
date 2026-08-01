@@ -27,10 +27,16 @@ import us.eunoians.mcrpg.ability.impl.woodcutting.HeavySwing;
 import us.eunoians.mcrpg.ability.impl.woodcutting.NymphsVitality;
 import us.eunoians.mcrpg.configuration.file.localization.LocalizationKey;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.combat.log.BroadcastMessagePunishment;
+import us.eunoians.mcrpg.combat.log.DropItemsPunishment;
+import us.eunoians.mcrpg.combat.log.KillOnLogoutPunishment;
 import us.eunoians.mcrpg.expansion.content.AbilityContentPack;
 import us.eunoians.mcrpg.expansion.content.ChainAutoStartTriggerContentPack;
 import us.eunoians.mcrpg.expansion.content.QuestChainStartConditionContentPack;
 import us.eunoians.mcrpg.expansion.content.WindowBoundaryTypeContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatConditionContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatLogPunishmentContentPack;
+import us.eunoians.mcrpg.expansion.content.CombatStateTypeContentPack;
 import us.eunoians.mcrpg.expansion.content.LocalizationContentPack;
 import us.eunoians.mcrpg.expansion.content.McRPGContent;
 import us.eunoians.mcrpg.expansion.content.McRPGContentPack;
@@ -169,7 +175,8 @@ public final class McRPGExpansion extends ContentExpansion {
                 getQuestSourceContent(), getQuestRarityContent(), getQuestScopeProviderContent(),
                 getRewardDistributionTypeContent(), getTemplateConditionContent(),
                 getChainAutoStartTriggerContent(), getQuestChainContent(),
-                getChainStartConditionTypeContent(), getWindowBoundaryTypeContent());
+                getChainStartConditionTypeContent(), getWindowBoundaryTypeContent(),
+                getCombatConditionContent(), getCombatStateTypeContent(), getCombatLogPunishmentContent());
     }
 
     @NotNull
@@ -566,6 +573,45 @@ public final class McRPGExpansion extends ContentExpansion {
         WindowBoundaryTypeContentPack pack = new WindowBoundaryTypeContentPack(this);
         pack.addContent(new FixedWindowBoundaryType());
         pack.addContent(new RecurringWindowBoundaryType());
+        return pack;
+    }
+
+    /**
+     * Gets the native {@link CombatConditionContentPack} for McRPG. This pack is empty because
+     * no built-in combat conditions exist — the extension point is available for third-party
+     * plugins and future McRPG features.
+     *
+     * @return The native {@link CombatConditionContentPack} for McRPG (empty).
+     */
+    @NotNull
+    private CombatConditionContentPack getCombatConditionContent() {
+        return new CombatConditionContentPack(this);
+    }
+
+    /**
+     * Gets the native {@link CombatStateTypeContentPack} for McRPG. This pack is empty because
+     * no built-in combat state types exist yet — the extension point is available for third-party
+     * plugins and future McRPG features (e.g. Ramping Frenzy's resolved frenzy stack state).
+     *
+     * @return The native {@link CombatStateTypeContentPack} for McRPG (empty).
+     */
+    @NotNull
+    private CombatStateTypeContentPack getCombatStateTypeContent() {
+        return new CombatStateTypeContentPack(this);
+    }
+
+    /**
+     * Gets the native {@link CombatLogPunishmentContentPack} for McRPG, populated with the
+     * built-in punishment types (kill on logout, drop items, broadcast message).
+     *
+     * @return The native {@link CombatLogPunishmentContentPack} for McRPG.
+     */
+    @NotNull
+    private CombatLogPunishmentContentPack getCombatLogPunishmentContent() {
+        CombatLogPunishmentContentPack pack = new CombatLogPunishmentContentPack(this);
+        pack.addContent(new KillOnLogoutPunishment(mcRPG));
+        pack.addContent(new DropItemsPunishment(mcRPG));
+        pack.addContent(new BroadcastMessagePunishment(mcRPG));
         return pack;
     }
 }

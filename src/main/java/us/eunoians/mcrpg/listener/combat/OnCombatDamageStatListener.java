@@ -1,0 +1,60 @@
+package us.eunoians.mcrpg.listener.combat;
+
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.jetbrains.annotations.NotNull;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
+import us.eunoians.mcrpg.combat.stat.CombatSessionStatisticKey;
+
+/**
+ * Observes {@link EntityDamageByEntityEvent} at {@link EventPriority#MONITOR} priority (after
+ * {@link OnCombatDamageListener} at {@link EventPriority#HIGHEST} has created/updated sessions).
+ * Increments per-session damage and hit statistics on the source's and target's active sessions,
+ * for events that {@link CombatDamageResolver} accepts as combat — the same guards that decided
+ * whether those sessions exist at all.
+ */
+public class OnCombatDamageStatListener implements Listener {
+
+    private final CombatTrackerManager combatTrackerManager;
+    private final CombatDamageResolver combatDamageResolver;
+
+    /**
+     * Constructs a new {@link OnCombatDamageStatListener}.
+     *
+     * @param combatTrackerManager The {@link CombatTrackerManager} for session lookups.
+     * @param combatDamageResolver The resolver deciding which damage events count as combat.
+     */
+    public OnCombatDamageStatListener(@NotNull CombatTrackerManager combatTrackerManager,
+                                      @NotNull CombatDamageResolver combatDamageResolver) {
+        this.combatTrackerManager = combatTrackerManager;
+        this.combatDamageResolver = combatDamageResolver;
+    }
+
+    /**
+     * Tracks per-session damage and hit statistics. Resolves the combatants via
+     * {@link CombatDamageResolver#resolve(EntityDamageByEntityEvent)} — the same guards
+     * {@link OnCombatDamageListener} applies when creating the sessions being written to here.
+     * Increments {@code damage_dealt} and {@code hits_landed} on the source's session, and
+     * {@code damage_taken} and {@code hits_received} on the target's session. Each side is written
+     * independently, so a session-less source does not suppress the target's stats or vice versa.
+     *
+     * @param event The damage event.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onEntityDamageByEntity(@NotNull EntityDamageByEntityEvent event) {
+        combatDamageResolver.resolve(event).ifPresent(combatants -> {
+            double damage = event.getFinalDamage();
+
+            combatTrackerManager.getSession(combatants.sourceUUID()).ifPresent(session -> {
+                session.getStatistics().incrementDouble(CombatSessionStatisticKey.DAMAGE_DEALT, damage);
+                session.getStatistics().incrementLong(CombatSessionStatisticKey.HITS_LANDED, 1);
+            });
+            combatTrackerManager.getSession(combatants.targetUUID()).ifPresent(session -> {
+                session.getStatistics().incrementDouble(CombatSessionStatisticKey.DAMAGE_TAKEN, damage);
+                session.getStatistics().incrementLong(CombatSessionStatisticKey.HITS_RECEIVED, 1);
+            });
+        });
+    }
+}

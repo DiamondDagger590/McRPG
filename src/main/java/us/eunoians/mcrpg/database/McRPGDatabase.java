@@ -6,6 +6,8 @@ import com.diamonddagger590.mccore.database.Database;
 import com.diamonddagger590.mccore.database.driver.DatabaseDriverType;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
+import us.eunoians.mcrpg.database.table.CombatLogDAO;
+import us.eunoians.mcrpg.database.table.CombatPersistentStateDAO;
 import us.eunoians.mcrpg.database.table.LoadoutAbilityDAO;
 import us.eunoians.mcrpg.database.table.LoadoutDisplayDAO;
 import us.eunoians.mcrpg.database.table.LoadoutInfoDAO;
@@ -133,6 +135,10 @@ public class McRPGDatabase extends Database {
                             + (QuestChainStateDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     logger.log(Level.INFO, "Database Creation - Quest Chain Completion Log DAO "
                             + (QuestChainCompletionLogDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Combat Persistent State DAO "
+                            + (CombatPersistentStateDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
+                    logger.log(Level.INFO, "Database Creation - Combat Log DAO "
+                            + (CombatLogDAO.attemptCreateTable(connection, database) ? "created a new table." : "already existed so skipping creation."));
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {
@@ -172,6 +178,8 @@ public class McRPGDatabase extends Database {
                     ScopedBoardStateDAO.updateTable(connection);
                     QuestChainStateDAO.updateTable(connection);
                     QuestChainCompletionLogDAO.updateTable(connection);
+                    CombatPersistentStateDAO.updateTable(connection);
+                    CombatLogDAO.updateTable(connection);
                     completableFuture.complete(null);
                 }
                 catch (SQLException e) {

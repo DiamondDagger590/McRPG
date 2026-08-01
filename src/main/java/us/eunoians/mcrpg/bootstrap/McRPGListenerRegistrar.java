@@ -9,6 +9,8 @@ import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.combo.ComboManager;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
+import us.eunoians.mcrpg.combat.log.CombatLogManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
 import us.eunoians.mcrpg.display.hud.ActionBarHudTask;
@@ -22,6 +24,15 @@ import us.eunoians.mcrpg.listener.ability.OnAttackAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnBleedActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnBlockBreakListener;
 import us.eunoians.mcrpg.listener.ability.OnBlockDropItemListener;
+import us.eunoians.mcrpg.listener.combat.CombatDamageResolver;
+import us.eunoians.mcrpg.listener.combat.OnCombatDamageListener;
+import us.eunoians.mcrpg.listener.combat.OnCombatDamageStatListener;
+import us.eunoians.mcrpg.listener.combat.OnCombatEntityDeathListener;
+import us.eunoians.mcrpg.listener.combat.OnCombatEntityRemoveListener;
+import us.eunoians.mcrpg.listener.combat.OnCombatExitMessageListener;
+import us.eunoians.mcrpg.listener.combat.OnCombatHealingStatListener;
+import us.eunoians.mcrpg.listener.combat.OnCombatSessionEndStatUpdateListener;
+import us.eunoians.mcrpg.listener.combat.OnProjectileLaunchListener;
 import us.eunoians.mcrpg.listener.ability.OnExtraOreActivateListener;
 import us.eunoians.mcrpg.listener.ability.OnFoodLevelChangeAbilityListener;
 import us.eunoians.mcrpg.listener.ability.OnInteractAbilityListener;
@@ -114,10 +125,16 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
     @Override
     public void register(@NotNull BootstrapContext<McRPG> context) {
         McRPG plugin = context.plugin();
+
+        CombatTrackerManager combatTrackerManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_TRACKER);
+        CombatLogManager combatLogManager = plugin.registryAccess()
+                .registry(RegistryKey.MANAGER).manager(McRPGManagerKey.COMBAT_LOG);
+
         // Player load/save
         if (context.startupProfile() == StartupProfile.PROD) {
-            Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(), plugin);
-            Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(), plugin);
+            Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(combatTrackerManager), plugin);
+            Bukkit.getPluginManager().registerEvents(new PlayerLeaveListener(combatLogManager), plugin);
             Bukkit.getPluginManager().registerEvents(new CorePlayerLoadListener(), plugin);
             Bukkit.getPluginManager().registerEvents(new CorePlayerUnloadListener(), plugin);
         }
@@ -250,5 +267,20 @@ final class McRPGListenerRegistrar implements Registrar<McRPG> {
 
         // Safe zones
         Bukkit.getPluginManager().registerEvents(new PlayerSafeZoneStateChangeListener(), plugin);
+
+        // Combat tracker listeners
+        CombatDamageResolver combatDamageResolver = new CombatDamageResolver();
+        Bukkit.getPluginManager().registerEvents(new OnCombatDamageListener(combatTrackerManager, combatDamageResolver), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnCombatEntityDeathListener(combatTrackerManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnCombatEntityRemoveListener(combatTrackerManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnProjectileLaunchListener(), plugin);
+
+        // Combat stat listeners
+        Bukkit.getPluginManager().registerEvents(new OnCombatDamageStatListener(combatTrackerManager, combatDamageResolver), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnCombatHealingStatListener(combatTrackerManager), plugin);
+        Bukkit.getPluginManager().registerEvents(new OnCombatSessionEndStatUpdateListener(plugin), plugin);
+
+        Bukkit.getPluginManager().registerEvents(
+                new OnCombatExitMessageListener(plugin, combatLogManager.getMode()), plugin);
     }
 }

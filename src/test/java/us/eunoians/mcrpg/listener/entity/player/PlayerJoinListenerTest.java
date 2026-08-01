@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.combat.CombatTrackerManager;
 import us.eunoians.mcrpg.quest.reward.PendingReward;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
@@ -37,7 +38,7 @@ public class PlayerJoinListenerTest extends McRPGBaseTest {
 
     @BeforeEach
     void setUp() {
-        listener = new PlayerJoinListener();
+        listener = new PlayerJoinListener(mock(CombatTrackerManager.class));
         player = mock(Player.class);
         registry = new QuestRewardTypeRegistry();
     }

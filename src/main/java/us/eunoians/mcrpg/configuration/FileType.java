@@ -4,6 +4,7 @@ import dev.dejvokep.boostedyaml.YamlDocument;
 import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.configuration.file.BoardConfigFile;
+import us.eunoians.mcrpg.configuration.file.CombatConfigFile;
 import us.eunoians.mcrpg.configuration.file.ConfigFile;
 import us.eunoians.mcrpg.configuration.file.MainConfigFile;
 import us.eunoians.mcrpg.configuration.file.hud.HudConfigFile;
@@ -28,6 +29,7 @@ public enum FileType {
     HERBALISM_CONFIG("skill_configuration" + "/" + "herbalism_configuration.yml", new HerbalismConfigFile()),
     BOARD_CONFIG("quest-board" + "/" + "board.yml", new BoardConfigFile()),
     HUD_CONFIG("hud_configuration.yml", new HudConfigFile()),
+    COMBAT_CONFIG("combat_configuration.yml", new CombatConfigFile()),
     ;
 
     private final String filePath;

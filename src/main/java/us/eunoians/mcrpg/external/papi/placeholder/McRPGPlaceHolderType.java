@@ -7,6 +7,8 @@ import us.eunoians.mcrpg.ability.attribute.AbilityAttributeRegistry;
 import us.eunoians.mcrpg.ability.impl.type.ActiveAbility;
 import us.eunoians.mcrpg.external.papi.McRPGPapiExpansion;
 import us.eunoians.mcrpg.external.papi.placeholder.ability.AbilityTierPlaceholder;
+import us.eunoians.mcrpg.external.papi.placeholder.combat.CombatSecondsRemainingPlaceholder;
+import us.eunoians.mcrpg.external.papi.placeholder.combat.InCombatPlaceholder;
 import us.eunoians.mcrpg.external.papi.placeholder.experience.BoostedExperiencePlaceholder;
 import us.eunoians.mcrpg.external.papi.placeholder.experience.RedeemableExperiencePlaceholder;
 import us.eunoians.mcrpg.external.papi.placeholder.experience.RedeemableLevelsPlaceholder;
@@ -108,6 +110,10 @@ public enum McRPGPlaceHolderType {
                                 activeAbility.getActivationStatisticKey()));
             }
         });
+    }),
+    COMBAT((mcRPG, mcRPGPapiExpansion) -> {
+        mcRPGPapiExpansion.registerPlaceholder(new InCombatPlaceholder());
+        mcRPGPapiExpansion.registerPlaceholder(new CombatSecondsRemainingPlaceholder());
     }),
     ;
 

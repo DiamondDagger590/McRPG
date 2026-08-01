@@ -1,0 +1,91 @@
+package us.eunoians.mcrpg.listener.combat;
+
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Projectile;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Optional;
+import java.util.UUID;
+
+/**
+ * Decides which {@link EntityDamageByEntityEvent}s count as combat and resolves the two combatants
+ * involved. A single shared instance is used by both the session-management listener
+ * ({@link OnCombatDamageListener}) and the statistics listener ({@link OnCombatDamageStatListener}),
+ * so the two cannot drift apart on what qualifies as combat — a stat recorded for an interaction
+ * that started no session, or the reverse.
+ * <p>
+ * The rules it applies (unwrap projectile shooters, require both sides to be living, reject
+ * self-damage) are gameplay policy, so it is an injected instance collaborator rather than a static
+ * helper — the same shape as {@link us.eunoians.mcrpg.quest.board.distribution.QuestRewardDistributionResolver}.
+ * It is constructed once in {@code McRPGListenerRegistrar}.
+ */
+public class CombatDamageResolver {
+
+    /**
+     * Resolves the source and target combatants from a damage event. A {@link Projectile} damager is
+     * unwrapped to its shooter, so the archer rather than the arrow is credited as the source.
+     * <p>
+     * The event is rejected (empty result) when:
+     * <ul>
+     *     <li>the damager is a projectile whose shooter is not an {@link Entity} (dispenser-fired
+     *     arrows, for example)</li>
+     *     <li>either resolved side is not a {@link LivingEntity}</li>
+     *     <li>the source and target are the same entity — self-damage is not combat</li>
+     * </ul>
+     *
+     * @param event The damage event to resolve.
+     * @return An {@link Optional} containing the resolved {@link Combatants}, or empty if any guard rejects the event.
+     */
+    @NotNull
+    public Optional<Combatants> resolve(@NotNull EntityDamageByEntityEvent event) {
+        Entity damager = event.getDamager();
+
+        if (damager instanceof Projectile projectile) {
+            if (!(projectile.getShooter() instanceof Entity shooterEntity)) {
+                return Optional.empty();
+            }
+            damager = shooterEntity;
+        }
+
+        if (!(damager instanceof LivingEntity sourceEntity) || !(event.getEntity() instanceof LivingEntity targetEntity)) {
+            return Optional.empty();
+        }
+
+        if (sourceEntity.getUniqueId().equals(targetEntity.getUniqueId())) {
+            return Optional.empty();
+        }
+
+        return Optional.of(new Combatants(sourceEntity, targetEntity));
+    }
+
+    /**
+     * The two living entities resolved from a damage event.
+     *
+     * @param source The entity that dealt the damage (the shooter, for projectile damage).
+     * @param target The entity that took the damage.
+     */
+    public record Combatants(@NotNull LivingEntity source, @NotNull LivingEntity target) {
+
+        /**
+         * Gets the UUID of the damage source.
+         *
+         * @return The source entity's UUID.
+         */
+        @NotNull
+        public UUID sourceUUID() {
+            return source.getUniqueId();
+        }
+
+        /**
+         * Gets the UUID of the damage target.
+         *
+         * @return The target entity's UUID.
+         */
+        @NotNull
+        public UUID targetUUID() {
+            return target.getUniqueId();
+        }
+    }
+}
