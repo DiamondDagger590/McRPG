@@ -9,28 +9,18 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.database.McRPGDatabaseManager;
-import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.atLeast;
@@ -233,45 +223,4 @@ public class ChainPersistenceServiceTest extends McRPGBaseTest {
                 "Pending advancements must not be cleared by saveChainStateAsync so the sync flush can replay them on failure");
     }
 
-    @Test
-    @DisplayName("Given a CompletableFuture that completes with CancellationException, When the guard is applied, Then no SEVERE is logged")
-    void cancellationException_doesNotLogSevere_whenGuardIsApplied() throws Exception {
-        List<LogRecord> records = new ArrayList<>();
-        Handler captureHandler = new Handler() {
-            @Override
-            public void publish(LogRecord record) {
-                records.add(record);
-            }
-
-            @Override
-            public void flush() {
-            }
-
-            @Override
-            public void close() {
-            }
-        };
-        mcRPG.getLogger().addHandler(captureHandler);
-        try {
-            CompletableFuture<Void> task = new CompletableFuture<>();
-            CompletableFuture<Void> guarded = task.exceptionally(ex -> {
-                if (ex instanceof CancellationException) {
-                    return null;
-                }
-                mcRPG.getLogger().log(Level.SEVERE, "Unexpected exception in async persistence", ex);
-                return null;
-            });
-
-            task.cancel(true);
-            // Wait for the exceptionally handler to complete
-            guarded.join();
-
-            assertFalse(
-                    records.stream().anyMatch(r -> r.getLevel() == Level.SEVERE),
-                    "CancellationException must not produce a SEVERE log entry"
-            );
-        } finally {
-            mcRPG.getLogger().removeHandler(captureHandler);
-        }
-    }
 }
