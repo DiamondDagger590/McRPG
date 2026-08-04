@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -230,6 +231,19 @@ class WindowBoundaryTypeTest {
         }
 
         @Test
+        @DisplayName("parse logs warning when month-day has invalid format")
+        void parse_logsWarning_whenMonthDayInvalid() {
+            Section section = mock(Section.class);
+            when(section.getString("month-day")).thenReturn("12-01");
+            when(section.getString("time")).thenReturn("00:00:00");
+
+            type.parse(section, mockFile, logger);
+
+            verify(logger).warning(argThat((String msg) ->
+                    msg.startsWith("[AvailabilityConfig] Invalid recurring boundary in test-chain.yml")));
+        }
+
+        @Test
         @DisplayName("parse returns empty when time has invalid format")
         void parse_returnsEmpty_whenTimeInvalid() {
             Section section = mock(Section.class);
@@ -239,6 +253,19 @@ class WindowBoundaryTypeTest {
             Optional<WindowBoundary> result = type.parse(section, mockFile, logger);
 
             assertTrue(result.isEmpty());
+        }
+
+        @Test
+        @DisplayName("parse logs warning when time has invalid format")
+        void parse_logsWarning_whenTimeInvalid() {
+            Section section = mock(Section.class);
+            when(section.getString("month-day")).thenReturn("--12-01");
+            when(section.getString("time")).thenReturn("not-a-time");
+
+            type.parse(section, mockFile, logger);
+
+            verify(logger).warning(argThat((String msg) ->
+                    msg.startsWith("[AvailabilityConfig] Invalid recurring boundary in test-chain.yml")));
         }
     }
 }
