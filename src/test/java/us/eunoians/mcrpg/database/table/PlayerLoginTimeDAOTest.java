@@ -1,5 +1,6 @@
 package us.eunoians.mcrpg.database.table;
 
+import com.diamonddagger590.mccore.database.Database;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
@@ -19,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -30,6 +32,34 @@ class PlayerLoginTimeDAOTest extends McRPGBaseTest {
 
     private static final UUID PLAYER_UUID = UUID.randomUUID();
     private static final Instant TEST_INSTANT = Instant.parse("2024-06-15T10:30:00Z");
+
+    @Test
+    @DisplayName("attemptCreateTable creates the table when it does not exist")
+    void attemptCreateTable_createsTable_whenAbsent() throws SQLException {
+        Connection mockConnection = mock(Connection.class);
+        Database mockDatabase = mock(Database.class);
+        PreparedStatement mockStatement = mock(PreparedStatement.class);
+        when(mockDatabase.tableExists(mockConnection, PlayerLoginTimeDAO.TABLE_NAME)).thenReturn(false);
+        when(mockConnection.prepareStatement(anyString())).thenReturn(mockStatement);
+
+        boolean created = PlayerLoginTimeDAO.attemptCreateTable(mockConnection, mockDatabase);
+
+        assertTrue(created);
+        verify(mockConnection).prepareStatement(contains("CREATE TABLE"));
+        verify(mockStatement).executeUpdate();
+    }
+
+    @Test
+    @DisplayName("attemptCreateTable returns false when the table already exists")
+    void attemptCreateTable_returnsFalse_whenAlreadyExists() {
+        Connection mockConnection = mock(Connection.class);
+        Database mockDatabase = mock(Database.class);
+        when(mockDatabase.tableExists(mockConnection, PlayerLoginTimeDAO.TABLE_NAME)).thenReturn(true);
+
+        boolean created = PlayerLoginTimeDAO.attemptCreateTable(mockConnection, mockDatabase);
+
+        assertFalse(created);
+    }
 
     @Test
     @DisplayName("hasPlayerLoggedInBefore returns true when row exists")
