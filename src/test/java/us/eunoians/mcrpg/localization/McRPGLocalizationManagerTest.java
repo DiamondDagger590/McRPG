@@ -43,8 +43,10 @@ import static org.mockito.Mockito.when;
 class McRPGLocalizationManagerTest {
 
     /**
-     * Default palette values mirroring the {@code config.yml} defaults. Used to inject
-     * a known palette state into the manager for {@code resolvePaletteColors} tests.
+     * Representative subset of palette roles used to inject a known palette state into the
+     * manager for {@code resolvePaletteColors} mechanism tests. Values may not match the
+     * actual {@code config.yml} defaults — the tests exercise the replacement mechanism,
+     * not specific configured colors.
      */
     private static final Map<String, String> DEFAULT_PALETTE;
 
