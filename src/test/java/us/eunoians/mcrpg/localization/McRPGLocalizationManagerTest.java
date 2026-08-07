@@ -1,16 +1,35 @@
 package us.eunoians.mcrpg.localization;
 
 import com.diamonddagger590.mccore.configuration.ReloadableContent;
+import com.diamonddagger590.mccore.util.LinkedNode;
+import dev.dejvokep.boostedyaml.YamlDocument;
+import org.bukkit.entity.Player;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.setting.impl.LocalePlayerSetting;
+import us.eunoians.mcrpg.setting.impl.LocaleSetting;
+import us.eunoians.mcrpg.setting.impl.SpecificLocaleSetting;
 
 import java.lang.reflect.Field;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -24,8 +43,10 @@ import static org.mockito.Mockito.when;
 class McRPGLocalizationManagerTest {
 
     /**
-     * Default palette values mirroring the {@code config.yml} defaults. Used to inject
-     * a known palette state into the manager for {@code resolvePaletteColors} tests.
+     * Representative subset of palette roles used to inject a known palette state into the
+     * manager for {@code resolvePaletteColors} mechanism tests. Values may not match the
+     * actual {@code config.yml} defaults — the tests exercise the replacement mechanism,
+     * not specific configured colors.
      */
     private static final Map<String, String> DEFAULT_PALETTE;
 
@@ -194,5 +215,289 @@ class McRPGLocalizationManagerTest {
     void resolvePaletteColors_bodyCloseTag_isReplaced() {
         assertEquals("<green>Enabled</green> state",
                 manager.resolvePaletteColors("<positive>Enabled</positive> state"));
+    }
+
+    @Nested
+    @DisplayName("getLocaleChain")
+    class GetLocaleChainTests {
+
+        private McRPGPlayer mockPlayer;
+        private LinkedNode<Locale> serverDefaultChain;
+
+        @BeforeEach
+        @SuppressWarnings("unchecked")
+        void setupLocaleChain() throws Exception {
+            mockPlayer = mock(McRPGPlayer.class);
+
+            serverDefaultChain = new LinkedNode<>(Locale.GERMAN);
+            serverDefaultChain.setNext(new LinkedNode<>(Locale.ENGLISH));
+
+            ReloadableContent<LinkedNode<Locale>> mockLocaleChain = mock(ReloadableContent.class);
+            when(mockLocaleChain.getContent()).thenReturn(serverDefaultChain);
+
+            Field localeChainField = manager.getClass().getSuperclass().getDeclaredField("localeChain");
+            localeChainField.setAccessible(true);
+            localeChainField.set(manager, mockLocaleChain);
+        }
+
+        @DisplayName("Given no locale setting, when getLocaleChain is called, then the default chain (client -> server default -> english) is returned")
+        @Test
+        void getLocaleChain_noSetting_returnsDefaultChain() {
+            doReturn(Optional.empty()).when(mockPlayer).getPlayerSetting(LocalePlayerSetting.SETTING_KEY);
+            when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.empty());
+
+            LinkedNode<Locale> chain = manager.getLocaleChain(mockPlayer);
+
+            assertEquals(Locale.GERMAN, chain.getNodeValue());
+            assertTrue(chain.hasNext());
+            assertEquals(Locale.ENGLISH, chain.getNextNode().getNodeValue());
+        }
+
+        @DisplayName("Given CLIENT_LOCALE setting, when getLocaleChain is called, then the default chain is returned")
+        @Test
+        void getLocaleChain_clientLocale_returnsDefaultChain() {
+            doReturn(Optional.of(LocaleSetting.CLIENT_LOCALE)).when(mockPlayer).getPlayerSetting(LocalePlayerSetting.SETTING_KEY);
+            when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.empty());
+
+            LinkedNode<Locale> chain = manager.getLocaleChain(mockPlayer);
+
+            assertEquals(Locale.GERMAN, chain.getNodeValue());
+            assertTrue(chain.hasNext());
+            assertEquals(Locale.ENGLISH, chain.getNextNode().getNodeValue());
+        }
+
+        @DisplayName("Given CLIENT_LOCALE setting with client locale available, when getLocaleChain is called, then client locale leads the chain")
+        @Test
+        void getLocaleChain_clientLocaleWithBukkitPlayer_clientLeadsChain() {
+            doReturn(Optional.of(LocaleSetting.CLIENT_LOCALE)).when(mockPlayer).getPlayerSetting(LocalePlayerSetting.SETTING_KEY);
+            Player playerMock = mock(Player.class);
+            when(playerMock.locale()).thenReturn(Locale.FRENCH);
+            when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(playerMock));
+
+            LinkedNode<Locale> chain = manager.getLocaleChain(mockPlayer);
+
+            assertEquals(Locale.FRENCH, chain.getNodeValue());
+            assertTrue(chain.hasNext());
+            assertEquals(Locale.GERMAN, chain.getNextNode().getNodeValue());
+            assertTrue(chain.getNextNode().hasNext());
+            assertEquals(Locale.ENGLISH, chain.getNextNode().getNextNode().getNodeValue());
+        }
+
+        @DisplayName("Given SERVER_LOCALE setting with client locale available, when getLocaleChain is called, then server default leads the chain")
+        @Test
+        void getLocaleChain_serverLocaleWithClient_serverDefaultLeadsChain() {
+            doReturn(Optional.of(LocaleSetting.SERVER_LOCALE)).when(mockPlayer).getPlayerSetting(LocalePlayerSetting.SETTING_KEY);
+            Player playerMock = mock(Player.class);
+            when(playerMock.locale()).thenReturn(Locale.FRENCH);
+            when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(playerMock));
+
+            LinkedNode<Locale> chain = manager.getLocaleChain(mockPlayer);
+
+            assertEquals(Locale.GERMAN, chain.getNodeValue());
+            assertTrue(chain.hasNext());
+            assertEquals(Locale.FRENCH, chain.getNextNode().getNodeValue());
+            assertTrue(chain.getNextNode().hasNext());
+            assertEquals(Locale.ENGLISH, chain.getNextNode().getNextNode().getNodeValue());
+        }
+
+        @DisplayName("Given SERVER_LOCALE setting without client locale, when getLocaleChain is called, then server default followed by english")
+        @Test
+        void getLocaleChain_serverLocaleWithoutClient_serverDefaultThenEnglish() {
+            doReturn(Optional.of(LocaleSetting.SERVER_LOCALE)).when(mockPlayer).getPlayerSetting(LocalePlayerSetting.SETTING_KEY);
+            when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.empty());
+
+            LinkedNode<Locale> chain = manager.getLocaleChain(mockPlayer);
+
+            assertEquals(Locale.GERMAN, chain.getNodeValue());
+            assertTrue(chain.hasNext());
+            assertEquals(Locale.ENGLISH, chain.getNextNode().getNodeValue());
+            assertFalse(chain.getNextNode().hasNext());
+        }
+
+        @DisplayName("Given a SpecificLocaleSetting, when getLocaleChain is called, then the specific locale leads the chain")
+        @Test
+        void getLocaleChain_specificLocale_specificLeadsChain() {
+            SpecificLocaleSetting specificSetting = mock(SpecificLocaleSetting.class);
+            when(specificSetting.getLocale()).thenReturn(Locale.JAPANESE);
+            doReturn(Optional.of(specificSetting)).when(mockPlayer).getPlayerSetting(LocalePlayerSetting.SETTING_KEY);
+            when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.empty());
+
+            LinkedNode<Locale> chain = manager.getLocaleChain(mockPlayer);
+
+            assertEquals(Locale.JAPANESE, chain.getNodeValue());
+            assertTrue(chain.hasNext());
+            assertEquals(Locale.GERMAN, chain.getNextNode().getNodeValue());
+            assertTrue(chain.getNextNode().hasNext());
+            assertEquals(Locale.ENGLISH, chain.getNextNode().getNextNode().getNodeValue());
+        }
+
+        @DisplayName("Given a SpecificLocaleSetting with client locale available, when getLocaleChain is called, then specific -> client -> server default -> english")
+        @Test
+        void getLocaleChain_specificLocaleWithClient_fullChain() {
+            SpecificLocaleSetting specificSetting = mock(SpecificLocaleSetting.class);
+            when(specificSetting.getLocale()).thenReturn(Locale.JAPANESE);
+            doReturn(Optional.of(specificSetting)).when(mockPlayer).getPlayerSetting(LocalePlayerSetting.SETTING_KEY);
+            Player playerMock = mock(Player.class);
+            when(playerMock.locale()).thenReturn(Locale.FRENCH);
+            when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(playerMock));
+
+            LinkedNode<Locale> chain = manager.getLocaleChain(mockPlayer);
+
+            assertEquals(Locale.JAPANESE, chain.getNodeValue());
+            assertTrue(chain.hasNext());
+            assertEquals(Locale.FRENCH, chain.getNextNode().getNodeValue());
+            assertTrue(chain.getNextNode().hasNext());
+            assertEquals(Locale.GERMAN, chain.getNextNode().getNextNode().getNodeValue());
+            assertTrue(chain.getNextNode().getNextNode().hasNext());
+            assertEquals(Locale.ENGLISH, chain.getNextNode().getNextNode().getNextNode().getNodeValue());
+        }
+    }
+
+    @Nested
+    @DisplayName("getServerDefaultLocale")
+    class GetServerDefaultLocaleTests {
+
+        @DisplayName("Given a configured server default locale, when getServerDefaultLocale is called, then the locale chain head is returned")
+        @Test
+        @SuppressWarnings("unchecked")
+        void getServerDefaultLocale_returnsLocaleChainHead() throws Exception {
+            LinkedNode<Locale> serverDefaultChain = new LinkedNode<>(Locale.ITALIAN);
+            serverDefaultChain.setNext(new LinkedNode<>(Locale.ENGLISH));
+
+            ReloadableContent<LinkedNode<Locale>> mockLocaleChain = mock(ReloadableContent.class);
+            when(mockLocaleChain.getContent()).thenReturn(serverDefaultChain);
+
+            Field localeChainField = manager.getClass().getSuperclass().getDeclaredField("localeChain");
+            localeChainField.setAccessible(true);
+            localeChainField.set(manager, mockLocaleChain);
+
+            assertEquals(Locale.ITALIAN, manager.getServerDefaultLocale());
+        }
+    }
+
+    @Nested
+    @DisplayName("getRegisteredLocales")
+    class GetRegisteredLocalesTests {
+
+        @DisplayName("Given no registered locales, when getRegisteredLocales is called, then an empty set is returned")
+        @Test
+        void getRegisteredLocales_noLocales_returnsEmptySet() throws Exception {
+            Map<Locale, List<YamlDocument>> localizationsMap = new HashMap<>();
+
+            Field localizationsField = manager.getClass().getSuperclass().getDeclaredField("localizations");
+            localizationsField.setAccessible(true);
+            localizationsField.set(manager, localizationsMap);
+
+            Set<Locale> result = manager.getRegisteredLocales();
+            assertTrue(result.isEmpty());
+        }
+
+        @DisplayName("Given multiple registered locales, when getRegisteredLocales is called, then all locale keys are returned")
+        @Test
+        void getRegisteredLocales_multipleLocales_returnsAllKeys() throws Exception {
+            Map<Locale, List<YamlDocument>> localizationsMap = new HashMap<>();
+            localizationsMap.put(Locale.ENGLISH, new ArrayList<>());
+            localizationsMap.put(Locale.FRENCH, new ArrayList<>());
+            localizationsMap.put(Locale.GERMAN, new ArrayList<>());
+
+            Field localizationsField = manager.getClass().getSuperclass().getDeclaredField("localizations");
+            localizationsField.setAccessible(true);
+            localizationsField.set(manager, localizationsMap);
+
+            Set<Locale> result = manager.getRegisteredLocales();
+            assertEquals(3, result.size());
+            assertTrue(result.contains(Locale.ENGLISH));
+            assertTrue(result.contains(Locale.FRENCH));
+            assertTrue(result.contains(Locale.GERMAN));
+        }
+
+        @DisplayName("Given registered locales, when getRegisteredLocales is called, then the returned set is a defensive copy")
+        @Test
+        void getRegisteredLocales_returnedSetIsDefensiveCopy() throws Exception {
+            Map<Locale, List<YamlDocument>> localizationsMap = new HashMap<>();
+            localizationsMap.put(Locale.ENGLISH, new ArrayList<>());
+
+            Field localizationsField = manager.getClass().getSuperclass().getDeclaredField("localizations");
+            localizationsField.setAccessible(true);
+            localizationsField.set(manager, localizationsMap);
+
+            Set<Locale> result = manager.getRegisteredLocales();
+            assertNotSame(localizationsMap.keySet(), result);
+        }
+    }
+
+    @Nested
+    @DisplayName("formatDisplayDate")
+    class FormatDisplayDateTests {
+
+        @DisplayName("Given a player with English locale, when formatDisplayDate is called, then the date is formatted in English MEDIUM style")
+        @Test
+        @SuppressWarnings("unchecked")
+        void formatDisplayDate_englishLocale_formatsInEnglish() throws Exception {
+            McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
+            doReturn(Optional.of(LocaleSetting.CLIENT_LOCALE)).when(mockPlayer).getPlayerSetting(LocalePlayerSetting.SETTING_KEY);
+            when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.empty());
+
+            LinkedNode<Locale> serverDefaultChain = new LinkedNode<>(Locale.US);
+            serverDefaultChain.setNext(new LinkedNode<>(Locale.ENGLISH));
+
+            ReloadableContent<LinkedNode<Locale>> mockLocaleChain = mock(ReloadableContent.class);
+            when(mockLocaleChain.getContent()).thenReturn(serverDefaultChain);
+
+            Field localeChainField = manager.getClass().getSuperclass().getDeclaredField("localeChain");
+            localeChainField.setAccessible(true);
+            localeChainField.set(manager, mockLocaleChain);
+
+            Instant testInstant = Instant.parse("2025-01-15T12:00:00Z");
+            String result = manager.formatDisplayDate(mockPlayer, testInstant);
+
+            assertEquals("Jan 15, 2025", result);
+        }
+
+        @DisplayName("Given a player with German locale, when formatDisplayDate is called, then the date is formatted in German MEDIUM style")
+        @Test
+        @SuppressWarnings("unchecked")
+        void formatDisplayDate_germanLocale_formatsInGerman() throws Exception {
+            McRPGPlayer mockPlayer = mock(McRPGPlayer.class);
+            Player playerMock = mock(Player.class);
+            when(playerMock.locale()).thenReturn(Locale.GERMANY);
+            when(mockPlayer.getAsBukkitPlayer()).thenReturn(Optional.of(playerMock));
+            doReturn(Optional.of(LocaleSetting.CLIENT_LOCALE)).when(mockPlayer).getPlayerSetting(LocalePlayerSetting.SETTING_KEY);
+
+            LinkedNode<Locale> serverDefaultChain = new LinkedNode<>(Locale.US);
+            serverDefaultChain.setNext(new LinkedNode<>(Locale.ENGLISH));
+
+            ReloadableContent<LinkedNode<Locale>> mockLocaleChain = mock(ReloadableContent.class);
+            when(mockLocaleChain.getContent()).thenReturn(serverDefaultChain);
+
+            Field localeChainField = manager.getClass().getSuperclass().getDeclaredField("localeChain");
+            localeChainField.setAccessible(true);
+            localeChainField.set(manager, mockLocaleChain);
+
+            Instant testInstant = Instant.parse("2025-01-15T12:00:00Z");
+            String result = manager.formatDisplayDate(mockPlayer, testInstant);
+
+            assertEquals("15.01.2025", result);
+        }
+    }
+
+    @Nested
+    @DisplayName("getPaletteReplacements")
+    class GetPaletteReplacementsTests {
+
+        @DisplayName("Given a configured palette, when getPaletteReplacements is called, then the replacement map is returned")
+        @Test
+        void getPaletteReplacements_returnsConfiguredMap() {
+            Map<String, String> replacements = manager.getPaletteReplacements();
+            assertEquals("<color:#D4A76A>", replacements.get("<primary>"));
+            assertEquals("</color:#D4A76A>", replacements.get("</primary>"));
+        }
+
+        @DisplayName("Given a configured palette, when getPaletteReplacements is called, then both open and close tags exist for each role")
+        @Test
+        void getPaletteReplacements_hasOpenAndCloseTags() {
+            Map<String, String> replacements = manager.getPaletteReplacements();
+            assertEquals(20, replacements.size());
+        }
     }
 }
