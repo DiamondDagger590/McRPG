@@ -112,6 +112,22 @@ class RarityConditionTest {
         }
 
         @Test
+        @DisplayName("null rolledRarity with non-null registry returns true")
+        void evaluate_returnsTrue_whenRolledRarityNull() {
+            RarityCondition condition = new RarityCondition(RARE);
+            ConditionContext ctx = new ConditionContext(null, rarityRegistry, null, null, null, null);
+            assertTrue(condition.evaluate(ctx));
+        }
+
+        @Test
+        @DisplayName("non-null rolledRarity with null registry returns true")
+        void evaluate_returnsTrue_whenRegistryNull() {
+            RarityCondition condition = new RarityCondition(RARE);
+            ConditionContext ctx = new ConditionContext(COMMON, null, null, null, null, null);
+            assertTrue(condition.evaluate(ctx));
+        }
+
+        @Test
         @DisplayName("same rarity as minimum passes (equal weight)")
         void evaluate_returnsTrue_whenWeightsEqual() {
             RarityCondition condition = new RarityCondition(RARE);

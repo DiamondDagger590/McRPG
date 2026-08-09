@@ -151,6 +151,42 @@ class CompoundConditionTest {
                     CompoundCondition.LogicMode.ANY);
             assertTrue(condition.evaluate(new ConditionContext(null, null, null, null, null, null)));
         }
+
+        @Test
+        @DisplayName("ALL with mixed true and false children returns false")
+        void all_mixedChildren_returnsFalse() {
+            CompoundCondition condition = new CompoundCondition(
+                    Map.of("a", alwaysTrue(), "b", alwaysFalse()),
+                    CompoundCondition.LogicMode.ALL);
+            assertFalse(condition.evaluate(new ConditionContext(null, null, null, null, null, null)));
+        }
+
+        @Test
+        @DisplayName("ANY with mixed true and false children returns true")
+        void any_mixedChildren_returnsTrue() {
+            CompoundCondition condition = new CompoundCondition(
+                    Map.of("a", alwaysFalse(), "b", alwaysTrue()),
+                    CompoundCondition.LogicMode.ANY);
+            assertTrue(condition.evaluate(new ConditionContext(null, null, null, null, null, null)));
+        }
+
+        @Test
+        @DisplayName("ALL with all true children returns true")
+        void all_allTrueChildren_returnsTrue() {
+            CompoundCondition condition = new CompoundCondition(
+                    Map.of("a", alwaysTrue(), "b", alwaysTrue()),
+                    CompoundCondition.LogicMode.ALL);
+            assertTrue(condition.evaluate(new ConditionContext(null, null, null, null, null, null)));
+        }
+
+        @Test
+        @DisplayName("ANY with all false children returns false")
+        void any_allFalseChildren_returnsFalse() {
+            CompoundCondition condition = new CompoundCondition(
+                    Map.of("a", alwaysFalse(), "b", alwaysFalse()),
+                    CompoundCondition.LogicMode.ANY);
+            assertFalse(condition.evaluate(new ConditionContext(null, null, null, null, null, null)));
+        }
     }
 
     @Nested
