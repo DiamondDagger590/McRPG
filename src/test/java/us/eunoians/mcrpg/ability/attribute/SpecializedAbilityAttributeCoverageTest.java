@@ -488,4 +488,404 @@ class SpecializedAbilityAttributeCoverageTest extends McRPGBaseTest {
             assertInstanceOf(GuiModifiableAttribute.class, attr);
         }
     }
+
+    @Nested
+    @DisplayName("AbilityTierAttribute")
+    class TierAttributeTests {
+
+        @Test
+        @DisplayName("default constructor uses default tier of 1")
+        void defaultConstructor_usesDefaultTier() {
+            var attr = new AbilityTierAttribute();
+            assertEquals(1, attr.getContent());
+        }
+
+        @Test
+        @DisplayName("getDefaultContent returns 1")
+        void getDefaultContent_returnsOne() {
+            var attr = new AbilityTierAttribute();
+            assertEquals(1, attr.getDefaultContent());
+        }
+
+        @Test
+        @DisplayName("value constructor stores provided tier")
+        void valueConstructor_storesProvidedTier() {
+            var attr = new AbilityTierAttribute(5);
+            assertEquals(5, attr.getContent());
+        }
+
+        @Test
+        @DisplayName("shouldContentBeSaved returns false when tier is 1")
+        void shouldContentBeSaved_returnsFalse_whenTierIsOne() {
+            var attr = new AbilityTierAttribute(1);
+            assertFalse(attr.shouldContentBeSaved());
+        }
+
+        @Test
+        @DisplayName("shouldContentBeSaved returns true when tier is greater than 1")
+        void shouldContentBeSaved_returnsTrue_whenTierGreaterThanOne() {
+            var attr = new AbilityTierAttribute(2);
+            assertTrue(attr.shouldContentBeSaved());
+        }
+
+        @Test
+        @DisplayName("create returns new instance with given tier")
+        void create_returnsNewInstance() {
+            var template = new AbilityTierAttribute();
+            AbilityTierAttribute created = template.create(3);
+            assertEquals(3, created.getContent());
+            assertNotSame(template, created);
+        }
+
+        @Test
+        @DisplayName("convertContent parses integer string")
+        void convertContent_parsesIntegerString() {
+            var attr = new AbilityTierAttribute();
+            assertEquals(7, attr.convertContent("7"));
+        }
+
+        @Test
+        @DisplayName("convertContent throws on non-integer string")
+        void convertContent_throwsOnNonIntegerString() {
+            var attr = new AbilityTierAttribute();
+            assertThrows(NumberFormatException.class, () -> attr.convertContent("not_a_number"));
+        }
+
+        @Test
+        @DisplayName("getPlaceholderName returns tier")
+        void getPlaceholderName_returnsTier() {
+            var attr = new AbilityTierAttribute();
+            assertEquals("tier", attr.getPlaceholderName());
+        }
+
+        @Test
+        @DisplayName("getDisplayableContent returns tier as string")
+        void getDisplayableContent_returnsTierAsString() {
+            var attr = new AbilityTierAttribute(4);
+            assertEquals("4", attr.getDisplayableContent());
+        }
+
+        @Test
+        @DisplayName("getDatabaseKeyName returns tier")
+        void getDatabaseKeyName_returnsTier() {
+            var attr = new AbilityTierAttribute();
+            assertEquals("tier", attr.getDatabaseKeyName());
+        }
+
+        @Test
+        @DisplayName("getNamespacedKey matches registry constant")
+        void getNamespacedKey_matchesRegistryConstant() {
+            var attr = new AbilityTierAttribute();
+            assertEquals(AbilityAttributeRegistry.ABILITY_TIER_ATTRIBUTE_KEY, attr.getNamespacedKey());
+        }
+
+        @Test
+        @DisplayName("implements DisplayableAttribute")
+        void implementsDisplayableAttribute() {
+            var attr = new AbilityTierAttribute();
+            assertInstanceOf(DisplayableAttribute.class, attr);
+        }
+
+        @Test
+        @DisplayName("serializeContent returns tier string")
+        void serializeContent_returnsTierString() {
+            var attr = new AbilityTierAttribute(10);
+            assertEquals("10", attr.serializeContent());
+        }
+
+        @Test
+        @DisplayName("create from string parses integer")
+        void create_fromString_parsesInteger() {
+            var template = new AbilityTierAttribute();
+            AbilityAttribute<Integer> created = template.create("6");
+            assertEquals(6, created.getContent());
+        }
+    }
+
+    @Nested
+    @DisplayName("AbilityUnlockedAttribute")
+    class UnlockedAttributeTests {
+
+        @Test
+        @DisplayName("default constructor uses false")
+        void defaultConstructor_usesFalse() {
+            var attr = new AbilityUnlockedAttribute();
+            assertFalse(attr.getContent());
+        }
+
+        @Test
+        @DisplayName("getDefaultContent returns false")
+        void getDefaultContent_returnsFalse() {
+            var attr = new AbilityUnlockedAttribute();
+            assertFalse(attr.getDefaultContent());
+        }
+
+        @Test
+        @DisplayName("value constructor stores provided value")
+        void valueConstructor_storesProvidedValue() {
+            var attr = new AbilityUnlockedAttribute(true);
+            assertTrue(attr.getContent());
+        }
+
+        @Test
+        @DisplayName("shouldContentBeSaved returns false when not unlocked")
+        void shouldContentBeSaved_returnsFalse_whenNotUnlocked() {
+            var attr = new AbilityUnlockedAttribute(false);
+            assertFalse(attr.shouldContentBeSaved());
+        }
+
+        @Test
+        @DisplayName("shouldContentBeSaved returns true when unlocked")
+        void shouldContentBeSaved_returnsTrue_whenUnlocked() {
+            var attr = new AbilityUnlockedAttribute(true);
+            assertTrue(attr.shouldContentBeSaved());
+        }
+
+        @Test
+        @DisplayName("create returns new instance with given value")
+        void create_returnsNewInstance() {
+            var template = new AbilityUnlockedAttribute();
+            AbilityAttribute<Boolean> created = template.create(true);
+            assertTrue(created.getContent());
+            assertNotSame(template, created);
+        }
+
+        @Test
+        @DisplayName("convertContent parses true string")
+        void convertContent_parsesTrue() {
+            var attr = new AbilityUnlockedAttribute();
+            assertTrue(attr.convertContent("true"));
+        }
+
+        @Test
+        @DisplayName("convertContent parses false string")
+        void convertContent_parsesFalse() {
+            var attr = new AbilityUnlockedAttribute();
+            assertFalse(attr.convertContent("false"));
+        }
+
+        @Test
+        @DisplayName("convertContent returns false for non-boolean string")
+        void convertContent_returnsFalse_forNonBooleanString() {
+            var attr = new AbilityUnlockedAttribute();
+            assertFalse(attr.convertContent("notaboolean"));
+        }
+
+        @Test
+        @DisplayName("getDatabaseKeyName returns unlocked")
+        void getDatabaseKeyName_returnsUnlocked() {
+            var attr = new AbilityUnlockedAttribute();
+            assertEquals("unlocked", attr.getDatabaseKeyName());
+        }
+
+        @Test
+        @DisplayName("getNamespacedKey matches registry constant")
+        void getNamespacedKey_matchesRegistryConstant() {
+            var attr = new AbilityUnlockedAttribute();
+            assertEquals(AbilityAttributeRegistry.ABILITY_UNLOCKED_ATTRIBUTE, attr.getNamespacedKey());
+        }
+
+        @Test
+        @DisplayName("serializeContent returns boolean string")
+        void serializeContent_returnsBooleanString() {
+            var attrTrue = new AbilityUnlockedAttribute(true);
+            assertEquals("true", attrTrue.serializeContent());
+
+            var attrFalse = new AbilityUnlockedAttribute(false);
+            assertEquals("false", attrFalse.serializeContent());
+        }
+    }
+
+    @Nested
+    @DisplayName("AbilityCooldownAttribute")
+    class CooldownAttributeTests {
+
+        @Test
+        @DisplayName("default constructor uses 0L")
+        void defaultConstructor_usesZero() {
+            var attr = new AbilityCooldownAttribute();
+            assertEquals(0L, attr.getContent());
+        }
+
+        @Test
+        @DisplayName("getDefaultContent returns 0L")
+        void getDefaultContent_returnsZero() {
+            var attr = new AbilityCooldownAttribute();
+            assertEquals(0L, attr.getDefaultContent());
+        }
+
+        @Test
+        @DisplayName("value constructor stores provided value")
+        void valueConstructor_storesProvidedValue() {
+            var attr = new AbilityCooldownAttribute(5000L);
+            assertEquals(5000L, attr.getContent());
+        }
+
+        @Test
+        @DisplayName("shouldContentBeSaved returns false when cooldown is 0")
+        void shouldContentBeSaved_returnsFalse_whenZero() {
+            var attr = new AbilityCooldownAttribute(0L);
+            assertFalse(attr.shouldContentBeSaved());
+        }
+
+        @Test
+        @DisplayName("shouldContentBeSaved returns false when cooldown is in the past")
+        void shouldContentBeSaved_returnsFalse_whenInThePast() {
+            var attr = new AbilityCooldownAttribute(1L);
+            assertFalse(attr.shouldContentBeSaved());
+        }
+
+        @Test
+        @DisplayName("shouldContentBeSaved returns true when cooldown is in the future")
+        void shouldContentBeSaved_returnsTrue_whenInTheFuture() {
+            long futureTime = System.currentTimeMillis() + 60_000;
+            var attr = new AbilityCooldownAttribute(futureTime);
+            assertTrue(attr.shouldContentBeSaved());
+        }
+
+        @Test
+        @DisplayName("create returns new instance with given value")
+        void create_returnsNewInstance() {
+            var template = new AbilityCooldownAttribute();
+            AbilityCooldownAttribute created = template.create(12345L);
+            assertEquals(12345L, created.getContent());
+            assertNotSame(template, created);
+        }
+
+        @Test
+        @DisplayName("convertContent parses long string")
+        void convertContent_parsesLongString() {
+            var attr = new AbilityCooldownAttribute();
+            assertEquals(999999L, attr.convertContent("999999"));
+        }
+
+        @Test
+        @DisplayName("convertContent throws on non-numeric string")
+        void convertContent_throwsOnNonNumericString() {
+            var attr = new AbilityCooldownAttribute();
+            assertThrows(NumberFormatException.class, () -> attr.convertContent("not_a_number"));
+        }
+
+        @Test
+        @DisplayName("getDatabaseKeyName returns cooldown")
+        void getDatabaseKeyName_returnsCooldown() {
+            var attr = new AbilityCooldownAttribute();
+            assertEquals("cooldown", attr.getDatabaseKeyName());
+        }
+
+        @Test
+        @DisplayName("getNamespacedKey matches registry constant")
+        void getNamespacedKey_matchesRegistryConstant() {
+            var attr = new AbilityCooldownAttribute();
+            assertEquals(AbilityAttributeRegistry.ABILITY_COOLDOWN_ATTRIBUTE_KEY, attr.getNamespacedKey());
+        }
+
+        @Test
+        @DisplayName("serializeContent returns long string")
+        void serializeContent_returnsLongString() {
+            var attr = new AbilityCooldownAttribute(42L);
+            assertEquals("42", attr.serializeContent());
+        }
+    }
+
+    @Nested
+    @DisplayName("AbilityToggledOffAttribute")
+    class ToggledOffAttributeTests {
+
+        @Test
+        @DisplayName("default constructor uses false")
+        void defaultConstructor_usesFalse() {
+            var attr = new AbilityToggledOffAttribute();
+            assertFalse(attr.getContent());
+        }
+
+        @Test
+        @DisplayName("getDefaultContent returns false")
+        void getDefaultContent_returnsFalse() {
+            var attr = new AbilityToggledOffAttribute();
+            assertFalse(attr.getDefaultContent());
+        }
+
+        @Test
+        @DisplayName("value constructor stores provided value")
+        void valueConstructor_storesProvidedValue() {
+            var attr = new AbilityToggledOffAttribute(true);
+            assertTrue(attr.getContent());
+        }
+
+        @Test
+        @DisplayName("shouldContentBeSaved returns false when not toggled off")
+        void shouldContentBeSaved_returnsFalse_whenNotToggledOff() {
+            var attr = new AbilityToggledOffAttribute(false);
+            assertFalse(attr.shouldContentBeSaved());
+        }
+
+        @Test
+        @DisplayName("shouldContentBeSaved returns true when toggled off")
+        void shouldContentBeSaved_returnsTrue_whenToggledOff() {
+            var attr = new AbilityToggledOffAttribute(true);
+            assertTrue(attr.shouldContentBeSaved());
+        }
+
+        @Test
+        @DisplayName("create returns new instance with given value")
+        void create_returnsNewInstance() {
+            var template = new AbilityToggledOffAttribute();
+            AbilityAttribute<Boolean> created = template.create(true);
+            assertTrue(created.getContent());
+            assertNotSame(template, created);
+        }
+
+        @Test
+        @DisplayName("convertContent parses true string")
+        void convertContent_parsesTrue() {
+            var attr = new AbilityToggledOffAttribute();
+            assertTrue(attr.convertContent("true"));
+        }
+
+        @Test
+        @DisplayName("convertContent parses false string")
+        void convertContent_parsesFalse() {
+            var attr = new AbilityToggledOffAttribute();
+            assertFalse(attr.convertContent("false"));
+        }
+
+        @Test
+        @DisplayName("getDatabaseKeyName returns toggled")
+        void getDatabaseKeyName_returnsToggled() {
+            var attr = new AbilityToggledOffAttribute();
+            assertEquals("toggled", attr.getDatabaseKeyName());
+        }
+
+        @Test
+        @DisplayName("getNamespacedKey matches registry constant")
+        void getNamespacedKey_matchesRegistryConstant() {
+            var attr = new AbilityToggledOffAttribute();
+            assertEquals(AbilityAttributeRegistry.ABILITY_TOGGLED_OFF_ATTRIBUTE_KEY, attr.getNamespacedKey());
+        }
+
+        @Test
+        @DisplayName("getDisplayPriority returns 10")
+        void getDisplayPriority_returnsTen() {
+            var attr = new AbilityToggledOffAttribute();
+            assertEquals(10, attr.getDisplayPriority());
+        }
+
+        @Test
+        @DisplayName("implements GuiModifiableAttribute")
+        void implementsGuiModifiable() {
+            var attr = new AbilityToggledOffAttribute();
+            assertInstanceOf(GuiModifiableAttribute.class, attr);
+        }
+
+        @Test
+        @DisplayName("serializeContent returns boolean string")
+        void serializeContent_returnsBooleanString() {
+            var attrTrue = new AbilityToggledOffAttribute(true);
+            assertEquals("true", attrTrue.serializeContent());
+
+            var attrFalse = new AbilityToggledOffAttribute(false);
+            assertEquals("false", attrFalse.serializeContent());
+        }
+    }
 }
