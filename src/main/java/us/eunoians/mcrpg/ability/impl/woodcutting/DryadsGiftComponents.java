@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.EventActivatableComponent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
+import us.eunoians.mcrpg.registry.McRPGAbilityKey;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 
 import java.util.Random;
@@ -20,7 +21,7 @@ public class DryadsGiftComponents {
         @Override
         public boolean shouldActivate(@NotNull AbilityHolder abilityHolder, @NotNull Event event) {
             if (event instanceof BlockBreakEvent blockBreakEvent) {
-                DryadsGift dryadsGift = (DryadsGift) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(DryadsGift.DRYADS_GIFT_KEY);
+                DryadsGift dryadsGift = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.DRYADS_GIFT);
                 return blockBreakEvent.getPlayer().getUniqueId().equals(abilityHolder.getUUID()) && dryadsGift.isBlockValid(blockBreakEvent.getBlock())
                         && dryadsGift.getActivationChance(dryadsGift.getCurrentAbilityTier(abilityHolder)) * 1000 > RANDOM.nextInt(100000);
             }

@@ -24,6 +24,7 @@ import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.player.McRPGPlayer;
 import us.eunoians.mcrpg.event.fake.FakeChestOpenEvent;
 import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
+import us.eunoians.mcrpg.registry.McRPGAbilityKey;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
@@ -48,7 +49,7 @@ public class LinkChestCommand {
                         McRPGLocalizationManager localizationManager = RegistryAccess.registryAccess().registry(RegistryKey.MANAGER).manager(McRPGManagerKey.LOCALIZATION);
                         playerManager.getPlayer(player.getUniqueId()).ifPresent(mcRPGPlayer -> {
                             Map<String, String> placeholders = getPlaceholders(mcRPGPlayer);
-                            RemoteTransfer remoteTransfer = (RemoteTransfer) RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+                            RemoteTransfer remoteTransfer = RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.REMOTE_TRANSFER);
                             Block block = player.getTargetBlock(null, 100);
                             if (block.getType() != Material.CHEST) {
                                 player.sendMessage(localizationManager.getLocalizedMessageAsComponent(player, LocalizationKey.LINK_COMMAND_NOT_LOOKING_AT_CHEST_MESSAGE, placeholders));
@@ -77,7 +78,7 @@ public class LinkChestCommand {
     @NotNull
     public static Map<String, String> getPlaceholders(@Nullable McRPGPlayer mcRPGPlayer) {
         Map<String, String> placeholders = new HashMap<>();
-        Ability ability = RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(RemoteTransfer.REMOTE_TRANSFER_KEY);
+        Ability ability = RegistryAccess.registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.REMOTE_TRANSFER);
         placeholders.put(SKILL.getPlaceholder(), mcRPGPlayer == null ? ability.getName() : ability.getName(mcRPGPlayer));
         return placeholders;
     }

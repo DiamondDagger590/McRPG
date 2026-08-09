@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.McRPGAbilityKey;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
@@ -25,7 +26,7 @@ public class ExtraOreComponents {
 
         @Override
         public boolean affectsBlock(@NotNull Block block) {
-            return ((ExtraOre) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(ExtraOre.EXTRA_ORE_KEY)).isBlockValid(block);
+            return McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.EXTRA_ORE).isBlockValid(block);
         }
 
         @Override
@@ -33,7 +34,7 @@ public class ExtraOreComponents {
             if (!OnBlockBreakComponent.super.shouldActivate(abilityHolder, event)) {
                 return false;
             }
-            ExtraOre extraOre = (ExtraOre) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(ExtraOre.EXTRA_ORE_KEY);
+            ExtraOre extraOre = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.EXTRA_ORE);
             if (abilityHolder instanceof SkillHolder skillHolder) {
                 var skillHolderDataOptional = skillHolder.getSkillHolderData(Mining.MINING_KEY);
                 if (skillHolderDataOptional.isPresent()) {

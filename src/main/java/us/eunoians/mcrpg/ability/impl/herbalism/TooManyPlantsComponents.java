@@ -7,6 +7,7 @@ import us.eunoians.mcrpg.McRPG;
 import us.eunoians.mcrpg.ability.component.activatable.OnBlockBreakComponent;
 import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
+import us.eunoians.mcrpg.registry.McRPGAbilityKey;
 import us.eunoians.mcrpg.registry.McRPGRegistryKey;
 import us.eunoians.mcrpg.skill.impl.herbalism.Herbalism;
 
@@ -21,7 +22,7 @@ public class TooManyPlantsComponents {
 
         @Override
         public boolean affectsBlock(@NotNull Block block) {
-            return ((TooManyPlants) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(TooManyPlants.TOO_MANY_PLANTS_KEY)).isBlockValid(block);
+            return McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.TOO_MANY_PLANTS).isBlockValid(block);
         }
 
         @Override
@@ -29,7 +30,7 @@ public class TooManyPlantsComponents {
             if (!OnBlockBreakComponent.super.shouldActivate(abilityHolder, event)) {
                 return false;
             }
-            TooManyPlants tooManyPlants = (TooManyPlants) McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).getRegisteredAbility(TooManyPlants.TOO_MANY_PLANTS_KEY);
+            TooManyPlants tooManyPlants = McRPG.getInstance().registryAccess().registry(McRPGRegistryKey.ABILITY).ability(McRPGAbilityKey.TOO_MANY_PLANTS);
             if (abilityHolder instanceof SkillHolder skillHolder) {
                 var skillHolderDataOptional = skillHolder.getSkillHolderData(Herbalism.HERBALISM_KEY);
                 if (skillHolderDataOptional.isPresent()) {
