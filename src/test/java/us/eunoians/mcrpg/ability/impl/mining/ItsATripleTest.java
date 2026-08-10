@@ -17,7 +17,6 @@ import us.eunoians.mcrpg.skill.impl.mining.Mining;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -64,6 +63,19 @@ class ItsATripleTest extends McRPGBaseTest {
             when(miningConfig.getString(tierRoute)).thenReturn("50");
 
             assertEquals(50.0, itsATriple.getActivationChance(tier), 0.001);
+        }
+
+        @Test
+        @DisplayName("resolves tier-1 route correctly")
+        void getActivationChance_resolvesTierOne() {
+            int tier = 1;
+            Route tierRoute = Route.addTo(itsATriple.getRouteForTier(tier), "activation-chance");
+            Route allTiersRoute = Route.addTo(itsATriple.getRouteForAllTiers(), "activation-chance");
+
+            when(miningConfig.contains(tierRoute)).thenReturn(false);
+            when(miningConfig.getString(allTiersRoute)).thenReturn("tier*10");
+
+            assertEquals(10.0, itsATriple.getActivationChance(tier), 0.001);
         }
 
         @Test

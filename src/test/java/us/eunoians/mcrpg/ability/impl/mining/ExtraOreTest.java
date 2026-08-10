@@ -11,7 +11,6 @@ import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.configuration.FileManager;
 import us.eunoians.mcrpg.configuration.FileType;
 import us.eunoians.mcrpg.configuration.file.skill.MiningConfigFile;
-import us.eunoians.mcrpg.entity.holder.AbilityHolder;
 import us.eunoians.mcrpg.entity.holder.SkillHolder;
 import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 import us.eunoians.mcrpg.skill.impl.mining.Mining;

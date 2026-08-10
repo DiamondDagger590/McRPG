@@ -30,7 +30,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @SuppressWarnings("deprecation")
-class OresScannerConfigTest extends McRPGBaseTest {
+class OreScannerConfigTest extends McRPGBaseTest {
 
     private YamlDocument miningConfig;
     private OreScanner oreScanner;
@@ -77,6 +77,19 @@ class OresScannerConfigTest extends McRPGBaseTest {
             when(miningConfig.getString(tierRoute)).thenReturn("20");
 
             assertEquals(20, oreScanner.getRange(tier));
+        }
+
+        @Test
+        @DisplayName("resolves tier-1 route correctly")
+        void getRange_resolvesTierOne() {
+            int tier = 1;
+            Route tierRoute = Route.addTo(oreScanner.getRouteForTier(tier), "range");
+            Route allTiersRoute = Route.addTo(oreScanner.getRouteForAllTiers(), "range");
+
+            when(miningConfig.contains(tierRoute)).thenReturn(false);
+            when(miningConfig.getString(allTiersRoute)).thenReturn("tier*5");
+
+            assertEquals(5, oreScanner.getRange(tier));
         }
 
         @Test
