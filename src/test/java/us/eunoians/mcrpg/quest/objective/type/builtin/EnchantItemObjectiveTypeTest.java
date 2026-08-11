@@ -1,6 +1,9 @@
 package us.eunoians.mcrpg.quest.objective.type.builtin;
 
+import com.diamonddagger590.mccore.registry.RegistryAccess;
+import com.diamonddagger590.mccore.registry.RegistryKey;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import dev.dejvokep.boostedyaml.route.Route;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
@@ -10,27 +13,43 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import us.eunoians.mcrpg.McRPGBaseTest;
+import us.eunoians.mcrpg.entity.player.McRPGPlayer;
+import us.eunoians.mcrpg.entity.player.McRPGPlayerExtension;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
+import us.eunoians.mcrpg.localization.McRPGLocalizationManager;
 import us.eunoians.mcrpg.quest.impl.objective.QuestObjectiveInstance;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveProgressContext;
+import us.eunoians.mcrpg.registry.manager.McRPGManagerKey;
 
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(McRPGPlayerExtension.class)
 class EnchantItemObjectiveTypeTest extends McRPGBaseTest {
 
     private EnchantItemObjectiveType type;
+    private McRPGLocalizationManager localizationManager;
 
     @BeforeEach
     void setUp() {
         type = new EnchantItemObjectiveType();
+        localizationManager = RegistryAccess.registryAccess()
+                .registry(RegistryKey.MANAGER)
+                .manager(McRPGManagerKey.LOCALIZATION);
+        lenient().when(localizationManager.getLocalizedMessage(any(McRPGPlayer.class), any(Route.class), anyMap()))
+                .thenReturn("localized text");
     }
 
     @Nested
@@ -284,6 +303,115 @@ class EnchantItemObjectiveTypeTest extends McRPGBaseTest {
             QuestObjectiveInstance instance = mock(QuestObjectiveInstance.class);
             EnchantItemQuestContext context = new EnchantItemQuestContext(event);
             assertEquals(1L, configured.processProgress(instance, context));
+        }
+    }
+
+    @Nested
+    @DisplayName("describeObjective")
+    class DescribeObjective {
+
+        @Test
+        @DisplayName("returns generic any-item description when no filters configured")
+        void describeObjective_returnsAnyDescription_whenNoFilters(McRPGPlayer player) {
+            addPlayerToServer(player);
+            String description = type.describeObjective(player, 3);
+            assertNotNull(description);
+            assertFalse(description.isEmpty());
+        }
+
+        @Test
+        @DisplayName("returns single-item description when one item configured")
+        void describeObjective_returnsSingleItemDescription_whenOneItem(McRPGPlayer player) {
+            addPlayerToServer(player);
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(true);
+            when(section.getStringList("items")).thenReturn(List.of("DIAMOND_SWORD"));
+            when(section.contains("enchantments")).thenReturn(false);
+            EnchantItemObjectiveType configured = type.parseConfig(section);
+
+            String description = configured.describeObjective(player, 2);
+            assertNotNull(description);
+            assertFalse(description.isEmpty());
+        }
+
+        @Test
+        @DisplayName("returns multi-item description when multiple items configured")
+        void describeObjective_returnsMultiItemDescription_whenMultipleItems(McRPGPlayer player) {
+            addPlayerToServer(player);
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(true);
+            when(section.getStringList("items")).thenReturn(List.of("DIAMOND_SWORD", "IRON_PICKAXE"));
+            when(section.contains("enchantments")).thenReturn(false);
+            EnchantItemObjectiveType configured = type.parseConfig(section);
+
+            String description = configured.describeObjective(player, 5);
+            assertNotNull(description);
+            assertFalse(description.isEmpty());
+            assertTrue(description.contains("\n"));
+        }
+
+        @Test
+        @DisplayName("returns single-enchantment description when one enchantment configured")
+        void describeObjective_returnsSingleEnchantmentDescription_whenOneEnchantment(McRPGPlayer player) {
+            addPlayerToServer(player);
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(false);
+            when(section.contains("enchantments")).thenReturn(true);
+            when(section.getStringList("enchantments")).thenReturn(List.of("sharpness"));
+            EnchantItemObjectiveType configured = type.parseConfig(section);
+
+            String description = configured.describeObjective(player, 1);
+            assertNotNull(description);
+            assertFalse(description.isEmpty());
+        }
+
+        @Test
+        @DisplayName("returns multi-enchantment description when multiple enchantments configured")
+        void describeObjective_returnsMultiEnchantmentDescription_whenMultipleEnchantments(McRPGPlayer player) {
+            addPlayerToServer(player);
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(false);
+            when(section.contains("enchantments")).thenReturn(true);
+            when(section.getStringList("enchantments")).thenReturn(List.of("sharpness", "fire_aspect"));
+            EnchantItemObjectiveType configured = type.parseConfig(section);
+
+            String description = configured.describeObjective(player, 4);
+            assertNotNull(description);
+            assertFalse(description.isEmpty());
+            assertTrue(description.contains("\n"));
+        }
+
+        @Test
+        @DisplayName("returns combined description when both single item and single enchantment configured")
+        void describeObjective_returnsBothDescription_whenSingleItemAndSingleEnchantment(McRPGPlayer player) {
+            addPlayerToServer(player);
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(true);
+            when(section.getStringList("items")).thenReturn(List.of("DIAMOND_SWORD"));
+            when(section.contains("enchantments")).thenReturn(true);
+            when(section.getStringList("enchantments")).thenReturn(List.of("sharpness"));
+            EnchantItemObjectiveType configured = type.parseConfig(section);
+
+            String description = configured.describeObjective(player, 1);
+            assertNotNull(description);
+            assertFalse(description.isEmpty());
+        }
+
+        @Test
+        @DisplayName("returns multi description when both multiple items and enchantments configured")
+        void describeObjective_returnsMultiDescription_whenMultipleItemsAndEnchantments(McRPGPlayer player) {
+            addPlayerToServer(player);
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(true);
+            when(section.getStringList("items")).thenReturn(List.of("DIAMOND_SWORD", "IRON_PICKAXE"));
+            when(section.contains("enchantments")).thenReturn(true);
+            when(section.getStringList("enchantments")).thenReturn(List.of("sharpness", "fire_aspect"));
+            EnchantItemObjectiveType configured = type.parseConfig(section);
+
+            String description = configured.describeObjective(player, 3);
+            assertNotNull(description);
+            assertFalse(description.isEmpty());
+            assertTrue(description.contains("\n"));
         }
     }
 }
