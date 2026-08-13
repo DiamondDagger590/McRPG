@@ -368,6 +368,30 @@ public class ObjectiveTypeProcessProgressTest extends McRPGBaseTest {
             ItemPickupQuestContext context = createContext(Material.IRON_INGOT, 1);
             assertEquals(1, type.processProgress(mockInstance, context));
         }
+
+        @Test
+        @DisplayName("configured with matching item returns stack amount")
+        public void processProgress_matchingItem_returnsAmount() {
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(true);
+            when(section.getStringList("items")).thenReturn(List.of("DIAMOND", "EMERALD"));
+            ItemPickupObjectiveType configured = type.parseConfig(section);
+
+            ItemPickupQuestContext context = createContext(Material.DIAMOND, 4);
+            assertEquals(4, configured.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("configured with non-matching item returns 0")
+        public void processProgress_nonMatchingItem_returnsZero() {
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(true);
+            when(section.getStringList("items")).thenReturn(List.of("DIAMOND"));
+            ItemPickupObjectiveType configured = type.parseConfig(section);
+
+            ItemPickupQuestContext context = createContext(Material.IRON_INGOT, 3);
+            assertEquals(0, configured.processProgress(mockInstance, context));
+        }
     }
 
     @Nested
