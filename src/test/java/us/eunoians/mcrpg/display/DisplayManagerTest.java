@@ -59,17 +59,24 @@ import static org.mockito.Mockito.when;
 public class DisplayManagerTest extends McRPGBaseTest {
 
     /**
-     * Minimal {@link PlayerDisplay} with a no-op cleanup; used purely as a
+     * Minimal {@link PlayerDisplay} with a trackable cleanup; used purely as a
      * stand-in so the manager API contracts can be exercised without pulling
      * in a concrete McRPG display subclass.
      */
-    private static final class NoopDisplay extends PlayerDisplay {
+    private static class NoopDisplay extends PlayerDisplay {
+        private boolean cleaned = false;
+
         NoopDisplay(McRPGPlayer player) {
             super(player);
         }
 
         @Override
         public void cleanDisplay() {
+            cleaned = true;
+        }
+
+        boolean wasCleaned() {
+            return cleaned;
         }
     }
 
@@ -143,5 +150,49 @@ public class DisplayManagerTest extends McRPGBaseTest {
 
         assertFalse(manager.hasDisplay(mcRPGPlayer, NoopDisplay.class));
         assertEquals(Optional.empty(), manager.getDisplay(mcRPGPlayer, NoopDisplay.class));
+    }
+
+    @Test
+    @DisplayName("Given multiple registered displays, when clearAllDisplays is called, then all displays are removed")
+    void clearAllDisplays_removesAllDisplays(McRPGPlayer mcRPGPlayer) {
+        manager.setDisplay(mcRPGPlayer, NoopDisplay.class, new NoopDisplay(mcRPGPlayer));
+        manager.setDisplay(mcRPGPlayer, ActionBarHudDisplay.class, manager.getOrCreateActionBarHud(mcRPGPlayer));
+
+        manager.clearAllDisplays(mcRPGPlayer);
+
+        assertFalse(manager.hasDisplay(mcRPGPlayer, NoopDisplay.class));
+        assertFalse(manager.hasDisplay(mcRPGPlayer, ActionBarHudDisplay.class));
+    }
+
+    @Test
+    @DisplayName("Given no registered displays, when clearAllDisplays is called, then no error is thrown")
+    void clearAllDisplays_noOp_whenNoDisplaysRegistered(McRPGPlayer mcRPGPlayer) {
+        manager.clearAllDisplays(mcRPGPlayer);
+
+        assertFalse(manager.hasDisplay(mcRPGPlayer, NoopDisplay.class));
+    }
+
+    @Test
+    @DisplayName("Given a display replacing another of the same type, when setDisplay is called, then the previous display is cleaned")
+    void setDisplay_cleansPreviousDisplay_whenReplacingExistingType(McRPGPlayer mcRPGPlayer) {
+        NoopDisplay previous = new NoopDisplay(mcRPGPlayer);
+
+        manager.setDisplay(mcRPGPlayer, NoopDisplay.class, previous);
+        manager.setDisplay(mcRPGPlayer, NoopDisplay.class, new NoopDisplay(mcRPGPlayer));
+
+        assertTrue(previous.wasCleaned(),
+                "Previous display must have its cleanDisplay() called when replaced");
+    }
+
+    @Test
+    @DisplayName("Given a shared renderer, when getHudRenderer is called, then it returns the non-null renderer")
+    void getHudRenderer_returnsNonNull() {
+        assertNotNull(manager.getHudRenderer());
+    }
+
+    @Test
+    @DisplayName("Given a persistent pool config, when getPersistentPoolEnabled is called, then it returns the reloadable content")
+    void getPersistentPoolEnabled_returnsNonNull() {
+        assertNotNull(manager.getPersistentPoolEnabled());
     }
 }
