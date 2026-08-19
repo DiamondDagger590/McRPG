@@ -199,4 +199,18 @@ public class TitleRewardTypeTest extends McRPGBaseTest {
         TitleRewardType configured = type.fromSerializedConfig(Map.of("title", "Test"));
         assertEquals(type.getKey(), configured.getKey());
     }
+
+    @DisplayName("grant does not throw when configured with title and subtitle")
+    @Test
+    public void grant_doesNotThrow_whenConfigured() {
+        TitleRewardType configured = type.fromSerializedConfig(Map.of(
+                "title", "Quest Complete!",
+                "subtitle", "Well done.",
+                "fade-in", 10,
+                "stay", 70,
+                "fade-out", 20
+        ));
+        var player = server.addPlayer();
+        assertDoesNotThrow(() -> configured.grant(player));
+    }
 }

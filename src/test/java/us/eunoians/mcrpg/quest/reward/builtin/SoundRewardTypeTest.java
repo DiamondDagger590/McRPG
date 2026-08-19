@@ -215,4 +215,16 @@ public class SoundRewardTypeTest extends McRPGBaseTest {
         var player = server.addPlayer();
         assertDoesNotThrow(() -> type.grant(player));
     }
+
+    @DisplayName("grant does not throw when configured with a valid sound")
+    @Test
+    public void grant_doesNotThrow_whenConfiguredWithValidSound() {
+        SoundRewardType configured = type.fromSerializedConfig(Map.of(
+                "sound", "ENTITY_EXPERIENCE_ORB_PICKUP",
+                "volume", 0.5f,
+                "pitch", 1.2f
+        ));
+        var player = server.addPlayer();
+        assertDoesNotThrow(() -> configured.grant(player));
+    }
 }
