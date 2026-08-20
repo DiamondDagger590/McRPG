@@ -7,6 +7,8 @@ import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.McRPGBaseTest;
 
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,7 +38,7 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         data.putChainState(state);
 
         assertTrue(data.getChainState(chainKeyA).isPresent());
-        assertEquals(state, data.getChainState(chainKeyA).get());
+        assertEquals(state, data.getChainState(chainKeyA).orElseThrow());
     }
 
     @Test
@@ -91,7 +93,7 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
         data.putChainState(QuestChainPlayerState.newActive(chainKeyA, questKeyA));
 
         assertTrue(data.getChainKeyForCurrentQuest(questKeyA).isPresent());
-        assertEquals(chainKeyA, data.getChainKeyForCurrentQuest(questKeyA).get());
+        assertEquals(chainKeyA, data.getChainKeyForCurrentQuest(questKeyA).orElseThrow());
     }
 
     @Test
@@ -136,5 +138,119 @@ public class QuestChainPlayerDataTest extends McRPGBaseTest {
 
         assertFalse(data.getChainKeyForCurrentQuest(questKeyA).isPresent());
         assertEquals(chainKeyA, data.getChainKeyForCurrentQuest(questKeyB).orElseThrow());
+    }
+
+    @Test
+    @DisplayName("Given multiple states, When putChainStateBatch is called, Then all states are retrievable")
+    public void putChainStateBatch_addsAllStates() {
+        var stateA = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
+        var stateB = QuestChainPlayerState.newActive(chainKeyB, questKeyB);
+
+        data.putChainStateBatch(List.of(stateA, stateB));
+
+        assertTrue(data.getChainState(chainKeyA).isPresent());
+        assertTrue(data.getChainState(chainKeyB).isPresent());
+    }
+
+    @Test
+    @DisplayName("Given active states in batch, When putChainStateBatch is called, Then quest key index is rebuilt")
+    public void putChainStateBatch_rebuildsQuestKeyIndex() {
+        var stateA = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
+        var stateB = QuestChainPlayerState.newActive(chainKeyB, questKeyB);
+
+        data.putChainStateBatch(List.of(stateA, stateB));
+
+        assertEquals(chainKeyA, data.getChainKeyForCurrentQuest(questKeyA).orElseThrow());
+        assertEquals(chainKeyB, data.getChainKeyForCurrentQuest(questKeyB).orElseThrow());
+    }
+
+    @Test
+    @DisplayName("Given an empty list, When putChainStateBatch is called, Then no states are added")
+    public void putChainStateBatch_addsNothing_whenListIsEmpty() {
+        data.putChainStateBatch(List.of());
+
+        assertTrue(data.getAllStates().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Given populated data, When getAllStates is called, Then all states are returned")
+    public void getAllStates_returnsAllStates() {
+        var stateA = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
+        var completed = QuestChainPlayerState.newActive(chainKeyB, questKeyB);
+        completed.complete(Instant.ofEpochMilli(1000L));
+
+        data.putChainState(stateA);
+        data.putChainState(completed);
+
+        Collection<QuestChainPlayerState> allStates = data.getAllStates();
+        assertEquals(2, allStates.size());
+    }
+
+    @Test
+    @DisplayName("Given empty data, When getAllStates is called, Then an empty collection is returned")
+    public void getAllStates_returnsEmptyCollection_whenNoStates() {
+        assertTrue(data.getAllStates().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Given an active state, When updateQuestKeyIndex is called directly, Then the index is updated")
+    public void updateQuestKeyIndex_updatesIndex_forActiveState() {
+        var state = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
+        data.putChainState(state);
+
+        state.advance(questKeyB);
+        data.updateQuestKeyIndex(state);
+
+        assertFalse(data.getChainKeyForCurrentQuest(questKeyA).isPresent());
+        assertEquals(chainKeyA, data.getChainKeyForCurrentQuest(questKeyB).orElseThrow());
+    }
+
+    @Test
+    @DisplayName("Given a completed state, When updateQuestKeyIndex is called, Then the quest key is removed from the index")
+    public void updateQuestKeyIndex_removesFromIndex_forTerminalState() {
+        var state = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
+        data.putChainState(state);
+        assertTrue(data.getChainKeyForCurrentQuest(questKeyA).isPresent());
+
+        state.complete(Instant.ofEpochMilli(1000L));
+        data.updateQuestKeyIndex(state);
+
+        assertFalse(data.getChainKeyForCurrentQuest(questKeyA).isPresent());
+    }
+
+    @Test
+    @DisplayName("Given an existing state, When putChainState overwrites with new state, Then old state is replaced")
+    public void putChainState_overwritesExistingState() {
+        var oldState = QuestChainPlayerState.newActive(chainKeyA, questKeyA);
+        data.putChainState(oldState);
+
+        var newState = QuestChainPlayerState.newActive(chainKeyA, questKeyB);
+        data.putChainState(newState);
+
+        assertEquals(newState, data.getChainState(chainKeyA).orElseThrow());
+        assertEquals(questKeyB, data.getChainState(chainKeyA).orElseThrow().getCurrentQuestKey().orElseThrow());
+    }
+
+    @Test
+    @DisplayName("Given an overwritten state, When putChainState replaces, Then quest key index reflects new quest key")
+    public void putChainState_updatesIndex_whenOverwriting() {
+        data.putChainState(QuestChainPlayerState.newActive(chainKeyA, questKeyA));
+        assertTrue(data.getChainKeyForCurrentQuest(questKeyA).isPresent());
+
+        data.putChainState(QuestChainPlayerState.newActive(chainKeyA, questKeyB));
+
+        assertFalse(data.getChainKeyForCurrentQuest(questKeyA).isPresent());
+        assertEquals(chainKeyA, data.getChainKeyForCurrentQuest(questKeyB).orElseThrow());
+    }
+
+    @Test
+    @DisplayName("Given a non-existent chain key, When removeChainState is called, Then nothing changes")
+    public void removeChainState_doesNothing_whenKeyNotFound() {
+        data.putChainState(QuestChainPlayerState.newActive(chainKeyA, questKeyA));
+
+        data.removeChainState(chainKeyB);
+
+        assertTrue(data.getChainState(chainKeyA).isPresent());
+        assertEquals(1, data.getAllStates().size());
     }
 }
