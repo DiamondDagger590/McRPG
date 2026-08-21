@@ -1,14 +1,25 @@
 package us.eunoians.mcrpg.quest.objective.type.builtin;
 
+import com.diamonddagger590.mccore.util.item.CustomEntityWrapper;
+import com.diamonddagger590.mccore.util.item.CustomItemWrapper;
 import dev.dejvokep.boostedyaml.block.implementation.Section;
+import io.papermc.paper.event.player.PlayerTradeEvent;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Item;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerItemConsumeEvent;
+import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.inventory.CraftingInventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.MerchantRecipe;
 import org.bukkit.inventory.Recipe;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -322,6 +333,384 @@ public class ObjectiveTypeProcessProgressTest extends McRPGBaseTest {
             when(inventory.getMatrix()).thenReturn(matrix);
             CraftItemQuestContext context = new CraftItemQuestContext(event);
             assertEquals(1, type.processProgress(mockInstance, context));
+        }
+    }
+
+    @Nested
+    @DisplayName("ItemPickupObjectiveType processProgress")
+    class ItemPickupProcessProgress {
+
+        private final ItemPickupObjectiveType type = new ItemPickupObjectiveType();
+
+        @Test
+        @DisplayName("wrong context type returns 0")
+        public void processProgress_wrongContextType_returnsZero() {
+            QuestObjectiveProgressContext wrongContext = mock(QuestObjectiveProgressContext.class);
+            assertEquals(0, type.processProgress(mockInstance, wrongContext));
+        }
+
+        @Test
+        @DisplayName("unconfigured returns stack amount")
+        public void processProgress_unconfigured_returnsStackAmount() {
+            EntityPickupItemEvent event = mock(EntityPickupItemEvent.class);
+            Item item = mock(Item.class);
+            when(item.getItemStack()).thenReturn(new ItemStack(Material.DIAMOND, 5));
+            when(event.getItem()).thenReturn(item);
+            ItemPickupQuestContext context = new ItemPickupQuestContext(event);
+            assertEquals(5, type.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("unconfigured returns 1 for single item")
+        public void processProgress_unconfigured_returnsSingleAmount() {
+            EntityPickupItemEvent event = mock(EntityPickupItemEvent.class);
+            Item item = mock(Item.class);
+            when(item.getItemStack()).thenReturn(new ItemStack(Material.IRON_SWORD, 1));
+            when(event.getItem()).thenReturn(item);
+            ItemPickupQuestContext context = new ItemPickupQuestContext(event);
+            assertEquals(1, type.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("configured with matching item returns stack amount")
+        public void processProgress_matchingItem_returnsStackAmount() {
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(true);
+            when(section.getStringList("items")).thenReturn(List.of("DIAMOND"));
+            ItemPickupObjectiveType configured = type.parseConfig(section);
+
+            EntityPickupItemEvent event = mock(EntityPickupItemEvent.class);
+            Item item = mock(Item.class);
+            when(item.getItemStack()).thenReturn(new ItemStack(Material.DIAMOND, 3));
+            when(event.getItem()).thenReturn(item);
+            ItemPickupQuestContext context = new ItemPickupQuestContext(event);
+            assertEquals(3, configured.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("configured with non-matching item returns 0")
+        public void processProgress_nonMatchingItem_returnsZero() {
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(true);
+            when(section.getStringList("items")).thenReturn(List.of("DIAMOND"));
+            ItemPickupObjectiveType configured = type.parseConfig(section);
+
+            EntityPickupItemEvent event = mock(EntityPickupItemEvent.class);
+            Item item = mock(Item.class);
+            when(item.getItemStack()).thenReturn(new ItemStack(Material.GOLD_INGOT, 10));
+            when(event.getItem()).thenReturn(item);
+            ItemPickupQuestContext context = new ItemPickupQuestContext(event);
+            assertEquals(0, configured.processProgress(mockInstance, context));
+        }
+    }
+
+    @Nested
+    @DisplayName("ItemPickupObjectiveType parseConfig")
+    class ItemPickupParseConfig {
+
+        private final ItemPickupObjectiveType type = new ItemPickupObjectiveType();
+
+        @Test
+        @DisplayName("section without items key accepts any item")
+        public void parseConfig_noItemsKey_acceptsAnyItem() {
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(false);
+            ItemPickupObjectiveType configured = type.parseConfig(section);
+
+            EntityPickupItemEvent event = mock(EntityPickupItemEvent.class);
+            Item item = mock(Item.class);
+            when(item.getItemStack()).thenReturn(new ItemStack(Material.EMERALD, 2));
+            when(event.getItem()).thenReturn(item);
+            assertEquals(2, configured.processProgress(mockInstance, new ItemPickupQuestContext(event)));
+        }
+
+        @Test
+        @DisplayName("parsed instance preserves key")
+        public void parseConfig_preservesKey() {
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(false);
+            ItemPickupObjectiveType configured = type.parseConfig(section);
+            assertEquals(ItemPickupObjectiveType.KEY, configured.getKey());
+        }
+    }
+
+    @Nested
+    @DisplayName("LaunchProjectileObjectiveType processProgress")
+    class LaunchProjectileProcessProgress {
+
+        private final LaunchProjectileObjectiveType type = new LaunchProjectileObjectiveType();
+
+        @Test
+        @DisplayName("wrong context type returns 0")
+        public void processProgress_wrongContextType_returnsZero() {
+            QuestObjectiveProgressContext wrongContext = mock(QuestObjectiveProgressContext.class);
+            assertEquals(0, type.processProgress(mockInstance, wrongContext));
+        }
+
+        @Test
+        @DisplayName("unconfigured accepts any projectile")
+        public void processProgress_unconfigured_returnsOne() {
+            ProjectileLaunchEvent event = mock(ProjectileLaunchEvent.class);
+            Projectile projectile = mock(Projectile.class);
+            when(projectile.getType()).thenReturn(EntityType.ARROW);
+            when(event.getEntity()).thenReturn(projectile);
+            LaunchProjectileQuestContext context = new LaunchProjectileQuestContext(event);
+            assertEquals(1, type.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("configured with matching projectile returns 1")
+        public void processProgress_matchingProjectile_returnsOne() {
+            Section section = mock(Section.class);
+            when(section.contains("projectiles")).thenReturn(true);
+            when(section.getStringList("projectiles")).thenReturn(List.of("ARROW", "SNOWBALL"));
+            LaunchProjectileObjectiveType configured = type.parseConfig(section);
+
+            ProjectileLaunchEvent event = mock(ProjectileLaunchEvent.class);
+            Projectile projectile = mock(Projectile.class);
+            when(projectile.getType()).thenReturn(EntityType.ARROW);
+            when(event.getEntity()).thenReturn(projectile);
+            LaunchProjectileQuestContext context = new LaunchProjectileQuestContext(event);
+            assertEquals(1, configured.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("configured with non-matching projectile returns 0")
+        public void processProgress_nonMatchingProjectile_returnsZero() {
+            Section section = mock(Section.class);
+            when(section.contains("projectiles")).thenReturn(true);
+            when(section.getStringList("projectiles")).thenReturn(List.of("ARROW"));
+            LaunchProjectileObjectiveType configured = type.parseConfig(section);
+
+            ProjectileLaunchEvent event = mock(ProjectileLaunchEvent.class);
+            Projectile projectile = mock(Projectile.class);
+            when(projectile.getType()).thenReturn(EntityType.SNOWBALL);
+            when(event.getEntity()).thenReturn(projectile);
+            LaunchProjectileQuestContext context = new LaunchProjectileQuestContext(event);
+            assertEquals(0, configured.processProgress(mockInstance, context));
+        }
+    }
+
+    @Nested
+    @DisplayName("LaunchProjectileObjectiveType parseConfig")
+    class LaunchProjectileParseConfig {
+
+        private final LaunchProjectileObjectiveType type = new LaunchProjectileObjectiveType();
+
+        @Test
+        @DisplayName("section without projectiles key accepts any projectile")
+        public void parseConfig_noProjectilesKey_acceptsAnyProjectile() {
+            Section section = mock(Section.class);
+            when(section.contains("projectiles")).thenReturn(false);
+            LaunchProjectileObjectiveType configured = type.parseConfig(section);
+
+            ProjectileLaunchEvent event = mock(ProjectileLaunchEvent.class);
+            Projectile projectile = mock(Projectile.class);
+            when(projectile.getType()).thenReturn(EntityType.FIREBALL);
+            when(event.getEntity()).thenReturn(projectile);
+            assertEquals(1, configured.processProgress(mockInstance, new LaunchProjectileQuestContext(event)));
+        }
+
+        @Test
+        @DisplayName("projectiles are parsed case-insensitively")
+        public void parseConfig_projectilesAreCaseInsensitive() {
+            Section section = mock(Section.class);
+            when(section.contains("projectiles")).thenReturn(true);
+            when(section.getStringList("projectiles")).thenReturn(List.of("arrow"));
+            LaunchProjectileObjectiveType configured = type.parseConfig(section);
+
+            ProjectileLaunchEvent event = mock(ProjectileLaunchEvent.class);
+            Projectile projectile = mock(Projectile.class);
+            when(projectile.getType()).thenReturn(EntityType.ARROW);
+            when(event.getEntity()).thenReturn(projectile);
+            assertEquals(1, configured.processProgress(mockInstance, new LaunchProjectileQuestContext(event)));
+        }
+
+        @Test
+        @DisplayName("parsed instance preserves key")
+        public void parseConfig_preservesKey() {
+            Section section = mock(Section.class);
+            when(section.contains("projectiles")).thenReturn(false);
+            LaunchProjectileObjectiveType configured = type.parseConfig(section);
+            assertEquals(LaunchProjectileObjectiveType.KEY, configured.getKey());
+        }
+    }
+
+    @Nested
+    @DisplayName("VillagerTradeObjectiveType processProgress")
+    class VillagerTradeProcessProgress {
+
+        private final VillagerTradeObjectiveType type = new VillagerTradeObjectiveType();
+
+        @Test
+        @DisplayName("wrong context type returns 0")
+        public void processProgress_wrongContextType_returnsZero() {
+            QuestObjectiveProgressContext wrongContext = mock(QuestObjectiveProgressContext.class);
+            assertEquals(0, type.processProgress(mockInstance, wrongContext));
+        }
+
+        @Test
+        @DisplayName("unconfigured returns trade result amount")
+        public void processProgress_unconfigured_returnsResultAmount() {
+            PlayerTradeEvent event = mock(PlayerTradeEvent.class);
+            MerchantRecipe recipe = mock(MerchantRecipe.class);
+            when(recipe.getResult()).thenReturn(new ItemStack(Material.EMERALD, 3));
+            when(event.getTrade()).thenReturn(recipe);
+            VillagerTradeQuestContext context = new VillagerTradeQuestContext(event);
+            assertEquals(3, type.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("unconfigured returns 1 for single result item")
+        public void processProgress_unconfigured_returnsSingleAmount() {
+            PlayerTradeEvent event = mock(PlayerTradeEvent.class);
+            MerchantRecipe recipe = mock(MerchantRecipe.class);
+            when(recipe.getResult()).thenReturn(new ItemStack(Material.DIAMOND_SWORD, 1));
+            when(event.getTrade()).thenReturn(recipe);
+            VillagerTradeQuestContext context = new VillagerTradeQuestContext(event);
+            assertEquals(1, type.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("configured with matching item returns result amount")
+        public void processProgress_matchingItem_returnsResultAmount() {
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(true);
+            when(section.getStringList("items")).thenReturn(List.of("EMERALD"));
+            VillagerTradeObjectiveType configured = type.parseConfig(section);
+
+            PlayerTradeEvent event = mock(PlayerTradeEvent.class);
+            MerchantRecipe recipe = mock(MerchantRecipe.class);
+            when(recipe.getResult()).thenReturn(new ItemStack(Material.EMERALD, 5));
+            when(event.getTrade()).thenReturn(recipe);
+            VillagerTradeQuestContext context = new VillagerTradeQuestContext(event);
+            assertEquals(5, configured.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("configured with non-matching item returns 0")
+        public void processProgress_nonMatchingItem_returnsZero() {
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(true);
+            when(section.getStringList("items")).thenReturn(List.of("EMERALD"));
+            VillagerTradeObjectiveType configured = type.parseConfig(section);
+
+            PlayerTradeEvent event = mock(PlayerTradeEvent.class);
+            MerchantRecipe recipe = mock(MerchantRecipe.class);
+            when(recipe.getResult()).thenReturn(new ItemStack(Material.DIAMOND, 1));
+            when(event.getTrade()).thenReturn(recipe);
+            VillagerTradeQuestContext context = new VillagerTradeQuestContext(event);
+            assertEquals(0, configured.processProgress(mockInstance, context));
+        }
+    }
+
+    @Nested
+    @DisplayName("VillagerTradeObjectiveType parseConfig")
+    class VillagerTradeParseConfig {
+
+        private final VillagerTradeObjectiveType type = new VillagerTradeObjectiveType();
+
+        @Test
+        @DisplayName("section without items key accepts any trade")
+        public void parseConfig_noItemsKey_acceptsAnyTrade() {
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(false);
+            VillagerTradeObjectiveType configured = type.parseConfig(section);
+
+            PlayerTradeEvent event = mock(PlayerTradeEvent.class);
+            MerchantRecipe recipe = mock(MerchantRecipe.class);
+            when(recipe.getResult()).thenReturn(new ItemStack(Material.GOLDEN_APPLE, 1));
+            when(event.getTrade()).thenReturn(recipe);
+            assertEquals(1, configured.processProgress(mockInstance, new VillagerTradeQuestContext(event)));
+        }
+
+        @Test
+        @DisplayName("parsed instance preserves key")
+        public void parseConfig_preservesKey() {
+            Section section = mock(Section.class);
+            when(section.contains("items")).thenReturn(false);
+            VillagerTradeObjectiveType configured = type.parseConfig(section);
+            assertEquals(VillagerTradeObjectiveType.KEY, configured.getKey());
+        }
+    }
+
+    @Nested
+    @DisplayName("ShearEntityObjectiveType processProgress")
+    class ShearEntityProcessProgress {
+
+        private final ShearEntityObjectiveType type = new ShearEntityObjectiveType();
+
+        @Test
+        @DisplayName("wrong context type returns 0")
+        public void processProgress_wrongContextType_returnsZero() {
+            QuestObjectiveProgressContext wrongContext = mock(QuestObjectiveProgressContext.class);
+            assertEquals(0, type.processProgress(mockInstance, wrongContext));
+        }
+
+        @Test
+        @DisplayName("unconfigured accepts any entity")
+        public void processProgress_unconfigured_returnsOne() {
+            ShearEntityQuestContext context = mock(ShearEntityQuestContext.class);
+            CustomEntityWrapper wrapper = mock(CustomEntityWrapper.class);
+            when(context.getEntityWrapper()).thenReturn(wrapper);
+            assertEquals(1, type.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("configured with matching entity returns 1")
+        public void processProgress_matchingEntity_returnsOne() {
+            Section section = mock(Section.class);
+            when(section.contains("entities")).thenReturn(true);
+            when(section.getStringList("entities")).thenReturn(List.of("SHEEP"));
+            ShearEntityObjectiveType configured = type.parseConfig(section);
+
+            ShearEntityQuestContext context = mock(ShearEntityQuestContext.class);
+            CustomEntityWrapper wrapper = new CustomEntityWrapper("SHEEP");
+            when(context.getEntityWrapper()).thenReturn(wrapper);
+            assertEquals(1, configured.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("configured with non-matching entity returns 0")
+        public void processProgress_nonMatchingEntity_returnsZero() {
+            Section section = mock(Section.class);
+            when(section.contains("entities")).thenReturn(true);
+            when(section.getStringList("entities")).thenReturn(List.of("SHEEP"));
+            ShearEntityObjectiveType configured = type.parseConfig(section);
+
+            ShearEntityQuestContext context = mock(ShearEntityQuestContext.class);
+            CustomEntityWrapper wrapper = new CustomEntityWrapper("MOOSHROOM");
+            when(context.getEntityWrapper()).thenReturn(wrapper);
+            assertEquals(0, configured.processProgress(mockInstance, context));
+        }
+    }
+
+    @Nested
+    @DisplayName("ShearEntityObjectiveType parseConfig")
+    class ShearEntityParseConfig {
+
+        private final ShearEntityObjectiveType type = new ShearEntityObjectiveType();
+
+        @Test
+        @DisplayName("section without entities key accepts any entity")
+        public void parseConfig_noEntitiesKey_acceptsAnyEntity() {
+            Section section = mock(Section.class);
+            when(section.contains("entities")).thenReturn(false);
+            ShearEntityObjectiveType configured = type.parseConfig(section);
+
+            ShearEntityQuestContext context = mock(ShearEntityQuestContext.class);
+            CustomEntityWrapper wrapper = mock(CustomEntityWrapper.class);
+            when(context.getEntityWrapper()).thenReturn(wrapper);
+            assertEquals(1, configured.processProgress(mockInstance, context));
+        }
+
+        @Test
+        @DisplayName("parsed instance preserves key")
+        public void parseConfig_preservesKey() {
+            Section section = mock(Section.class);
+            when(section.contains("entities")).thenReturn(false);
+            ShearEntityObjectiveType configured = type.parseConfig(section);
+            assertEquals(ShearEntityObjectiveType.KEY, configured.getKey());
         }
     }
 }
