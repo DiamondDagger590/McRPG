@@ -7,19 +7,26 @@ import org.bukkit.NamespacedKey;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import us.eunoians.mcrpg.quest.definition.OnStartMessage;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.quest.definition.QuestDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestObjectiveDefinition;
 import us.eunoians.mcrpg.quest.definition.QuestPhaseDefinition;
-import us.eunoians.mcrpg.quest.definition.QuestRepeatMode;
 import us.eunoians.mcrpg.quest.definition.QuestStageDefinition;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveType;
 import us.eunoians.mcrpg.quest.objective.type.QuestObjectiveTypeRegistry;
+import us.eunoians.mcrpg.quest.board.distribution.DistributionRewardEntry;
 import us.eunoians.mcrpg.quest.board.distribution.DistributionTierConfig;
+import us.eunoians.mcrpg.quest.board.distribution.PotBehavior;
+import us.eunoians.mcrpg.quest.board.distribution.RemainderStrategy;
 import us.eunoians.mcrpg.quest.board.distribution.RewardDistributionConfig;
 import us.eunoians.mcrpg.quest.board.distribution.RewardSplitMode;
+import us.eunoians.mcrpg.quest.board.template.condition.ConditionParser;
+import us.eunoians.mcrpg.quest.board.template.condition.QuestRewardEntry;
+import us.eunoians.mcrpg.quest.board.template.condition.RewardFallback;
+import us.eunoians.mcrpg.quest.board.template.condition.TemplateCondition;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
 import us.eunoians.mcrpg.quest.reward.QuestRewardType;
 import us.eunoians.mcrpg.quest.reward.QuestRewardTypeRegistry;
@@ -349,6 +356,435 @@ class GeneratedQuestDefinitionCodecTest {
                 "Definition without reward distribution should remain empty after roundtrip");
     }
 
+    @Nested
+    @DisplayName("Reward fallback serialization")
+    class RewardFallbackTests {
+
+        private static final NamespacedKey CONDITION_TYPE_KEY = NamespacedKey.fromString("mcrpg:rarity_gate");
+        private static final NamespacedKey FALLBACK_REWARD_KEY = NamespacedKey.fromString("mcrpg:experience");
+
+        @Test
+        @DisplayName("Round-trip preserves quest-level reward fallback with condition and fallback reward")
+        void roundTrip_preservesRewardFallback() {
+            TemplateCondition condition = mockCondition(CONDITION_TYPE_KEY, Map.of("min_rarity", "uncommon"));
+            when(conditionRegistry.get(CONDITION_TYPE_KEY)).thenReturn(Optional.of(condition));
+
+            QuestRewardType fallbackReward = mockReward(FALLBACK_REWARD_KEY, Map.of("amount", 50));
+            RewardFallback fallback = new RewardFallback(condition, fallbackReward);
+
+            QuestRewardType primaryReward = mockReward(REWARD_TYPE_KEY, Map.of("amount", 200));
+            QuestRewardEntry entry = new QuestRewardEntry(primaryReward, fallback);
+
+            QuestDefinition original = createDefinitionWithRewardEntries(List.of(entry));
+            String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+            JsonObject rewardObj = root.getAsJsonArray("rewards").get(0).getAsJsonObject();
+            assertTrue(rewardObj.has("fallback"), "Serialized reward should contain fallback block");
+            JsonObject fallbackObj = rewardObj.getAsJsonObject("fallback");
+            assertEquals(CONDITION_TYPE_KEY.toString(), fallbackObj.get("condition_type").getAsString());
+            assertEquals(FALLBACK_REWARD_KEY.toString(), fallbackObj.get("fallback_reward_type").getAsString());
+        }
+
+        @Test
+        @DisplayName("Deserialization reconstructs reward fallback from condition and reward registries")
+        void deserialize_reconstructsRewardFallback() {
+            TemplateCondition condition = mockCondition(CONDITION_TYPE_KEY, Map.of("min_rarity", "uncommon"));
+            when(conditionRegistry.get(CONDITION_TYPE_KEY)).thenReturn(Optional.of(condition));
+
+            QuestRewardType fallbackReward = mockReward(FALLBACK_REWARD_KEY, Map.of("amount", 50));
+            RewardFallback fallback = new RewardFallback(condition, fallbackReward);
+
+            QuestRewardType primaryReward = mockReward(REWARD_TYPE_KEY, Map.of("amount", 200));
+            QuestRewardEntry entry = new QuestRewardEntry(primaryReward, fallback);
+
+            QuestDefinition original = createDefinitionWithRewardEntries(List.of(entry));
+            String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+
+            QuestDefinition deserialized = codec.deserialize(json);
+            assertEquals(1, deserialized.getRewardEntries().size());
+            QuestRewardEntry deserializedEntry = deserialized.getRewardEntries().get(0);
+            assertNotNull(deserializedEntry.fallback());
+            verify(conditionRegistry).get(CONDITION_TYPE_KEY);
+        }
+
+        @Test
+        @DisplayName("Deserialization with unknown condition type in fallback throws QuestDeserializationException")
+        void deserialize_unknownConditionType_throwsException() {
+            TemplateCondition condition = mockCondition(CONDITION_TYPE_KEY, Map.of("threshold", 5));
+            when(conditionRegistry.get(CONDITION_TYPE_KEY)).thenReturn(Optional.of(condition));
+
+            QuestRewardType fallbackReward = mockReward(FALLBACK_REWARD_KEY, Map.of("amount", 10));
+            QuestRewardEntry entry = new QuestRewardEntry(
+                    mockReward(REWARD_TYPE_KEY, Map.of("amount", 100)),
+                    new RewardFallback(condition, fallbackReward));
+
+            String json = codec.serialize(
+                    createDefinitionWithRewardEntries(List.of(entry)),
+                    TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+
+            TemplateConditionRegistry emptyCondRegistry = mock(TemplateConditionRegistry.class);
+            when(emptyCondRegistry.get(any())).thenReturn(Optional.empty());
+            var failCodec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, rewardTypeRegistry, emptyCondRegistry);
+
+            QuestDeserializationException ex = assertThrows(QuestDeserializationException.class,
+                    () -> failCodec.deserialize(json));
+            assertTrue(ex.getFailedElement().contains("condition type"));
+        }
+
+        private TemplateCondition mockCondition(NamespacedKey key, Map<String, Object> config) {
+            TemplateCondition condition = mock(TemplateCondition.class);
+            when(condition.getKey()).thenReturn(key);
+            when(condition.serializeConfig()).thenReturn(config);
+            when(condition.fromConfig(any(Section.class), any(ConditionParser.class))).thenReturn(condition);
+            return condition;
+        }
+
+        private QuestRewardType mockReward(NamespacedKey key, Map<String, Object> config) {
+            QuestRewardType reward = mock(QuestRewardType.class);
+            when(reward.getKey()).thenReturn(key);
+            when(reward.serializeConfig()).thenReturn(config);
+            when(reward.fromSerializedConfig(any())).thenAnswer(inv -> {
+                Map<String, Object> c = inv.getArgument(0);
+                QuestRewardType configured = mock(QuestRewardType.class);
+                when(configured.getKey()).thenReturn(key);
+                when(configured.serializeConfig()).thenReturn(new LinkedHashMap<>(c));
+                when(configured.withLocalizationRoute(any())).thenReturn(configured);
+                return configured;
+            });
+            when(rewardTypeRegistry.get(key)).thenReturn(Optional.of(reward));
+            return reward;
+        }
+    }
+
+    @Nested
+    @DisplayName("Phase rewards serialization")
+    class PhaseRewardsTests {
+
+        @Test
+        @DisplayName("Round-trip preserves phase-level rewards")
+        void roundTrip_preservesPhaseRewards() {
+            QuestRewardType phaseReward = mock(QuestRewardType.class);
+            when(phaseReward.getKey()).thenReturn(REWARD_TYPE_KEY);
+            when(phaseReward.serializeConfig()).thenReturn(Map.of("skill", "MINING", "amount", 250));
+
+            QuestObjectiveType objType = mock(QuestObjectiveType.class);
+            when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
+
+            QuestObjectiveDefinition objective = new QuestObjectiveDefinition(
+                    OBJECTIVE_KEY, objType, 50L, List.of(), null);
+            QuestStageDefinition stage = new QuestStageDefinition(
+                    STAGE_KEY, List.of(objective), List.of(), null);
+            QuestPhaseDefinition phase = new QuestPhaseDefinition(
+                    0, PhaseCompletionMode.ALL, List.of(stage), List.of(phaseReward), null);
+
+            QuestDefinition original = new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
+                    .build();
+
+            String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+            QuestDefinition deserialized = codec.deserialize(json);
+
+            QuestPhaseDefinition deserializedPhase = deserialized.getPhases().get(0);
+            assertEquals(1, deserializedPhase.getRewards().size());
+            assertEquals(REWARD_TYPE_KEY, deserializedPhase.getRewards().get(0).getKey());
+        }
+
+        @Test
+        @DisplayName("Phase with unknown reward type throws QuestDeserializationException")
+        void deserialize_unknownPhaseRewardType_throwsException() {
+            NamespacedKey unknownKey = NamespacedKey.fromString("mcrpg:unknown_reward");
+            QuestRewardType phaseReward = mock(QuestRewardType.class);
+            when(phaseReward.getKey()).thenReturn(unknownKey);
+            when(phaseReward.serializeConfig()).thenReturn(Map.of("value", 1));
+
+            QuestObjectiveType objType = mock(QuestObjectiveType.class);
+            when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
+
+            QuestObjectiveDefinition objective = new QuestObjectiveDefinition(
+                    OBJECTIVE_KEY, objType, 10L, List.of(), null);
+            QuestStageDefinition stage = new QuestStageDefinition(
+                    STAGE_KEY, List.of(objective), List.of(), null);
+            QuestPhaseDefinition phase = new QuestPhaseDefinition(
+                    0, PhaseCompletionMode.ALL, List.of(stage), List.of(phaseReward), null);
+
+            QuestDefinition original = new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
+                    .build();
+
+            String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+
+            Optional<QuestRewardType> knownReward = rewardTypeRegistry.get(REWARD_TYPE_KEY);
+            QuestRewardTypeRegistry restrictedRegistry = mock(QuestRewardTypeRegistry.class);
+            when(restrictedRegistry.get(REWARD_TYPE_KEY)).thenReturn(knownReward);
+            when(restrictedRegistry.get(unknownKey)).thenReturn(Optional.empty());
+
+            var failCodec = new GeneratedQuestDefinitionCodec(objectiveTypeRegistry, restrictedRegistry, conditionRegistry);
+            QuestDeserializationException ex = assertThrows(QuestDeserializationException.class,
+                    () -> failCodec.deserialize(json));
+            assertTrue(ex.getFailedElement().contains("phase reward type"));
+        }
+    }
+
+    @Nested
+    @DisplayName("DistributionRewardEntry fields")
+    class DistributionRewardEntryTests {
+
+        @Test
+        @DisplayName("Round-trip preserves pot_behavior, remainder_strategy, min_scaled_amount, and top_count")
+        void roundTrip_preservesAllDistributionRewardEntryFields() {
+            QuestRewardType reward = mock(QuestRewardType.class);
+            when(reward.getKey()).thenReturn(REWARD_TYPE_KEY);
+            when(reward.serializeConfig()).thenReturn(Map.of("amount", 500));
+
+            DistributionRewardEntry entry = new DistributionRewardEntry(
+                    reward, PotBehavior.TOP_N, RemainderStrategy.TOP_CONTRIBUTOR, 5, 3, null);
+
+            DistributionTierConfig tier = new DistributionTierConfig(
+                    "test-tier", NamespacedKey.fromString("mcrpg:top_players"),
+                    RewardSplitMode.INDIVIDUAL, List.of(entry),
+                    Map.of(), null, null);
+
+            QuestDefinition original = createDefinitionWithCustomDistribution(
+                    new RewardDistributionConfig(List.of(tier)));
+
+            String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+            QuestDefinition deserialized = codec.deserialize(json);
+
+            DistributionTierConfig deserializedTier = deserialized.getRewardDistribution().get().getTiers().get(0);
+            DistributionRewardEntry deserializedEntry = deserializedTier.getRewardEntries().get(0);
+
+            assertEquals(PotBehavior.TOP_N, deserializedEntry.potBehavior());
+            assertEquals(RemainderStrategy.TOP_CONTRIBUTOR, deserializedEntry.remainderStrategy());
+            assertEquals(5, deserializedEntry.minScaledAmount());
+            assertEquals(3, deserializedEntry.topCount());
+        }
+
+        @Test
+        @DisplayName("Deserialization defaults to SCALE pot behavior when field is absent")
+        void deserialize_missingPotBehavior_defaultsToScale() {
+            String json = buildDistributionJsonWithoutField("pot_behavior");
+            QuestDefinition deserialized = codec.deserialize(json);
+
+            DistributionRewardEntry entry = deserialized.getRewardDistribution()
+                    .get().getTiers().get(0).getRewardEntries().get(0);
+            assertEquals(PotBehavior.SCALE, entry.potBehavior());
+        }
+
+        @Test
+        @DisplayName("Deserialization defaults to DISCARD remainder strategy when field is absent")
+        void deserialize_missingRemainderStrategy_defaultsToDiscard() {
+            String json = buildDistributionJsonWithoutField("remainder_strategy");
+            QuestDefinition deserialized = codec.deserialize(json);
+
+            DistributionRewardEntry entry = deserialized.getRewardDistribution()
+                    .get().getTiers().get(0).getRewardEntries().get(0);
+            assertEquals(RemainderStrategy.DISCARD, entry.remainderStrategy());
+        }
+
+        @Test
+        @DisplayName("Deserialization defaults min_scaled_amount to 1 when field is absent")
+        void deserialize_missingMinScaledAmount_defaultsToOne() {
+            String json = buildDistributionJsonWithoutField("min_scaled_amount");
+            QuestDefinition deserialized = codec.deserialize(json);
+
+            DistributionRewardEntry entry = deserialized.getRewardDistribution()
+                    .get().getTiers().get(0).getRewardEntries().get(0);
+            assertEquals(1, entry.minScaledAmount());
+        }
+
+        @Test
+        @DisplayName("Deserialization defaults top_count to 1 when field is absent")
+        void deserialize_missingTopCount_defaultsToOne() {
+            String json = buildDistributionJsonWithoutField("top_count");
+            QuestDefinition deserialized = codec.deserialize(json);
+
+            DistributionRewardEntry entry = deserialized.getRewardDistribution()
+                    .get().getTiers().get(0).getRewardEntries().get(0);
+            assertEquals(1, entry.topCount());
+        }
+
+        private String buildDistributionJsonWithoutField(String fieldToRemove) {
+            QuestRewardType reward = mock(QuestRewardType.class);
+            when(reward.getKey()).thenReturn(REWARD_TYPE_KEY);
+            when(reward.serializeConfig()).thenReturn(Map.of("amount", 100));
+
+            DistributionRewardEntry entry = new DistributionRewardEntry(
+                    reward, PotBehavior.ALL, RemainderStrategy.RANDOM, 10, 5, null);
+
+            DistributionTierConfig tier = new DistributionTierConfig(
+                    "tier", NamespacedKey.fromString("mcrpg:participated"),
+                    RewardSplitMode.INDIVIDUAL, List.of(entry),
+                    Map.of(), null, null);
+
+            QuestDefinition def = createDefinitionWithCustomDistribution(
+                    new RewardDistributionConfig(List.of(tier)));
+
+            String json = codec.serialize(def, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+            JsonObject rewardObj = root.getAsJsonObject("reward_distribution")
+                    .getAsJsonArray("tiers").get(0).getAsJsonObject()
+                    .getAsJsonArray("rewards").get(0).getAsJsonObject();
+            rewardObj.remove(fieldToRemove);
+
+            return root.toString();
+        }
+    }
+
+    @Nested
+    @DisplayName("Inline display serialization")
+    class InlineDisplayTests {
+
+        @Test
+        @DisplayName("Round-trip preserves inline display entries")
+        void roundTrip_preservesInlineDisplay() {
+            Map<String, String> display = new LinkedHashMap<>();
+            display.put("name", "<primary>Daily Mining Quest");
+            display.put("description", "<body>Mine blocks to earn rewards");
+
+            QuestDefinition original = createDefinitionWithInlineDisplay(display);
+            String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+            QuestDefinition deserialized = codec.deserialize(json);
+
+            assertEquals(2, deserialized.getInlineDisplay().size());
+            assertEquals("<primary>Daily Mining Quest", deserialized.getInlineDisplay().get("name"));
+            assertEquals("<body>Mine blocks to earn rewards", deserialized.getInlineDisplay().get("description"));
+        }
+
+        @Test
+        @DisplayName("Definition without inline display deserializes with empty map")
+        void roundTrip_noInlineDisplay_remainsEmpty() {
+            QuestDefinition original = createTestDefinition();
+            String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+            QuestDefinition deserialized = codec.deserialize(json);
+            assertTrue(deserialized.getInlineDisplay().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("Variable type diversity in serialization")
+    class VariableTypeTests {
+
+        @Test
+        @DisplayName("Boolean variable values survive round-trip through toJsonElement")
+        void serialize_booleanVariable_survivesRoundTrip() {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put("require_silk_touch", true);
+            values.put("block_count", 50L);
+            ResolvedVariableContext context = new ResolvedVariableContext(values, 1.0, 1.0, 1.0);
+
+            QuestDefinition def = createTestDefinition();
+            String json = codec.serialize(def, TEMPLATE_KEY, RARITY_KEY, context, createObjectiveConfigs());
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+            JsonObject vars = root.getAsJsonObject("variables");
+
+            assertTrue(vars.get("require_silk_touch").getAsBoolean());
+        }
+
+        @Test
+        @DisplayName("String variable values survive round-trip through toJsonElement")
+        void serialize_stringVariable_survivesRoundTrip() {
+            Map<String, Object> values = new LinkedHashMap<>();
+            values.put("biome_name", "PLAINS");
+            values.put("count", 10);
+            ResolvedVariableContext context = new ResolvedVariableContext(values, 1.0, 1.0, 1.0);
+
+            QuestDefinition def = createTestDefinition();
+            String json = codec.serialize(def, TEMPLATE_KEY, RARITY_KEY, context, createObjectiveConfigs());
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+            JsonObject vars = root.getAsJsonObject("variables");
+
+            assertEquals("PLAINS", vars.get("biome_name").getAsString());
+        }
+    }
+
+    @Nested
+    @DisplayName("Objective-level distribution")
+    class ObjectiveLevelDistributionTests {
+
+        @Test
+        @DisplayName("Round-trip preserves objective-level reward distribution")
+        void roundTrip_preservesObjectiveLevelDistribution() {
+            QuestRewardType reward = mock(QuestRewardType.class);
+            when(reward.getKey()).thenReturn(REWARD_TYPE_KEY);
+            when(reward.serializeConfig()).thenReturn(Map.of("amount", 75));
+
+            DistributionTierConfig tier = new DistributionTierConfig(
+                    "obj-tier", NamespacedKey.fromString("mcrpg:participated"),
+                    RewardSplitMode.SPLIT_EVEN, List.of(reward),
+                    Map.of(), null, null, true);
+            RewardDistributionConfig objDist = new RewardDistributionConfig(List.of(tier));
+
+            QuestObjectiveType objType = mock(QuestObjectiveType.class);
+            when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
+
+            QuestObjectiveDefinition objective = new QuestObjectiveDefinition(
+                    OBJECTIVE_KEY, objType, 30L, List.of(), objDist);
+            QuestStageDefinition stage = new QuestStageDefinition(
+                    STAGE_KEY, List.of(objective), List.of(), null);
+            QuestPhaseDefinition phase = new QuestPhaseDefinition(
+                    0, PhaseCompletionMode.ALL, List.of(stage), List.of(), null);
+
+            QuestDefinition original = new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
+                    .build();
+
+            String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(),
+                    Map.of(OBJECTIVE_KEY, Map.of("blocks", List.of("STONE"))));
+            QuestDefinition deserialized = codec.deserialize(json);
+
+            QuestObjectiveDefinition deserializedObj = deserialized.getPhases().get(0)
+                    .getStages().get(0).getObjectives().get(0);
+            assertTrue(deserializedObj.getRewardDistribution().isPresent(),
+                    "Objective-level distribution should survive round-trip");
+            assertEquals(1, deserializedObj.getRewardDistribution().get().getTiers().size());
+            assertEquals("obj-tier", deserializedObj.getRewardDistribution().get().getTiers().get(0).getTierKey());
+        }
+    }
+
+    @Nested
+    @DisplayName("Distribution reward entry with fallback")
+    class DistributionRewardEntryFallbackTests {
+
+        @Test
+        @DisplayName("Round-trip preserves fallback on distribution reward entry")
+        void roundTrip_preservesFallbackOnDistributionEntry() {
+            NamespacedKey condKey = NamespacedKey.fromString("mcrpg:rarity_gate");
+            TemplateCondition condition = mock(TemplateCondition.class);
+            when(condition.getKey()).thenReturn(condKey);
+            when(condition.serializeConfig()).thenReturn(Map.of("min", "rare"));
+            when(condition.fromConfig(any(Section.class), any(ConditionParser.class))).thenReturn(condition);
+            when(conditionRegistry.get(condKey)).thenReturn(Optional.of(condition));
+
+            QuestRewardType primary = mock(QuestRewardType.class);
+            when(primary.getKey()).thenReturn(REWARD_TYPE_KEY);
+            when(primary.serializeConfig()).thenReturn(Map.of("amount", 500));
+
+            QuestRewardType fallbackReward = mock(QuestRewardType.class);
+            when(fallbackReward.getKey()).thenReturn(REWARD_TYPE_KEY);
+            when(fallbackReward.serializeConfig()).thenReturn(Map.of("amount", 100));
+
+            RewardFallback fallback = new RewardFallback(condition, fallbackReward);
+            DistributionRewardEntry entry = new DistributionRewardEntry(
+                    primary, PotBehavior.SCALE, RemainderStrategy.DISCARD, 1, 1, fallback);
+
+            DistributionTierConfig tier = new DistributionTierConfig(
+                    "fb-tier", NamespacedKey.fromString("mcrpg:participated"),
+                    RewardSplitMode.INDIVIDUAL, List.of(entry),
+                    Map.of(), null, null);
+
+            QuestDefinition original = createDefinitionWithCustomDistribution(
+                    new RewardDistributionConfig(List.of(tier)));
+
+            String json = codec.serialize(original, TEMPLATE_KEY, RARITY_KEY, createTestContext(), createObjectiveConfigs());
+
+            JsonObject root = JsonParser.parseString(json).getAsJsonObject();
+            JsonObject distReward = root.getAsJsonObject("reward_distribution")
+                    .getAsJsonArray("tiers").get(0).getAsJsonObject()
+                    .getAsJsonArray("rewards").get(0).getAsJsonObject();
+            assertTrue(distReward.has("fallback"),
+                    "Distribution reward entry should contain fallback block in JSON");
+        }
+    }
+
     private QuestDefinition createTestDefinition() {
         QuestObjectiveType objType = mock(QuestObjectiveType.class);
         when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
@@ -498,6 +934,32 @@ class GeneratedQuestDefinitionCodecTest {
 
         return new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
                 .rewards(List.of(rewardType))
+                .build();
+    }
+
+    private QuestDefinition createDefinitionWithRewardEntries(@NotNull List<QuestRewardEntry> entries) {
+        QuestObjectiveType objType = mock(QuestObjectiveType.class);
+        when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
+
+        QuestObjectiveDefinition objective = new QuestObjectiveDefinition(OBJECTIVE_KEY, objType, 1L, List.of(), null);
+        QuestStageDefinition stage = new QuestStageDefinition(STAGE_KEY, List.of(objective), List.of(), null);
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage), List.of(), null);
+
+        return new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
+                .rewardEntries(entries)
+                .build();
+    }
+
+    private QuestDefinition createDefinitionWithInlineDisplay(@NotNull Map<String, String> display) {
+        QuestObjectiveType objType = mock(QuestObjectiveType.class);
+        when(objType.getKey()).thenReturn(OBJECTIVE_TYPE_KEY);
+
+        QuestObjectiveDefinition objective = new QuestObjectiveDefinition(OBJECTIVE_KEY, objType, 1L, List.of(), null);
+        QuestStageDefinition stage = new QuestStageDefinition(STAGE_KEY, List.of(objective), List.of(), null);
+        QuestPhaseDefinition phase = new QuestPhaseDefinition(0, PhaseCompletionMode.ALL, List.of(stage), List.of(), null);
+
+        return new QuestDefinition.Builder(QUEST_KEY, SCOPE_KEY, List.of(phase))
+                .inlineDisplay(display)
                 .build();
     }
 }
