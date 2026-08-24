@@ -782,6 +782,12 @@ class GeneratedQuestDefinitionCodecTest {
                     .getAsJsonArray("rewards").get(0).getAsJsonObject();
             assertTrue(distReward.has("fallback"),
                     "Distribution reward entry should contain fallback block in JSON");
+
+            QuestDefinition deserialized = codec.deserialize(json);
+            RewardDistributionConfig deserializedDist = deserialized.getRewardDistribution().orElseThrow();
+            DistributionRewardEntry deserializedEntry = deserializedDist.getTiers().get(0).getRewardEntries().get(0);
+            assertNotNull(deserializedEntry.fallback(),
+                    "Deserialized distribution reward entry should have a non-null fallback");
         }
     }
 

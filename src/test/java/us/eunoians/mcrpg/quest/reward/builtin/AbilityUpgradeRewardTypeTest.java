@@ -5,7 +5,6 @@ import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.expansion.McRPGExpansion;
 
 import java.util.HashMap;
@@ -16,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class AbilityUpgradeRewardTypeTest extends McRPGBaseTest {
+public class AbilityUpgradeRewardTypeTest {
 
     @DisplayName("Given the type, when calling getKey, then it returns the ability_upgrade key")
     @Test
