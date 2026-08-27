@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.quest.board.template;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateCondition;
 import us.eunoians.mcrpg.quest.definition.PhaseCompletionMode;
 import us.eunoians.mcrpg.util.McRPGMethods;
@@ -19,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @DisplayName("TemplatePhaseDefinition")
-public class TemplatePhaseDefinitionTest extends McRPGBaseTest {
+public class TemplatePhaseDefinitionTest {
 
     @DisplayName("Canonical constructor makes stages list immutable")
     @Test
@@ -124,6 +123,13 @@ public class TemplatePhaseDefinitionTest extends McRPGBaseTest {
         assertEquals(stage1, phase.stages().get(0));
         assertEquals(stage2, phase.stages().get(1));
         assertEquals(stage3, phase.stages().get(2));
+    }
+
+    @DisplayName("Empty stages list is accepted")
+    @Test
+    void constructor_emptyStagesList_accepted() {
+        var phase = new TemplatePhaseDefinition(PhaseCompletionMode.ALL, List.of(), null);
+        assertTrue(phase.stages().isEmpty());
     }
 
     /**

@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.quest.board.template;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.quest.board.template.ObjectiveSelectionConfig.ObjectiveSelectionMode;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateCondition;
 import us.eunoians.mcrpg.util.McRPGMethods;
@@ -19,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 @DisplayName("TemplateStageDefinition")
-public class TemplateStageDefinitionTest extends McRPGBaseTest {
+public class TemplateStageDefinitionTest {
 
     @DisplayName("Canonical constructor makes objectives list immutable")
     @Test
@@ -114,6 +113,13 @@ public class TemplateStageDefinitionTest extends McRPGBaseTest {
         assertTrue(stage.getCondition().isEmpty());
         assertTrue(stage.getObjectiveSelection().isEmpty());
         assertEquals(1, stage.objectives().size());
+    }
+
+    @DisplayName("Empty objectives list is accepted")
+    @Test
+    void constructor_emptyObjectivesList_accepted() {
+        var stage = new TemplateStageDefinition(List.of(), null, null);
+        assertTrue(stage.objectives().isEmpty());
     }
 
     /**

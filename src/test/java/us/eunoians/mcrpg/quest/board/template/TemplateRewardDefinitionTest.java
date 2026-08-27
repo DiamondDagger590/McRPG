@@ -3,7 +3,6 @@ package us.eunoians.mcrpg.quest.board.template;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import us.eunoians.mcrpg.McRPGBaseTest;
 import us.eunoians.mcrpg.util.McRPGMethods;
 
 import java.util.HashMap;
@@ -13,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @DisplayName("TemplateRewardDefinition")
-public class TemplateRewardDefinitionTest extends McRPGBaseTest {
+public class TemplateRewardDefinitionTest {
 
     @DisplayName("Record stores all provided values")
     @Test
