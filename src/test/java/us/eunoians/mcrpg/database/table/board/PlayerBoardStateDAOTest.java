@@ -76,7 +76,7 @@ public class PlayerBoardStateDAOTest extends McRPGBaseTest {
 
         @DisplayName("Returns zero when ResultSet is empty")
         @Test
-        void countActiveQuestsFromBoard_returnsZeroWhenNoResults() throws SQLException {
+        void countActiveQuestsFromBoard_returnsZero_whenNoResults() throws SQLException {
             Connection mockConnection = mock(Connection.class);
             PreparedStatement mockStatement = mock(PreparedStatement.class);
             ResultSet mockResultSet = mock(ResultSet.class);
@@ -95,7 +95,7 @@ public class PlayerBoardStateDAOTest extends McRPGBaseTest {
 
         @DisplayName("Returns count from ResultSet when present")
         @Test
-        void countActiveQuestsFromBoard_returnsCountWhenPresent() throws SQLException {
+        void countActiveQuestsFromBoard_returnsCount_whenPresent() throws SQLException {
             Connection mockConnection = mock(Connection.class);
             PreparedStatement mockStatement = mock(PreparedStatement.class);
             ResultSet mockResultSet = mock(ResultSet.class);

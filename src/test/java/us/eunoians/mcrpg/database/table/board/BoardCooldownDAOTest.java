@@ -76,7 +76,7 @@ public class BoardCooldownDAOTest extends McRPGBaseTest {
 
         @DisplayName("Returns false when no matching rows exist")
         @Test
-        void isOnCooldown_returnsFalseWhenNoResults() throws SQLException {
+        void isOnCooldown_returnsFalse_whenNoResults() throws SQLException {
             Connection mockConnection = mock(Connection.class);
             PreparedStatement mockStatement = mock(PreparedStatement.class);
             ResultSet mockResultSet = mock(ResultSet.class);
@@ -98,7 +98,7 @@ public class BoardCooldownDAOTest extends McRPGBaseTest {
 
         @DisplayName("Returns true when a matching row exists")
         @Test
-        void isOnCooldown_returnsTrueWhenPresent() throws SQLException {
+        void isOnCooldown_returnsTrue_whenPresent() throws SQLException {
             Connection mockConnection = mock(Connection.class);
             PreparedStatement mockStatement = mock(PreparedStatement.class);
             ResultSet mockResultSet = mock(ResultSet.class);
