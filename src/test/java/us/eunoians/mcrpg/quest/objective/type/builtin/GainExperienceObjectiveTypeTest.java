@@ -134,5 +134,14 @@ public class GainExperienceObjectiveTypeTest extends McRPGBaseTest {
             GainExperienceQuestContext context = new GainExperienceQuestContext(event);
             assertEquals(1000, type.processProgress(mockInstance, context));
         }
+
+        @Test
+        @DisplayName("returns negative value for negative experience amount")
+        public void processProgress_returnsNegative_forNegativeExperience() {
+            PlayerExpChangeEvent event = mock(PlayerExpChangeEvent.class);
+            when(event.getAmount()).thenReturn(-5);
+            GainExperienceQuestContext context = new GainExperienceQuestContext(event);
+            assertEquals(-5, type.processProgress(mockInstance, context));
+        }
     }
 }
