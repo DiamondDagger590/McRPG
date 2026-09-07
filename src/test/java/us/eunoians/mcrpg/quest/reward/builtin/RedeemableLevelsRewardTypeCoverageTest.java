@@ -74,6 +74,14 @@ public class RedeemableLevelsRewardTypeCoverageTest extends McRPGBaseTest {
         }
 
         @Test
+        @DisplayName("zero amount yields zero")
+        public void withExactAmount_zeroAmount_yieldsZero() {
+            RedeemableLevelsRewardType configured = type.fromSerializedConfig(Map.of("amount", 10));
+            RedeemableLevelsRewardType exact = configured.withExactAmount(0);
+            assertEquals(0L, exact.getNumericAmount().getAsLong());
+        }
+
+        @Test
         @DisplayName("preserves localization route")
         public void withExactAmount_preservesLocalizationRoute() {
             Route route = Route.fromString("my.route");
@@ -274,6 +282,14 @@ public class RedeemableLevelsRewardTypeCoverageTest extends McRPGBaseTest {
             RedeemableLevelsRewardType configured = type.fromSerializedConfig(Map.of("amount", 5));
             RedeemableLevelsRewardType result = configured.withAmountMultiplier(1.0);
             assertEquals(5L, result.getNumericAmount().getAsLong());
+        }
+
+        @Test
+        @DisplayName("very large multiplier produces correct result")
+        public void withAmountMultiplier_largeMultiplier() {
+            RedeemableLevelsRewardType configured = type.fromSerializedConfig(Map.of("amount", 4));
+            RedeemableLevelsRewardType scaled = configured.withAmountMultiplier(10.0);
+            assertEquals(40L, scaled.getNumericAmount().getAsLong());
         }
 
         @Test

@@ -74,6 +74,14 @@ public class RedeemableExperienceRewardTypeCoverageTest extends McRPGBaseTest {
         }
 
         @Test
+        @DisplayName("zero amount yields zero")
+        public void withExactAmount_zeroAmount_yieldsZero() {
+            RedeemableExperienceRewardType configured = type.fromSerializedConfig(Map.of("amount", 100));
+            RedeemableExperienceRewardType exact = configured.withExactAmount(0);
+            assertEquals(0L, exact.getNumericAmount().getAsLong());
+        }
+
+        @Test
         @DisplayName("preserves localization route")
         public void withExactAmount_preservesLocalizationRoute() {
             Route route = Route.fromString("my.route");
