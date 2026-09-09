@@ -49,7 +49,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given board-metadata with all fields, when loading, then BoardMetadata is parsed with correct values")
     @Test
-    public void boardMetadata_allFields_parsedCorrectly() throws IOException {
+    public void loadQuests_parsesBoardMetadata_whenAllFieldsPresent() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_board_meta");
         try {
             String yaml = "quests:\n" +
@@ -101,7 +101,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given board-metadata with board-eligible false, when loading, then boardEligible is false")
     @Test
-    public void boardMetadata_notEligible_parsedCorrectly() throws IOException {
+    public void loadQuests_parsesBoardEligibleFalse() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_board_meta_ineligible");
         try {
             String yaml = "quests:\n" +
@@ -136,7 +136,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given no board-metadata section, when loading, then BoardMetadata is absent")
     @Test
-    public void boardMetadata_absent_returnsEmpty() throws IOException {
+    public void loadQuests_returnsEmptyBoardMetadata_whenNoSection() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_board_meta_absent");
         try {
             String yaml = "quests:\n" +
@@ -166,7 +166,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given display section with name, description, objectives, and rewards, when loading, then inline display is populated")
     @Test
-    public void inlineDisplay_allFields_parsedCorrectly() throws IOException {
+    public void loadQuests_parsesInlineDisplay_whenAllFieldsPresent() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_inline_display");
         try {
             String yaml = "quests:\n" +
@@ -210,7 +210,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given no display section, when loading, then inline display is empty")
     @Test
-    public void inlineDisplay_absent_returnsEmpty() throws IOException {
+    public void loadQuests_returnsEmptyDisplay_whenNoDisplaySection() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_no_display");
         try {
             String yaml = "quests:\n" +
@@ -240,7 +240,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given on-start-messages with locale key entry, when loading, then locale-backed message is parsed")
     @Test
-    public void onStartMessages_localeKey_parsedCorrectly() throws IOException {
+    public void loadQuests_parsesLocaleKeyMessage_whenOnStartMessagesHasKey() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_on_start_locale");
         try {
             String yaml = "quests:\n" +
@@ -279,7 +279,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given on-start-messages with inline messages, when loading, then inline message is parsed")
     @Test
-    public void onStartMessages_inlineMessages_parsedCorrectly() throws IOException {
+    public void loadQuests_parsesInlineMessages_whenOnStartMessagesHasMessages() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_on_start_inline");
         try {
             String yaml = "quests:\n" +
@@ -321,7 +321,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given no on-start-messages section, when loading, then on-start messages list is empty")
     @Test
-    public void onStartMessages_absent_returnsEmpty() throws IOException {
+    public void loadQuests_returnsEmptyMessages_whenNoOnStartMessagesSection() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_on_start_absent");
         try {
             String yaml = "quests:\n" +
@@ -351,7 +351,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given on-start-messages entry with neither key nor messages, when loading, then entry is skipped")
     @Test
-    public void onStartMessages_noKeyOrMessages_skipped() throws IOException {
+    public void loadQuests_skipsMessage_whenEntryHasNoKeyOrMessages() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_on_start_skip");
         try {
             String yaml = "quests:\n" +
@@ -384,7 +384,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given quest-chain-file flag, when loading, then quest file is skipped for definitions")
     @Test
-    public void chainFileFlag_skipsDefinitions() throws IOException {
+    public void loadQuests_skipsDefinitions_whenChainFileFlagIsTrue() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_chain_file");
         try {
             String yaml = "quest-chain-file: true\n" +
@@ -414,7 +414,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given COOLDOWN_LIMITED repeat mode without cooldown or limit, when loading, then quest still loads with warnings")
     @Test
-    public void repeatMode_cooldownLimited_missingFields_stillLoads() throws IOException {
+    public void loadQuests_loadsQuest_whenCooldownLimitedMissingFields() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_repeat_mode");
         try {
             String yaml = "quests:\n" +
@@ -445,7 +445,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given expiration in days-hours-minutes format, when loading, then expiration duration is correct")
     @Test
-    public void expiration_combinedFormat_parsedCorrectly() throws IOException {
+    public void loadQuests_parsesExpiration_whenCombinedDaysHoursFormat() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_expiration");
         try {
             String yaml = "quests:\n" +
@@ -477,7 +477,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given multiple on-start-messages entries mixing locale and inline, when loading, then both are preserved in order")
     @Test
-    public void onStartMessages_mixedEntries_preservedInOrder() throws IOException {
+    public void loadQuests_preservesMessageOrder_whenMixedLocaleAndInlineEntries() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_on_start_mixed");
         try {
             String yaml = "quests:\n" +
@@ -518,7 +518,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given invalid completion-mode, when loading, then quest is skipped")
     @Test
-    public void invalidCompletionMode_questSkipped() throws IOException {
+    public void loadQuests_skipsQuest_whenInvalidCompletionMode() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_bad_completion");
         try {
             String yaml = "quests:\n" +
@@ -546,7 +546,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given quest with no phases section, when loading, then quest is skipped")
     @Test
-    public void noPhases_questSkipped() throws IOException {
+    public void loadQuests_skipsQuest_whenNoPhasesSection() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_no_phases");
         try {
             String yaml = "quests:\n" +
@@ -563,7 +563,7 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
     @DisplayName("Given duplicate quest key across files, when loading, then first-loaded wins")
     @Test
-    public void duplicateQuestKey_firstWins() throws IOException {
+    public void loadQuests_keepsOneDefinition_whenDuplicateQuestKey() throws IOException {
         Path tempDir = Files.createTempDirectory("quest_duplicate");
         try {
             String yaml1 = "quests:\n" +
@@ -601,6 +601,12 @@ public class QuestConfigLoaderBoardMetadataTest extends McRPGBaseTest {
 
             Map<NamespacedKey, QuestDefinition> result = loader.loadQuestsFromDirectory(tempDir.toFile()).definitions();
             assertEquals(1, result.size(), "Duplicate key should only produce one definition");
+            QuestDefinition def = result.get(NamespacedKey.fromString("mcrpg:dup_quest"));
+            assertNotNull(def);
+            assertTrue(def.getExpiration().isPresent(), "Surviving definition should retain its expiration");
+            Duration expiration = def.getExpiration().get();
+            assertTrue(expiration.equals(Duration.ofHours(1)) || expiration.equals(Duration.ofHours(2)),
+                    "Surviving definition should have expiration from one of the source files, got: " + expiration);
         } finally {
             TestFileUtils.deleteRecursively(tempDir.toFile());
         }

@@ -9,11 +9,11 @@ import us.eunoians.mcrpg.quest.board.template.ObjectiveSelectionConfig;
 import us.eunoians.mcrpg.quest.board.template.QuestTemplate;
 import us.eunoians.mcrpg.quest.board.template.TemplateRewardDefinition;
 import us.eunoians.mcrpg.quest.board.template.TemplateStageDefinition;
+import us.eunoians.mcrpg.TestFileUtils;
 import us.eunoians.mcrpg.quest.board.template.condition.ConditionParser;
 import us.eunoians.mcrpg.quest.board.template.condition.TemplateConditionRegistry;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
@@ -38,8 +38,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given objective-selection config with WEIGHTED_RANDOM mode, when loading, then ObjectiveSelectionConfig is parsed")
     @Test
-    void objectiveSelection_weightedRandom_parsed() throws IOException {
-        writeYaml("weighted.yml", """
+    void loadTemplates_parsesObjectiveSelection_whenWeightedRandomMode() throws IOException {
+        TestFileUtils.writeFile(tempDir,"weighted.yml", """
                 quest-templates:
                   mcrpg:weighted_template:
                     display-name-route: "quests.templates.weighted.display-name"
@@ -85,8 +85,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given stage without objective-selection, when loading, then ObjectiveSelectionConfig is absent")
     @Test
-    void objectiveSelection_absent_returnsEmpty() throws IOException {
-        writeYaml("no_sel.yml", """
+    void loadTemplates_returnsEmptySelection_whenNoObjectiveSelectionSection() throws IOException {
+        TestFileUtils.writeFile(tempDir,"no_sel.yml", """
                 quest-templates:
                   mcrpg:no_sel_template:
                     display-name-route: "quests.templates.no-sel.display-name"
@@ -114,8 +114,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given template with rewards section, when loading, then reward definitions are parsed")
     @Test
-    void rewards_parsed() throws IOException {
-        writeYaml("rewards.yml", """
+    void loadTemplates_parsesRewards_whenRewardsSectionPresent() throws IOException {
+        TestFileUtils.writeFile(tempDir,"rewards.yml", """
                 quest-templates:
                   mcrpg:reward_template:
                     display-name-route: "quests.templates.reward.display-name"
@@ -159,8 +159,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given template with no rewards section, when loading, then rewards list is empty")
     @Test
-    void rewards_absent_returnsEmpty() throws IOException {
-        writeYaml("no_rewards.yml", """
+    void loadTemplates_returnsEmptyRewards_whenNoRewardsSection() throws IOException {
+        TestFileUtils.writeFile(tempDir,"no_rewards.yml", """
                 quest-templates:
                   mcrpg:no_reward_template:
                     display-name-route: "quests.templates.no-reward.display-name"
@@ -186,8 +186,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given template with display section, when loading, then inline display is populated")
     @Test
-    void inlineDisplay_parsed() throws IOException {
-        writeYaml("display.yml", """
+    void loadTemplates_parsesInlineDisplay_whenDisplaySectionPresent() throws IOException {
+        TestFileUtils.writeFile(tempDir,"display.yml", """
                 quest-templates:
                   mcrpg:display_template:
                     display-name-route: "quests.templates.display.display-name"
@@ -222,8 +222,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given expression referencing undeclared variable, when loading, then template is skipped")
     @Test
-    void undeclaredVariable_inRequiredProgress_templateSkipped() throws IOException {
-        writeYaml("undeclared.yml", """
+    void loadTemplates_skipsTemplate_whenUndeclaredVariableInProgress() throws IOException {
+        TestFileUtils.writeFile(tempDir,"undeclared.yml", """
                 quest-templates:
                   mcrpg:undeclared_template:
                     display-name-route: "quests.templates.undeclared.display-name"
@@ -253,8 +253,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given expression with invalid syntax, when loading, then template is skipped")
     @Test
-    void invalidExpression_templateSkipped() throws IOException {
-        writeYaml("bad_expr.yml", """
+    void loadTemplates_skipsTemplate_whenInvalidExpressionSyntax() throws IOException {
+        TestFileUtils.writeFile(tempDir,"bad_expr.yml", """
                 quest-templates:
                   mcrpg:bad_expr_template:
                     display-name-route: "quests.templates.bad-expr.display-name"
@@ -284,8 +284,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given template with reward expression referencing undeclared variable, when loading, then template is skipped")
     @Test
-    void undeclaredVariable_inReward_templateSkipped() throws IOException {
-        writeYaml("reward_undeclared.yml", """
+    void loadTemplates_skipsTemplate_whenUndeclaredVariableInReward() throws IOException {
+        TestFileUtils.writeFile(tempDir,"reward_undeclared.yml", """
                 quest-templates:
                   mcrpg:reward_undeclared:
                     display-name-route: "quests.templates.reward-undeclared.display-name"
@@ -319,8 +319,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given template with pool variable in objective config, when loading, then config map preserves raw string")
     @Test
-    void objectiveConfig_poolVariableReference_preserved() throws IOException {
-        writeYaml("pool_config.yml", """
+    void loadTemplates_preservesPoolReference_whenPoolVariableInConfig() throws IOException {
+        TestFileUtils.writeFile(tempDir,"pool_config.yml", """
                 quest-templates:
                   mcrpg:pool_config_template:
                     display-name-route: "quests.templates.pool-config.display-name"
@@ -365,8 +365,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given template with no phases section, when loading, then template is skipped")
     @Test
-    void noPhases_templateSkipped() throws IOException {
-        writeYaml("no_phases.yml", """
+    void loadTemplates_skipsTemplate_whenNoPhasesSection() throws IOException {
+        TestFileUtils.writeFile(tempDir,"no_phases.yml", """
                 quest-templates:
                   mcrpg:no_phases_template:
                     display-name-route: "quests.templates.no-phases.display-name"
@@ -381,8 +381,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given template with empty objectives in a stage, when loading, then template is skipped")
     @Test
-    void emptyObjectives_templateSkipped() throws IOException {
-        writeYaml("empty_obj.yml", """
+    void loadTemplates_skipsTemplate_whenEmptyObjectives() throws IOException {
+        TestFileUtils.writeFile(tempDir,"empty_obj.yml", """
                 quest-templates:
                   mcrpg:empty_obj_template:
                     display-name-route: "quests.templates.empty-obj.display-name"
@@ -403,8 +403,8 @@ class QuestTemplateConfigLoaderExtendedTest {
 
     @DisplayName("Given template with difficulty variable in expression, when loading, then expression validates successfully")
     @Test
-    void difficultyBuiltinVariable_expressionValid() throws IOException {
-        writeYaml("difficulty.yml", """
+    void loadTemplates_loadsTemplate_whenDifficultyBuiltinVariableUsed() throws IOException {
+        TestFileUtils.writeFile(tempDir,"difficulty.yml", """
                 quest-templates:
                   mcrpg:difficulty_template:
                     display-name-route: "quests.templates.difficulty.display-name"
@@ -427,7 +427,4 @@ class QuestTemplateConfigLoaderExtendedTest {
         assertNotNull(template, "Template using built-in 'difficulty' variable should load successfully");
     }
 
-    private void writeYaml(String fileName, String content) throws IOException {
-        Files.writeString(tempDir.resolve(fileName), content);
-    }
 }
