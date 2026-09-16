@@ -19,6 +19,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -34,6 +35,7 @@ class DryadsGiftTest extends McRPGBaseTest {
 
     private static final String ACTIVATION_FORMULA = "tier*3";
     private static final String EXPERIENCE_FORMULA = "tier*5+2";
+    private static final String SENTINEL_FORMULA = "999";
 
     private YamlDocument woodcuttingConfig;
     private DryadsGift dryadsGift;
@@ -48,7 +50,7 @@ class DryadsGiftTest extends McRPGBaseTest {
 
         when(woodcuttingConfig.getInt(WoodcuttingConfigFile.DRYADS_GIFT_AMOUNT_OF_TIERS)).thenReturn(5);
         when(woodcuttingConfig.contains(any(Route.class))).thenReturn(false);
-        when(woodcuttingConfig.getString(any(Route.class))).thenReturn(ACTIVATION_FORMULA);
+        when(woodcuttingConfig.getString(any(Route.class))).thenReturn(SENTINEL_FORMULA);
         when(woodcuttingConfig.getStringList(any(Route.class))).thenReturn(List.of());
 
         dryadsGift = new DryadsGift(mcRPG);
@@ -85,6 +87,24 @@ class DryadsGiftTest extends McRPGBaseTest {
 
             assertEquals(15.0, dryadsGift.getActivationChance(1), 0.001);
         }
+
+        @Test
+        @DisplayName("evaluates formula at max tier")
+        void getActivationChance_evaluatesAtMaxTier() {
+            Route allTiersRoute = Route.addTo(dryadsGift.getRouteForAllTiers(), "activation-chance");
+            when(woodcuttingConfig.getString(allTiersRoute)).thenReturn(ACTIVATION_FORMULA);
+
+            assertEquals(15.0, dryadsGift.getActivationChance(5), 0.001);
+        }
+
+        @Test
+        @DisplayName("throws when both tier and all-tiers keys are absent")
+        void getActivationChance_throws_whenBothKeysAbsent() {
+            Route allTiersRoute = Route.addTo(dryadsGift.getRouteForAllTiers(), "activation-chance");
+            when(woodcuttingConfig.getString(allTiersRoute)).thenReturn(null);
+
+            assertThrows(NullPointerException.class, () -> dryadsGift.getActivationChance(1));
+        }
     }
 
     @Nested
@@ -117,6 +137,24 @@ class DryadsGiftTest extends McRPGBaseTest {
             when(woodcuttingConfig.getString(allTiersRoute)).thenReturn("tier*2.5");
 
             assertEquals(7, dryadsGift.getExperienceToDrop(3));
+        }
+
+        @Test
+        @DisplayName("evaluates formula at max tier")
+        void getExperienceToDrop_evaluatesAtMaxTier() {
+            Route allTiersRoute = Route.addTo(dryadsGift.getRouteForAllTiers(), "experience-to-drop");
+            when(woodcuttingConfig.getString(allTiersRoute)).thenReturn(EXPERIENCE_FORMULA);
+
+            assertEquals(27, dryadsGift.getExperienceToDrop(5));
+        }
+
+        @Test
+        @DisplayName("throws when both tier and all-tiers keys are absent")
+        void getExperienceToDrop_throws_whenBothKeysAbsent() {
+            Route allTiersRoute = Route.addTo(dryadsGift.getRouteForAllTiers(), "experience-to-drop");
+            when(woodcuttingConfig.getString(allTiersRoute)).thenReturn(null);
+
+            assertThrows(NullPointerException.class, () -> dryadsGift.getExperienceToDrop(1));
         }
     }
 

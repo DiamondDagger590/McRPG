@@ -19,6 +19,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -33,6 +34,7 @@ import static org.mockito.Mockito.when;
 class NymphsVitalityTest extends McRPGBaseTest {
 
     private static final String HUNGER_FORMULA = "tier*4";
+    private static final String SENTINEL_FORMULA = "999";
 
     private YamlDocument woodcuttingConfig;
     private NymphsVitality nymphsVitality;
@@ -47,7 +49,7 @@ class NymphsVitalityTest extends McRPGBaseTest {
 
         when(woodcuttingConfig.getInt(WoodcuttingConfigFile.NYMPHS_VITALITY_AMOUNT_OF_TIERS)).thenReturn(5);
         when(woodcuttingConfig.contains(any(Route.class))).thenReturn(false);
-        when(woodcuttingConfig.getString(any(Route.class))).thenReturn(HUNGER_FORMULA);
+        when(woodcuttingConfig.getString(any(Route.class))).thenReturn(SENTINEL_FORMULA);
         when(woodcuttingConfig.getStringList(any(Route.class))).thenReturn(List.of());
 
         nymphsVitality = new NymphsVitality(mcRPG);
@@ -101,6 +103,15 @@ class NymphsVitalityTest extends McRPGBaseTest {
             when(woodcuttingConfig.getString(allTiersRoute)).thenReturn(HUNGER_FORMULA);
 
             assertEquals(20, nymphsVitality.getMinimumHunger(5));
+        }
+
+        @Test
+        @DisplayName("throws when both tier and all-tiers keys are absent")
+        void getMinimumHunger_throws_whenBothKeysAbsent() {
+            Route allTiersRoute = Route.addTo(nymphsVitality.getRouteForAllTiers(), "minimum-hunger");
+            when(woodcuttingConfig.getString(allTiersRoute)).thenReturn(null);
+
+            assertThrows(NullPointerException.class, () -> nymphsVitality.getMinimumHunger(1));
         }
     }
 
